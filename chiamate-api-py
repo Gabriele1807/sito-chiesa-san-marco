@@ -1,0 +1,18 @@
+import fastAPI
+import requests
+
+app = fastAPI()
+
+@dataclass
+class Evento:
+    id: str
+    title: str
+    date: str
+    description: Optional[str] = None
+
+@App.POST(class = Evento):
+async def():
+
+export async function GET() {
+  return NextResponse.json(getEventi());
+}
