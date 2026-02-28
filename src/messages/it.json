@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "home": "Home",
+    "chiSiamo": "Chi siamo",
+    "risorse": "Risorse",
+    "orari": "Orari settimanali",
+    "preghiere": "Preghiere",
+    "icone": "Galleria icone",
+    "libreria": "Libreria",
+    "eventi": "Eventi"
+  },
+  "home": {
+    "dashboardTitolo": "Le risorse della comunità",
+    "dashboardSottotitolo": "Ecco le risorse della comunità.",
+    "heroTitle": "Una chiesa antica, una comunità viva",
+    "heroSubtitle": "Scopri la Chiesa Copta Ortodossa di San Marco di Milano: un ponte tra tradizione millenaria e comunità moderna. Esplora le nostre icone sacre, i testi liturgici e collegati al mondo spirituale attraverso i QR code presenti in chiesa.",
+    "esploraIcone": "Esplora le icone",
+    "chiSiamo": "Chi siamo",
+    "chiSiamoPreview": "La Chiesa Copta Ortodossa di San Marco di Milano è una comunità viva e accogliente, radicata nella tradizione cristiana più antica d'Egitto. Fondata per servire la comunità copta milanese, la nostra chiesa è un luogo di preghiera, di crescita spirituale e di incontro tra culture.",
+    "vaiChiSiamo": "Scopri la nostra storia",
+    "risorseEvidenza": "Risorse in evidenza",
+    "viviChiesa": "Vivi la chiesa dal vivo",
+    "canaleLiturgie": "Segui le nostre liturgie in diretta sul canale YouTube della chiesa. Ogni domenica e nei giorni di festa, trasmettiamo la Divina Liturgia per chi non può essere presente.",
+    "qrSpiegazione": "Ogni icona nella nostra chiesa è accompagnata da un QR code. Scansionalo con il tuo smartphone per scoprire la storia del santo raffigurato, approfondimenti sull'iconografia e testi sacri collegati.",
+    "qrTitolo": "QR Code interattivi",
+    "liturgieTitolo": "Liturgie in diretta"
+  },
+  "chiSiamo": {
+    "titolo": "Chi siamo",
+    "intro": "La Chiesa Copta Ortodossa di San Marco di Milano è una comunità cristiana che affonda le sue radici nella tradizione apostolica fondata da San Marco Evangelista in Egitto nel I secolo d.C.",
+    "storia": "La nostra storia",
+    "missioneTitolo": "La nostra missione",
+    "missione": "Servire la comunità copta milanese e tutti coloro che desiderano conoscere la fede copta ortodossa, preservando la tradizione liturgica e spirituale millenaria.",
+    "comunitaTitolo": "La nostra comunità",
+    "comunita": "La nostra comunità è composta da famiglie, giovani e anziani provenienti dall'Egitto e dall'Italia, uniti dalla stessa fede e dallo stesso amore per Cristo.",
+    "step1Titolo": "Le origini",
+    "step1": "La Chiesa Copta Ortodossa nasce con la predicazione di San Marco Evangelista ad Alessandria d'Egitto nel 49 d.C.",
+    "step2Titolo": "Arrivo in Italia",
+    "step2": "Le prime comunità copte in Italia nascono negli anni '70 e '80, con l'arrivo di famiglie egiziane.",
+    "step3Titolo": "Fondazione a Milano",
+    "step3": "La Chiesa di San Marco di Milano viene fondata per servire la crescente comunità copta milanese.",
+    "step4Titolo": "Oggi",
+    "step4": "La comunità continua a crescere, con attività per tutte le età, liturgie regolari e un forte senso di appartenenza."
+  },
+  "orari": {
+    "titolo": "Orari settimanali",
+    "sottotitolo": "Consulta gli orari delle celebrazioni e delle attività parrocchiali. Gli orari possono variare in occasione di festività o eventi speciali.",
+    "giorno": "Giorno",
+    "celebrazione": "Celebrazione",
+    "orario": "Orario",
+    "note": "Note"
+  },
+  "preghiere": {
+    "titolo": "Preghiere",
+    "sottotitolo": "Una raccolta di preghiere della tradizione copta ortodossa. Puoi leggere il testo online o scaricare il PDF.",
+    "leggiTesto": "Leggi il testo",
+    "scaricaPDF": "Scarica PDF"
+  },
+  "icone": {
+    "titolo": "Galleria delle icone sacre",
+    "sottotitolo": "Esplora le icone presenti nella nostra chiesa. Ogni icona ha un QR code fisico: scansionalo quando sei in chiesa per accedere direttamente alla sua pagina.",
+    "filtraCategoria": "Filtra per categoria",
+    "filtraPosizione": "Filtra per posizione",
+    "tutte": "Tutte",
+    "posizione": "Posizione",
+    "scopri": "Scopri di più",
+    "storiaSanto": "Storia del santo",
+    "dettagliTecnici": "Dettagli tecnici",
+    "tecnica": "Tecnica",
+    "autore": "Autore",
+    "anno": "Anno",
+    "qrIcona": "QR di questa icona",
+    "scaricaQR": "Scarica QR",
+    "copiaLink": "Copia link",
+    "linkCopiato": "Link copiato!",
+    "risorseCollegate": "Risorse collegate"
+  },
+  "libreria": {
+    "titolo": "Libreria sacra",
+    "sottotitolo": "Una raccolta di testi sacri, omelie e catechismi della tradizione copta ortodossa, disponibili per la lettura online e il download.",
+    "leggiOnline": "Leggi online",
+    "scaricaPDF": "Scarica PDF",
+    "tipo": "Tipo",
+    "autore": "Autore",
+    "iconeCorrelate": "Icone correlate"
+  },
+  "eventi": {
+    "titolo": "Eventi e attività",
+    "sottotitolo": "Scopri le prossime giornate speciali, gite spirituali e attività della nostra comunità.",
+    "iscriviti": "Iscriviti",
+    "formTitolo": "Iscrizione evento",
+    "nome": "Nome completo",
+    "email": "Email",
+    "telefono": "Telefono",
+    "note": "Note aggiuntive",
+    "invia": "Invia iscrizione",
+    "postiDisponibili": "posti disponibili",
+    "chiudi": "Chiudi",
+    "successMessage": "Iscrizione inviata con successo!"
+  },
+  "common": {
+    "lingua": "Lingua",
+    "italiano": "Italiano",
+    "arabo": "العربية",
+    "copyright": "© 2026 Chiesa Copta Ortodossa di San Marco – Milano"
+  }
+}
