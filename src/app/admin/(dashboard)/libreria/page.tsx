@@ -152,11 +152,13 @@ export default function AdminLibreriaPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">URL PDF</label>
-              <input type="text" value={form.urlPDF} onChange={(e) => setForm({ ...form, urlPDF: e.target.value })} placeholder="/pdf/nome-file.pdf" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.urlPDF} onChange={(e) => setForm({ ...form, urlPDF: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <p className="text-xs text-gray-400 mt-1">Link Google Drive del PDF</p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Immagine copertina</label>
-              <input type="text" value={form.copertina} onChange={(e) => setForm({ ...form, copertina: e.target.value })} placeholder="/images/libri/copertina.jpg" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.copertina} onChange={(e) => setForm({ ...form, copertina: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <p className="text-xs text-gray-400 mt-1">Link Google Drive dell&apos;immagine</p>
             </div>
           </div>
           <div className="flex gap-3">

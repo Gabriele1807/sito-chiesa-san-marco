@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { CalendarDays, MapPin, Users, X } from "lucide-react";
 import type { Evento } from "@/types";
+import { toGDriveImageUrl } from "@/lib/gdrive";
 
 interface Props {
   eventi: Evento[];
@@ -72,13 +73,23 @@ export default function EventiList({ eventi }: Props) {
             className="card-hover bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
           >
             <div className="flex flex-col sm:flex-row">
-              {/* Date badge */}
-              <div className="sm:w-32 bg-primary flex sm:flex-col items-center justify-center p-4 gap-2 sm:gap-0">
-                <CalendarDays className="w-5 h-5 text-accent" />
-                <span className="text-white font-bold text-sm sm:text-center sm:mt-1">
-                  {new Date(evento.data).toLocaleDateString("it-IT", { day: "numeric", month: "short" })}
-                </span>
-              </div>
+              {/* Image or date badge */}
+              {evento.immagine ? (
+                <div className="sm:w-48 h-40 sm:h-auto bg-gray-100 shrink-0 overflow-hidden">
+                  <img
+                    src={toGDriveImageUrl(evento.immagine)}
+                    alt={evento.titolo}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="sm:w-32 bg-primary flex sm:flex-col items-center justify-center p-4 gap-2 sm:gap-0">
+                  <CalendarDays className="w-5 h-5 text-accent" />
+                  <span className="text-white font-bold text-sm sm:text-center sm:mt-1">
+                    {new Date(evento.data).toLocaleDateString("it-IT", { day: "numeric", month: "short" })}
+                  </span>
+                </div>
+              )}
 
               {/* Content */}
               <div className="flex-1 p-6">

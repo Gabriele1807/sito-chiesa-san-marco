@@ -51,8 +51,8 @@ export default async function HomePage() {
             <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
               <div className="flex flex-col items-center text-center gap-3">
                 <Clock className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">Orari</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">Liturgie settimanali</p>
+                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickOrari")}</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">{t("quickOrariDesc")}</p>
               </div>
             </div>
           </Link>
@@ -61,8 +61,8 @@ export default async function HomePage() {
             <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
               <div className="flex flex-col items-center text-center gap-3">
                 <BookOpen className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">Preghiere</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">Agpeya e celebrazioni</p>
+                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickPreghiere")}</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">{t("quickPreghiereDesc")}</p>
               </div>
             </div>
           </Link>
@@ -71,8 +71,8 @@ export default async function HomePage() {
             <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
               <div className="flex flex-col items-center text-center gap-3">
                 <ImageIcon className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">Icone Sacre</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">Scansiona il QR in chiesa</p>
+                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickIcone")}</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">{t("quickIconeDesc")}</p>
               </div>
             </div>
           </Link>
@@ -81,8 +81,8 @@ export default async function HomePage() {
             <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
               <div className="flex flex-col items-center text-center gap-3">
                 <Library className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">Libreria</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">PDF e testi sacri</p>
+                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickLibreria")}</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">{t("quickLibreriaDesc")}</p>
               </div>
             </div>
           </Link>
@@ -91,8 +91,8 @@ export default async function HomePage() {
             <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
               <div className="flex flex-col items-center text-center gap-3">
                 <CalendarDays className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">Eventi</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">Feste e appuntamenti</p>
+                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickEventi")}</h3>
+                <p className="text-gray-400 text-xs leading-relaxed">{t("quickEventiDesc")}</p>
               </div>
             </div>
           </Link>
@@ -100,12 +100,12 @@ export default async function HomePage() {
           <Link href="/orari" className="group">
             <div className="card-hover bg-slate-800 rounded-xl p-6 border-2 border-accent hover:border-accent-light cursor-pointer h-full relative">
               <div className="absolute top-3 right-3">
-                <span className="inline-block bg-accent text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Domenica</span>
+                <span className="inline-block bg-accent text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">{t("domenica")}</span>
               </div>
               <div className="flex flex-col items-center text-center gap-3">
                 <Sparkles className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">Prossima Celebrazione</h3>
-                <p className="text-accent text-xs font-semibold">Divina Liturgia – 08:00-11:00</p>
+                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickProssima")}</h3>
+                <p className="text-accent text-xs font-semibold">{t("quickProssimaDesc")}</p>
               </div>
             </div>
           </Link>
@@ -115,7 +115,7 @@ export default async function HomePage() {
       {/* ====== ZONA 3 - DA FARE ====== */}
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide">Da fare</h2>
+          <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide">{t("daFare")}</h2>
           <span className="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">2</span>
         </div>
         <div className="bg-surface rounded-xl border border-gray-200 divide-y divide-gray-200">
@@ -125,12 +125,12 @@ export default async function HomePage() {
                 <HandHeart className="w-5 h-5 text-accent" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">Prossima preghiera serale</p>
-                <p className="text-xs text-gray-500">Lunedì 19:00</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{t("prossimaPreghiera")}</p>
+                <p className="text-xs text-gray-500">{t("prossimaPreghieraOrario")}</p>
               </div>
             </div>
             <Link href="/preghiere" className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg btn-hover">
-              Vai alle preghiere <ChevronRight className="w-3.5 h-3.5" />
+              {t("vaiPreghiere")} <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
           <div className="flex items-center justify-between p-4 gap-4">
@@ -139,12 +139,12 @@ export default async function HomePage() {
                 <ImageIcon className="w-5 h-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">Nuove icone disponibili</p>
-                <p className="text-xs text-gray-500">Scansiona QR in chiesa</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{t("nuoveIcone")}</p>
+                <p className="text-xs text-gray-500">{t("nuoveIconeDesc")}</p>
               </div>
             </div>
             <Link href="/icone" className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg btn-hover">
-              Esplora icone <ChevronRight className="w-3.5 h-3.5" />
+              {t("esploraIconeBtn")} <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -156,12 +156,12 @@ export default async function HomePage() {
           <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center">
             <Clock className="w-6 h-6 text-accent mx-auto mb-2" />
             <p className="text-5xl font-bold text-gray-900">5</p>
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">Celebrazioni questa settimana</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statCelebrazioni")}</p>
           </div>
           <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center">
             <Library className="w-6 h-6 text-accent mx-auto mb-2" />
             <p className="text-5xl font-bold text-gray-900">{testiSacri.length}</p>
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">Testi in libreria</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statTesti")}</p>
           </div>
         </div>
       </section>
@@ -171,8 +171,8 @@ export default async function HomePage() {
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-surface rounded-xl border border-gray-200">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Prossimi Eventi</h3>
-              <Link href="/eventi" className="text-xs font-semibold text-accent hover:text-primary transition-colors">Vedi tutti</Link>
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{t("prossimiEventi")}</h3>
+              <Link href="/eventi" className="text-xs font-semibold text-accent hover:text-primary transition-colors">{t("vediTutti")}</Link>
             </div>
             <div className="p-5 space-y-3">
               {eventi.length > 0 ? (
@@ -192,8 +192,8 @@ export default async function HomePage() {
               ) : (
                 <div className="text-center py-6">
                   <CalendarDays className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">Nessun evento in programma</p>
-                  <p className="text-xs text-gray-300 mt-1">Controlla più tardi</p>
+                  <p className="text-sm text-gray-400">{t("nessunEvento")}</p>
+                  <p className="text-xs text-gray-300 mt-1">{t("controllaPiuTardi")}</p>
                 </div>
               )}
             </div>
@@ -201,8 +201,8 @@ export default async function HomePage() {
 
           <div className="bg-surface rounded-xl border border-gray-200">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Ultime Preghiere</h3>
-              <Link href="/preghiere" className="text-xs font-semibold text-accent hover:text-primary transition-colors">Vedi tutte</Link>
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{t("ultimePreghiere")}</h3>
+              <Link href="/preghiere" className="text-xs font-semibold text-accent hover:text-primary transition-colors">{t("vediTutte")}</Link>
             </div>
             <div className="p-5 space-y-3">
               {preghiere.slice(0, 3).map((p) => (

@@ -4,6 +4,7 @@ import { getIconaBySlug, getIcone, getTestiSacri } from "@/lib/db";
 import { MapPin, Palette, User, CalendarDays } from "lucide-react";
 import IconaQRSection from "@/components/IconaQRSection";
 import Link from "next/link";
+import { toGDriveImageUrl } from "@/lib/gdrive";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -29,8 +30,16 @@ export default async function IconaDetailPage({ params }: Props) {
       {/* Top section: 2 columns */}
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left: Image */}
-        <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl aspect-square flex items-center justify-center">
-          <span className="text-8xl opacity-30">🖼️</span>
+        <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl aspect-square flex items-center justify-center overflow-hidden">
+          {icona.immagini?.[0] ? (
+            <img
+              src={toGDriveImageUrl(icona.immagini[0])}
+              alt={icona.nomeSanto}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-8xl opacity-30">🖼️</span>
+          )}
         </div>
 
         {/* Right: Info */}

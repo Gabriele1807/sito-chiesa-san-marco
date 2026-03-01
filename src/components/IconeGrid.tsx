@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { MapPin, ArrowRight } from "lucide-react";
 import type { Icona } from "@/types";
+import { toGDriveImageUrl } from "@/lib/gdrive";
 
 interface Props {
   icone: Icona[];
@@ -65,8 +66,16 @@ export default function IconeGrid({ icone }: Props) {
         {filtered.map((icona) => (
           <Link key={icona.id} href={`/icone/${icona.slug}`} className="group">
             <div className="card-hover bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-              <div className="h-52 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative">
-                <span className="text-5xl opacity-30">🖼️</span>
+              <div className="h-52 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
+                {icona.immagini?.[0] ? (
+                  <img
+                    src={toGDriveImageUrl(icona.immagini[0])}
+                    alt={icona.nomeSanto}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-5xl opacity-30">🖼️</span>
+                )}
                 <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md">
                   <span className="text-xs font-medium text-accent">{icona.categoria}</span>
                 </div>

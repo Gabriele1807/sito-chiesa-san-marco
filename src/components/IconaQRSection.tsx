@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import QRCode from "react-qr-code";
 import { useTranslations } from "next-intl";
 import { Download, Copy, Check } from "lucide-react";
@@ -12,9 +12,15 @@ interface Props {
 export default function IconaQRSection({ slug }: Props) {
   const t = useTranslations("icone");
   const [copied, setCopied] = useState(false);
+  const [baseUrl, setBaseUrl] = useState("");
 
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://chiesa-sanmarco.it";
+  useEffect(() => {
+    setBaseUrl(window.location.origin);
+  }, []);
+
   const iconUrl = `${baseUrl}/icone/${slug}`;
+
+  if (!baseUrl) return null;
 
   function handleCopyLink() {
     navigator.clipboard.writeText(iconUrl);
