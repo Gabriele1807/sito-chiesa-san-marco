@@ -107,8 +107,9 @@ export default function AdminLibreriaPrivataPage() {
             <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={2} placeholder="Breve descrizione" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">URL / percorso file</label>
-            <input type="text" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} required placeholder="/uploads/privati/documento.pdf" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">URL / Link Google Drive</label>
+            <input type="text" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} required placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+            <p className="text-xs text-gray-400 mt-1">Incolla il link di condivisione di Google Drive</p>
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={saving} className="px-4 py-2 bg-[#D4AF37] text-white text-sm font-semibold rounded-lg hover:bg-[#C5A028] transition-colors disabled:opacity-50">

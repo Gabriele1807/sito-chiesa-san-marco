@@ -167,7 +167,8 @@ export default function AdminIconePage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Immagini (URLs separati da virgola)</label>
-              <input type="text" value={immaginiStr} onChange={(e) => setImmaginiStr(e.target.value)} placeholder="/images/icone/nome.jpg" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={immaginiStr} onChange={(e) => setImmaginiStr(e.target.value)} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <p className="text-xs text-gray-400 mt-1">Incolla il link di condivisione di Google Drive</p>
             </div>
           </div>
           <div>

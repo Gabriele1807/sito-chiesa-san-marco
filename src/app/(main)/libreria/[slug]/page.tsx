@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { getTestoSacroBySlug, getIcone } from "@/lib/db";
 import { BookOpen, Download, User, FileText } from "lucide-react";
+import { toGDriveImageUrl, toGDrivePreviewUrl, toGDriveDownloadUrl, isGDriveUrl } from "@/lib/gdrive";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -25,9 +26,17 @@ export default async function TestoSacroDetailPage({ params }: Props) {
       {/* Header */}
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Cover placeholder */}
-          <div className="w-full md:w-56 h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center shrink-0">
-            <BookOpen className="w-16 h-16 text-primary/30" />
+          {/* Cover */}
+          <div className="w-full md:w-56 h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+            {testo.copertina ? (
+              <img
+                src={toGDriveImageUrl(testo.copertina)}
+                alt={testo.titolo}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <BookOpen className="w-16 h-16 text-primary/30" />
+            )}
           </div>
 
           {/* Info */}
@@ -47,46 +56,52 @@ export default async function TestoSacroDetailPage({ params }: Props) {
             <p className="text-gray-600 leading-relaxed">{testo.descrizione}</p>
 
             <div className="flex flex-wrap gap-3 pt-2">
-              <a
-                href={testo.urlPDF}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white
-                           font-semibold rounded-lg btn-hover"
-              >
-                <FileText className="w-4 h-4" />
-                {t("leggiOnline")}
-              </a>
-              <a
-                href={testo.urlPDF}
-                download
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary
-                           font-semibold rounded-lg border border-primary/20 btn-hover"
-              >
-                <Download className="w-4 h-4" />
-                {t("scaricaPDF")}
-              </a>
+              {testo.urlPDF && (
+                <>
+                  <a
+                    href={isGDriveUrl(testo.urlPDF) ? toGDrivePreviewUrl(testo.urlPDF) : testo.urlPDF}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white
+                               font-semibold rounded-lg btn-hover"
+                  >
+                    <FileText className="w-4 h-4" />
+                    {t("leggiOnline")}
+                  </a>
+                  <a
+                    href={isGDriveUrl(testo.urlPDF) ? toGDriveDownloadUrl(testo.urlPDF) : testo.urlPDF}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary
+                               font-semibold rounded-lg border border-primary/20 btn-hover"
+                  >
+                    <Download className="w-4 h-4" />
+                    {t("scaricaPDF")}
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* PDF Viewer placeholder */}
-      <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="bg-gray-900 px-6 py-3 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-300">PDF Viewer</span>
-        </div>
-        <div className="aspect-[3/4] max-h-[600px] bg-gray-100 flex items-center justify-center">
-          <div className="text-center">
-            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">
-              Il viewer PDF verrà integrato qui.
-            </p>
-            <p className="text-gray-400 text-xs mt-1">
-              {testo.urlPDF}
-            </p>
+      {/* PDF Viewer */}
+      {testo.urlPDF && (
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-gray-900 px-6 py-3 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-400" />
+            <span className="text-sm text-gray-300">PDF Viewer</span>
           </div>
-        </div>
-      </section>
+          <div className="aspect-[3/4] max-h-[700px]">
+            <iframe
+              src={isGDriveUrl(testo.urlPDF) ? toGDrivePreviewUrl(testo.urlPDF) : testo.urlPDF}
+              className="w-full h-full border-0"
+              allow="autoplay"
+              title={testo.titolo}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Related icons */}
       {iconeCorrelate.length > 0 && (

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getPreghiere } from "@/lib/db";
 import { FileText, Download, BookOpen } from "lucide-react";
 import PreghieraExpand from "@/components/PreghieraExpand";
+import { toGDriveDownloadUrl, toGDrivePreviewUrl, isGDriveUrl } from "@/lib/gdrive";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,9 @@ export default async function PreghierePage() {
                   </div>
                   {preghiera.urlPDF && (
                     <a
-                      href={preghiera.urlPDF}
+                      href={isGDriveUrl(preghiera.urlPDF) ? toGDrivePreviewUrl(preghiera.urlPDF) : preghiera.urlPDF}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary
                                  text-sm font-medium rounded-lg hover:bg-primary/20 transition-colors shrink-0"
                     >

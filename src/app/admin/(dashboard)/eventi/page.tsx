@@ -147,7 +147,8 @@ export default function AdminEventiPage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Immagine (URL)</label>
-              <input type="text" value={form.immagine} onChange={(e) => setForm({ ...form, immagine: e.target.value })} placeholder="/images/eventi/foto.jpg" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.immagine} onChange={(e) => setForm({ ...form, immagine: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <p className="text-xs text-gray-400 mt-1">Link Google Drive dell&apos;immagine</p>
             </div>
           </div>
           <div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { getTestiSacri } from "@/lib/db";
 import { BookOpen, ArrowRight } from "lucide-react";
+import { toGDriveImageUrl } from "@/lib/gdrive";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +25,16 @@ export default async function LibreriaPage() {
         {testi.map((testo) => (
           <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group">
             <div className="card-hover bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 h-full flex flex-col">
-              <div className="h-44 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                <BookOpen className="w-12 h-12 text-primary/30" />
+              <div className="h-44 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center overflow-hidden">
+                {testo.copertina ? (
+                  <img
+                    src={toGDriveImageUrl(testo.copertina)}
+                    alt={testo.titolo}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <BookOpen className="w-12 h-12 text-primary/30" />
+                )}
               </div>
               <div className="p-5 flex-1 flex flex-col">
                 <span className="text-xs font-semibold text-accent uppercase tracking-wider">

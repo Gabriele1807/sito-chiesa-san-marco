@@ -23,7 +23,35 @@
     "canaleLiturgie": "Segui le nostre liturgie in diretta sul canale YouTube della chiesa. Ogni domenica e nei giorni di festa, trasmettiamo la Divina Liturgia per chi non può essere presente.",
     "qrSpiegazione": "Ogni icona nella nostra chiesa è accompagnata da un QR code. Scansionalo con il tuo smartphone per scoprire la storia del santo raffigurato, approfondimenti sull'iconografia e testi sacri collegati.",
     "qrTitolo": "QR Code interattivi",
-    "liturgieTitolo": "Liturgie in diretta"
+    "liturgieTitolo": "Liturgie in diretta",
+    "quickOrari": "Orari",
+    "quickOrariDesc": "Liturgie settimanali",
+    "quickPreghiere": "Preghiere",
+    "quickPreghiereDesc": "Agpeya e celebrazioni",
+    "quickIcone": "Icone Sacre",
+    "quickIconeDesc": "Scansiona il QR in chiesa",
+    "quickLibreria": "Libreria",
+    "quickLibreriaDesc": "PDF e testi sacri",
+    "quickEventi": "Eventi",
+    "quickEventiDesc": "Feste e appuntamenti",
+    "quickProssima": "Prossima Celebrazione",
+    "quickProssimaDesc": "Divina Liturgia – 08:00-11:00",
+    "domenica": "Domenica",
+    "daFare": "Da fare",
+    "prossimaPreghiera": "Prossima preghiera serale",
+    "prossimaPreghieraOrario": "Lunedì 19:00",
+    "nuoveIcone": "Nuove icone disponibili",
+    "nuoveIconeDesc": "Scansiona QR in chiesa",
+    "vaiPreghiere": "Vai alle preghiere",
+    "esploraIconeBtn": "Esplora icone",
+    "statCelebrazioni": "Celebrazioni questa settimana",
+    "statTesti": "Testi in libreria",
+    "prossimiEventi": "Prossimi Eventi",
+    "vediTutti": "Vedi tutti",
+    "ultimePreghiere": "Ultime Preghiere",
+    "vediTutte": "Vedi tutte",
+    "nessunEvento": "Nessun evento in programma",
+    "controllaPiuTardi": "Controlla più tardi"
   },
   "chiSiamo": {
     "titolo": "Chi siamo",
@@ -40,7 +68,10 @@
     "step3Titolo": "Fondazione a Milano",
     "step3": "La Chiesa di San Marco di Milano viene fondata per servire la crescente comunità copta milanese.",
     "step4Titolo": "Oggi",
-    "step4": "La comunità continua a crescere, con attività per tutte le età, liturgie regolari e un forte senso di appartenenza."
+    "step4": "La comunità continua a crescere, con attività per tutte le età, liturgie regolari e un forte senso di appartenenza.",
+    "foto1": "La nostra chiesa",
+    "foto2": "La comunità",
+    "foto3": "Liturgia"
   },
   "orari": {
     "titolo": "Orari settimanali",
@@ -96,12 +127,38 @@
     "invia": "Invia iscrizione",
     "postiDisponibili": "posti disponibili",
     "chiudi": "Chiudi",
-    "successMessage": "Iscrizione inviata con successo!"
+    "successMessage": "Iscrizione inviata con successo!",
+    "erroreNome": "Il nome è obbligatorio",
+    "erroreEmail": "L'email è obbligatoria",
+    "erroreEmailFormato": "Email non valida",
+    "erroreTelefono": "Il telefono è obbligatorio"
+  },
+  "sidebar": {
+    "navigazione": "Navigazione",
+    "informazioni": "Informazioni",
+    "subOrari": "Liturgie settimanali",
+    "subPreghiere": "Agpeya e celebrazioni",
+    "subIcone": "Con QR code",
+    "subLibreria": "PDF e testi sacri",
+    "subEventi": "Calendario",
+    "seiInChiesa": "Sei in chiesa?",
+    "scansionaQR": "Scansiona il QR"
+  },
+  "topbar": {
+    "dashboard": "Dashboard",
+    "orari": "Orari",
+    "preghiere": "Preghiere",
+    "icone": "Icone Sacre",
+    "libreria": "Libreria",
+    "eventi": "Eventi",
+    "chiSiamo": "Chi Siamo"
   },
   "common": {
     "lingua": "Lingua",
     "italiano": "Italiano",
     "arabo": "العربية",
-    "copyright": "© 2026 Chiesa Copta Ortodossa di San Marco – Milano"
+    "copyright": "© 2026 Chiesa Copta Ortodossa di San Marco – Milano",
+    "nomeChiesa": "Chiesa Copta Ortodossa di San Marco – Milano",
+    "sanMarco": "San Marco"
   }
 }
