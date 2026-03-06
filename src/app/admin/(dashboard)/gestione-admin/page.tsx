@@ -192,7 +192,7 @@ export default function GestioneAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
+        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
       </div>
     );
   }
@@ -218,7 +218,7 @@ export default function GestioneAdminPage() {
         </div>
         <button
           onClick={openCreateForm}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#C5A028] transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Nuovo Admin
@@ -401,7 +401,7 @@ export default function GestioneAdminPage() {
                     value={form.nome}
                     onChange={(e) => setForm({ ...form, nome: e.target.value })}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
                   />
                 </div>
                 <div>
@@ -413,7 +413,7 @@ export default function GestioneAdminPage() {
                     value={form.cognome}
                     onChange={(e) => setForm({ ...form, cognome: e.target.value })}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
                   />
                 </div>
               </div>
@@ -428,7 +428,7 @@ export default function GestioneAdminPage() {
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                   required
                   disabled={!!editingId}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] disabled:bg-gray-100 disabled:text-gray-400"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600 disabled:bg-gray-100 disabled:text-gray-400"
                 />
               </div>
 
@@ -440,7 +440,7 @@ export default function GestioneAdminPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
                 />
               </div>
 
@@ -455,7 +455,7 @@ export default function GestioneAdminPage() {
                   required={!editingId}
                   minLength={8}
                   placeholder={editingId ? "••••••••" : "Minimo 8 caratteri"}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
                 />
               </div>
 
@@ -466,7 +466,7 @@ export default function GestioneAdminPage() {
                 <select
                   value={form.ruolo}
                   onChange={(e) => setForm({ ...form, ruolo: e.target.value as "superadmin" | "admin" })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
                 >
                   <option value="admin">Admin (gestione contenuti)</option>
                   <option value="superadmin">Super Admin (accesso completo)</option>
@@ -490,7 +490,7 @@ export default function GestioneAdminPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 px-4 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#C5A028] transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingId ? "Salva modifiche" : "Crea admin"}

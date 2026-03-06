@@ -81,7 +81,8 @@ export default function IconeGrid({ icone }: Props) {
                 </div>
               </div>
               <div className="p-5">
-                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">
+                {/* FIX [21] — Title gray-900 at rest, amber-600 on hover only */}
+                <h3 className="font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
                   {icona.nomeSanto}
                 </h3>
                 <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-1">
@@ -91,7 +92,8 @@ export default function IconeGrid({ icone }: Props) {
                 <p className="text-sm text-gray-600 mt-2 line-clamp-2">
                   {icona.descrizione}
                 </p>
-                <div className="flex items-center gap-1 text-primary font-medium text-sm mt-3 group-hover:text-accent transition-colors">
+                {/* FIX [21] — Link text amber-600 on hover */}
+                <div className="flex items-center gap-1 text-gray-500 font-medium text-sm mt-3 group-hover:text-amber-600 transition-colors">
                   {t("scopri")}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>

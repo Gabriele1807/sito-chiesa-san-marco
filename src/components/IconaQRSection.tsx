@@ -13,6 +13,8 @@ export default function IconaQRSection({ slug }: Props) {
   const t = useTranslations("icone");
   const [copied, setCopied] = useState(false);
   const [baseUrl, setBaseUrl] = useState("");
+  // FIX [11] — QR download feedback state
+  const [qrScaricato, setQrScaricato] = useState(false);
 
   useEffect(() => {
     setBaseUrl(window.location.origin);
@@ -50,6 +52,9 @@ export default function IconaQRSection({ slug }: Props) {
       downloadLink.download = `qr-${slug}.png`;
       downloadLink.href = pngUrl;
       downloadLink.click();
+      // FIX [11] — Show download confirmation feedback
+      setQrScaricato(true);
+      setTimeout(() => setQrScaricato(false), 2500);
     };
 
     img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
@@ -70,13 +75,25 @@ export default function IconaQRSection({ slug }: Props) {
           />
         </div>
         <div className="space-y-2 flex-1">
+          {/* FIX [11] — Download button with visual feedback */}
           <button
             onClick={handleDownloadQR}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white
-                       text-sm font-medium rounded-lg btn-hover cursor-pointer"
+            className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-white
+                       text-sm font-medium rounded-lg transition-colors duration-150 cursor-pointer ${qrScaricato
+                         ? 'bg-green-800 hover:bg-green-800'
+                         : 'bg-blue-900 hover:bg-blue-800'}`}
           >
-            <Download className="w-4 h-4" />
-            {t("scaricaQR")}
+            {qrScaricato ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>QR scaricato!</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>{t("scaricaQR")}</span>
+              </>
+            )}
           </button>
           <button
             onClick={handleCopyLink}

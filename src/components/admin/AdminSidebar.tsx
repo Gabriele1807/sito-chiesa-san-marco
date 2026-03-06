@@ -84,7 +84,7 @@ export default function AdminSidebar() {
       {/* Header */}
       <div className="px-5 py-5 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-amber-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">☦</span>
           </div>
           <div>
@@ -106,7 +106,7 @@ export default function AdminSidebar() {
               onClick={closeMobile}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 isActive
-                  ? "bg-[#D4AF37]/20 text-[#D4AF37] font-semibold"
+                  ? "bg-amber-600/20 text-amber-600 font-semibold"
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
@@ -129,7 +129,7 @@ export default function AdminSidebar() {
               onClick={closeMobile}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 pathname === "/admin/gestione-admin"
-                  ? "bg-[#D4AF37]/20 text-[#D4AF37] font-semibold"
+                  ? "bg-amber-600/20 text-amber-600 font-semibold"
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
@@ -171,14 +171,17 @@ export default function AdminSidebar() {
           <ArrowLeft className="w-4.5 h-4.5" />
           Torna al sito
         </Link>
-        <button
-          onClick={handleLogout}
-          disabled={loggingOut}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all w-full"
-        >
-          <LogOut className="w-4.5 h-4.5" />
-          {loggingOut ? "Uscita..." : "Logout"}
-        </button>
+        {/* FIX [14] — Logout separated with divider, red styling distinct from active links */}
+        <div className="border-t border-white/10 mt-2 pt-2">
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all w-full cursor-pointer"
+          >
+            <LogOut className="w-4.5 h-4.5" />
+            {loggingOut ? "Uscita..." : "Logout"}
+          </button>
+        </div>
       </div>
     </aside>
     </>

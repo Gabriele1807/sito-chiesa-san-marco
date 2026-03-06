@@ -116,7 +116,7 @@ export default function AdminEventiPage() {
           <h1 className="text-2xl font-bold text-gray-900">Gestione Eventi</h1>
           <p className="text-sm text-gray-500 mt-1">{eventi.length} eventi</p>
         </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-white text-sm font-semibold rounded-lg hover:bg-[#C5A028] transition-colors">
+        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors">
           <Plus className="w-4 h-4" /> Aggiungi evento
         </button>
       </div>
@@ -127,36 +127,36 @@ export default function AdminEventiPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Titolo</label>
-              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo evento" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo evento" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Luogo</label>
-              <input type="text" value={form.luogo} onChange={(e) => setForm({ ...form, luogo: e.target.value })} required placeholder="Chiesa di San Marco, Milano" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.luogo} onChange={(e) => setForm({ ...form, luogo: e.target.value })} required placeholder="Chiesa di San Marco, Milano" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Data inizio</label>
-              <input type="datetime-local" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="datetime-local" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Data fine (opzionale)</label>
-              <input type="datetime-local" value={form.dataFine} onChange={(e) => setForm({ ...form, dataFine: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="datetime-local" value={form.dataFine} onChange={(e) => setForm({ ...form, dataFine: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Posti disponibili</label>
-              <input type="number" value={form.postiDisponibili ?? ""} onChange={(e) => setForm({ ...form, postiDisponibili: e.target.value ? Number(e.target.value) : undefined })} placeholder="Illimitati" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="number" value={form.postiDisponibili ?? ""} onChange={(e) => setForm({ ...form, postiDisponibili: e.target.value ? Number(e.target.value) : undefined })} placeholder="Illimitati" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Immagine (URL)</label>
-              <input type="text" value={form.immagine} onChange={(e) => setForm({ ...form, immagine: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.immagine} onChange={(e) => setForm({ ...form, immagine: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
               <p className="text-xs text-gray-400 mt-1">Link Google Drive dell&apos;immagine</p>
             </div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione</label>
-            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={3} placeholder="Descrizione dell'evento" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={3} placeholder="Descrizione dell'evento" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-[#D4AF37] text-white text-sm font-semibold rounded-lg hover:bg-[#C5A028] transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50">
               {saving ? "Salvando..." : editId ? "Salva modifiche" : "Aggiungi"}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">Annulla</button>
@@ -183,7 +183,7 @@ export default function AdminEventiPage() {
                 <td className="px-4 py-3 text-gray-600">{ev.luogo}</td>
                 <td className="px-4 py-3 text-gray-600">{ev.postiDisponibili ?? "—"}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openEdit(ev)} className="p-1.5 text-gray-400 hover:text-[#D4AF37] transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(ev)} className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => setDeleteTarget(ev)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>

@@ -55,6 +55,11 @@ html {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
+/* FIX [19] — Ensure btn-hover elements have visible focus ring */
+.btn-hover:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #f59e0b, 0 0 0 4px rgba(245, 158, 11, 0.3);
+}
 
 /* Sidebar link transition */
 .sidebar-link {

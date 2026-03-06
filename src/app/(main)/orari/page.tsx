@@ -27,7 +27,8 @@ export default async function OrariPage() {
               <th className="text-left px-6 py-4 text-sm font-semibold">{t("giorno")}</th>
               <th className="text-left px-6 py-4 text-sm font-semibold">{t("celebrazione")}</th>
               <th className="text-left px-6 py-4 text-sm font-semibold">{t("orario")}</th>
-              <th className="text-left px-6 py-4 text-sm font-semibold">{t("note")}</th>
+              {/* FIX [16] — Notes column hidden on small screens */}
+              <th className="hidden md:table-cell text-left px-6 py-4 text-sm font-semibold">{t("note")}</th>
             </tr>
           </thead>
           <tbody>
@@ -50,7 +51,8 @@ export default async function OrariPage() {
                   )}
                   <td className="px-6 py-3 text-sm text-gray-700">{cel.tipo}</td>
                   <td className="px-6 py-3 text-sm font-medium text-primary">{cel.orario}</td>
-                  <td className="px-6 py-3 text-sm text-gray-500">{cel.note || "–"}</td>
+                  {/* FIX [16] — Notes column hidden on small screens */}
+                  <td className="hidden md:table-cell px-6 py-3 text-sm text-gray-500">{cel.note || "–"}</td>
                 </tr>
               ))
             )}
