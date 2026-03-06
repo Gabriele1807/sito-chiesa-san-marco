@@ -26,13 +26,15 @@ export default async function ChiSiamoPage() {
               </p>
               <div className="grid sm:grid-cols-2 gap-6">
                 <div className="bg-primary/5 rounded-xl p-5">
-                  <h3 className="font-bold text-primary mb-2">{t("missioneTitolo")}</h3>
+                  {/* FIX [20] — Both card titles use same blue-900 color */}
+                  <h3 className="font-bold text-blue-900 mb-2">{t("missioneTitolo")}</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {t("missione")}
                   </p>
                 </div>
                 <div className="bg-accent/5 rounded-xl p-5">
-                  <h3 className="font-bold text-accent mb-2">{t("comunitaTitolo")}</h3>
+                  {/* FIX [20] — Second card title now matches first card color */}
+                  <h3 className="font-bold text-blue-900 mb-2">{t("comunitaTitolo")}</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {t("comunita")}
                   </p>

@@ -111,7 +111,7 @@ export default function AdminPreghierePage() {
           <h1 className="text-2xl font-bold text-gray-900">Gestione Preghiere</h1>
           <p className="text-sm text-gray-500 mt-1">{preghiere.length} preghiere</p>
         </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-white text-sm font-semibold rounded-lg hover:bg-[#C5A028] transition-colors">
+        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors">
           <Plus className="w-4 h-4" /> Aggiungi preghiera
         </button>
       </div>
@@ -122,34 +122,34 @@ export default function AdminPreghierePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Titolo</label>
-              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo preghiera" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo preghiera" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Categoria</label>
-              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]">
+              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600">
                 {categorie.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Slug</label>
-              <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Auto-generato" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Auto-generato" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">URL PDF (opzionale)</label>
-              <input type="text" value={form.urlPDF} onChange={(e) => setForm({ ...form, urlPDF: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.urlPDF} onChange={(e) => setForm({ ...form, urlPDF: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
               <p className="text-xs text-gray-400 mt-1">Link Google Drive del PDF</p>
             </div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione</label>
-            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={2} placeholder="Breve descrizione" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={2} placeholder="Breve descrizione" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Testo preghiera (opzionale)</label>
-            <textarea value={form.testoInline} onChange={(e) => setForm({ ...form, testoInline: e.target.value })} rows={5} placeholder="Testo completo della preghiera" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+            <textarea value={form.testoInline} onChange={(e) => setForm({ ...form, testoInline: e.target.value })} rows={5} placeholder="Testo completo della preghiera" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-[#D4AF37] text-white text-sm font-semibold rounded-lg hover:bg-[#C5A028] transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50">
               {saving ? "Salvando..." : editId ? "Salva modifiche" : "Aggiungi"}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">Annulla</button>
@@ -174,7 +174,7 @@ export default function AdminPreghierePage() {
                 <td className="px-4 py-3 text-gray-600">{p.categoria}</td>
                 <td className="px-4 py-3 text-gray-600">{p.testoInline ? "Testo" : "PDF"}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openEdit(p)} className="p-1.5 text-gray-400 hover:text-[#D4AF37] transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(p)} className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => setDeleteTarget(p)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>

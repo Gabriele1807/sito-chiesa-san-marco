@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getIconaBySlug, getIcone, getTestiSacri } from "@/lib/db";
-import { MapPin, Palette, User, CalendarDays } from "lucide-react";
+import { MapPin, Palette, User, CalendarDays, ChevronLeft } from "lucide-react";
 import IconaQRSection from "@/components/IconaQRSection";
 import Link from "next/link";
 import { toGDriveImageUrl } from "@/lib/gdrive";
@@ -27,6 +27,17 @@ export default async function IconaDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-12">
+      {/* FIX [22] — Back navigation link */}
+      <div className="mb-4">
+        <Link
+          href="/icone"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-amber-600 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          {t("tornaGalleria")}
+        </Link>
+      </div>
+
       {/* Top section: 2 columns */}
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left: Image */}
@@ -51,7 +62,7 @@ export default async function IconaDetailPage({ params }: Props) {
             <h1 className="text-3xl font-bold text-gray-900 mt-1">
               {icona.nomeSanto}
             </h1>
-            <p className="text-lg text-gray-600 mt-1">{icona.nome}</p>
+            {/* FIX [17] — Removed redundant subtitle "Icona di [nome]", position already shown below */}
           </div>
 
           <div className="flex items-center gap-2 text-gray-600">

@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import {
   Clock,
   BookOpen,
@@ -20,8 +20,11 @@ export default async function HomePage() {
   const preghiere = await getPreghiere();
   const eventi = await getEventi();
 
+  // FIX [4] — Date now formatted with current locale instead of hardcoded "it-IT"
+  const locale = await getLocale();
   const now = new Date();
-  const dateStr = now.toLocaleDateString("it-IT", {
+  const dateLocale = locale === "ar" ? "ar-EG" : "it-IT";
+  const dateStr = now.toLocaleDateString(dateLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -99,8 +102,9 @@ export default async function HomePage() {
 
           <Link href="/orari" className="group">
             <div className="card-hover bg-slate-800 rounded-xl p-6 border-2 border-accent hover:border-accent-light cursor-pointer h-full relative">
+              {/* FIX [18] — Badge day enlarged for readability */}
               <div className="absolute top-3 right-3">
-                <span className="inline-block bg-accent text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">{t("domenica")}</span>
+                <span className="inline-block bg-amber-500 text-white text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">{t("domenica")}</span>
               </div>
               <div className="flex flex-col items-center text-center gap-3">
                 <Sparkles className="w-7 h-7 text-accent" />
@@ -151,18 +155,23 @@ export default async function HomePage() {
       </section>
 
       {/* ====== ZONA 4 - STAT CARDS ====== */}
+      {/* FIX [6] — Stat cards now wrapped in Link for clickability */}
       <section>
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center">
-            <Clock className="w-6 h-6 text-accent mx-auto mb-2" />
-            <p className="text-5xl font-bold text-gray-900">5</p>
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statCelebrazioni")}</p>
-          </div>
-          <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center">
-            <Library className="w-6 h-6 text-accent mx-auto mb-2" />
-            <p className="text-5xl font-bold text-gray-900">{testiSacri.length}</p>
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statTesti")}</p>
-          </div>
+          <Link href="/orari" className="block cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+            <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center h-full">
+              <Clock className="w-6 h-6 text-accent mx-auto mb-2" />
+              <p className="text-5xl font-bold text-gray-900">5</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statCelebrazioni")}</p>
+            </div>
+          </Link>
+          <Link href="/libreria" className="block cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
+            <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center h-full">
+              <Library className="w-6 h-6 text-accent mx-auto mb-2" />
+              <p className="text-5xl font-bold text-gray-900">{testiSacri.length}</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statTesti")}</p>
+            </div>
+          </Link>
         </div>
       </section>
 
@@ -172,7 +181,8 @@ export default async function HomePage() {
           <div className="bg-surface rounded-xl border border-gray-200">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{t("prossimiEventi")}</h3>
-              <Link href="/eventi" className="text-xs font-semibold text-accent hover:text-primary transition-colors">{t("vediTutti")}</Link>
+              {/* FIX [7d] — "Vedi tutti" button more prominent with arrow */}
+              <Link href="/eventi" className="text-amber-600 font-semibold text-sm hover:text-amber-700 hover:underline flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">{t("vediTutti")} <span aria-hidden="true" className="text-base">→</span></Link>
             </div>
             <div className="p-5 space-y-3">
               {eventi.length > 0 ? (
@@ -180,13 +190,14 @@ export default async function HomePage() {
                   const d = new Date(ev.data);
                   const dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
                   return (
-                    <div key={ev.id} className="flex items-center gap-3">
+                    // FIX [7] — Event rows now clickable with hover effect
+                    <Link key={ev.id} href="/eventi" className="flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 hover:bg-gray-100 cursor-pointer transition-colors duration-150 group">
                       <span className="shrink-0 inline-block bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md">{dayStr}</span>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{ev.titolo}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-amber-600 transition-colors">{ev.titolo}</p>
                         <p className="text-xs text-gray-500">{ev.luogo}</p>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })
               ) : (
@@ -202,19 +213,21 @@ export default async function HomePage() {
           <div className="bg-surface rounded-xl border border-gray-200">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{t("ultimePreghiere")}</h3>
-              <Link href="/preghiere" className="text-xs font-semibold text-accent hover:text-primary transition-colors">{t("vediTutte")}</Link>
+              {/* FIX [8d] — "Vedi tutte" button more prominent with arrow */}
+              <Link href="/preghiere" className="text-amber-600 font-semibold text-sm hover:text-amber-700 hover:underline flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">{t("vediTutte")} <span aria-hidden="true" className="text-base">→</span></Link>
             </div>
             <div className="p-5 space-y-3">
               {preghiere.slice(0, 3).map((p) => (
-                <div key={p.id} className="flex items-center gap-3">
+                // FIX [8] — Prayer rows now clickable with hover effect
+                <Link key={p.id} href="/preghiere" className="flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 hover:bg-gray-100 cursor-pointer transition-colors duration-150 group">
                   <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
                     <BookOpen className="w-4 h-4 text-accent" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{p.titolo}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate group-hover:text-amber-600 transition-colors">{p.titolo}</p>
                     <p className="text-xs text-gray-500">{p.categoria}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

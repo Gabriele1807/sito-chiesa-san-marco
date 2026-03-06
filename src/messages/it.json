@@ -1,7 +1,7 @@
 {
   "nav": {
     "home": "Home",
-    "chiSiamo": "Chi siamo",
+    "chiSiamo": "Chi Siamo",
     "risorse": "Risorse",
     "orari": "Orari settimanali",
     "preghiere": "Preghiere",
@@ -11,7 +11,7 @@
   },
   "home": {
     "dashboardTitolo": "Le risorse della comunità",
-    "dashboardSottotitolo": "Ecco le risorse della comunità.",
+    "dashboardSottotitolo": "Orari delle celebrazioni, preghiere, icone sacre e molto altro.",
     "heroTitle": "Una chiesa antica, una comunità viva",
     "heroSubtitle": "Scopri la Chiesa Copta Ortodossa di San Marco di Milano: un ponte tra tradizione millenaria e comunità moderna. Esplora le nostre icone sacre, i testi liturgici e collegati al mondo spirituale attraverso i QR code presenti in chiesa.",
     "esploraIcone": "Esplora le icone",
@@ -104,7 +104,8 @@
     "scaricaQR": "Scarica QR",
     "copiaLink": "Copia link",
     "linkCopiato": "Link copiato!",
-    "risorseCollegate": "Risorse collegate"
+    "risorseCollegate": "Risorse collegate",
+    "tornaGalleria": "Torna alla galleria"
   },
   "libreria": {
     "titolo": "Libreria sacra",
@@ -113,7 +114,8 @@
     "scaricaPDF": "Scarica PDF",
     "tipo": "Tipo",
     "autore": "Autore",
-    "iconeCorrelate": "Icone correlate"
+    "iconeCorrelate": "Icone correlate",
+    "tornaLibreria": "Torna alla libreria"
   },
   "eventi": {
     "titolo": "Eventi e attività",
@@ -131,7 +133,8 @@
     "erroreNome": "Il nome è obbligatorio",
     "erroreEmail": "L'email è obbligatoria",
     "erroreEmailFormato": "Email non valida",
-    "erroreTelefono": "Il telefono è obbligatorio"
+    "erroreTelefono": "Il telefono è obbligatorio",
+    "telefonoOpzionale": "(opzionale)"
   },
   "sidebar": {
     "navigazione": "Navigazione",
@@ -145,7 +148,7 @@
     "scansionaQR": "Scansiona il QR"
   },
   "topbar": {
-    "dashboard": "Dashboard",
+    "dashboard": "HOME",
     "orari": "Orari",
     "preghiere": "Preghiere",
     "icone": "Icone Sacre",

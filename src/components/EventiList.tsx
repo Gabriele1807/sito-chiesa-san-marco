@@ -24,12 +24,12 @@ export default function EventiList({ eventi }: Props) {
     setErrors({});
   }
 
+  // FIX [10] — Phone field is now optional
   function validate() {
     const newErrors: Record<string, string> = {};
     if (!formData.nome.trim()) newErrors.nome = "Il nome è obbligatorio";
     if (!formData.email.trim()) newErrors.email = "L'email è obbligatoria";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Email non valida";
-    if (!formData.telefono.trim()) newErrors.telefono = "Il telefono è obbligatorio";
     return newErrors;
   }
 
@@ -158,7 +158,8 @@ export default function EventiList({ eventi }: Props) {
             ) : (
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("nome")}</label>
+                  {/* FIX [10] — Required field marked with asterisk */}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("nome")} <span className="text-red-500 ml-0.5">*</span></label>
                   <input
                     type="text"
                     value={formData.nome}
@@ -171,7 +172,8 @@ export default function EventiList({ eventi }: Props) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("email")}</label>
+                  {/* FIX [10] — Required field marked with asterisk */}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("email")} <span className="text-red-500 ml-0.5">*</span></label>
                   <input
                     type="email"
                     value={formData.email}
@@ -184,14 +186,15 @@ export default function EventiList({ eventi }: Props) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("telefono")}</label>
+                  {/* FIX [10] — Phone field marked as optional */}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("telefono")}{' '}<span className="text-gray-400 font-normal text-xs">{t("telefonoOpzionale")}</span></label>
                   <input
                     type="tel"
                     value={formData.telefono}
                     onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm
                                focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    placeholder="+39 000 000 0000"
+                    placeholder="+39 000 000 0000 (opzionale)"
                   />
                   {errors.telefono && <p className="text-xs text-danger mt-1">{errors.telefono}</p>}
                 </div>

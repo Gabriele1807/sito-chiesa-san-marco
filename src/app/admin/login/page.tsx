@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-[#D4AF37] flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-amber-600 flex items-center justify-center mx-auto mb-4">
           <span className="text-white text-2xl font-bold">☦</span>
         </div>
         <h1 className="text-2xl font-bold text-white">Pannello Admin</h1>
@@ -86,7 +86,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setUsername(e.target.value)}
             placeholder="admin"
             required
-            className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-colors"
+            className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
           />
         </div>
 
@@ -100,7 +100,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             required
-            className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-colors"
+            className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
           />
         </div>
 
@@ -111,7 +111,7 @@ export default function AdminLoginPage() {
             id="rememberMe"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded border-white/20 bg-white/10 text-[#D4AF37] focus:ring-[#D4AF37] focus:ring-offset-0"
+            className="w-4 h-4 rounded border-white/20 bg-white/10 text-amber-600 focus:ring-amber-600 focus:ring-offset-0"
           />
           <label htmlFor="rememberMe" className="text-sm text-gray-400 select-none cursor-pointer">
             Ricordami per 7 giorni
@@ -127,7 +127,7 @@ export default function AdminLoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 rounded-lg bg-[#D4AF37] text-white font-semibold text-sm hover:bg-[#C5A028] transition-colors disabled:opacity-50"
+          className="w-full py-2.5 rounded-lg bg-amber-600 text-white font-semibold text-sm hover:bg-amber-700 transition-colors disabled:opacity-50"
         >
           {loading ? "Accesso in corso..." : "Accedi"}
         </button>

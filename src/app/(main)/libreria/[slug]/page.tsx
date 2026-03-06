@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { getTestoSacroBySlug, getIcone } from "@/lib/db";
-import { BookOpen, Download, User, FileText } from "lucide-react";
+import { BookOpen, Download, User, FileText, ChevronLeft } from "lucide-react";
 import { toGDriveImageUrl, toGDrivePreviewUrl, toGDriveDownloadUrl, isGDriveUrl } from "@/lib/gdrive";
 
 interface Props {
@@ -23,6 +23,17 @@ export default async function TestoSacroDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-10">
+      {/* FIX [22] — Back navigation link */}
+      <div className="mb-4">
+        <Link
+          href="/libreria"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-amber-600 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          {t("tornaLibreria")}
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
         <div className="flex flex-col md:flex-row gap-8">

@@ -116,7 +116,7 @@ export default function AdminLibreriaPage() {
           <h1 className="text-2xl font-bold text-gray-900">Gestione Libreria</h1>
           <p className="text-sm text-gray-500 mt-1">{libri.length} libri/testi sacri</p>
         </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-white text-sm font-semibold rounded-lg hover:bg-[#C5A028] transition-colors">
+        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors">
           <Plus className="w-4 h-4" /> Aggiungi libro
         </button>
       </div>
@@ -128,41 +128,41 @@ export default function AdminLibreriaPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Titolo</label>
-              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo del libro" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo del libro" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Autore</label>
-              <input type="text" value={form.autore} onChange={(e) => setForm({ ...form, autore: e.target.value })} required placeholder="Autore" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.autore} onChange={(e) => setForm({ ...form, autore: e.target.value })} required placeholder="Autore" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Tipo</label>
-              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]">
+              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600">
                 {tipi.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Slug</label>
-              <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Auto-generato dal titolo" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Auto-generato dal titolo" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
             </div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione</label>
-            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={3} placeholder="Descrizione breve" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={3} placeholder="Descrizione breve" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">URL PDF</label>
-              <input type="text" value={form.urlPDF} onChange={(e) => setForm({ ...form, urlPDF: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.urlPDF} onChange={(e) => setForm({ ...form, urlPDF: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
               <p className="text-xs text-gray-400 mt-1">Link Google Drive del PDF</p>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Immagine copertina</label>
-              <input type="text" value={form.copertina} onChange={(e) => setForm({ ...form, copertina: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <input type="text" value={form.copertina} onChange={(e) => setForm({ ...form, copertina: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
               <p className="text-xs text-gray-400 mt-1">Link Google Drive dell&apos;immagine</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-[#D4AF37] text-white text-sm font-semibold rounded-lg hover:bg-[#C5A028] transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50">
               {saving ? "Salvando..." : editId ? "Salva modifiche" : "Aggiungi"}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
@@ -190,7 +190,7 @@ export default function AdminLibreriaPage() {
                 <td className="px-4 py-3 text-gray-600">{libro.tipo}</td>
                 <td className="px-4 py-3 text-gray-600">{libro.autore}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openEdit(libro)} className="p-1.5 text-gray-400 hover:text-[#D4AF37] transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(libro)} className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => setDeleteTarget(libro)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
