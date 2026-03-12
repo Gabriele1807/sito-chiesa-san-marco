@@ -1,386 +1,764 @@
-# PROJECT_CONTEXT.md – Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
+# PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto completo del progetto. Ultimo aggiornamento: 28 febbraio 2026 (sessione 2).
-
----
-
-## 1. Panoramica
-
-Sito web bilingue (italiano/arabo) per la Chiesa Copta Ortodossa di San Marco a Milano.
-Include un'area pubblica per i fedeli e un pannello admin completo per la gestione dei contenuti.
-
-**URL locale dev:** `http://localhost:3000`
-**Workspace:** `C:\Users\Gabriele\Downloads\sito\chiesa-san-marco`
-**OS:** Windows
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 12 marzo 2026.
 
 ---
 
-## 2. Stack tecnologico
+## 1. Scopo del progetto
 
-| Tecnologia            | Versione | Scopo                                   |
-|-----------------------|----------|-----------------------------------------|
-| Next.js               | 16.1.6   | Framework React (App Router, Turbopack) |
-| React                 | 19.2.3   | UI Library                              |
-| TypeScript            | ~5.x     | Linguaggio                              |
-| TailwindCSS           | v4       | CSS utility-first (via @tailwindcss/postcss, sintassi `@theme`) |
-| next-intl             | 4.8.3    | Internazionalizzazione IT/AR            |
-| Supabase (supabase-js)| 2.98.0   | Database PostgreSQL + Auth              |
-| bcryptjs              | 3.0.3    | Hashing password (12 salt rounds)       |
-| lucide-react          | 0.575.0  | Icone SVG                               |
-| react-qr-code         | 2.0.18   | Generazione QR code                     |
-| React Compiler        | 1.0.0    | Ottimizzazione automatica memo          |
-| Node.js               | 24.12.0  | Runtime                                 |
+Sito web bilingue italiano/arabo per la Chiesa Copta Ortodossa di San Marco a Milano.
+Il progetto ha due aree principali:
+
+- area pubblica per fedeli e visitatori
+- area admin protetta per gestione contenuti e utenti amministratori
+
+Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto il contesto necessario per lavorare sul progetto senza dover ricostruire da zero architettura, stack, convenzioni, limiti e comportamenti già implementati.
 
 ---
 
-## 3. Struttura directory
+## 2. Snapshot rapido
 
-```
-chiesa-san-marco/
-├── .env.local                    ← Variabili ambiente (non committare!)
-├── ADMIN_SETUP.md                ← Guida setup autenticazione
-├── PROJECT_CONTEXT.md            ← Questo file
-├── next.config.ts                ← Config Next.js + next-intl plugin
-├── package.json
-├── tsconfig.json
-├── postcss.config.mjs
-├── eslint.config.mjs
-│
-├── public/                       ← Asset statici
-│
-├── src/
-│   ├── middleware.ts              ← Protezione rotte admin (valida sessione DB via Supabase)
-│   │
-│   ├── i18n/
-│   │   └── request.ts            ← Config next-intl (legge cookie "locale")
-│   │
-│   ├── messages/
-│   │   ├── it.json               ← Traduzioni italiano
-│   │   └── ar.json               ← Traduzioni arabo
-│   │
-│   ├── types/
-│   │   └── index.ts              ← Tipi TS: Icona, TestoSacro, Preghiera, Evento, ecc.
-│   │
-│   ├── lib/
-│   │   ├── actions.ts            ← Server Actions
-│   │   ├── db.ts                 ← (legacy, non più usato per auth)
-│   │   ├── mock-data.ts          ← Dati di esempio per contenuti
-│   │   │
-│   │   ├── data/
-│   │   │   └── store.ts          ← Store in memoria (globalThis) per CRUD contenuti
-│   │   │
-│   │   ├── auth/
-│   │   │   ├── password.ts       ← hashPassword(), verifyPassword() con bcrypt
-│   │   │   ├── session.ts        ← createSession(), validateSession(), deleteSession()
-│   │   │   ├── permissions.ts    ← PERMISSIONS, ROLE_PERMISSIONS, hasPermission()
-│   │   │   └── rate-limit.ts     ← Rate limiter in memoria (5 tentativi / 15 min)
-│   │   │
-│   │   └── supabase/
-│   │       ├── client.ts         ← Client browser (anon key)
-│   │       ├── server.ts         ← Client server (service_role key)
-│   │       └── schema.sql        ← Schema SQL: admin_users, admin_sessions
-│   │
-│   ├── scripts/
-│   │   ├── generate-hash.ts      ← CLI: npm run generate-hash -- "password"
-│   │   └── test-db.ts            ← Script test connessione DB
-│   │
-│   ├── components/
-│   │   ├── EventiList.tsx         ← Lista eventi (client)
-│   │   ├── Footer.tsx             ← Footer sito pubblico
-│   │   ├── IconaQRSection.tsx     ← Sezione QR per icona
-│   │   ├── IconeGrid.tsx          ← Griglia icone
-│   │   ├── LanguageSwitcher.tsx   ← Cambio lingua IT/AR
-│   │   ├── MobileMenuButton.tsx   ← Hamburger menu mobile (sito pubblico)
-│   │   ├── Navbar.tsx             ← Navbar pubblica (server component, include link admin)
-│   │   ├── PreghieraExpand.tsx    ← Espandi preghiera
-│   │   ├── Sidebar.tsx            ← Sidebar navigazione pubblica (responsive con overlay)
-│   │   ├── TopbarTitle.tsx        ← Titolo dinamico pagina pubblica
-│   │   │
-│   │   └── admin/
-│   │       ├── AdminMobileMenuButton.tsx ← Hamburger menu mobile area admin
-│   │       ├── AdminSidebar.tsx       ← Sidebar admin (client, responsive) con overlay mobile
-│   │       ├── AdminTopbarTitle.tsx   ← Titolo pagina admin
-│   │       ├── AdminToast.tsx         ← Notifiche toast area admin
-│   │       └── ConfirmModal.tsx       ← Modal di conferma eliminazione
-│   │
-│   └── app/
-│       ├── globals.css            ← CSS globali + Tailwind @theme + token colori
-│       ├── layout.tsx             ← Root layout (suppressHydrationWarning, Inter font)
-│       │
-│       ├── (main)/                ← Route group: sito pubblico
-│       │   ├── layout.tsx         ← Layout pubblico (Navbar + Sidebar + Footer)
-│       │   ├── page.tsx           ← Homepage
-│       │   ├── chi-siamo/page.tsx
-│       │   ├── eventi/page.tsx
-│       │   ├── icone/page.tsx
-│       │   ├── icone/[slug]/page.tsx
-│       │   ├── libreria/page.tsx
-│       │   ├── libreria/[slug]/page.tsx
-│       │   ├── orari/page.tsx
-│       │   └── preghiere/page.tsx
-│       │
-│       ├── admin/
-│       │   ├── layout.tsx         ← Layout admin (Sidebar + Topbar)
-│       │   ├── login/
-│       │   │   ├── layout.tsx     ← Layout login (centrato, sfondo scuro bg-[#0F1A2E])
-│       │   │   └── page.tsx       ← Form login con "Ricordami" + sessione scaduta
-│       │   │
-│       │   └── (dashboard)/       ← Route group: pagine admin protette
-│       │       ├── page.tsx       ← Dashboard con statistiche
-│       │       ├── libreria/page.tsx
-│       │       ├── icone/page.tsx
-│       │       ├── orari/page.tsx
-│       │       ├── eventi/page.tsx
-│       │       ├── preghiere/page.tsx
-│       │       ├── libreria-privata/page.tsx
-│       │       └── gestione-admin/page.tsx  ← CRUD admin (solo superadmin)
-│       │
-│       └── api/
-│           ├── eventi/iscrizione/route.ts   ← API iscrizione eventi (pubblica)
-│           │
-│           └── admin/
-│               ├── login/route.ts           ← POST login (Supabase + bcrypt)
-│               ├── logout/route.ts          ← POST logout (elimina sessione DB)
-│               ├── libreria/route.ts        ← CRUD libri
-│               ├── icone/route.ts           ← CRUD icone
-│               ├── orari/route.ts           ← CRUD orari
-│               ├── eventi/route.ts          ← CRUD eventi
-│               ├── preghiere/route.ts       ← CRUD preghiere
-│               ├── libreria-privata/route.ts← CRUD file privati
-│               └── users/                   ← CRUD admin users (superadmin only)
-│                   ├── route.ts             ← GET lista, POST crea
-│                   └── [id]/
-│                       ├── route.ts         ← PUT modifica, DELETE elimina
-│                       └── toggle/route.ts  ← PATCH attiva/disattiva
-```
+| Voce | Valore |
+|------|--------|
+| Nome progetto | chiesa-san-marco |
+| Workspace Windows | C:\Users\Gabriele\Downloads\sito\chiesa-san-marco |
+| URL dev previsto | http://localhost:3000 |
+| Framework | Next.js 16 App Router |
+| Lingue | italiano, arabo |
+| Frontend pubblico | next-intl + TailwindCSS v4 |
+| Admin auth | Supabase + sessioni DB + cookie httpOnly |
+| Persistenza contenuti | NO, attualmente store in memoria |
+| Persistenza autenticazione | SI, Supabase |
+| Area admin tradotta | No, solo italiano |
+
+Fatti importanti da sapere subito:
+
+- il sito pubblico e l'area admin condividono lo stesso progetto Next.js
+- i contenuti del sito non sono ancora persistiti su database: vengono caricati da mock data e poi mantenuti in memoria tramite globalThis
+- l'autenticazione admin invece e persistita su Supabase
+- la route di login admin non deve mostrare sidebar o topbar admin
+- la dashboard admin e gia stata ripulita dalle ridondanze: non deve tornare a contenere link duplicati della sidebar
 
 ---
 
-## 4. Tema e colori
+## 3. Stack tecnologico reale
 
-### Sito pubblico (globals.css con `@theme`)
+Versioni lette da package.json:
 
-Il sito pubblico usa **token di colore custom** definiti nel blocco `@theme` di TailwindCSS v4 in `src/app/globals.css`.
-Le classi Tailwind corrispondenti sono: `bg-primary`, `text-accent`, `bg-sidebar`, `bg-surface`, ecc.
+| Tecnologia | Versione | Uso |
+|------------|----------|-----|
+| next | 16.1.6 | App Router, server components, middleware |
+| react | 19.2.3 | UI |
+| react-dom | 19.2.3 | UI runtime |
+| typescript | ^5 | tipizzazione |
+| tailwindcss | ^4 | styling |
+| @tailwindcss/postcss | ^4 | integrazione Tailwind |
+| next-intl | ^4.8.3 | i18n IT/AR |
+| @supabase/supabase-js | ^2.98.0 | DB auth/sessioni |
+| bcryptjs | ^3.0.3 | verifica hash password |
+| lucide-react | ^0.575.0 | icone |
+| react-qr-code | ^2.0.18 | generazione QR |
+| babel-plugin-react-compiler | 1.0.0 | React Compiler |
+| eslint | ^9 | lint |
 
-| Token                | Valore   | Uso                                     |
-|----------------------|----------|-----------------------------------------|
-| `--color-background` | `#FFFFFF`| Sfondo body                             |
-| `--color-foreground` | `#111827`| Testo principale                        |
-| `--color-primary`    | `#1E3A5F`| Blu scuro brand (navbar, CTA, footer)   |
-| `--color-primary-light`| `#2563EB`| Blu vivace per link/hover             |
-| `--color-accent`     | `#B45309`| Ambra scuro (titoli, badge)             |
-| `--color-accent-light`| `#D97706`| Ambra per hover, link sidebar          |
-| `--color-danger`     | `#DC2626`| Rosso per errori/eliminazione           |
-| `--color-surface`    | `#FFFFFF`| Card, pannelli                          |
-| `--color-surface-alt`| `#F9FAFB`| Sfondo alternato                        |
-| `--color-sidebar`    | `#111827`| Sfondo sidebar pubblica (grigio scuro)  |
-| `--color-sidebar-hover`| `#1F2937`| Hover link sidebar                    |
-
-> **IMPORTANTE:** Le classi gray-* e slate-* usano i valori DEFAULT di Tailwind (non sono sovrascritta).
-> NON aggiungere `--color-gray-*` o `--color-slate-*` custom in @theme, altrimenti si corrompiono i colori.
-
-### Area admin (colori hardcoded)
-
-L'area admin usa colori **hardcoded** nelle classi Tailwind (non token):
-
-| Colore     | Valore hex | Uso                                   |
-|------------|-----------|---------------------------------------|
-| Oro brand  | `#D4AF37` | Bottoni, accenti, link attivi admin   |
-| Oro hover  | `#C5A028` | Hover bottoni admin                   |
-| Blu scuro  | `#0F1A2E` | Sfondo sidebar admin, sfondo login    |
-| Sfondo     | `#F8F9FA` | Background pagine dashboard           |
-
----
-
-## 5. Flusso di autenticazione
-
-### Login
-1. L'utente invia `POST /api/admin/login` con `{ username, password, rememberMe }`
-2. **Rate limiter** controlla se l'IP è bloccato (max 5 tentativi in 15 min)
-3. Cerca `username` nella tabella `admin_users` su Supabase
-4. Verifica password con `bcrypt.compare()`
-5. Controlla che l'account sia `attivo = true`
-6. Crea una riga in `admin_sessions` con token UUID, scadenza (24h o 7gg), IP, user-agent
-7. Imposta cookie `admin_session` con il token (httpOnly, secure, sameSite: lax)
-8. Ritorna `{ success: true, user: { nome, cognome, ruolo } }`
-9. Il client salva `user` in `localStorage` per la sidebar
-
-### Middleware (ogni richiesta /admin/*)
-1. Legge il cookie `admin_session`
-2. Query Supabase: `admin_sessions` JOIN `admin_users` su `session_token`
-3. Verifica scadenza e `attivo`
-4. Se valido: aggiunge header `x-admin-user-id`, `x-admin-ruolo`, `x-admin-username`
-5. Se invalido: redirect a `/admin/login?session=expired` (rotte API → 401 JSON)
-
-### Logout
-1. `POST /api/admin/logout`
-2. Legge token dal cookie → `deleteSession(token)` elimina riga da DB
-3. Elimina cookie → redirect al sito
-
-### Credenziali attuali nel DB
-- Username: `admin`, Password: `SanMarco2026`, Ruolo: `superadmin`
-
----
-
-## 6. Database Supabase
-
-### Tabella `admin_users`
-| Colonna        | Tipo                                | Note                            |
-|----------------|-------------------------------------|---------------------------------|
-| id             | UUID (PK, gen_random_uuid)          |                                 |
-| username       | VARCHAR(50) UNIQUE NOT NULL         |                                 |
-| email          | VARCHAR(255)                        | Opzionale                       |
-| password_hash  | TEXT NOT NULL                        | bcrypt hash                     |
-| nome           | VARCHAR(100) NOT NULL               |                                 |
-| cognome        | VARCHAR(100) NOT NULL               |                                 |
-| ruolo          | VARCHAR(20) CHECK (superadmin/admin)|                                 |
-| attivo         | BOOLEAN DEFAULT true                |                                 |
-| ultimo_accesso | TIMESTAMPTZ                         | Aggiornato ad ogni login        |
-| creato_il      | TIMESTAMPTZ DEFAULT now()           |                                 |
-| aggiornato_il  | TIMESTAMPTZ DEFAULT now()           | Trigger automatico              |
-
-### Tabella `admin_sessions`
-| Colonna        | Tipo                              | Note                              |
-|----------------|-----------------------------------|-----------------------------------|
-| id             | UUID (PK, gen_random_uuid)        |                                   |
-| admin_user_id  | UUID FK → admin_users(id) CASCADE |                                   |
-| session_token  | TEXT UNIQUE NOT NULL               | crypto.randomUUID()               |
-| expires_at     | TIMESTAMPTZ NOT NULL              | 24h o 7gg                         |
-| ip_address     | VARCHAR(45)                       |                                   |
-| user_agent     | TEXT                              |                                   |
-| creato_il      | TIMESTAMPTZ DEFAULT now()         |                                   |
-
----
-
-## 7. Sistema di permessi
-
-Due ruoli: **superadmin** e **admin**.
-
-| Permesso               | superadmin | admin |
-|------------------------|:----------:|:-----:|
-| libreria.read/write    | ✅         | ✅    |
-| icone.read/write       | ✅         | ✅    |
-| orari.read/write       | ✅         | ✅    |
-| eventi.read/write      | ✅         | ✅    |
-| preghiere.read/write   | ✅         | ✅    |
-| libreria-privata.r/w   | ✅         | ✅    |
-| admin.read/write/toggle| ✅         | ❌    |
-
----
-
-## 8. Internazionalizzazione (i18n)
-
-- Gestita con `next-intl` v4
-- La lingua è salvata nel cookie `locale` (default: `it`)
-- File traduzioni: `src/messages/it.json`, `src/messages/ar.json`
-- `LanguageSwitcher` cambia il cookie e ricarica la pagina
-- L'area admin è **solo in italiano** (non tradotta)
-
----
-
-## 9. Gestione contenuti (dati sito)
-
-I contenuti del sito (libri, icone, preghiere, eventi, orari, file privati) sono
-gestiti tramite uno **store in memoria** con pattern `globalThis`:
-
-- `src/lib/data/store.ts` → funzioni `getLibri()`, `addLibro()`, `deleteLibro()`, ecc.
-- I dati iniziali provengono da `src/lib/mock-data.ts`
-- Le API admin (`/api/admin/libreria`, ecc.) usano queste funzioni
-- Le pagine pubbliche hanno `export const dynamic = "force-dynamic"` per leggere sempre dal live store
-
-> **NOTA:** I contenuti sono in memoria e si resettano al riavvio del server.
-> Per persistenza vera, sostituire lo store con query Supabase (futuro).
-
----
-
-## 10. Comandi utili
+Script disponibili:
 
 ```bash
-# Sviluppo
 npm run dev
-
-# Build produzione
 npm run build
-npm start
-
-# Generare hash bcrypt
-npm run generate-hash -- "password"
-
-# Linting
+npm run start
 npm run lint
+npm run generate-hash -- "password"
+```
 
-# Uccidere processi Node bloccati (Windows)
-taskkill /f /im node.exe
+Nota pratica:
 
-# Pulire cache build e riavviare
-Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; npm run dev
+- nel parent folder esiste un altro package-lock.json che puo generare warning di tooling; il progetto corretto e solo chiesa-san-marco
+
+---
+
+## 4. Architettura generale
+
+### 4.1 Route groups
+
+Il progetto usa App Router con due route groups principali:
+
+- `(main)` per il sito pubblico
+- `admin/(dashboard)` per l'area admin protetta
+
+### 4.2 Layout reali attuali
+
+Attenzione: questo punto era obsoleto in versioni precedenti del file.
+
+- `src/app/layout.tsx`
+  - root layout globale
+  - usa font Inter via `next/font/google`
+  - avvolge l'app con `NextIntlClientProvider`
+  - imposta `lang`, `dir` e `suppressHydrationWarning`
+
+- `src/app/(main)/layout.tsx`
+  - layout pubblico
+  - struttura: `Navbar + Sidebar + main content + Footer`
+  - sidebar pubblica sempre disponibile, con comportamento responsive/mobile overlay
+
+- `src/app/admin/layout.tsx`
+  - layout admin base minimale
+  - NON contiene sidebar/topbar
+  - serve a fare in modo che `/admin/login` non erediti la shell admin
+
+- `src/app/admin/login/layout.tsx`
+  - layout centrato per la login admin
+  - sfondo navy `#0F1A2E`
+
+- `src/app/admin/(dashboard)/layout.tsx`
+  - vero layout delle pagine admin protette
+  - include `AdminSidebar`, topbar fissa, `AdminMobileMenuButton`, `AdminTopbarTitle`, `AdminToast`
+  - content area con `lg:ml-[260px]` e `pt-14`
+
+Implicazione importante:
+
+- se si modifica la shell admin, quasi sempre va toccato `src/app/admin/(dashboard)/layout.tsx`, non `src/app/admin/layout.tsx`
+
+---
+
+## 5. Struttura directory essenziale
+
+```text
+chiesa-san-marco/
+|- ADMIN_SETUP.md
+|- PROJECT_CONTEXT.md
+|- next.config.ts
+|- package.json
+|- src/
+|  |- middleware.ts
+|  |- messages/
+|  |  |- it.json
+|  |  \- ar.json
+|  |- i18n/
+|  |  \- request.ts
+|  |- types/
+|  |  \- index.ts
+|  |- lib/
+|  |  |- mock-data.ts
+|  |  |- db.ts
+|  |  |- gdrive.ts
+|  |  |- actions.ts
+|  |  |- data/
+|  |  |  \- store.ts
+|  |  |- auth/
+|  |  |  |- password.ts
+|  |  |  |- permissions.ts
+|  |  |  |- rate-limit.ts
+|  |  |  \- session.ts
+|  |  \- supabase/
+|  |     |- client.ts
+|  |     |- server.ts
+|  |     \- schema.sql
+|  |- components/
+|  |  |- Navbar.tsx
+|  |  |- Sidebar.tsx
+|  |  |- Footer.tsx
+|  |  |- TopbarTitle.tsx
+|  |  |- EventiList.tsx
+|  |  |- IconeGrid.tsx
+|  |  |- IconaQRSection.tsx
+|  |  |- LanguageSwitcher.tsx
+|  |  |- MobileMenuButton.tsx
+|  |  |- PreghieraExpand.tsx
+|  |  \- admin/
+|  |     |- AdminSidebar.tsx
+|  |     |- AdminTopbarTitle.tsx
+|  |     |- AdminMobileMenuButton.tsx
+|  |     |- AdminToast.tsx
+|  |     \- ConfirmModal.tsx
+|  \- app/
+|     |- globals.css
+|     |- layout.tsx
+|     |- (main)/
+|     |  |- layout.tsx
+|     |  |- page.tsx
+|     |  |- chi-siamo/page.tsx
+|     |  |- eventi/page.tsx
+|     |  |- icone/page.tsx
+|     |  |- icone/[slug]/page.tsx
+|     |  |- libreria/page.tsx
+|     |  |- libreria/[slug]/page.tsx
+|     |  |- orari/page.tsx
+|     |  \- preghiere/page.tsx
+|     |- admin/
+|     |  |- layout.tsx
+|     |  |- login/
+|     |  |  |- layout.tsx
+|     |  |  \- page.tsx
+|     |  \- (dashboard)/
+|     |     |- layout.tsx
+|     |     |- page.tsx
+|     |     |- eventi/page.tsx
+|     |     |- gestione-admin/page.tsx
+|     |     |- icone/page.tsx
+|     |     |- libreria/page.tsx
+|     |     |- libreria-privata/page.tsx
+|     |     |- orari/page.tsx
+|     |     \- preghiere/page.tsx
+|     \- api/
+|        |- eventi/iscrizione/route.ts
+|        \- admin/
+|           |- login/route.ts
+|           |- logout/route.ts
+|           |- eventi/route.ts
+|           |- icone/route.ts
+|           |- libreria/route.ts
+|           |- libreria-privata/route.ts
+|           |- orari/route.ts
+|           |- preghiere/route.ts
+|           \- users/
+|              |- route.ts
+|              \- [id]/toggle/route.ts
 ```
 
 ---
 
-## 11. Variabili d'ambiente (.env.local)
+## 6. Modello dati del sito
+
+Tipi principali definiti in `src/types/index.ts`:
+
+- `Icona`
+- `TestoSacro`
+- `Preghiera`
+- `Evento`
+- `IscrizioneEvento`
+- `OrarioSettimanale`
+- `Locale`
+
+### 6.1 Dove stanno i dati
+
+- `src/lib/mock-data.ts`
+  - seed iniziale del sito
+  - contiene icone, testi sacri, preghiere, eventi e orari settimanali
+
+- `src/lib/data/store.ts`
+  - store in memoria condiviso tramite `globalThis`
+  - espone CRUD per tutti i contenuti
+  - contiene anche il tipo `FilePrivato`
+
+### 6.2 Conseguenza pratica fondamentale
+
+I contenuti dell'area pubblica e admin:
+
+- si possono modificare live da pannello admin
+- ma si resettano quando il server si riavvia
+- non sono ancora persistiti su Supabase
+
+Quindi:
+
+- se un task richiede dati permanenti, bisogna migrare lo store verso Supabase o altra persistenza
+- non bisogna descrivere l'area contenuti come gia persistente: non lo e
+
+---
+
+## 7. Autenticazione admin
+
+L'autenticazione admin e separata dalla gestione contenuti.
+
+### 7.1 Componenti coinvolti
+
+- `src/app/api/admin/login/route.ts`
+- `src/app/api/admin/logout/route.ts`
+- `src/middleware.ts`
+- `src/lib/auth/password.ts`
+- `src/lib/auth/session.ts`
+- `src/lib/auth/rate-limit.ts`
+- `src/lib/auth/permissions.ts`
+- `src/lib/supabase/server.ts`
+
+### 7.2 Login
+
+Flusso reale attuale:
+
+1. `POST /api/admin/login` riceve `username`, `password`, `rememberMe`
+2. legge IP da `x-forwarded-for`
+3. applica rate limiting in memoria: max 5 tentativi in 15 minuti
+4. cerca l'utente in `admin_users`
+5. controlla che `attivo === true`
+6. verifica la password con bcrypt
+7. resetta i tentativi falliti
+8. pulisce le sessioni scadute in background
+9. aggiorna `ultimo_accesso`
+10. crea una riga in `admin_sessions`
+11. imposta cookie httpOnly `admin_session`
+12. ritorna JSON con `nome`, `cognome`, `ruolo`
+13. il client salva questi dati in `localStorage` come `admin_info`
+
+### 7.3 Durata sessione
+
+Definita in `src/lib/auth/session.ts`:
+
+- default: 24 ore
+- con remember me: 7 giorni
+
+### 7.4 Middleware
+
+`src/middleware.ts`:
+
+- protegge `/admin/:path*` e `/api/admin/:path*`
+- esclude `/admin/login` e `/api/admin/login`
+- valida la sessione via Supabase
+- se la sessione e valida aggiunge gli header:
+  - `x-admin-user-id`
+  - `x-admin-ruolo`
+  - `x-admin-username`
+- se invalida:
+  - redirect a `/admin/login?session=expired` per pagine
+  - 401 JSON per API admin
+
+### 7.5 Logout
+
+- API `POST /api/admin/logout`
+- elimina la sessione dal DB
+- il client rimuove `admin_info` dal localStorage
+- poi fa redirect alla home `/`
+
+### 7.6 Ruoli e permessi
+
+Ruoli supportati:
+
+- `superadmin`
+- `admin`
+
+Permessi contenuti:
+
+- libreria read/write
+- icone read/write
+- orari read/write
+- eventi read/write
+- preghiere read/write
+- libreria-privata read/write
+
+Permessi extra solo superadmin:
+
+- admin.read
+- admin.write
+- admin.toggle
+
+### 7.7 Credenziali note di sviluppo
+
+Nel documento/setup corrente e indicato:
+
+- username: `admin`
+- password: `SanMarco2026`
+- ruolo: `superadmin`
+
+---
+
+## 8. Database Supabase
+
+Supabase viene usato attualmente solo per area admin auth/sessioni.
+
+### 8.1 Tabelle principali
+
+`admin_users`
+
+- id UUID
+- username unico
+- email opzionale
+- password_hash
+- nome
+- cognome
+- ruolo (`superadmin` o `admin`)
+- attivo
+- ultimo_accesso
+- creato_il
+- aggiornato_il
+
+`admin_sessions`
+
+- id UUID
+- admin_user_id FK
+- session_token unico
+- expires_at
+- ip_address
+- user_agent
+- creato_il
+
+File schema di riferimento:
+
+- `src/lib/supabase/schema.sql`
+
+---
+
+## 9. Internazionalizzazione
+
+### 9.1 Libreria usata
+
+- `next-intl`
+
+### 9.2 Lingue
+
+- italiano `it`
+- arabo `ar`
+
+### 9.3 Come viene scelta la lingua
+
+- cookie `locale`
+- default italiano
+- `src/i18n/request.ts` legge il cookie
+- `src/app/layout.tsx` imposta `lang` e `dir`
+
+### 9.4 Traduzioni
+
+File:
+
+- `src/messages/it.json`
+- `src/messages/ar.json`
+
+Stato attuale:
+
+- sito pubblico tradotto IT/AR
+- area admin solo italiana
+
+### 9.5 Dettagli UI gia sistemati
+
+Questi punti sono gia implementati e non vanno persi in future modifiche:
+
+- la sidebar pubblica usa chiavi i18n anche per i sottotitoli interni, non stringhe hardcoded
+- il titolo topbar della home pubblica e `HOME` in italiano e la label corrispondente in arabo
+- la data in homepage viene formattata in base alla lingua corrente
+- i link di ritorno nelle pagine dettaglio di icone e libreria sono tradotti
+
+---
+
+## 10. Tema visuale e styling
+
+### 10.1 Sito pubblico
+
+Tailwind v4 con token definiti in `src/app/globals.css` via `@theme`.
+
+Token principali:
+
+| Token | Valore | Uso |
+|-------|--------|-----|
+| `--color-background` | `#FFFFFF` | sfondo generale |
+| `--color-foreground` | `#111827` | testo principale |
+| `--color-primary` | `#1E3A5F` | brand blu scuro |
+| `--color-primary-light` | `#2563EB` | varianti link/hover |
+| `--color-accent` | `#B45309` | ambra titoli/accenti |
+| `--color-accent-light` | `#D97706` | ambra hover |
+| `--color-danger` | `#DC2626` | errori |
+| `--color-surface` | `#FFFFFF` | card |
+| `--color-surface-alt` | `#F9FAFB` | sfondi alternativi |
+| `--color-sidebar` | `#111827` | sidebar pubblica |
+| `--color-sidebar-hover` | `#1F2937` | hover sidebar |
+
+Importante:
+
+- non aggiungere token custom `--color-gray-*` o `--color-slate-*` nel blocco `@theme`
+- sovrascriverebbero la palette Tailwind standard e romperebbero il design
+
+### 10.2 Admin
+
+L'area admin non usa i token del sito pubblico come sistema principale.
+Usa classi Tailwind dirette con palette:
+
+- navy `#0F1A2E` per sidebar e login
+- sfondo chiaro `#F8F9FA`
+- accenti amber tramite classi Tailwind (`bg-amber-600`, `text-amber-600`, `hover:bg-amber-700`)
+- blu per elementi secondari e widget eventi
+
+Nota storica utile:
+
+- il vecchio oro hardcoded `#D4AF37` e stato in larga parte sostituito con `amber-600` e relative varianti
+
+### 10.3 Utility CSS globali gia presenti
+
+In `src/app/globals.css` esistono gia:
+
+- `.card-hover`
+- `.btn-hover`
+- `.btn-hover:focus-visible`
+- `.sidebar-link`
+
+Questo significa che i focus ring accessibili sono gia stati introdotti e vanno mantenuti.
+
+### 10.4 Font
+
+- font principale: Inter
+- definito in root layout con CSS variable `--font-inter`
+
+---
+
+## 11. Area pubblica: comportamento e UX gia implementati
+
+### 11.1 Layout pubblico
+
+- navbar in alto
+- sidebar laterale con overlay mobile
+- footer sotto il contenuto
+- `dir="rtl"` automatico per arabo
+
+### 11.2 Pagine pubbliche presenti
+
+- home
+- chi siamo
+- orari
+- icone
+- icone/[slug]
+- libreria
+- libreria/[slug]
+- eventi
+- preghiere
+
+### 11.3 Comportamenti importanti gia fatti
+
+- homepage:
+  - stat cards cliccabili verso aree rilevanti
+  - righe eventi cliccabili
+  - righe preghiere cliccabili
+  - badge giorno ingranditi e piu leggibili
+  - sottotitolo home aggiornato e non generico
+
+- pagina eventi:
+  - iscrizione con telefono opzionale
+  - nome e email restano obbligatori
+
+- pagine icone:
+  - griglia con hover piu chiaro e meno ambiguo
+  - pagina dettaglio con bottone di ritorno alla galleria
+  - sezione QR con feedback visivo dopo il download
+
+- pagine libreria:
+  - lista con hover piu coerente
+  - pagina dettaglio con bottone di ritorno alla libreria
+
+- pagina orari:
+  - su mobile la colonna note e nascosta
+  - giorni accentati correttamente, es. Martedi/Giovedi non devono essere senza accento
+
+- pagina chi-siamo:
+  - titoli card coerenti con la palette blu/ambra del sito
+
+### 11.4 Integrazione Google Drive
+
+Esiste `src/lib/gdrive.ts` per normalizzare URL immagini/PDF/preview/download.
+Quando si lavora su contenuti remoti, verificare se il campo puo contenere URL Drive anziche percorsi locali.
+
+---
+
+## 12. Area admin: comportamento e UX gia implementati
+
+### 12.1 Sidebar admin
+
+`src/components/admin/AdminSidebar.tsx`:
+
+- client component
+- responsive con overlay mobile
+- usa gli ID DOM:
+  - `admin-mobile-sidebar`
+  - `admin-sidebar-overlay`
+- mostra dati utente da `localStorage.admin_info`
+- mostra `Gestione Admin` solo se `ruolo === "superadmin"`
+- ha link `Torna al sito`
+- il logout e separato da un divider e usa styling rosso dedicato
+
+### 12.2 Login admin
+
+- pagina separata senza sidebar
+- supporta banner `session=expired`
+- supporta remember me da 7 giorni
+- mostra tentativi rimasti quando l'API li restituisce
+
+### 12.3 Dashboard admin attuale
+
+La dashboard admin NON deve tornare a contenere una sezione di link duplicata della sidebar.
+
+Stato corretto attuale di `src/app/admin/(dashboard)/page.tsx`:
+
+- stat cards in alto con conteggi per:
+  - libri/pdf
+  - icone
+  - preghiere
+  - eventi futuri
+  - file privati
+- sezione `Prossimi eventi`
+  - mostra fino a 4 eventi futuri
+  - include data, ora, luogo e posti disponibili
+- sezione `Oggi`
+  - mostra le celebrazioni del giorno corrente dagli orari settimanali
+- sezione `Azioni rapide`
+  - pulsanti orientati alla creazione, non semplice navigazione duplicata
+  - nuovo evento
+  - nuovo libro/pdf
+  - nuova preghiera
+  - nuova icona
+
+### 12.4 CRUD admin disponibili
+
+Pagine protette:
+
+- `/admin/libreria`
+- `/admin/icone`
+- `/admin/orari`
+- `/admin/eventi`
+- `/admin/preghiere`
+- `/admin/libreria-privata`
+- `/admin/gestione-admin` solo superadmin
+
+### 12.5 Responsivita admin
+
+Caratteristiche gia implementate:
+
+- hamburger menu sotto breakpoint `lg`
+- sidebar che slide-in su mobile
+- overlay per chiusura rapida
+- topbar fissa
+- content area adattata a sidebar desktop
+- tabelle admin pensate per scroll orizzontale nelle pagine CRUD
+
+---
+
+## 13. API esistenti
+
+### 13.1 API pubblica
+
+- `POST /api/eventi/iscrizione`
+
+### 13.2 API admin
+
+- `POST /api/admin/login`
+- `POST /api/admin/logout`
+- CRUD contenuti:
+  - `/api/admin/libreria`
+  - `/api/admin/icone`
+  - `/api/admin/orari`
+  - `/api/admin/eventi`
+  - `/api/admin/preghiere`
+  - `/api/admin/libreria-privata`
+- gestione utenti admin:
+  - `/api/admin/users`
+  - `/api/admin/users/[id]`
+  - `/api/admin/users/[id]/toggle`
+
+---
+
+## 14. Variabili ambiente necessarie
+
+In `.env.local`:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=       # URL progetto Supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=  # Chiave pubblica anon
-SUPABASE_SERVICE_ROLE_KEY=      # Chiave server (secret!)
-ADMIN_SESSION_SECRET=           # Stringa random per sicurezza sessioni
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_SESSION_SECRET=
 ```
 
----
+Note:
 
-## 12. Convenzioni di codice
-
-- **Server Components** per default; `"use client"` solo dove serve interattività
-- **`export const dynamic = "force-dynamic"`** su tutte le pagine pubbliche con dati live
-- **Layout con route groups:** `(main)` per il sito pubblico, `(dashboard)` per admin
-- **TailwindCSS v4:** usare `@theme {}` per definire token custom (NON `:root {}`)
-- **Colori brand pubblico:** primary `#1E3A5F`, accent `#B45309`, sidebar `#111827` (tramite token `@theme`)
-- **Colori brand admin:** oro `#D4AF37`, navy `#0F1A2E` (hardcoded nelle classi)
-- **Cookie di autenticazione:** `admin_session` (httpOnly)
-- **Cookie di lingua:** `locale` (`it` | `ar`)
-- **localStorage:** `admin_info` (JSON: { nome, cognome, ruolo }) — per mostrare info utente nella sidebar senza query extra
+- `SUPABASE_SERVICE_ROLE_KEY` e sensibile e non va mai esposta sul client
+- `ADMIN_SESSION_SECRET` e prevista nel contesto del progetto ma la sessione attuale e basata su token DB + cookie httpOnly
 
 ---
 
-## 13. Problemi noti e avvertenze
+## 15. Convenzioni da rispettare nelle future modifiche
 
-1. **Next.js 16 deprecation:** warning su `middleware.ts` → verrà rinominato in `proxy.ts` nelle versioni future
-2. **Lockfile multipli:** esiste un `package-lock.json` nella cartella padre `sito/` che causa warning; ignorare
-3. **Il rate limiter è in memoria:** in ambiente serverless (Vercel) ogni istanza ha il suo contatore. Per sicurezza reale, usare Redis
-4. **I contenuti del sito sono in memoria:** si resettano al riavvio del server. Solo l'autenticazione è persistita su Supabase
-5. **`suppressHydrationWarning`** è su `<html>` e `<body>` nel root layout per evitare errori con estensioni browser
-6. **NON aggiungere `--color-gray-*` o `--color-slate-*` in `@theme`:** sovrascriverebbero la palette Tailwind con colori sbagliati, corrompendo l'intero sito
-7. **NON aggiungere `zoom` in globals.css:** causa layout distorto
-8. **Per aggiungere un nuovo tipo di contenuto:** creare tipo in `types/index.ts`, aggiungere dati in `mock-data.ts`, funzioni CRUD in `store.ts`, API route, pagina admin, pagina pubblica
+### 15.1 Convenzioni generali
+
+- server components di default
+- usare `"use client"` solo dove serve stato, effetti o interazione browser
+- mantenere route groups `(main)` e `admin/(dashboard)`
+- evitare refactor larghi non richiesti
+- mantenere stile Tailwind esistente
+
+### 15.2 Se si tocca l'area pubblica
+
+- preservare supporto IT/AR
+- non introdurre stringhe hardcoded dove esistono chiavi `next-intl`
+- rispettare `dir="rtl"` per arabo
+- mantenere focus ring e accessibilita tastiera
+
+### 15.3 Se si tocca l'area admin
+
+- non rompere la separazione login vs dashboard shell
+- non reintrodurre duplicazioni nella dashboard admin
+- `Gestione Admin` deve restare condizionale al ruolo superadmin
+- il logout deve restare distinto visivamente dai normali link di navigazione
+
+### 15.4 Se si aggiunge un nuovo tipo di contenuto
+
+Passi minimi:
+
+1. aggiungere il tipo in `src/types/index.ts`
+2. aggiungere mock data in `src/lib/mock-data.ts` se serve seed
+3. aggiungere CRUD in `src/lib/data/store.ts`
+4. aggiungere route API admin
+5. aggiungere pagina admin di gestione
+6. aggiungere pagina pubblica se prevista
+7. aggiornare traduzioni IT/AR se visibile sul sito pubblico
+8. aggiornare questo file di contesto
 
 ---
 
-## 14. Stato attuale del progetto (28/02/2026)
+## 16. Comandi utili di sviluppo
 
-### Funzionalità completate ✅
-- Sito pubblico bilingue IT/AR completo (8 pagine: home, chi-siamo, orari, icone, icone/[slug], libreria, libreria/[slug], eventi, preghiere)
-- Pannello admin completo con CRUD per tutti i contenuti (libreria, icone, orari, eventi, preghiere, libreria-privata)
-- Gestione admin users (CRUD, solo superadmin) — pagina gestione-admin
-- Autenticazione completa su Supabase (login, logout, middleware, sessioni DB, rate limiting)
-- Tema pubblico riscritto e funzionante (senza zoom, con colori neutrali puliti)
-- Tema admin con colori oro/navy
-- **Area admin completamente responsive** (sidebar mobile con hamburger + overlay, topbar e content full-width su mobile, tabelle con scroll orizzontale, form e header responsive)
+```bash
+# sviluppo
+npm run dev
 
-### Dettagli responsività admin (sessione 2)
-L'area admin ora segue lo stesso pattern responsive del sito pubblico:
-- **AdminMobileMenuButton** (`src/components/admin/AdminMobileMenuButton.tsx`): hamburger visibile solo sotto `lg:`, toggle sidebar mobile via DOM
-- **AdminSidebar** (`src/components/admin/AdminSidebar.tsx`): nascosta su mobile (`-translate-x-full`), visibile su desktop (`lg:translate-x-0`), overlay scuro, transizione animata, closeMobile su tutti i Link
-- **Admin layout** (`src/app/admin/layout.tsx`): topbar `left-0 lg:left-[260px]`, content `lg:ml-[260px]`, padding `p-4 sm:p-6 lg:p-8`
-- **Tutte le pagine dashboard**: tabelle con `overflow-x-auto` + `min-w-[600px]`, header `flex-wrap gap-4`
-- **Orari page**: form celebrazioni `flex-col sm:flex-row`, input con width responsive
-- IDs DOM usati: `admin-mobile-sidebar`, `admin-sidebar-overlay` (diversi da quelli pubblici `mobile-sidebar`, `sidebar-overlay`)
+# build
+npm run build
+npm run start
 
-### Da fare / Miglioramenti futuri 📋
-- Persistere i contenuti del sito su Supabase (attualmente in memoria, si resettano al riavvio)
-- Upload immagini (attualmente i contenuti usano URL placeholder o nessuna immagine)
-- SEO avanzato (meta tag per pagine singole, sitemap, Open Graph)
-- Progressive Web App (PWA)
-- Migrare rate limiter a Redis per produzione
-- Eventuale rinomina `middleware.ts` → `proxy.ts` quando Next.js lo richiederà
+# lint
+npm run lint
+
+# typecheck rapido
+npx tsc --noEmit
+
+# generare hash bcrypt
+npm run generate-hash -- "NuovaPassword"
+
+# Windows: terminare processi node bloccati
+taskkill /f /im node.exe
+
+# Windows PowerShell: pulizia build cache
+Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
+```
+
+Nota pratica:
+
+- se `next dev` fallisce per lock `.next/dev/lock`, di solito c'e gia un'altra istanza del server attiva
+
+---
+
+## 17. Limiti attuali e problemi noti
+
+1. i contenuti del sito non sono persistenti e si resettano al riavvio del server
+2. il rate limiter login e in memoria, quindi non e affidabile in multi-istanza/serverless
+3. `middleware.ts` potrebbe richiedere futura migrazione se Next.js cambiera naming/comportamento nelle release successive
+4. c'e separazione forte tra auth persistita e contenuti non persistiti: non confondere i due piani
+5. evitare modifiche ai token colore gray/slate in `@theme`
+6. evitare `zoom` in `globals.css`, ha gia creato problemi di layout in passato
+
+---
+
+## 18. Roadmap plausibile futura
+
+- migrare i contenuti del sito da store in memoria a Supabase
+- upload immagini/file reale e non solo URL
+- SEO piu avanzato per pagine dettaglio
+- sitemap e metadata per pagine dinamiche
+- PWA
+- rate limiting centralizzato via Redis
+- eventuale auditing permessi admin piu fine-grained
+
+---
+
+## 19. Promemoria finale per una AI che riceve questo file come allegato
+
+Se devi proporre o implementare modifiche su questo progetto, assumi sempre che:
+
+- il codice vero prevale su vecchie descrizioni o assunzioni
+- l'area pubblica e bilingue, l'admin no
+- la login admin non deve mostrare la shell admin
+- la dashboard admin deve offrire informazioni e azioni utili, non duplicare la sidebar
+- i contenuti sono live ma non persistenti
+- l'autenticazione e persistita su Supabase ed e gia funzionante
+- le scelte UI recenti su accessibilita, hover, back links, date localizzate e sidebar i18n sono parte dello stato corretto del progetto e non regressioni da reintrodurre
