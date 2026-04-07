@@ -41,9 +41,17 @@ export async function POST(request: Request) {
       .from("admin_users")
       .select("id, username, password_hash, nome, cognome, ruolo, attivo")
       .eq("username", username)
-      .single();
+      .maybeSingle();
 
-    if (dbError || !user) {
+    if (dbError) {
+      console.error("Errore query admin_users:", dbError);
+      return NextResponse.json(
+        { success: false, error: "Errore del server" },
+        { status: 500 }
+      );
+    }
+
+    if (!user) {
       recordFailedAttempt(ip);
       const remaining = remainingAttempts(ip);
       return NextResponse.json(
