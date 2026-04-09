@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 12 marzo 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 9 aprile 2026.
 
 ---
 
@@ -59,6 +59,7 @@ Versioni lette da package.json:
 | lucide-react | ^0.575.0 | icone |
 | react-qr-code | ^2.0.18 | generazione QR |
 | babel-plugin-react-compiler | 1.0.0 | React Compiler |
+| dotenv | ^17.3.1 | variabili ambiente negli script |
 | eslint | ^9 | lint |
 
 Script disponibili:
@@ -109,11 +110,13 @@ Attenzione: questo punto era obsoleto in versioni precedenti del file.
 - `src/app/admin/login/layout.tsx`
   - layout centrato per la login admin
   - sfondo navy `#0F1A2E`
+  - contenuto centrato con flex e `min-h-screen`
 
 - `src/app/admin/(dashboard)/layout.tsx`
   - vero layout delle pagine admin protette
   - include `AdminSidebar`, topbar fissa, `AdminMobileMenuButton`, `AdminTopbarTitle`, `AdminToast`
   - content area con `lg:ml-[260px]` e `pt-14`
+  - header topbar fisso `h-14` con border-b
 
 Implicazione importante:
 
@@ -240,6 +243,20 @@ Tipi principali definiti in `src/types/index.ts`:
   - store in memoria condiviso tramite `globalThis`
   - espone CRUD per tutti i contenuti
   - contiene anche il tipo `FilePrivato`
+  - usa `nextId()` helper interno per generare ID numerici incrementali (FUTURO: sostituire con UUID DB)
+  - commenti `// FUTURO: supabase.from(...)` marcano i punti di migrazione
+
+- `src/lib/db.ts`
+  - layer di astrazione async per i server components pubblici
+  - legge dallo store, espone funzioni async (es. `getIcone()`, `getTestiSacri()`, ecc.)
+  - FUTURO: qui si mettono le chiamate dirette a Supabase
+
+- `src/lib/actions.ts`
+  - server action `setLocale(locale)` per cambiare lingua via cookie (durata 1 anno)
+
+- `src/lib/gdrive.ts`
+  - utilità per normalizzare URL Google Drive in link immagine, embed PDF, download
+  - funzione principale: `extractGDriveId(url)`
 
 ### 6.2 Conseguenza pratica fondamentale
 
@@ -358,27 +375,35 @@ Supabase viene usato attualmente solo per area admin auth/sessioni.
 
 `admin_users`
 
-- id UUID
-- username unico
-- email opzionale
-- password_hash
-- nome
-- cognome
-- ruolo (`superadmin` o `admin`)
-- attivo
-- ultimo_accesso
-- creato_il
-- aggiornato_il
+- id UUID (gen_random_uuid)
+- username TEXT UNIQUE NOT NULL
+- email TEXT UNIQUE NOT NULL
+- password_hash TEXT NOT NULL
+- nome TEXT NOT NULL
+- cognome TEXT NOT NULL
+- ruolo TEXT CHECK IN ('superadmin', 'admin'), default 'admin'
+- attivo BOOLEAN, default true
+- ultimo_accesso TIMESTAMPTZ (nullable)
+- created_at TIMESTAMPTZ, default NOW()
+- updated_at TIMESTAMPTZ, default NOW() (aggiornato da trigger)
 
 `admin_sessions`
 
-- id UUID
-- admin_user_id FK
-- session_token unico
-- expires_at
-- ip_address
-- user_agent
-- creato_il
+- id UUID (gen_random_uuid)
+- admin_user_id UUID FK → admin_users(id) ON DELETE CASCADE
+- session_token TEXT UNIQUE NOT NULL
+- expires_at TIMESTAMPTZ NOT NULL
+- ip_address TEXT
+- user_agent TEXT
+- created_at TIMESTAMPTZ, default NOW()
+
+Indici presenti:
+
+- `idx_admin_sessions_token` su `session_token`
+- `idx_admin_sessions_expires` su `expires_at`
+- `idx_admin_users_username` su `username`
+
+Nota: i nomi colonne nel DB sono `created_at` / `updated_at` (snake_case inglese), non `creato_il` / `aggiornato_il`.
 
 File schema di riferimento:
 
@@ -399,9 +424,9 @@ File schema di riferimento:
 
 ### 9.3 Come viene scelta la lingua
 
-- cookie `locale`
+- cookie `locale` (durata 1 anno, impostato da server action `setLocale`)
 - default italiano
-- `src/i18n/request.ts` legge il cookie
+- `src/i18n/request.ts` legge il cookie con `cookies()` da `next/headers`
 - `src/app/layout.tsx` imposta `lang` e `dir`
 
 ### 9.4 Traduzioni
@@ -444,10 +469,12 @@ Token principali:
 | `--color-accent` | `#B45309` | ambra titoli/accenti |
 | `--color-accent-light` | `#D97706` | ambra hover |
 | `--color-danger` | `#DC2626` | errori |
+| `--color-white` | `#FFFFFF` | bianco esplicito |
 | `--color-surface` | `#FFFFFF` | card |
 | `--color-surface-alt` | `#F9FAFB` | sfondi alternativi |
 | `--color-sidebar` | `#111827` | sidebar pubblica |
 | `--color-sidebar-hover` | `#1F2937` | hover sidebar |
+| `--font-sans` | `var(--font-inter)` | font principale |
 
 Importante:
 
@@ -472,12 +499,17 @@ Nota storica utile:
 
 In `src/app/globals.css` esistono gia:
 
-- `.card-hover`
-- `.btn-hover`
-- `.btn-hover:focus-visible`
-- `.sidebar-link`
+- `.card-hover` con scale + box-shadow su hover (cubic-bezier 0.25s)
+- `.btn-hover` con translateY(-1px) su hover
+- `.btn-hover:focus-visible` con focus ring giallo ambra (accessibilita)
+- `.sidebar-link` con transition per link sidebar
 
-Questo significa che i focus ring accessibili sono gia stati introdotti e vanno mantenuti.
+Stili globali aggiuntivi:
+
+- scrollbar custom (webkit) con colori slate
+- `[dir="rtl"] { text-align: right }` per arabo
+- `html { scroll-behavior: smooth }`
+- body usa font-family `var(--font-sans)`
 
 ### 10.4 Font
 
@@ -554,10 +586,12 @@ Quando si lavora su contenuti remoti, verificare se il campo puo contenere URL D
 - usa gli ID DOM:
   - `admin-mobile-sidebar`
   - `admin-sidebar-overlay`
-- mostra dati utente da `localStorage.admin_info`
-- mostra `Gestione Admin` solo se `ruolo === "superadmin"`
-- ha link `Torna al sito`
-- il logout e separato da un divider e usa styling rosso dedicato
+- legge dati utente da `localStorage.admin_info` (aggiornato ad ogni cambio di pathname)
+- link di navigazione definiti inline nel componente (array `links`)
+- mostra `Gestione Admin` (icona `Users`) solo se `ruolo === "superadmin"`
+- ha link `Torna al sito` con icona `ArrowLeft`
+- il logout e separato da un divider e usa styling rosso dedicato (`text-red-400`, `hover:bg-red-500/10`)
+- `handleLogout()`: chiama `POST /api/admin/logout`, rimuove `admin_info` da localStorage, redirect a `/`
 
 ### 12.2 Login admin
 
@@ -578,10 +612,13 @@ Stato corretto attuale di `src/app/admin/(dashboard)/page.tsx`:
   - preghiere
   - eventi futuri
   - file privati
-- sezione `Prossimi eventi`
+- le card sono link cliccabili verso la sezione admin relativa
+- colori: amber per contenuti statici, blue per eventi/file privati
+- sezione `Prossimi eventi` (2/3 larghezza su lg)
   - mostra fino a 4 eventi futuri
   - include data, ora, luogo e posti disponibili
-- sezione `Oggi`
+  - link "Vedi tutti" verso `/admin/eventi`
+- sezione `Oggi` (1/3 larghezza su lg)
   - mostra le celebrazioni del giorno corrente dagli orari settimanali
 - sezione `Azioni rapide`
   - pulsanti orientati alla creazione, non semplice navigazione duplicata
@@ -652,14 +689,24 @@ ADMIN_SESSION_SECRET=
 
 Note:
 
-- `SUPABASE_SERVICE_ROLE_KEY` e sensibile e non va mai esposta sul client
-- `ADMIN_SESSION_SECRET` e prevista nel contesto del progetto ma la sessione attuale e basata su token DB + cookie httpOnly
+- `SUPABASE_SERVICE_ROLE_KEY` e sensibile e non va mai esposta sul client; usata in `src/lib/supabase/server.ts` e nel middleware
+- `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` usate anche nel client (`src/lib/supabase/client.ts`)
+- `ADMIN_SESSION_SECRET` e prevista nel contesto ma la sessione attuale e basata su token DB + cookie httpOnly (non su JWT firmato)
+- Le variabili Supabase sono necessarie anche nel middleware (Edge runtime): il middleware crea il client Supabase direttamente senza passare dal layer `server.ts`
+
+## 15. Configurazione Next.js (next.config.ts)
+
+- `reactCompiler: true` — React Compiler abilitato (via `babel-plugin-react-compiler`)
+- `images.remotePatterns`:
+  - `https://lh3.googleusercontent.com` — immagini Google (Drive thumbnail)
+  - `https://drive.google.com` — file Google Drive
+- Plugin: `createNextIntlPlugin` con path `./src/i18n/request.ts`
 
 ---
 
-## 15. Convenzioni da rispettare nelle future modifiche
+## 16. Convenzioni da rispettare nelle future modifiche
 
-### 15.1 Convenzioni generali
+### 16.1 Convenzioni generali
 
 - server components di default
 - usare `"use client"` solo dove serve stato, effetti o interazione browser
@@ -667,21 +714,21 @@ Note:
 - evitare refactor larghi non richiesti
 - mantenere stile Tailwind esistente
 
-### 15.2 Se si tocca l'area pubblica
+### 16.2 Se si tocca l'area pubblica
 
 - preservare supporto IT/AR
 - non introdurre stringhe hardcoded dove esistono chiavi `next-intl`
 - rispettare `dir="rtl"` per arabo
 - mantenere focus ring e accessibilita tastiera
 
-### 15.3 Se si tocca l'area admin
+### 16.3 Se si tocca l'area admin
 
 - non rompere la separazione login vs dashboard shell
 - non reintrodurre duplicazioni nella dashboard admin
 - `Gestione Admin` deve restare condizionale al ruolo superadmin
 - il logout deve restare distinto visivamente dai normali link di navigazione
 
-### 15.4 Se si aggiunge un nuovo tipo di contenuto
+### 16.4 Se si aggiunge un nuovo tipo di contenuto
 
 Passi minimi:
 
@@ -696,7 +743,7 @@ Passi minimi:
 
 ---
 
-## 16. Comandi utili di sviluppo
+## 17. Comandi utili di sviluppo
 
 ```bash
 # sviluppo
@@ -728,18 +775,19 @@ Nota pratica:
 
 ---
 
-## 17. Limiti attuali e problemi noti
+## 18. Limiti attuali e problemi noti
 
 1. i contenuti del sito non sono persistenti e si resettano al riavvio del server
 2. il rate limiter login e in memoria, quindi non e affidabile in multi-istanza/serverless
-3. `middleware.ts` potrebbe richiedere futura migrazione se Next.js cambiera naming/comportamento nelle release successive
+3. `middleware.ts` crea un client Supabase inline per compatibilita Edge runtime (non usa `supabaseAdmin` da `server.ts`)
 4. c'e separazione forte tra auth persistita e contenuti non persistiti: non confondere i due piani
 5. evitare modifiche ai token colore gray/slate in `@theme`
 6. evitare `zoom` in `globals.css`, ha gia creato problemi di layout in passato
+7. `ADMIN_SESSION_SECRET` e dichiarato nelle variabili ma non e ancora usato attivamente (la session security e basata su token UUID in DB + cookie httpOnly)
 
 ---
 
-## 18. Roadmap plausibile futura
+## 19. Roadmap plausibile futura
 
 - migrare i contenuti del sito da store in memoria a Supabase
 - upload immagini/file reale e non solo URL
@@ -751,7 +799,7 @@ Nota pratica:
 
 ---
 
-## 19. Promemoria finale per una AI che riceve questo file come allegato
+## 20. Promemoria finale per una AI che riceve questo file come allegato
 
 Se devi proporre o implementare modifiche su questo progetto, assumi sempre che:
 
