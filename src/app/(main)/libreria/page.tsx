@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { getTestiSacri } from "@/lib/db";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { toGDriveImageUrl } from "@/lib/gdrive";
+import RestrictedSection from "@/components/auth/RestrictedSection";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,8 @@ export default async function LibreriaPage() {
           {t("sottotitolo")}
         </p>
       </div>
+
+      <RestrictedSection message="Per accedere alla libreria registrati o accedi">
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {testi.map((testo) => (
@@ -58,6 +61,7 @@ export default async function LibreriaPage() {
           </Link>
         ))}
       </div>
+      </RestrictedSection>
     </div>
   );
 }

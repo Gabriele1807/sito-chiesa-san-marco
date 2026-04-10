@@ -28,7 +28,10 @@ Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto i
 | Frontend pubblico | next-intl + TailwindCSS v4 |
 | Admin auth | Supabase + sessioni DB + cookie httpOnly |
 | Persistenza contenuti | NO, attualmente store in memoria |
-| Persistenza autenticazione | SI, Supabase |
+| Persistenza autenticazione | SI, Supabase (admin) + MongoDB (utenti normali) |
+| Autenticazione utenti normali | MongoDB + cookie httpOnly `user_session` |
+| Registrazione utenti | SI, con quiz (ruolo, eta, chiesa) |
+| Accesso ospiti | Sezioni limitate con GuestGate |
 | Area admin tradotta | No, solo italiano |
 
 Fatti importanti da sapere subito:
@@ -54,7 +57,8 @@ Versioni lette da package.json:
 | tailwindcss | ^4 | styling |
 | @tailwindcss/postcss | ^4 | integrazione Tailwind |
 | next-intl | ^4.8.3 | i18n IT/AR |
-| @supabase/supabase-js | ^2.98.0 | DB auth/sessioni |
+| @supabase/supabase-js | ^2.98.0 | DB auth/sessioni admin |
+| mongodb | ^6 | persistence utenti normali + sessioni |
 | bcryptjs | ^3.0.3 | verifica hash password |
 | lucide-react | ^0.575.0 | icone |
 | react-qr-code | ^2.0.18 | generazione QR |
@@ -153,6 +157,10 @@ chiesa-san-marco/
 |  |  |  |- permissions.ts
 |  |  |  |- rate-limit.ts
 |  |  |  \- session.ts
+|  |  |- mongo/
+|  |  |  |- client.ts
+|  |  |  |- users.ts
+|  |  |  \- sessions.ts
 |  |  \- supabase/
 |  |     |- client.ts
 |  |     |- server.ts
@@ -168,6 +176,16 @@ chiesa-san-marco/
 |  |  |- LanguageSwitcher.tsx
 |  |  |- MobileMenuButton.tsx
 |  |  |- PreghieraExpand.tsx
+|  |  |- QuickAccessCard.tsx
+|  |  |- BackLink.tsx
+|  |  |- RelatedResourceCard.tsx
+|  |  |- auth/
+|  |  |  |- AuthContext.tsx
+|  |  |  |- LoginModal.tsx
+|  |  |  |- RegisterModal.tsx
+|  |  |  |- GuestGate.tsx
+|  |  |  |- RestrictedSection.tsx
+|  |  |  \- UserMenu.tsx
 |  |  \- admin/
 |  |     |- AdminSidebar.tsx
 |  |     |- AdminTopbarTitle.tsx
@@ -202,9 +220,15 @@ chiesa-san-marco/
 |     |     |- libreria/page.tsx
 |     |     |- libreria-privata/page.tsx
 |     |     |- orari/page.tsx
-|     |     \- preghiere/page.tsx
+|     |     |- preghiere/page.tsx
+|     |     \- utenti/page.tsx
 |     \- api/
 |        |- eventi/iscrizione/route.ts
+|        |- auth/
+|        |  |- login/route.ts
+|        |  |- logout/route.ts
+|        |  |- register/route.ts
+|        |  \- me/route.ts
 |        \- admin/
 |           |- login/route.ts
 |           |- logout/route.ts
@@ -214,6 +238,8 @@ chiesa-san-marco/
 |           |- libreria-privata/route.ts
 |           |- orari/route.ts
 |           |- preghiere/route.ts
+|           |- utenti/route.ts
+|           |- richieste-admin/route.ts
 |           \- users/
 |              |- route.ts
 |              \- [id]/toggle/route.ts
@@ -232,6 +258,13 @@ Tipi principali definiti in `src/types/index.ts`:
 - `IscrizioneEvento`
 - `OrarioSettimanale`
 - `Locale`
+- `UserRole` — `"credente" | "madre" | "padre" | "ospite_chiesa"`
+- `AgeGroup` — `"0-11" | "12-18" | "19-29" | "30-45" | "46-65" | "65+"`
+- `AdminRequestStatus` — `"none" | "pending" | "approved" | "rejected"`
+- `UserProfile` — profilo utente completo (MongoDB)
+- `CreateUserData` — dati per creazione utente
+- `UserPublic` — vista pubblica senza password
+- `UserSessionInfo`, `AdminSessionInfo`, `SessionInfo` — tipi sessione unificati
 
 ### 6.1 Dove stanno i dati
 
@@ -411,6 +444,137 @@ File schema di riferimento:
 
 ---
 
+## 8b. Database MongoDB (utenti normali)
+
+MongoDB viene usato per la persistenza degli utenti normali (non admin) e le loro sessioni.
+
+### 8b.1 Configurazione
+
+- Client singleton in `src/lib/mongo/client.ts` (pattern `globalThis` per HMR safety)
+- Variabili ambiente: `MONGODB_URI`, `MONGODB_DB`
+- Connessione pooled per performance
+
+### 8b.2 Collezioni
+
+`users`
+
+- `_id` ObjectId (auto)
+- `email` string, unique
+- `username` string, unique
+- `passwordHash` string (bcrypt)
+- `nome` string
+- `cognome` string
+- `role` UserRole (`credente` | `madre` | `padre` | `ospite_chiesa`)
+- `ageGroup` AgeGroup (`0-11` | `12-18` | `19-29` | `30-45` | `46-65` | `65+`)
+- `chiesa` string (opzionale, per ospiti)
+- `attivo` boolean, default true
+- `adminRequest` AdminRequestStatus (`none` | `pending` | `approved` | `rejected`)
+- `adminRequestDate` Date (opzionale)
+- `lastAccess` Date (opzionale)
+- `createdAt` Date
+- `updatedAt` Date
+
+Indici: unique su `email`, unique su `username`, sparse su `adminRequest`
+
+`user_sessions`
+
+- `_id` ObjectId
+- `userId` ObjectId
+- `sessionToken` string, unique
+- `expiresAt` Date (TTL index, auto-delete dopo scadenza)
+- `ipAddress` string (opzionale)
+- `userAgent` string (opzionale)
+- `createdAt` Date
+
+### 8b.3 CRUD module
+
+File: `src/lib/mongo/users.ts`
+
+Funzioni: `createUser()`, `findUserByEmail()`, `findUserByUsername()`, `findUserById()`, `listUsers()`, `updateUser()`, `updateUserLastAccess()`, `updateAdminRequest()`, `getPendingAdminRequests()`, `deleteUser()`
+
+### 8b.4 Sessions module
+
+File: `src/lib/mongo/sessions.ts`
+
+Funzioni: `createUserSession()`, `validateUserSession()`, `deleteUserSession()`, `deleteAllUserSessions()`, `cleanExpiredUserSessions()`
+
+---
+
+## 8c. Architettura polyglot persistence
+
+Il progetto usa due database per scopi diversi:
+
+| Scopo | Database | Motivo |
+|-------|----------|--------|
+| Admin auth + sessioni | Supabase (PostgreSQL) | relazionale, gia in uso, RLS |
+| Utenti normali + sessioni | MongoDB | schema flessibile, TTL index, rapido prototipo |
+| Contenuti sito | In-memory store (mock) | non ancora migrato |
+
+Regola: **admin auth rimane su Supabase, utenti normali su MongoDB**. Non mescolare.
+
+---
+
+## 8d. Autenticazione unificata (utenti + admin)
+
+### 8d.1 Login unificato
+
+Endpoint: `POST /api/auth/login`
+
+Flusso:
+1. Riceve `identifier` (email o username) + `password`
+2. Tenta prima login admin su Supabase (`tryAdminLogin`)
+3. Se non trovato o password errata, tenta login utente su MongoDB (`tryUserLogin`)
+4. Se admin: imposta cookie `admin_session`, ritorna `type: "admin"`
+5. Se utente: imposta cookie `user_session`, ritorna `type: "user"`
+6. Se nessuno: 401
+
+### 8d.2 Registrazione
+
+Endpoint: `POST /api/auth/register`
+
+Due fasi nel modal:
+1. **Step 1**: nome, cognome, email, username, password (con conferma)
+2. **Step 2 (quiz)**: ruolo, fascia eta, chiesa (se ospite), richiesta admin (opzionale)
+
+Validazione lato server: email/username unici, password min 8 chars, ruolo e ageGroup validi.
+Auto-login dopo registrazione.
+
+### 8d.3 Sessione e stato auth
+
+- `GET /api/auth/me` — controlla cookie `admin_session` e `user_session`, ritorna tipo utente
+- `POST /api/auth/logout` — elimina sessione utente MongoDB + cookie
+- Admin logout resta su `POST /api/admin/logout`
+
+### 8d.4 Auth context client-side
+
+`src/components/auth/AuthContext.tsx`:
+- `AuthProvider` avvolge il root layout
+- `useAuth()` hook espone: `type` (`guest`/`user`/`admin`), `user`, `admin`, `showLoginModal`, `showRegisterModal`, `refresh()`, `logout()`
+- `LoginModal` e `RegisterModal` sono renderizzati nel root layout e controllati dal context
+
+### 8d.5 Guest access & restricted sections
+
+- `GuestGate.tsx`: overlay con messaggio + lock icon per contenuti riservati ai registrati
+- `RestrictedSection.tsx`: wrapper server-component-compatible
+- Attualmente wrappano la griglia libreria e la lista eventi
+- Click su GuestGate apre il login modal
+
+### 8d.6 Admin request flow
+
+1. Utente si registra con `adminRequest: "pending"` se seleziona il checkbox
+2. Superadmin vede le richieste pendenti in `/admin/gestione-admin`
+3. `POST /api/admin/richieste-admin` con `action: "approve"` crea un admin_users in Supabase con password temporanea
+4. `action: "reject"` aggiorna lo stato in MongoDB
+
+### 8d.7 Gestione utenti admin
+
+- `/admin/utenti` — pagina admin per visualizzare/modificare/eliminare utenti normali
+- `GET /api/admin/utenti` — lista utenti (richiede `admin.read`)
+- `PUT /api/admin/utenti` — modifica utente (richiede `admin.write`)
+- `DELETE /api/admin/utenti` — elimina utente (richiede `admin.write`)
+
+---
+
 ## 9. Internazionalizzazione
 
 ### 9.1 Libreria usata
@@ -547,6 +711,11 @@ Stili globali aggiuntivi:
   - righe preghiere cliccabili
   - badge giorno ingranditi e piu leggibili
   - sottotitolo home aggiornato e non generico
+  - Quick Access Grid usa componente riutilizzabile `QuickAccessCard`
+
+- pagine dettaglio icone e libreria:
+  - usano `BackLink` componente condiviso per navigazione indietro
+  - usano `RelatedResourceCard` per risorse correlate
 
 - pagina eventi:
   - iscrizione con telefono opzionale
@@ -588,7 +757,9 @@ Quando si lavora su contenuti remoti, verificare se il campo puo contenere URL D
   - `admin-sidebar-overlay`
 - legge dati utente da `localStorage.admin_info` (aggiornato ad ogni cambio di pathname)
 - link di navigazione definiti inline nel componente (array `links`)
-- mostra `Gestione Admin` (icona `Users`) solo se `ruolo === "superadmin"`
+- mostra la sezione `Amministrazione` (solo superadmin) con:
+  - `Gestione Utenti` (icona `UsersRound`) → `/admin/utenti`
+  - `Gestione Admin` (icona `Users`) → `/admin/gestione-admin`
 - ha link `Torna al sito` con icona `ArrowLeft`
 - il logout e separato da un divider e usa styling rosso dedicato (`text-red-400`, `hover:bg-red-500/10`)
 - `handleLogout()`: chiama `POST /api/admin/logout`, rimuove `admin_info` da localStorage, redirect a `/`
@@ -638,6 +809,7 @@ Pagine protette:
 - `/admin/preghiere`
 - `/admin/libreria-privata`
 - `/admin/gestione-admin` solo superadmin
+- `/admin/utenti` solo superadmin — gestione utenti normali (MongoDB)
 
 ### 12.5 Responsivita admin
 
@@ -657,10 +829,14 @@ Caratteristiche gia implementate:
 ### 13.1 API pubblica
 
 - `POST /api/eventi/iscrizione`
+- `POST /api/auth/login` — login unificato (admin + utenti)
+- `POST /api/auth/register` — registrazione utenti normali
+- `POST /api/auth/logout` — logout utenti normali
+- `GET /api/auth/me` — stato sessione corrente
 
 ### 13.2 API admin
 
-- `POST /api/admin/login`
+- `POST /api/admin/login` — (legacy, usato dal middleware)
 - `POST /api/admin/logout`
 - CRUD contenuti:
   - `/api/admin/libreria`
@@ -673,6 +849,10 @@ Caratteristiche gia implementate:
   - `/api/admin/users`
   - `/api/admin/users/[id]`
   - `/api/admin/users/[id]/toggle`
+- gestione utenti normali:
+  - `/api/admin/utenti` (GET/PUT/DELETE)
+- richieste admin:
+  - `/api/admin/richieste-admin` (GET/POST)
 
 ---
 
@@ -685,6 +865,8 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_SESSION_SECRET=
+MONGODB_URI=
+MONGODB_DB=
 ```
 
 Note:
@@ -692,6 +874,8 @@ Note:
 - `SUPABASE_SERVICE_ROLE_KEY` e sensibile e non va mai esposta sul client; usata in `src/lib/supabase/server.ts` e nel middleware
 - `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` usate anche nel client (`src/lib/supabase/client.ts`)
 - `ADMIN_SESSION_SECRET` e prevista nel contesto ma la sessione attuale e basata su token DB + cookie httpOnly (non su JWT firmato)
+- `MONGODB_URI` e la connection string MongoDB (es. `mongodb://localhost:27017` o Atlas URL)
+- `MONGODB_DB` e il nome del database (es. `chiesa-san-marco`)
 - Le variabili Supabase sono necessarie anche nel middleware (Edge runtime): il middleware crea il client Supabase direttamente senza passare dal layer `server.ts`
 
 ## 15. Configurazione Next.js (next.config.ts)
@@ -780,10 +964,12 @@ Nota pratica:
 1. i contenuti del sito non sono persistenti e si resettano al riavvio del server
 2. il rate limiter login e in memoria, quindi non e affidabile in multi-istanza/serverless
 3. `middleware.ts` crea un client Supabase inline per compatibilita Edge runtime (non usa `supabaseAdmin` da `server.ts`)
-4. c'e separazione forte tra auth persistita e contenuti non persistiti: non confondere i due piani
+4. c'e separazione forte tra auth admin (Supabase) e auth utenti normali (MongoDB): non confondere i due piani
 5. evitare modifiche ai token colore gray/slate in `@theme`
 6. evitare `zoom` in `globals.css`, ha gia creato problemi di layout in passato
 7. `ADMIN_SESSION_SECRET` e dichiarato nelle variabili ma non e ancora usato attivamente (la session security e basata su token UUID in DB + cookie httpOnly)
+8. il middleware protegge solo le route admin; le route `/api/auth/*` sono pubbliche
+9. quando un utente viene approvato come admin, riceve una password temporanea che dovra cambiare
 
 ---
 
@@ -808,5 +994,9 @@ Se devi proporre o implementare modifiche su questo progetto, assumi sempre che:
 - la login admin non deve mostrare la shell admin
 - la dashboard admin deve offrire informazioni e azioni utili, non duplicare la sidebar
 - i contenuti sono live ma non persistenti
-- l'autenticazione e persistita su Supabase ed e gia funzionante
+- l'autenticazione admin e persistita su Supabase, quella utenti normali su MongoDB
+- il login e unificato: un singolo modal/endpoint gestisce sia admin che utenti
+- gli utenti normali possono richiedere di diventare admin (approvazione da superadmin)
+- le sezioni riservate (libreria, eventi) sono limitate ai guest tramite GuestGate
 - le scelte UI recenti su accessibilita, hover, back links, date localizzate e sidebar i18n sono parte dello stato corretto del progetto e non regressioni da reintrodurre
+- i componenti riutilizzabili (QuickAccessCard, BackLink, RelatedResourceCard) vanno usati dove possibile

@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { getTestoSacroBySlug, getIcone } from "@/lib/db";
-import { BookOpen, Download, User, FileText, ChevronLeft } from "lucide-react";
+import { BookOpen, Download, User, FileText } from "lucide-react";
 import { toGDriveImageUrl, toGDrivePreviewUrl, toGDriveDownloadUrl, isGDriveUrl } from "@/lib/gdrive";
+import BackLink from "@/components/BackLink";
+import RelatedResourceCard from "@/components/RelatedResourceCard";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,15 +25,7 @@ export default async function TestoSacroDetailPage({ params }: Props) {
   return (
     <div className="space-y-10">
       {/* FIX [22] — Back navigation link */}
-      <div className="mb-4">
-        <Link
-          href="/libreria"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-amber-600 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          {t("tornaLibreria")}
-        </Link>
-      </div>
+      <BackLink href="/libreria" label={t("tornaLibreria")} />
 
       {/* Header */}
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
@@ -120,17 +113,14 @@ export default async function TestoSacroDetailPage({ params }: Props) {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("iconeCorrelate")}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {iconeCorrelate.map((icona) => (
-              <Link key={icona.id} href={`/icone/${icona.slug}`} className="group">
-                <div className="card-hover bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <span className="text-xs font-semibold text-accent uppercase tracking-wider">
-                    Icona
-                  </span>
-                  <h4 className="font-bold text-gray-900 mt-1 group-hover:text-primary transition-colors">
-                    {icona.nomeSanto}
-                  </h4>
-                  <p className="text-sm text-gray-500 mt-1">{icona.posizione}</p>
-                </div>
-              </Link>
+              <RelatedResourceCard
+                key={icona.id}
+                href={`/icone/${icona.slug}`}
+                tag="Icona"
+                tagColor="accent"
+                title={icona.nomeSanto}
+                subtitle={icona.posizione}
+              />
             ))}
           </div>
         </section>
