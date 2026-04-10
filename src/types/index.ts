@@ -71,3 +71,81 @@ export interface OrarioSettimanale {
 }
 
 export type Locale = "it" | "ar";
+
+// ============================================================
+// TIPI UTENTE (normali, registrati su MongoDB)
+// ============================================================
+
+/** Ruolo applicativo dell'utente, scelto nel quiz di registrazione */
+export type UserRole = "credente" | "madre" | "padre" | "ospite_chiesa";
+
+/** Fascia d'età per filtraggio contenuti */
+export type AgeGroup = "0-11" | "12-18" | "19-29" | "30-45" | "46-65" | "65+";
+
+/** Stato della richiesta di diventare admin */
+export type AdminRequestStatus = "none" | "pending" | "approved" | "rejected";
+
+/** Profilo utente normale (MongoDB) */
+export interface UserProfile {
+  _id?: string;
+  email: string;
+  username: string;
+  passwordHash: string;
+  nome: string;
+  cognome: string;
+
+  // Dati quiz registrazione
+  role: UserRole;
+  ageGroup: AgeGroup;
+  chiesa?: string; // chiesa di provenienza (per ospiti da altra chiesa)
+
+  // Gestione accesso
+  attivo: boolean;
+  emailVerificata: boolean;
+
+  // Richiesta admin
+  adminRequest: AdminRequestStatus;
+  adminRequestDate?: string; // ISO date
+
+  // Metadati
+  createdAt: string; // ISO date
+  updatedAt: string; // ISO date
+  ultimoAccesso?: string; // ISO date
+}
+
+/** Dati per la creazione di un nuovo utente (senza campi auto-generati) */
+export type CreateUserData = Omit<
+  UserProfile,
+  "_id" | "passwordHash" | "attivo" | "emailVerificata" | "adminRequest" | "createdAt" | "updatedAt" | "ultimoAccesso"
+> & {
+  password: string;
+  adminRequest?: boolean; // true se vuole richiedere di diventare admin
+};
+
+/** Vista pubblica dell'utente (senza hash password) */
+export type UserPublic = Omit<UserProfile, "passwordHash">;
+
+/** Info utente serializzata nel cookie/session client */
+export interface UserSessionInfo {
+  id: string;
+  email: string;
+  username: string;
+  nome: string;
+  cognome: string;
+  role: UserRole;
+  ageGroup: AgeGroup;
+  isAdmin: false;
+}
+
+/** Info admin serializzata nel cookie/session client */
+export interface AdminSessionInfo {
+  id: string;
+  username: string;
+  nome: string;
+  cognome: string;
+  ruolo: "superadmin" | "admin";
+  isAdmin: true;
+}
+
+/** Tipo unificato per la sessione utente (admin o normale) */
+export type SessionInfo = UserSessionInfo | AdminSessionInfo;

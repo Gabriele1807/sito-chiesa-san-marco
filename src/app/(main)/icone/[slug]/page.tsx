@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getIconaBySlug, getIcone, getTestiSacri } from "@/lib/db";
-import { MapPin, Palette, User, CalendarDays, ChevronLeft } from "lucide-react";
+import { MapPin, Palette, User, CalendarDays } from "lucide-react";
 import IconaQRSection from "@/components/IconaQRSection";
-import Link from "next/link";
+import BackLink from "@/components/BackLink";
+import RelatedResourceCard from "@/components/RelatedResourceCard";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 
 interface Props {
@@ -28,15 +29,7 @@ export default async function IconaDetailPage({ params }: Props) {
   return (
     <div className="space-y-12">
       {/* FIX [22] — Back navigation link */}
-      <div className="mb-4">
-        <Link
-          href="/icone"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-amber-600 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          {t("tornaGalleria")}
-        </Link>
-      </div>
+      <BackLink href="/icone" label={t("tornaGalleria")} />
 
       {/* Top section: 2 columns */}
       <div className="grid lg:grid-cols-2 gap-8">
@@ -133,30 +126,24 @@ export default async function IconaDetailPage({ params }: Props) {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tCorrelati.map((testo) => (
-              <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group">
-                <div className="card-hover bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                    {testo.tipo}
-                  </span>
-                  <h4 className="font-bold text-gray-900 mt-1 group-hover:text-primary transition-colors">
-                    {testo.titolo}
-                  </h4>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{testo.descrizione}</p>
-                </div>
-              </Link>
+              <RelatedResourceCard
+                key={testo.id}
+                href={`/libreria/${testo.slug}`}
+                tag={testo.tipo}
+                tagColor="primary"
+                title={testo.titolo}
+                subtitle={testo.descrizione}
+              />
             ))}
             {iconeCorrelate.map((ic) => (
-              <Link key={ic.id} href={`/icone/${ic.slug}`} className="group">
-                <div className="card-hover bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <span className="text-xs font-semibold text-accent uppercase tracking-wider">
-                    Icona
-                  </span>
-                  <h4 className="font-bold text-gray-900 mt-1 group-hover:text-accent transition-colors">
-                    {ic.nomeSanto}
-                  </h4>
-                  <p className="text-sm text-gray-500 mt-1">{ic.posizione}</p>
-                </div>
-              </Link>
+              <RelatedResourceCard
+                key={ic.id}
+                href={`/icone/${ic.slug}`}
+                tag="Icona"
+                tagColor="accent"
+                title={ic.nomeSanto}
+                subtitle={ic.posizione}
+              />
             ))}
           </div>
         </section>

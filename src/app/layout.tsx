@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { AuthProvider } from "@/components/auth/AuthContext";
+import LoginModal from "@/components/auth/LoginModal";
+import RegisterModal from "@/components/auth/RegisterModal";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,7 +30,11 @@ export default async function RootLayout({
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <AuthProvider>
+            {children}
+            <LoginModal />
+            <RegisterModal />
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

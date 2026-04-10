@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getEventi } from "@/lib/db";
 import EventiList from "@/components/EventiList";
+import RestrictedSection from "@/components/auth/RestrictedSection";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,9 @@ export default async function EventiPage() {
         </p>
       </div>
 
-      <EventiList eventi={eventi} />
+      <RestrictedSection message="Per accedere agli eventi e alle prenotazioni registrati o accedi">
+        <EventiList eventi={eventi} />
+      </RestrictedSection>
     </div>
   );
 }

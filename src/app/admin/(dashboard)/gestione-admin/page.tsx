@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Users,
   Plus,
   Shield,
   ShieldCheck,
@@ -13,6 +12,9 @@ import {
   X,
   Loader2,
   AlertTriangle,
+  Clock,
+  Check,
+  XCircle,
 } from "lucide-react";
 
 interface AdminUser {
@@ -57,6 +59,20 @@ export default function GestioneAdminPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  // Richieste admin pendenti
+  const [pendingRequests, setPendingRequests] = useState<Array<{
+    _id: string;
+    username: string;
+    email: string;
+    nome: string;
+    cognome: string;
+    role: string;
+    ageGroup: string;
+    adminRequest: string;
+    adminRequestDate?: string;
+    createdAt: string;
+  }>>([]);
+  const [processingRequest, setProcessingRequest] = useState<string | null>(null);
 
   const fetchAdmins = useCallback(async () => {
     try {
@@ -74,9 +90,64 @@ export default function GestioneAdminPage() {
     }
   }, []);
 
+  const fetchPendingRequests = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/richieste-admin");
+      const data = await res.json();
+      if (data.success) {
+        setPendingRequests(data.data);
+      }
+    } catch {
+      // silently fail - non-critical
+    }
+  }, []);
+
   useEffect(() => {
     fetchAdmins();
-  }, [fetchAdmins]);
+    fetchPendingRequests();
+  }, [fetchAdmins, fetchPendingRequests]);
+
+  async function handleApproveRequest(userId: string) {
+    setProcessingRequest(userId);
+    try {
+      const res = await fetch("/api/admin/richieste-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "approve", ruolo: "admin" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await Promise.all([fetchPendingRequests(), fetchAdmins()]);
+      } else {
+        alert(data.error || "Errore nell'approvazione");
+      }
+    } catch {
+      alert("Errore di connessione");
+    } finally {
+      setProcessingRequest(null);
+    }
+  }
+
+  async function handleRejectRequest(userId: string) {
+    setProcessingRequest(userId);
+    try {
+      const res = await fetch("/api/admin/richieste-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "reject" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchPendingRequests();
+      } else {
+        alert(data.error || "Errore nel rifiuto");
+      }
+    } catch {
+      alert("Errore di connessione");
+    } finally {
+      setProcessingRequest(null);
+    }
+  }
 
   function openCreateForm() {
     setEditingId(null);
@@ -375,6 +446,69 @@ export default function GestioneAdminPage() {
       </div>
 
       {/* Modal form crea/modifica */}
+
+      {/* Richieste admin pendenti */}
+      {pendingRequests.length > 0 && (
+        <div className="bg-white rounded-xl border border-amber-200 overflow-hidden">
+          <div className="px-5 py-4 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-amber-600" />
+            <h2 className="text-lg font-bold text-gray-900">
+              Richieste Admin Pendenti ({pendingRequests.length})
+            </h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {pendingRequests.map((req) => (
+              <div key={req._id} className="px-5 py-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold shrink-0">
+                    {req.nome?.[0] ?? "?"}{req.cognome?.[0] ?? ""}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {req.nome} {req.cognome}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">{req.email} · @{req.username}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Ruolo: <span className="font-medium">{req.role}</span> · Età: {req.ageGroup}
+                      {req.adminRequestDate && (
+                        <> · Richiesta il {new Date(req.adminRequestDate).toLocaleDateString("it-IT")}</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleRejectRequest(req._id)}
+                    disabled={processingRequest === req._id}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    {processingRequest === req._id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5" />
+                    )}
+                    Rifiuta
+                  </button>
+                  <button
+                    onClick={() => handleApproveRequest(req._id)}
+                    disabled={processingRequest === req._id}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  >
+                    {processingRequest === req._id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Check className="w-3.5 h-3.5" />
+                    )}
+                    Approva
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Form modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">

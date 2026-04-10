@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { getTestiSacri, getPreghiere, getEventi } from "@/lib/db";
+import QuickAccessCard from "@/components/QuickAccessCard";
 
 export const dynamic = "force-dynamic";
 
@@ -50,69 +51,13 @@ export default async function HomePage() {
       {/* ====== ZONA 2 - QUICK ACCESS GRID ====== */}
       <section>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Link href="/orari" className="group">
-            <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
-              <div className="flex flex-col items-center text-center gap-3">
-                <Clock className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickOrari")}</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">{t("quickOrariDesc")}</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/preghiere" className="group">
-            <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
-              <div className="flex flex-col items-center text-center gap-3">
-                <BookOpen className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickPreghiere")}</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">{t("quickPreghiereDesc")}</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/icone" className="group">
-            <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
-              <div className="flex flex-col items-center text-center gap-3">
-                <ImageIcon className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickIcone")}</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">{t("quickIconeDesc")}</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/libreria" className="group">
-            <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
-              <div className="flex flex-col items-center text-center gap-3">
-                <Library className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickLibreria")}</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">{t("quickLibreriaDesc")}</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/eventi" className="group">
-            <div className="card-hover bg-slate-800 rounded-xl p-6 border border-white/10 hover:border-accent cursor-pointer h-full">
-              <div className="flex flex-col items-center text-center gap-3">
-                <CalendarDays className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickEventi")}</h3>
-                <p className="text-gray-400 text-xs leading-relaxed">{t("quickEventiDesc")}</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/orari" className="group">
-            <div className="card-hover bg-slate-800 rounded-xl p-6 border-2 border-accent hover:border-accent-light cursor-pointer h-full relative">
-              {/* FIX [18] — Badge day enlarged for readability */}
-              <div className="absolute top-3 right-3">
-                <span className="inline-block bg-amber-500 text-white text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">{t("domenica")}</span>
-              </div>
-              <div className="flex flex-col items-center text-center gap-3">
-                <Sparkles className="w-7 h-7 text-accent" />
-                <h3 className="text-white font-bold text-sm uppercase tracking-wide">{t("quickProssima")}</h3>
-                <p className="text-accent text-xs font-semibold">{t("quickProssimaDesc")}</p>
-              </div>
-            </div>
-          </Link>
+          <QuickAccessCard href="/orari" icon={Clock} title={t("quickOrari")} description={t("quickOrariDesc")} />
+          <QuickAccessCard href="/preghiere" icon={BookOpen} title={t("quickPreghiere")} description={t("quickPreghiereDesc")} />
+          <QuickAccessCard href="/icone" icon={ImageIcon} title={t("quickIcone")} description={t("quickIconeDesc")} />
+          <QuickAccessCard href="/libreria" icon={Library} title={t("quickLibreria")} description={t("quickLibreriaDesc")} />
+          <QuickAccessCard href="/eventi" icon={CalendarDays} title={t("quickEventi")} description={t("quickEventiDesc")} />
+          {/* FIX [18] — Badge day enlarged for readability */}
+          <QuickAccessCard href="/orari" icon={Sparkles} title={t("quickProssima")} description={t("quickProssimaDesc")} highlight badge={t("domenica")} />
         </div>
       </section>
 

@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   LogOut,
   Users,
+  UsersRound,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -124,6 +125,18 @@ export default function AdminSidebar() {
                 Amministrazione
               </p>
             </div>
+            <Link
+              href="/admin/utenti"
+              onClick={closeMobile}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                pathname === "/admin/utenti"
+                  ? "bg-amber-600/20 text-amber-600 font-semibold"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <UsersRound className="w-4.5 h-4.5" />
+              Gestione Utenti
+            </Link>
             <Link
               href="/admin/gestione-admin"
               onClick={closeMobile}
