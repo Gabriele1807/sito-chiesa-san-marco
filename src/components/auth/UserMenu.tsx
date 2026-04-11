@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Shield, ChevronDown } from "lucide-react";
+import { User, UserX, LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
 import { useAuth } from "./AuthContext";
 
 export default function UserMenu() {
-  const { type, loading, user, admin, setShowLoginModal, logout } = useAuth();
+  const { type, loading, user, admin, isExplicitGuest, setShowLoginModal, setShowRegisterModal, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -29,16 +29,43 @@ export default function UserMenu() {
     );
   }
 
-  // Ospite: bottone login
+  // Ospite esplicito: mostra indicatore ospite con possibilità di accedere
+  if (type === "guest" && isExplicitGuest) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-lg">
+          <UserX className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Ospite</span>
+        </div>
+        <button
+          onClick={() => setShowLoginModal(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light transition-colors"
+        >
+          <User className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Accedi</span>
+        </button>
+      </div>
+    );
+  }
+
+  // Guest non esplicito: bottoni login + registrazione
   if (type === "guest") {
     return (
-      <button
-        onClick={() => setShowLoginModal(true)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light transition-colors"
-      >
-        <User className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">Accedi</span>
-      </button>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => setShowLoginModal(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light transition-colors"
+        >
+          <User className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Accedi</span>
+        </button>
+        <button
+          onClick={() => setShowRegisterModal(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-white border border-primary rounded-lg hover:bg-primary/5 transition-colors"
+        >
+          <span className="hidden sm:inline">Registrati</span>
+        </button>
+      </div>
     );
   }
 
@@ -105,6 +132,16 @@ export default function UserMenu() {
             </Link>
           )}
 
+          <Link
+            href="/profilo"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <UserCircle className="w-4 h-4" />
+            Il mio profilo
+          </Link>
+
+          <div className="border-t border-gray-100 mt-1 pt-1">
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
@@ -112,6 +149,7 @@ export default function UserMenu() {
             <LogOut className="w-4 h-4" />
             Logout
           </button>
+          </div>
         </div>
       )}
     </div>

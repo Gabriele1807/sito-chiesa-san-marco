@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 9 aprile 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 10 aprile 2026.
 
 ---
 
@@ -21,7 +21,7 @@ Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto i
 | Voce | Valore |
 |------|--------|
 | Nome progetto | chiesa-san-marco |
-| Workspace Windows | C:\Users\Gabriele\Downloads\sito\chiesa-san-marco |
+| Workspace Windows | C:\Users\Gabriele\Downloads\sito-v3\sito-chiesa-san-marco |
 | URL dev previsto | http://localhost:3000 |
 | Framework | Next.js 16 App Router |
 | Lingue | italiano, arabo |
@@ -199,13 +199,15 @@ chiesa-san-marco/
 |     |  |- layout.tsx
 |     |  |- page.tsx
 |     |  |- chi-siamo/page.tsx
+|     |  |- contatti/page.tsx
 |     |  |- eventi/page.tsx
 |     |  |- icone/page.tsx
 |     |  |- icone/[slug]/page.tsx
 |     |  |- libreria/page.tsx
 |     |  |- libreria/[slug]/page.tsx
 |     |  |- orari/page.tsx
-|     |  \- preghiere/page.tsx
+|     |  |- preghiere/page.tsx
+|     |  \- profilo/page.tsx
 |     |- admin/
 |     |  |- layout.tsx
 |     |  |- login/
@@ -549,7 +551,10 @@ Auto-login dopo registrazione.
 
 `src/components/auth/AuthContext.tsx`:
 - `AuthProvider` avvolge il root layout
-- `useAuth()` hook espone: `type` (`guest`/`user`/`admin`), `user`, `admin`, `showLoginModal`, `showRegisterModal`, `refresh()`, `logout()`
+- `useAuth()` hook espone: `type` (`guest`/`user`/`admin`), `user`, `admin`, `showLoginModal`, `showRegisterModal`, `isExplicitGuest`, `refresh()`, `logout()`
+- `isExplicitGuest` e persistito in localStorage come `explicit_guest`
+- `refresh()` controlla prima `admin_info` in localStorage, poi chiama `GET /api/auth/me`
+- Quando l'API ritorna `type: "admin"` con dati admin (auto-promozione), salva in localStorage
 - `LoginModal` e `RegisterModal` sono renderizzati nel root layout e controllati dal context
 
 ### 8d.5 Guest access & restricted sections
@@ -563,8 +568,10 @@ Auto-login dopo registrazione.
 
 1. Utente si registra con `adminRequest: "pending"` se seleziona il checkbox
 2. Superadmin vede le richieste pendenti in `/admin/gestione-admin`
-3. `POST /api/admin/richieste-admin` con `action: "approve"` crea un admin_users in Supabase con password temporanea
+3. `POST /api/admin/richieste-admin` con `action: "approve"` crea un admin_users in Supabase **con la stessa passwordHash dell'utente** (non piu password temporanea)
 4. `action: "reject"` aggiorna lo stato in MongoDB
+5. **Auto-promozione**: quando `GET /api/auth/me` rileva un utente con `adminRequest === "approved"` e un corrispondente admin_users in Supabase, crea automaticamente una sessione admin e imposta il cookie `admin_session`. L'utente vede immediatamente l'accesso admin alla prossima navigazione/refresh.
+6. L'AuthContext salva i dati admin in localStorage (`admin_info`) quando riceve la promozione via API
 
 ### 8d.7 Gestione utenti admin
 
@@ -695,6 +702,7 @@ Stili globali aggiuntivi:
 
 - home
 - chi siamo
+- contatti
 - orari
 - icone
 - icone/[slug]
@@ -702,6 +710,7 @@ Stili globali aggiuntivi:
 - libreria/[slug]
 - eventi
 - preghiere
+- profilo
 
 ### 11.3 Comportamenti importanti gia fatti
 
@@ -712,6 +721,7 @@ Stili globali aggiuntivi:
   - badge giorno ingranditi e piu leggibili
   - sottotitolo home aggiornato e non generico
   - Quick Access Grid usa componente riutilizzabile `QuickAccessCard`
+  - card "Prossima Celebrazione" dinamica con `NextCelebrationCard` (auto-aggiornamento ogni 60s)
 
 - pagine dettaglio icone e libreria:
   - usano `BackLink` componente condiviso per navigazione indietro
@@ -733,6 +743,22 @@ Stili globali aggiuntivi:
 - pagina orari:
   - su mobile la colonna note e nascosta
   - giorni accentati correttamente, es. Martedi/Giovedi non devono essere senza accento
+
+- pagina contatti:
+  - sezione YouTube dinamica (`YouTubeLiveSection`) con dati dal canale reale (`@SanMarco-Milano`)
+  - indicatore live in tempo reale, ultimo video, stream in programma
+  - dati YouTube aggiornati ogni 2 minuti lato client, cache server 5 minuti
+  - mappa Google Maps embed reale (Via Senato, 4, 20121 Milano MI)
+  - cross pin animato sovrapposto alla mappa
+  - sacerdote: solo nome "Padre Mina Kolta", non contattabile
+  - social: solo Facebook (Instagram e WhatsApp rimossi)
+  - link Facebook e YouTube reali
+
+- pagina profilo (`/profilo`):
+  - mostra info utente: nome, cognome, username, email, ruolo nella comunita
+  - mostra stato richiesta admin (pending/approved/rejected) con badge colorati
+  - form per cambio password con validazione
+  - accessibile solo utenti autenticati, guest vedono messaggio con link a login
 
 - pagina chi-siamo:
   - titoli card coerenti con la palette blu/ambra del sito
@@ -832,7 +858,9 @@ Caratteristiche gia implementate:
 - `POST /api/auth/login` — login unificato (admin + utenti)
 - `POST /api/auth/register` — registrazione utenti normali
 - `POST /api/auth/logout` — logout utenti normali
-- `GET /api/auth/me` — stato sessione corrente
+- `GET /api/auth/me` — stato sessione corrente (con auto-promozione admin se approved)
+- `POST /api/auth/change-password` — cambio password utente autenticato
+- `GET /api/youtube/channel` — dati canale YouTube (cache 5 min, richiede `YOUTUBE_API_KEY`)
 
 ### 13.2 API admin
 
@@ -867,6 +895,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_SESSION_SECRET=
 MONGODB_URI=
 MONGODB_DB=
+YOUTUBE_API_KEY=
 ```
 
 Note:
@@ -876,6 +905,7 @@ Note:
 - `ADMIN_SESSION_SECRET` e prevista nel contesto ma la sessione attuale e basata su token DB + cookie httpOnly (non su JWT firmato)
 - `MONGODB_URI` e la connection string MongoDB (es. `mongodb://localhost:27017` o Atlas URL)
 - `MONGODB_DB` e il nome del database (es. `chiesa-san-marco`)
+- `YOUTUBE_API_KEY` chiave YouTube Data API v3 per il recupero dinamico dei dati del canale (opzionale, se assente la sezione mostra dati statici)
 - Le variabili Supabase sono necessarie anche nel middleware (Edge runtime): il middleware crea il client Supabase direttamente senza passare dal layer `server.ts`
 
 ## 15. Configurazione Next.js (next.config.ts)
@@ -969,7 +999,7 @@ Nota pratica:
 6. evitare `zoom` in `globals.css`, ha gia creato problemi di layout in passato
 7. `ADMIN_SESSION_SECRET` e dichiarato nelle variabili ma non e ancora usato attivamente (la session security e basata su token UUID in DB + cookie httpOnly)
 8. il middleware protegge solo le route admin; le route `/api/auth/*` sono pubbliche
-9. quando un utente viene approvato come admin, riceve una password temporanea che dovra cambiare
+9. quando un utente viene approvato come admin, le stesse credenziali di login funzionano per l'accesso admin (non serve piu password temporanea)
 
 ---
 

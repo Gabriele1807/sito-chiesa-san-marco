@@ -135,6 +135,7 @@ export interface UserSessionInfo {
   role: UserRole;
   ageGroup: AgeGroup;
   isAdmin: false;
+  adminRequest?: AdminRequestStatus;
 }
 
 /** Info admin serializzata nel cookie/session client */

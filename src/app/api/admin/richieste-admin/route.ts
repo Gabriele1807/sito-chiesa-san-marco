@@ -4,6 +4,7 @@ import {
   getPendingAdminRequests,
   updateAdminRequest,
   findUserById,
+  findUserByIdFull,
 } from "@/lib/mongo/users";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { supabaseAdmin } from "@/lib/supabase/server";
@@ -87,10 +88,17 @@ export async function POST(request: Request) {
     // ---- Approvazione ----
     const adminRuolo = targetRuolo === "superadmin" ? "superadmin" : "admin";
 
-    // Genera una password temporanea per l'account admin su Supabase
-    // L'utente dovrà cambiarla al primo accesso admin (o usare le stesse credenziali)
-    const tempPassword = crypto.randomUUID().slice(0, 16);
-    const passwordHash = await hashPassword(tempPassword);
+    // Recupera il profilo completo (con passwordHash) per copiare la password reale
+    const fullUser = await findUserByIdFull(userId);
+    let passwordHash: string;
+    if (fullUser?.passwordHash) {
+      // Usa la stessa password dell'utente così potrà accedere come admin con le stesse credenziali
+      passwordHash = fullUser.passwordHash;
+    } else {
+      // Fallback: genera password temporanea (non dovrebbe succedere)
+      const tempPassword = crypto.randomUUID().slice(0, 16);
+      passwordHash = await hashPassword(tempPassword);
+    }
 
     // Crea utente in Supabase admin_users
     const { error: insertError } = await supabaseAdmin
@@ -127,8 +135,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Richiesta approvata. L'utente ${user.username} è ora ${adminRuolo}. Password temporanea: ${tempPassword}`,
-      tempPassword,
+      message: `Richiesta approvata. L'utente ${user.username} è ora ${adminRuolo}.`,
     });
   } catch (err) {
     console.error("Errore POST richieste admin:", err);

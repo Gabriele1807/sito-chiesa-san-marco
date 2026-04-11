@@ -16,6 +16,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth/AuthContext";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -30,6 +31,7 @@ const links = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout: authLogout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
   const [adminInfo, setAdminInfo] = useState<{
     nome: string;
@@ -38,11 +40,10 @@ export default function AdminSidebar() {
   } | null>(null);
 
   useEffect(() => {
-    // Legge le info admin dal localStorage (salvate al login)
-    // Si aggiorna ad ogni cambio di pathname per rilevare subito il ruolo dopo il login
     try {
       const stored = localStorage.getItem("admin_info");
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- reading from localStorage on mount
         setAdminInfo(JSON.parse(stored));
       }
     } catch {
@@ -52,8 +53,7 @@ export default function AdminSidebar() {
 
   async function handleLogout() {
     setLoggingOut(true);
-    await fetch("/api/admin/logout", { method: "POST" });
-    localStorage.removeItem("admin_info");
+    await authLogout();
     router.push("/");
   }
 
