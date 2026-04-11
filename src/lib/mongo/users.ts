@@ -98,6 +98,14 @@ export async function findUserById(id: string): Promise<UserPublic | null> {
   return toUserPublic(doc);
 }
 
+export async function findUserByIdFull(id: string): Promise<(UserProfile & { _id: string }) | null> {
+  const c = await col();
+  if (!ObjectId.isValid(id)) return null;
+  const doc = await c.findOne({ _id: new ObjectId(id) });
+  if (!doc) return null;
+  return { ...doc, _id: doc._id.toString() } as unknown as UserProfile & { _id: string };
+}
+
 export async function listUsers(opts?: {
   page?: number;
   limit?: number;
@@ -148,6 +156,16 @@ export async function updateUserLastAccess(id: string): Promise<void> {
     { _id: new ObjectId(id) },
     { $set: { ultimoAccesso: new Date().toISOString() } }
   );
+}
+
+export async function updateUserPassword(id: string, passwordHash: string): Promise<boolean> {
+  const c = await col();
+  if (!ObjectId.isValid(id)) return false;
+  const result = await c.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { passwordHash, updatedAt: new Date().toISOString() } }
+  );
+  return result.modifiedCount === 1;
 }
 
 // --------------- Admin Request ---------------

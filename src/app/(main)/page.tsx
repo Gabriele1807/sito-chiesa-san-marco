@@ -8,10 +8,10 @@ import {
   CalendarDays,
   HandHeart,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
-import { getTestiSacri, getPreghiere, getEventi } from "@/lib/db";
+import { getTestiSacri, getPreghiere, getEventi, getOrari } from "@/lib/db";
 import QuickAccessCard from "@/components/QuickAccessCard";
+import NextCelebrationCard from "@/components/NextCelebrationCard";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +20,7 @@ export default async function HomePage() {
   const testiSacri = await getTestiSacri();
   const preghiere = await getPreghiere();
   const eventi = await getEventi();
+  const orari = await getOrari();
 
   // FIX [4] — Date now formatted with current locale instead of hardcoded "it-IT"
   const locale = await getLocale();
@@ -56,8 +57,8 @@ export default async function HomePage() {
           <QuickAccessCard href="/icone" icon={ImageIcon} title={t("quickIcone")} description={t("quickIconeDesc")} />
           <QuickAccessCard href="/libreria" icon={Library} title={t("quickLibreria")} description={t("quickLibreriaDesc")} />
           <QuickAccessCard href="/eventi" icon={CalendarDays} title={t("quickEventi")} description={t("quickEventiDesc")} />
-          {/* FIX [18] — Badge day enlarged for readability */}
-          <QuickAccessCard href="/orari" icon={Sparkles} title={t("quickProssima")} description={t("quickProssimaDesc")} highlight badge={t("domenica")} />
+          {/* FIX [18] — Dynamic next celebration card */}
+          <NextCelebrationCard orari={orari} title={t("quickProssima")} />
         </div>
       </section>
 

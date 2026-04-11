@@ -13,7 +13,11 @@ import {
   Info,
   QrCode,
   ChevronRight,
+  Lock,
+  Phone,
+  User,
 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthContext";
 
 // FIX [1] — Sidebar subtitles now use i18n keys instead of hardcoded Italian strings
 type NavLink = {
@@ -21,6 +25,7 @@ type NavLink = {
   icon: React.ElementType;
   key: string;
   subKey: string;
+  restricted?: boolean;
 };
 
 const navLinks: NavLink[] = [
@@ -28,18 +33,29 @@ const navLinks: NavLink[] = [
   { href: "/orari", icon: Clock, key: "orari", subKey: "subOrari" },
   { href: "/preghiere", icon: BookOpen, key: "preghiere", subKey: "subPreghiere" },
   { href: "/icone", icon: ImageIcon, key: "icone", subKey: "subIcone" },
-  { href: "/libreria", icon: Library, key: "libreria", subKey: "subLibreria" },
-  { href: "/eventi", icon: CalendarDays, key: "eventi", subKey: "subEventi" },
+  { href: "/libreria", icon: Library, key: "libreria", subKey: "subLibreria", restricted: true },
+  { href: "/eventi", icon: CalendarDays, key: "eventi", subKey: "subEventi", restricted: true },
 ];
 
 const infoLinks: NavLink[] = [
   { href: "/chi-siamo", icon: Info, key: "chiSiamo", subKey: "" },
+  { href: "/contatti", icon: Phone, key: "contatti", subKey: "subContatti" },
 ];
+
+const profileLink: NavLink = {
+  href: "/profilo",
+  icon: User,
+  key: "profilo",
+  subKey: "subProfilo",
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations("nav");
   const ts = useTranslations("sidebar"); // FIX [1] — sidebar-specific translations
+  const { type, setShowLoginModal } = useAuth();
+
+  const isGuest = type === "guest";
 
   function closeMobile() {
     const sidebar = document.getElementById("mobile-sidebar");
@@ -59,6 +75,28 @@ export default function Sidebar() {
   function renderLink(link: NavLink) {
     const active = isActive(link.href);
     const Icon = link.icon;
+    const locked = link.restricted && isGuest;
+
+    if (locked) {
+      return (
+        <button
+          key={link.href}
+          onClick={() => {
+            closeMobile();
+            setShowLoginModal(true);
+          }}
+          className="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium w-full text-left opacity-50 cursor-not-allowed text-gray-500 hover:text-gray-400 hover:bg-white/5 transition-colors"
+        >
+          <Icon className="w-5 h-5 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <span className="block truncate">{t(link.key as Parameters<typeof t>[0])}</span>
+            {link.subKey && <span className="block text-[10px] text-gray-600 truncate">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
+          </div>
+          <Lock className="w-3.5 h-3.5 shrink-0 text-gray-500" />
+        </button>
+      );
+    }
+
     return (
       <Link
         key={link.href}
@@ -69,7 +107,6 @@ export default function Sidebar() {
         <Icon className="w-5 h-5 shrink-0" />
         <div className="min-w-0">
           <span className="block truncate">{t(link.key as Parameters<typeof t>[0])}</span>
-          {/* FIX [1] — Use translated subtitle from sidebar namespace */}
           {link.subKey && <span className="block text-[10px] text-gray-500 truncate">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
         </div>
       </Link>
@@ -103,6 +140,7 @@ export default function Sidebar() {
             {ts("informazioni")}
           </p>
           {infoLinks.map(renderLink)}
+          {type !== "guest" && renderLink(profileLink)}
         </nav>
 
         {/* QR widget bottom */}

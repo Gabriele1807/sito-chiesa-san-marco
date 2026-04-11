@@ -21,6 +21,9 @@ interface AuthContextValue extends AuthState {
   /** Apre/chiude la modal di registrazione */
   showRegisterModal: boolean;
   setShowRegisterModal: (v: boolean) => void;
+  /** L'utente ha scelto esplicitamente di continuare come ospite */
+  isExplicitGuest: boolean;
+  setIsExplicitGuest: (v: boolean) => void;
   /** Ricarica lo stato autenticazione */
   refresh: () => Promise<void>;
   /** Logout utente o admin */
@@ -40,6 +43,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [isExplicitGuest, setIsExplicitGuestRaw] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("explicit_guest") === "true";
+    }
+    return false;
+  });
+
+  const setIsExplicitGuest = useCallback((v: boolean) => {
+    setIsExplicitGuestRaw(v);
+    if (v) {
+      localStorage.setItem("explicit_guest", "true");
+    } else {
+      localStorage.removeItem("explicit_guest");
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -48,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (adminInfoStr) {
         try {
           const adminInfo = JSON.parse(adminInfoStr);
+          setIsExplicitGuest(false);
           setState({
             type: "admin",
             loading: false,
@@ -72,14 +91,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
 
       if (data.success && data.type === "admin") {
-        // Ha cookie admin ma non ha localStorage - state admin minimale
+        setIsExplicitGuest(false);
+        // Se i dati admin arrivano dall'API (auto-promozione), salva in localStorage
+        if (data.admin) {
+          localStorage.setItem("admin_info", JSON.stringify(data.admin));
+        }
         setState({
           type: "admin",
           loading: false,
           user: null,
-          admin: null, // i dati verranno dal localStorage se disponibili
+          admin: data.admin ? {
+            id: data.admin.id || "",
+            username: data.admin.username || "",
+            nome: data.admin.nome,
+            cognome: data.admin.cognome,
+            ruolo: data.admin.ruolo,
+            isAdmin: true,
+          } : null,
         });
       } else if (data.success && data.type === "user" && data.user) {
+        setIsExplicitGuest(false);
         setState({
           type: "user",
           loading: false,
@@ -102,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         admin: null,
       });
     }
-  }, []);
+  }, [setIsExplicitGuest]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data fetch on mount
@@ -137,6 +168,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setShowLoginModal,
         showRegisterModal,
         setShowRegisterModal,
+        isExplicitGuest,
+        setIsExplicitGuest,
         refresh,
         logout,
       }}

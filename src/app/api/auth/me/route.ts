@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById } from "@/lib/mongo/users";
+import { supabaseAdmin } from "@/lib/supabase/server";
 
 /**
  * GET /api/auth/me
@@ -52,6 +53,50 @@ export async function GET() {
       });
     }
 
+    // Auto-promozione: se la richiesta admin è stata approvata, crea sessione admin
+    if (user.adminRequest === "approved") {
+      const { data: adminUser } = await supabaseAdmin
+        .from("admin_users")
+        .select("id, username, nome, cognome, ruolo")
+        .eq("username", user.username)
+        .eq("attivo", true)
+        .single();
+
+      if (adminUser) {
+        const sessionToken = crypto.randomUUID();
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await supabaseAdmin.from("admin_sessions").insert({
+          admin_user_id: adminUser.id,
+          session_token: sessionToken,
+          expires_at: expiresAt.toISOString(),
+        });
+
+        const response = NextResponse.json({
+          success: true,
+          type: "admin",
+          authenticated: true,
+          admin: {
+            id: adminUser.id,
+            username: adminUser.username,
+            nome: adminUser.nome,
+            cognome: adminUser.cognome,
+            ruolo: adminUser.ruolo,
+          },
+        });
+
+        response.cookies.set("admin_session", sessionToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: 24 * 60 * 60,
+        });
+
+        return response;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       type: "user",
@@ -65,6 +110,7 @@ export async function GET() {
         role: user.role,
         ageGroup: user.ageGroup,
         isAdmin: false,
+        adminRequest: user.adminRequest,
       },
     });
   } catch (err) {

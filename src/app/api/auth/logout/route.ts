@@ -16,9 +16,9 @@ export async function POST() {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Errore logout utente:", err);
-    return NextResponse.json(
-      { success: false, error: "Errore del server" },
-      { status: 500 }
-    );
+    // Elimina comunque il cookie anche in caso di errore DB
+    const cookieStore = await cookies();
+    cookieStore.delete("user_session");
+    return NextResponse.json({ success: true });
   }
 }
