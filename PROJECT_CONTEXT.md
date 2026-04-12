@@ -27,7 +27,7 @@ Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto i
 | Lingue | italiano, arabo |
 | Frontend pubblico | next-intl + TailwindCSS v4 |
 | Admin auth | Supabase + sessioni DB + cookie httpOnly |
-| Persistenza contenuti | NO, attualmente store in memoria |
+| Persistenza contenuti | SI, MongoDB Atlas (icone, preghiere, eventi, orari, libreria) |
 | Persistenza autenticazione | SI, Supabase (admin) + MongoDB (utenti normali) |
 | Autenticazione utenti normali | MongoDB + cookie httpOnly `user_session` |
 | Registrazione utenti | SI, con quiz (ruolo, eta, chiesa) |
@@ -37,7 +37,9 @@ Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto i
 Fatti importanti da sapere subito:
 
 - il sito pubblico e l'area admin condividono lo stesso progetto Next.js
-- i contenuti del sito non sono ancora persistiti su database: vengono caricati da mock data e poi mantenuti in memoria tramite globalThis
+- i contenuti del sito sono persistiti su MongoDB Atlas tramite `src/lib/mongo/content.ts`
+- al primo avvio le collezioni vuote vengono popolate dai dati mock automaticamente
+- lo store in memoria `src/lib/data/store.ts` rimane come fallback di emergenza
 - l'autenticazione admin invece e persistita su Supabase
 - la route di login admin non deve mostrare sidebar o topbar admin
 - la dashboard admin e gia stata ripulita dalle ridondanze: non deve tornare a contenere link duplicati della sidebar
@@ -275,18 +277,22 @@ Tipi principali definiti in `src/types/index.ts`:
 - `src/lib/mock-data.ts`
   - seed iniziale del sito
   - contiene icone, testi sacri, preghiere, eventi e orari settimanali
+  - usati per popolare MongoDB al primo avvio se le collezioni sono vuote
+
+- `src/lib/mongo/content.ts`
+  - layer CRUD dei contenuti su MongoDB Atlas
+  - collezioni: `icone`, `testi_sacri`, `preghiere`, `eventi`, `orari_settimanali`, `file_privati`
+  - al primo GET su ogni collezione vuota: seed automatico dai mock
+  - indici MongoDB creati automaticamente (id, slug, giorno)
+  - usato da tutte le API routes admin e da `db.ts`
 
 - `src/lib/data/store.ts`
-  - store in memoria condiviso tramite `globalThis`
-  - espone CRUD per tutti i contenuti
-  - contiene anche il tipo `FilePrivato`
-  - usa `nextId()` helper interno per generare ID numerici incrementali (FUTURO: sostituire con UUID DB)
-  - commenti `// FUTURO: supabase.from(...)` marcano i punti di migrazione
+  - store in-memoria (globalThis) — rimane come fallback di emergenza
+  - non più usato direttamente dalle API routes o da db.ts
 
 - `src/lib/db.ts`
   - layer di astrazione async per i server components pubblici
-  - legge dallo store, espone funzioni async (es. `getIcone()`, `getTestiSacri()`, ecc.)
-  - FUTURO: qui si mettono le chiamate dirette a Supabase
+  - legge da `mongo/content.ts`
 
 - `src/lib/actions.ts`
   - server action `setLocale(locale)` per cambiare lingua via cookie (durata 1 anno)
@@ -300,13 +306,16 @@ Tipi principali definiti in `src/types/index.ts`:
 I contenuti dell'area pubblica e admin:
 
 - si possono modificare live da pannello admin
-- ma si resettano quando il server si riavvia
-- non sono ancora persistiti su Supabase
+- le modifiche **sopravvivono ai riavvii del server** (MongoDB persistente)
+- le collezioni vengono popolate dai mock al primo avvio automaticamente
 
-Quindi:
+Architettura DB definitiva:
 
-- se un task richiede dati permanenti, bisogna migrare lo store verso Supabase o altra persistenza
-- non bisogna descrivere l'area contenuti come gia persistente: non lo e
+| Dati | Database |
+|------|----------|
+| Admin auth + sessioni | Supabase |
+| Utenti normali + sessioni | MongoDB Atlas |
+| Contenuti sito (icone, preghiere, eventi, orari, libreria) | MongoDB Atlas |
 
 ---
 

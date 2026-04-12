@@ -16,7 +16,7 @@ function getSupabaseAdmin() {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Non proteggere la pagina di login e l'API di login

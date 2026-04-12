@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getOrari, addOrario, updateOrario, deleteOrario } from "@/lib/supabase/content";
+import { getOrari, addOrario, updateOrario, deleteOrario } from "@/lib/mongo/content";
 
 export async function GET() {
   return NextResponse.json(await getOrari());

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getIcone, addIcona, updateIcona, deleteIcona } from "@/lib/supabase/content";
+import { getIcone, addIcona, updateIcona, deleteIcona } from "@/lib/mongo/content";
 
 export async function GET() {
   return NextResponse.json(await getIcone());

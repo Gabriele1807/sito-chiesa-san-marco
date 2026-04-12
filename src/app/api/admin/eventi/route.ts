@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getEventi, addEvento, updateEvento, deleteEvento } from "@/lib/supabase/content";
+import { getEventi, addEvento, updateEvento, deleteEvento } from "@/lib/mongo/content";
 
 export async function GET() {
   return NextResponse.json(await getEventi());
