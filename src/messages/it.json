@@ -243,6 +243,25 @@
     "erroreGenerico": "Si è verificato un errore. Riprova.",
     "adminRequest_approved": "La tua richiesta admin è stata approvata. Hai accesso al pannello di amministrazione.",
     "adminRequest_pending": "La tua richiesta admin è in attesa di approvazione.",
-    "adminRequest_rejected": "La tua richiesta admin è stata rifiutata."
+    "adminRequest_rejected": "La tua richiesta admin è stata rifiutata.",
+    "modificaProfilo": "Modifica profilo",
+    "account": "Account",
+    "nome": "Nome",
+    "cognome": "Cognome",
+    "salvaModifiche": "Salva modifiche",
+    "profiloAggiornato": "Profilo aggiornato con successo!",
+    "emailGiaUsata": "Email già in uso da un altro account.",
+    "usernameGiaUsato": "Username già in uso da un altro account.",
+    "richiediAdmin": "Richiedi accesso admin",
+    "richiediAdminDesc": "Invia una richiesta per ottenere l'accesso al pannello di amministrazione.",
+    "richiedi": "Invia richiesta",
+    "richiestaAdminInviata": "Richiesta di accesso admin inviata con successo!",
+    "fasciaEta": "Fascia d'età",
+    "ruoloComunita": "Ruolo nella comunità",
+    "adminGiaRichiesto": "Richiesta già inviata, in attesa di approvazione.",
+    "adminApprovato": "Il tuo account ha già accesso admin.",
+    "chiesaProvenienza": "Chiesa di provenienza",
+    "chiesaPlaceholder": "es. San Paolo Apostolo di Roma",
+    "emailPlaceholderAdmin": "Lascia vuoto per non modificare"
   }
 }

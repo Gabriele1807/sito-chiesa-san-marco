@@ -136,7 +136,7 @@ export async function listUsers(opts?: {
 
 export async function updateUser(
   id: string,
-  data: Partial<Pick<UserProfile, "nome" | "cognome" | "role" | "ageGroup" | "chiesa" | "attivo" | "emailVerificata">>
+  data: Partial<Pick<UserProfile, "nome" | "cognome" | "role" | "ageGroup" | "chiesa" | "attivo" | "emailVerificata" | "adminRequest">>
 ): Promise<UserPublic | null> {
   const c = await col();
   if (!ObjectId.isValid(id)) return null;
@@ -156,6 +156,44 @@ export async function updateUserLastAccess(id: string): Promise<void> {
     { _id: new ObjectId(id) },
     { $set: { ultimoAccesso: new Date().toISOString() } }
   );
+}
+
+export async function updateUserEmail(
+  id: string,
+  email: string
+): Promise<{ success: boolean; error?: string; user?: UserPublic }> {
+  const existing = await findUserByEmail(email);
+  if (existing && existing._id !== id) {
+    return { success: false, error: "Email già in uso da un altro account" };
+  }
+  const c = await col();
+  if (!ObjectId.isValid(id)) return { success: false, error: "ID non valido" };
+  const result = await c.findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: { email, updatedAt: new Date().toISOString() } },
+    { returnDocument: "after", projection: { passwordHash: 0 } }
+  );
+  if (!result) return { success: false, error: "Utente non trovato" };
+  return { success: true, user: { ...result, _id: result._id.toString() } as unknown as UserPublic };
+}
+
+export async function updateUserUsername(
+  id: string,
+  username: string
+): Promise<{ success: boolean; error?: string; user?: UserPublic }> {
+  const existing = await findUserByUsername(username);
+  if (existing && existing._id !== id) {
+    return { success: false, error: "Username già in uso da un altro account" };
+  }
+  const c = await col();
+  if (!ObjectId.isValid(id)) return { success: false, error: "ID non valido" };
+  const result = await c.findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: { username, updatedAt: new Date().toISOString() } },
+    { returnDocument: "after", projection: { passwordHash: 0 } }
+  );
+  if (!result) return { success: false, error: "Utente non trovato" };
+  return { success: true, user: { ...result, _id: result._id.toString() } as unknown as UserPublic };
 }
 
 export async function updateUserPassword(id: string, passwordHash: string): Promise<boolean> {

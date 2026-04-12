@@ -24,15 +24,19 @@ export default function LanguageSwitcher({ currentLocale }: Props) {
     });
   }
 
+  /* Short code shown on mobile (xs), full label on sm+ */
+  const shortCode = currentLocale === "it" ? "ع" : "IT";
+
   return (
     <button
       onClick={handleSwitch}
       disabled={isPending}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-accent hover:text-white transition-all duration-200 border border-gray-200 hover:border-accent disabled:opacity-50 cursor-pointer"
+      className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-accent hover:text-white active:bg-accent active:text-white transition-all duration-200 border border-gray-200 hover:border-accent disabled:opacity-50 cursor-pointer"
       aria-label={`Switch language to ${label}`}
     >
       <Globe className="w-4 h-4" />
-      <span>{label}</span>
+      <span className="sm:hidden">{shortCode}</span>
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }

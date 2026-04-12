@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { getPreghiere, addPreghiera, updatePreghiera, deletePreghiera } from "@/lib/data/store";
+import { getPreghiere, addPreghiera, updatePreghiera, deletePreghiera } from "@/lib/supabase/content";
 
 export async function GET() {
-  return NextResponse.json(getPreghiere());
+  return NextResponse.json(await getPreghiere());
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const preghiera = addPreghiera(body);
+    const preghiera = await addPreghiera(body);
     return NextResponse.json(preghiera, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -19,7 +19,7 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const { id, ...data } = body;
-    const updated = updatePreghiera(id, data);
+    const updated = await updatePreghiera(id, data);
     if (!updated) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     return NextResponse.json(updated);
   } catch {
@@ -32,7 +32,7 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID mancante" }, { status: 400 });
-    const deleted = deletePreghiera(id);
+    const deleted = await deletePreghiera(id);
     if (!deleted) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch {

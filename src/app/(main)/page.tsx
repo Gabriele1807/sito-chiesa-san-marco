@@ -36,7 +36,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8">
       {/* ====== ZONA 1 - WELCOME HEADER ====== */}
-      <section className="relative -mx-6 sm:-mx-8 lg:-mx-10 -mt-10 px-6 sm:px-8 lg:px-10 py-10 bg-gradient-to-r from-primary via-primary-light to-primary overflow-hidden">
+      <section className="relative -mx-4 sm:-mx-6 lg:-mx-10 -mt-8 sm:-mt-10 px-4 sm:px-6 lg:px-10 py-8 sm:py-10 bg-gradient-to-r from-primary via-primary-light to-primary overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent via-accent-light to-accent" />
         <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
