@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPreghiere, addPreghiera, updatePreghiera, deletePreghiera } from "@/lib/supabase/content";
+import { getPreghiere, addPreghiera, updatePreghiera, deletePreghiera } from "@/lib/mongo/content";
 
 export async function GET() {
   return NextResponse.json(await getPreghiere());

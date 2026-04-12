@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFilePrivati, addFilePrivato, deleteFilePrivato } from "@/lib/data/store";
+import { getFilePrivati, addFilePrivato, deleteFilePrivato } from "@/lib/mongo/content";
 
 export async function GET() {
   return NextResponse.json(getFilePrivati());

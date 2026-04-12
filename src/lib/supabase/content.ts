@@ -8,14 +8,29 @@
  */
 
 import { supabaseAdmin } from "@/lib/supabase/server";
-import {
-  icone as iconeInit,
-  testiSacri as testiSacriInit,
-  preghiere as preghiereInit,
-  eventi as eventiInit,
-  orariSettimanali as orariInit,
-} from "@/lib/mock-data";
 import type { Icona, TestoSacro, Preghiera, Evento, OrarioSettimanale } from "@/types";
+import {
+  getIcone as storeGetIcone,
+  addIcona as storeAddIcona,
+  updateIcona as storeUpdateIcona,
+  deleteIcona as storeDeleteIcona,
+  getLibri as storeGetLibri,
+  addLibro as storeAddLibro,
+  updateLibro as storeUpdateLibro,
+  deleteLibro as storeDeleteLibro,
+  getPreghiere as storeGetPreghiere,
+  addPreghiera as storeAddPreghiera,
+  updatePreghiera as storeUpdatePreghiera,
+  deletePreghiera as storeDeletePreghiera,
+  getEventi as storeGetEventi,
+  addEvento as storeAddEvento,
+  updateEvento as storeUpdateEvento,
+  deleteEvento as storeDeleteEvento,
+  getOrari as storeGetOrari,
+  addOrario as storeAddOrario,
+  updateOrario as storeUpdateOrario,
+  deleteOrario as storeDeleteOrario,
+} from "@/lib/data/store";
 
 // Helper: genera ID incrementale sicuro basandosi sul max. attuale
 function nextId(arr: { id: string }[]): string {
@@ -169,9 +184,9 @@ export async function getIcone(): Promise<Icona[]> {
       .order("created_at");
     if (error) throw error;
     if (data && data.length > 0) return data.map(rowToIcona);
-    return [...iconeInit];
+    return storeGetIcone();
   } catch {
-    return [...iconeInit];
+    return storeGetIcone();
   }
 }
 
@@ -185,7 +200,7 @@ export async function getIconaById(id: string): Promise<Icona | undefined> {
     if (error) return (await getIcone()).find((i) => i.id === id);
     return data ? rowToIcona(data) : undefined;
   } catch {
-    return iconeInit.find((i) => i.id === id);
+    return storeGetIcone().find((i) => i.id === id);
   }
 }
 
@@ -199,38 +214,50 @@ export async function getIconaBySlug(slug: string): Promise<Icona | undefined> {
     if (error) return (await getIcone()).find((i) => i.slug === slug);
     return data ? rowToIcona(data) : undefined;
   } catch {
-    return iconeInit.find((i) => i.slug === slug);
+    return storeGetIcone().find((i) => i.slug === slug);
   }
 }
 
 export async function addIcona(raw: Omit<Icona, "id">): Promise<Icona> {
-  const all = await getIcone();
-  const id = nextId(all);
-  const row = iconaToRow({ ...raw, id });
-  const { data, error } = await supabaseAdmin.from("icone").insert(row).select().single();
-  if (error) throw new Error(error.message);
-  return rowToIcona(data);
+  try {
+    const all = await getIcone();
+    const id = nextId(all);
+    const row = iconaToRow({ ...raw, id });
+    const { data, error } = await supabaseAdmin.from("icone").insert(row).select().single();
+    if (error) throw new Error(error.message);
+    return rowToIcona(data);
+  } catch {
+    return storeAddIcona(raw);
+  }
 }
 
 export async function updateIcona(id: string, raw: Partial<Icona>): Promise<Icona | null> {
-  const row = iconaToRow(raw);
-  const { data, error } = await supabaseAdmin
-    .from("icone")
-    .update(row)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return data ? rowToIcona(data) : null;
+  try {
+    const row = iconaToRow(raw);
+    const { data, error } = await supabaseAdmin
+      .from("icone")
+      .update(row)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data ? rowToIcona(data) : null;
+  } catch {
+    return storeUpdateIcona(id, raw);
+  }
 }
 
 export async function deleteIcona(id: string): Promise<boolean> {
-  const { error, count } = await supabaseAdmin
-    .from("icone")
-    .delete({ count: "exact" })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-  return (count ?? 0) > 0;
+  try {
+    const { error, count } = await supabaseAdmin
+      .from("icone")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return (count ?? 0) > 0;
+  } catch {
+    return storeDeleteIcona(id);
+  }
 }
 
 // ============================================================
@@ -245,9 +272,9 @@ export async function getLibri(): Promise<TestoSacro[]> {
       .order("created_at");
     if (error) throw error;
     if (data && data.length > 0) return data.map(rowToTestoSacro);
-    return [...testiSacriInit];
+    return storeGetLibri();
   } catch {
-    return [...testiSacriInit];
+    return storeGetLibri();
   }
 }
 
@@ -261,7 +288,7 @@ export async function getLibroById(id: string): Promise<TestoSacro | undefined> 
     if (error) return (await getLibri()).find((l) => l.id === id);
     return data ? rowToTestoSacro(data) : undefined;
   } catch {
-    return testiSacriInit.find((l) => l.id === id);
+    return storeGetLibri().find((l) => l.id === id);
   }
 }
 
@@ -275,38 +302,50 @@ export async function getLibroBySlug(slug: string): Promise<TestoSacro | undefin
     if (error) return (await getLibri()).find((l) => l.slug === slug);
     return data ? rowToTestoSacro(data) : undefined;
   } catch {
-    return testiSacriInit.find((l) => l.slug === slug);
+    return storeGetLibri().find((l) => l.slug === slug);
   }
 }
 
 export async function addLibro(raw: Omit<TestoSacro, "id">): Promise<TestoSacro> {
-  const all = await getLibri();
-  const id = nextId(all);
-  const row = testoSacroToRow({ ...raw, id });
-  const { data, error } = await supabaseAdmin.from("testi_sacri").insert(row).select().single();
-  if (error) throw new Error(error.message);
-  return rowToTestoSacro(data);
+  try {
+    const all = await getLibri();
+    const id = nextId(all);
+    const row = testoSacroToRow({ ...raw, id });
+    const { data, error } = await supabaseAdmin.from("testi_sacri").insert(row).select().single();
+    if (error) throw new Error(error.message);
+    return rowToTestoSacro(data);
+  } catch {
+    return storeAddLibro(raw);
+  }
 }
 
 export async function updateLibro(id: string, raw: Partial<TestoSacro>): Promise<TestoSacro | null> {
-  const row = testoSacroToRow(raw);
-  const { data, error } = await supabaseAdmin
-    .from("testi_sacri")
-    .update(row)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return data ? rowToTestoSacro(data) : null;
+  try {
+    const row = testoSacroToRow(raw);
+    const { data, error } = await supabaseAdmin
+      .from("testi_sacri")
+      .update(row)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data ? rowToTestoSacro(data) : null;
+  } catch {
+    return storeUpdateLibro(id, raw);
+  }
 }
 
 export async function deleteLibro(id: string): Promise<boolean> {
-  const { error, count } = await supabaseAdmin
-    .from("testi_sacri")
-    .delete({ count: "exact" })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-  return (count ?? 0) > 0;
+  try {
+    const { error, count } = await supabaseAdmin
+      .from("testi_sacri")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return (count ?? 0) > 0;
+  } catch {
+    return storeDeleteLibro(id);
+  }
 }
 
 // ============================================================
@@ -321,9 +360,9 @@ export async function getPreghiere(): Promise<Preghiera[]> {
       .order("created_at");
     if (error) throw error;
     if (data && data.length > 0) return data.map(rowToPreghiera);
-    return [...preghiereInit];
+    return storeGetPreghiere();
   } catch {
-    return [...preghiereInit];
+    return storeGetPreghiere();
   }
 }
 
@@ -337,38 +376,50 @@ export async function getPreghieraById(id: string): Promise<Preghiera | undefine
     if (error) return (await getPreghiere()).find((p) => p.id === id);
     return data ? rowToPreghiera(data) : undefined;
   } catch {
-    return preghiereInit.find((p) => p.id === id);
+    return storeGetPreghiere().find((p) => p.id === id);
   }
 }
 
 export async function addPreghiera(raw: Omit<Preghiera, "id">): Promise<Preghiera> {
-  const all = await getPreghiere();
-  const id = nextId(all);
-  const row = preghieraToRow({ ...raw, id });
-  const { data, error } = await supabaseAdmin.from("preghiere").insert(row).select().single();
-  if (error) throw new Error(error.message);
-  return rowToPreghiera(data);
+  try {
+    const all = await getPreghiere();
+    const id = nextId(all);
+    const row = preghieraToRow({ ...raw, id });
+    const { data, error } = await supabaseAdmin.from("preghiere").insert(row).select().single();
+    if (error) throw new Error(error.message);
+    return rowToPreghiera(data);
+  } catch {
+    return storeAddPreghiera(raw);
+  }
 }
 
 export async function updatePreghiera(id: string, raw: Partial<Preghiera>): Promise<Preghiera | null> {
-  const row = preghieraToRow(raw);
-  const { data, error } = await supabaseAdmin
-    .from("preghiere")
-    .update(row)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return data ? rowToPreghiera(data) : null;
+  try {
+    const row = preghieraToRow(raw);
+    const { data, error } = await supabaseAdmin
+      .from("preghiere")
+      .update(row)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data ? rowToPreghiera(data) : null;
+  } catch {
+    return storeUpdatePreghiera(id, raw);
+  }
 }
 
 export async function deletePreghiera(id: string): Promise<boolean> {
-  const { error, count } = await supabaseAdmin
-    .from("preghiere")
-    .delete({ count: "exact" })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-  return (count ?? 0) > 0;
+  try {
+    const { error, count } = await supabaseAdmin
+      .from("preghiere")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return (count ?? 0) > 0;
+  } catch {
+    return storeDeletePreghiera(id);
+  }
 }
 
 // ============================================================
@@ -383,9 +434,9 @@ export async function getEventi(): Promise<Evento[]> {
       .order("data");
     if (error) throw error;
     if (data && data.length > 0) return data.map(rowToEvento);
-    return [...eventiInit];
+    return storeGetEventi();
   } catch {
-    return [...eventiInit];
+    return storeGetEventi();
   }
 }
 
@@ -399,7 +450,7 @@ export async function getEventoById(id: string): Promise<Evento | undefined> {
     if (error) return (await getEventi()).find((e) => e.id === id);
     return data ? rowToEvento(data) : undefined;
   } catch {
-    return eventiInit.find((e) => e.id === id);
+    return storeGetEventi().find((e) => e.id === id);
   }
 }
 
@@ -413,38 +464,50 @@ export async function getEventoBySlug(slug: string): Promise<Evento | undefined>
     if (error) return (await getEventi()).find((e) => e.slug === slug);
     return data ? rowToEvento(data) : undefined;
   } catch {
-    return eventiInit.find((e) => e.slug === slug);
+    return storeGetEventi().find((e) => e.slug === slug);
   }
 }
 
 export async function addEvento(raw: Omit<Evento, "id">): Promise<Evento> {
-  const all = await getEventi();
-  const id = nextId(all);
-  const row = eventoToRow({ ...raw, id });
-  const { data, error } = await supabaseAdmin.from("eventi").insert(row).select().single();
-  if (error) throw new Error(error.message);
-  return rowToEvento(data);
+  try {
+    const all = await getEventi();
+    const id = nextId(all);
+    const row = eventoToRow({ ...raw, id });
+    const { data, error } = await supabaseAdmin.from("eventi").insert(row).select().single();
+    if (error) throw new Error(error.message);
+    return rowToEvento(data);
+  } catch {
+    return storeAddEvento(raw);
+  }
 }
 
 export async function updateEvento(id: string, raw: Partial<Evento>): Promise<Evento | null> {
-  const row = eventoToRow(raw);
-  const { data, error } = await supabaseAdmin
-    .from("eventi")
-    .update(row)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return data ? rowToEvento(data) : null;
+  try {
+    const row = eventoToRow(raw);
+    const { data, error } = await supabaseAdmin
+      .from("eventi")
+      .update(row)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data ? rowToEvento(data) : null;
+  } catch {
+    return storeUpdateEvento(id, raw);
+  }
 }
 
 export async function deleteEvento(id: string): Promise<boolean> {
-  const { error, count } = await supabaseAdmin
-    .from("eventi")
-    .delete({ count: "exact" })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-  return (count ?? 0) > 0;
+  try {
+    const { error, count } = await supabaseAdmin
+      .from("eventi")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return (count ?? 0) > 0;
+  } catch {
+    return storeDeleteEvento(id);
+  }
 }
 
 // ============================================================
@@ -458,38 +521,50 @@ export async function getOrari(): Promise<OrarioSettimanale[]> {
       .select("*");
     if (error) throw error;
     if (data && data.length > 0) return data.map(rowToOrario);
-    return [...orariInit];
+    return storeGetOrari();
   } catch {
-    return [...orariInit];
+    return storeGetOrari();
   }
 }
 
 export async function addOrario(raw: OrarioSettimanale): Promise<OrarioSettimanale> {
-  const { data, error } = await supabaseAdmin
-    .from("orari_settimanali")
-    .insert({ giorno: raw.giorno, celebrazioni: raw.celebrazioni })
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return rowToOrario(data);
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("orari_settimanali")
+      .insert({ giorno: raw.giorno, celebrazioni: raw.celebrazioni })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return rowToOrario(data);
+  } catch {
+    return storeAddOrario(raw);
+  }
 }
 
 export async function updateOrario(giorno: string, raw: OrarioSettimanale): Promise<OrarioSettimanale | null> {
-  const { data, error } = await supabaseAdmin
-    .from("orari_settimanali")
-    .update({ celebrazioni: raw.celebrazioni })
-    .eq("giorno", giorno)
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  return data ? rowToOrario(data) : null;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("orari_settimanali")
+      .update({ celebrazioni: raw.celebrazioni })
+      .eq("giorno", giorno)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data ? rowToOrario(data) : null;
+  } catch {
+    return storeUpdateOrario(giorno, raw);
+  }
 }
 
 export async function deleteOrario(giorno: string): Promise<boolean> {
-  const { error, count } = await supabaseAdmin
-    .from("orari_settimanali")
-    .delete({ count: "exact" })
-    .eq("giorno", giorno);
-  if (error) throw new Error(error.message);
-  return (count ?? 0) > 0;
+  try {
+    const { error, count } = await supabaseAdmin
+      .from("orari_settimanali")
+      .delete({ count: "exact" })
+      .eq("giorno", giorno);
+    if (error) throw new Error(error.message);
+    return (count ?? 0) > 0;
+  } catch {
+    return storeDeleteOrario(giorno);
+  }
 }

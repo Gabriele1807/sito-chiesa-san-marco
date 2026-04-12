@@ -11,7 +11,7 @@ import {
   getEventi as contentGetEventi,
   getEventoBySlug as contentGetEventoBySlug,
   getOrari as contentGetOrari,
-} from "@/lib/supabase/content";
+} from "@/lib/mongo/content";
 import type { Icona, TestoSacro, Preghiera, Evento, OrarioSettimanale, IscrizioneEvento } from "@/types";
 
 // ============= ICONE =============

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getLibri, addLibro, updateLibro, deleteLibro } from "@/lib/supabase/content";
+import { getLibri, addLibro, updateLibro, deleteLibro } from "@/lib/mongo/content";
 
 export async function GET() {
   return NextResponse.json(await getLibri());
