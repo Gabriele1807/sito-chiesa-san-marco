@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 10 aprile 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 12 aprile 2026.
 
 ---
 
@@ -266,7 +266,9 @@ Tipi principali definiti in `src/types/index.ts`:
 - `UserProfile` — profilo utente completo (MongoDB)
 - `CreateUserData` — dati per creazione utente
 - `UserPublic` — vista pubblica senza password
-- `UserSessionInfo`, `AdminSessionInfo`, `SessionInfo` — tipi sessione unificati
+- `UserSessionInfo` — info utente nel cookie/session client: include ora anche `chiesa?: string`
+- `AdminSessionInfo` — info admin nel cookie/session client
+- `SessionInfo` — tipo unificato
 
 ### 6.1 Dove stanno i dati
 
@@ -580,6 +582,14 @@ Auto-login dopo registrazione.
 - `PUT /api/admin/utenti` — modifica utente (richiede `admin.write`)
 - `DELETE /api/admin/utenti` — elimina utente (richiede `admin.write`)
 
+Bug noto risolto (12 apr 2026): nella pagina `/admin/utenti`, aprendo il modal di modifica di un utente, dopo pochi secondi la lista degli utenti in background scompariva.
+Causa: il browser (Chrome/Edge) rileva il campo `type="password"` nel modal (reset password superadmin) e attiva l'autofill, riempiendo il campo `type="text"` piu vicino — ovvero la casella di ricerca — con il username salvato ("admin"). Poiche nessun utente ha "admin" nei propri dati, il filtro restituisce 0 risultati e la lista appare vuota. Chiudere il modal non resetttava la ricerca.
+Fix applicato:
+  - `autoComplete="off"` sul campo ricerca utenti
+  - `autoComplete="new-password"` sul campo password del modal
+  - `autoComplete="off"` sui campi nome/cognome del modal
+  - honeypot `<input type="text" autoComplete="username" style=display:none readOnly>` prima del campo password
+
 ---
 
 ## 9. Internazionalizzazione
@@ -755,10 +765,14 @@ Stili globali aggiuntivi:
   - link Facebook e YouTube reali
 
 - pagina profilo (`/profilo`):
-  - mostra info utente: nome, cognome, username, email, ruolo nella comunita
+  - mostra info utente: nome, cognome, username, email, ruolo nella comunita, chiesa di provenienza (se ospite)
   - mostra stato richiesta admin (pending/approved/rejected) con badge colorati
-  - form per cambio password con validazione
+  - form per modifica profilo utente normale: nome, cognome, email, username (con controllo unicita), ruolo, fascia eta, chiesa (visibile solo se ruolo = ospite_chiesa)
+  - form per modifica profilo admin: nome, cognome, email (opzionale), username (con controllo unicita) — usa `admin_session`, aggiorna Supabase
+  - form per cambio password con validazione (sia utenti normali che admin)
+  - sezione "Richiedi accesso admin" per utenti normali
   - accessibile solo utenti autenticati, guest vedono messaggio con link a login
+  - Nota implementativa: `POST /api/auth/update-profile` gestisce entrambi i percorsi (user_session = MongoDB, admin_session = Supabase) in base al cookie presente
 
 - pagina chi-siamo:
   - titoli card coerenti con la palette blu/ambra del sito
@@ -859,7 +873,10 @@ Caratteristiche gia implementate:
 - `POST /api/auth/register` — registrazione utenti normali
 - `POST /api/auth/logout` — logout utenti normali
 - `GET /api/auth/me` — stato sessione corrente (con auto-promozione admin se approved)
-- `POST /api/auth/change-password` — cambio password utente autenticato
+- `POST /api/auth/change-password` — cambio password utente autenticato (accetta sia `user_session` che `admin_session`)
+- `POST /api/auth/update-profile` — aggiornamento profilo; biforcato in due percorsi:
+  - **utente normale** (`user_session`): aggiorna nome, cognome, email (unicita), username (unicita), role, ageGroup, chiesa
+  - **admin** (`admin_session`): aggiorna nome, cognome, email (unicita), username (unicita) in Supabase; il client aggiorna localStorage ed esegue `refresh()`
 - `GET /api/youtube/channel` — dati canale YouTube (cache 5 min, richiede `YOUTUBE_API_KEY`)
 
 ### 13.2 API admin

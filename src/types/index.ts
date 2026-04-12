@@ -134,6 +134,7 @@ export interface UserSessionInfo {
   cognome: string;
   role: UserRole;
   ageGroup: AgeGroup;
+  chiesa?: string;
   isAdmin: false;
   adminRequest?: AdminRequestStatus;
 }

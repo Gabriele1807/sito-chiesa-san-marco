@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import type { UserRole, AgeGroup } from "@/types";
@@ -205,8 +206,14 @@ export default function RegisterModal() {
         <div className="p-6">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-amber-600 flex items-center justify-center mx-auto mb-3">
-              <span className="text-white text-xl font-bold">☦</span>
+            <div className="w-24 h-24 mx-auto mb-3">
+              <Image
+                src="/logo-san-marco.png"
+                alt="Logo Chiesa Copta San Marco"
+                width={96}
+                height={96}
+                className="rounded-2xl"
+              />
             </div>
             <h2 className="text-xl font-bold text-white">
               {success ? "Registrazione completata!" : step === "credentials" ? "Registrati" : "Completa il profilo"}
@@ -281,7 +288,7 @@ export default function RegisterModal() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="il_tuo_username"
+                  placeholder="Username"
                   required
                   autoComplete="username"
                   className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"

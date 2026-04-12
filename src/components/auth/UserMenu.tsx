@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, UserX, LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
+import { User, UserX, UserPlus, LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
 import { useAuth } from "./AuthContext";
 
 export default function UserMenu() {
@@ -33,16 +33,16 @@ export default function UserMenu() {
   if (type === "guest" && isExplicitGuest) {
     return (
       <div className="flex items-center gap-1.5">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-lg">
+        <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-lg">
           <UserX className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Ospite</span>
+          <span>Ospite</span>
         </div>
         <button
           onClick={() => setShowLoginModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light active:bg-primary-light transition-colors"
         >
-          <User className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Accedi</span>
+          <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          <span>Accedi</span>
         </button>
       </div>
     );
@@ -54,15 +54,16 @@ export default function UserMenu() {
       <div className="flex items-center gap-1.5">
         <button
           onClick={() => setShowLoginModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light active:bg-primary-light transition-colors"
         >
-          <User className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Accedi</span>
+          <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          <span>Accedi</span>
         </button>
         <button
           onClick={() => setShowRegisterModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-white border border-primary rounded-lg hover:bg-primary/5 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-primary bg-white border border-primary rounded-lg hover:bg-primary/5 active:bg-primary/10 transition-colors"
         >
+          <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span className="hidden sm:inline">Registrati</span>
         </button>
       </div>
@@ -94,20 +95,21 @@ export default function UserMenu() {
     <div ref={menuRef} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 rounded-lg transition-colors hover:bg-gray-100 px-2 py-1"
+        className="flex items-center gap-1.5 rounded-lg transition-colors hover:bg-gray-100 active:bg-gray-100 px-1.5 py-1"
+        aria-expanded={open}
       >
         <div
-          className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${
-            isAdmin ? "bg-amber-500" : "bg-primary"
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-offset-1 ${
+            isAdmin ? "bg-amber-500 ring-amber-200" : "bg-primary ring-primary/20"
           }`}
         >
           {initials}
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
           <div className="px-4 py-2 border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
             <p className="text-xs text-gray-500">

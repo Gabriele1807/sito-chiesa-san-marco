@@ -243,6 +243,25 @@
     "erroreGenerico": "حدث خطأ. يرجى المحاولة مرة أخرى.",
     "adminRequest_approved": "تمّت الموافقة على طلبك كمسؤول. يمكنك الآن الوصول إلى لوحة الإدارة.",
     "adminRequest_pending": "طلبك كمسؤول قيد المراجعة.",
-    "adminRequest_rejected": "تمّ رفض طلبك كمسؤول."
+    "adminRequest_rejected": "تمّ رفض طلبك كمسؤول.",
+    "modificaProfilo": "تعديل الملف الشخصي",
+    "account": "الحساب",
+    "nome": "الاسم",
+    "cognome": "اللقب",
+    "salvaModifiche": "حفظ التعديلات",
+    "profiloAggiornato": "تم تحديث الملف الشخصي بنجاح!",
+    "emailGiaUsata": "البريد الإلكتروني مسجّل لدى حساب آخر.",
+    "usernameGiaUsato": "اسم المستخدم مسجّل لدى حساب آخر.",
+    "richiediAdmin": "طلب صلاحية المشرف",
+    "richiediAdminDesc": "أرسل طلباً للحصول على حق الوصول إلى لوحة الإدارة.",
+    "richiedi": "إرسال الطلب",
+    "richiestaAdminInviata": "تم إرسال طلب صلاحية المشرف بنجاح!",
+    "fasciaEta": "الفئة العمرية",
+    "ruoloComunita": "الدور في المجتمع",
+    "adminGiaRichiesto": "تم إرسال الطلب بالفعل، في انتظار الموافقة.",
+    "adminApprovato": "حسابك يمتلك صلاحية المشرف بالفعل.",
+    "chiesaProvenienza": "الكنيسة الأصلية",
+    "chiesaPlaceholder": "مثال: كنيسة القديس بولس الرسول",
+    "emailPlaceholderAdmin": "اتركه فارغاً لعدم التعديل"
   }
 }

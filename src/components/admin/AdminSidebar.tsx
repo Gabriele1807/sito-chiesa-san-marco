@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -85,9 +86,13 @@ export default function AdminSidebar() {
       {/* Header */}
       <div className="px-5 py-5 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">☦</span>
-          </div>
+          <Image
+            src="/logo-san-marco.png"
+            alt="Logo Chiesa Copta San Marco"
+            width={32}
+            height={32}
+            className="rounded-lg"
+          />
           <div>
             <p className="text-sm font-bold text-white leading-tight">Pannello Admin</p>
             <p className="text-[10px] text-gray-400">San Marco – Milano</p>

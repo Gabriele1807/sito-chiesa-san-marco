@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { X, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "./AuthContext";
 
@@ -110,8 +111,14 @@ export default function LoginModal() {
         <div className="p-6">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-amber-600 flex items-center justify-center mx-auto mb-3">
-              <span className="text-white text-xl font-bold">☦</span>
+            <div className="w-24 h-24 mx-auto mb-3">
+              <Image
+                src="/logo-san-marco.png"
+                alt="Logo Chiesa Copta San Marco"
+                width={96}
+                height={96}
+                className="rounded-2xl"
+              />
             </div>
             <h2 className="text-xl font-bold text-white">Accedi</h2>
             <p className="text-gray-400 text-sm mt-1">Chiesa di San Marco – Milano</p>

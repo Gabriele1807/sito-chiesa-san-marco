@@ -5,6 +5,7 @@ import {
   updateAdminRequest,
   findUserById,
   findUserByIdFull,
+  updateUser,
 } from "@/lib/mongo/users";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { supabaseAdmin } from "@/lib/supabase/server";
@@ -57,9 +58,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (action !== "approve" && action !== "reject") {
+    if (action !== "approve" && action !== "reject" && action !== "promote" && action !== "revoke") {
       return NextResponse.json(
-        { success: false, error: "action deve essere 'approve' o 'reject'" },
+        { success: false, error: "action deve essere 'approve', 'reject', 'promote' o 'revoke'" },
         { status: 400 }
       );
     }
@@ -73,19 +74,31 @@ export async function POST(request: Request) {
       );
     }
 
-    if (user.adminRequest !== "pending") {
-      return NextResponse.json(
-        { success: false, error: "Nessuna richiesta admin pendente per questo utente" },
-        { status: 400 }
-      );
+    // ---- Revoca admin ----
+    if (action === "revoke") {
+      // Disattiva su Supabase
+      await supabaseAdmin
+        .from("admin_users")
+        .update({ attivo: false })
+        .eq("username", user.username);
+      // Aggiorna MongoDB
+      await updateUser(userId, { adminRequest: "none" });
+      return NextResponse.json({ success: true, message: "Accesso admin revocato" });
     }
 
+    // Solo 'approve' richiede richiesta pendente; 'promote' bypassa il controllo
     if (action === "reject") {
+      if (user.adminRequest !== "pending") {
+        return NextResponse.json(
+          { success: false, error: "Nessuna richiesta admin pendente per questo utente" },
+          { status: 400 }
+        );
+      }
       await updateAdminRequest(userId, "rejected");
       return NextResponse.json({ success: true, message: "Richiesta rifiutata" });
     }
 
-    // ---- Approvazione ----
+    // ---- Approvazione / Promozione diretta ----
     const adminRuolo = targetRuolo === "superadmin" ? "superadmin" : "admin";
 
     // Recupera il profilo completo (con passwordHash) per copiare la password reale
@@ -135,7 +148,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Richiesta approvata. L'utente ${user.username} è ora ${adminRuolo}.`,
+      message: `Utente ${user.username} promosso a ${adminRuolo}.`,
     });
   } catch (err) {
     console.error("Errore POST richieste admin:", err);

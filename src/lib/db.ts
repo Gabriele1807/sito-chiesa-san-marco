@@ -1,59 +1,58 @@
 /**
- * Database utility layer — reads from the shared in-memory store.
- * FUTURO: Sostituire con chiamate dirette a Supabase.
+ * Database utility layer — legge da Supabase tramite content.ts.
  */
 
 import {
-  getLibri,
-  getLibroBySlug,
-  getIcone as storeGetIcone,
-  getIconaBySlug as storeGetIconaBySlug,
-  getPreghiere as storeGetPreghiere,
-  getEventi as storeGetEventi,
-  getOrari as storeGetOrari,
-} from "@/lib/data/store";
+  getLibri as contentGetLibri,
+  getLibroBySlug as contentGetLibroBySlug,
+  getIcone as contentGetIcone,
+  getIconaBySlug as contentGetIconaBySlug,
+  getPreghiere as contentGetPreghiere,
+  getEventi as contentGetEventi,
+  getEventoBySlug as contentGetEventoBySlug,
+  getOrari as contentGetOrari,
+} from "@/lib/supabase/content";
 import type { Icona, TestoSacro, Preghiera, Evento, OrarioSettimanale, IscrizioneEvento } from "@/types";
 
 // ============= ICONE =============
 export async function getIcone(): Promise<Icona[]> {
-  return storeGetIcone();
+  return contentGetIcone();
 }
 
 export async function getIconaBySlug(slug: string): Promise<Icona | undefined> {
-  return storeGetIconaBySlug(slug);
+  return contentGetIconaBySlug(slug);
 }
 
 // ============= TESTI SACRI =============
 export async function getTestiSacri(): Promise<TestoSacro[]> {
-  return getLibri();
+  return contentGetLibri();
 }
 
 export async function getTestoSacroBySlug(slug: string): Promise<TestoSacro | undefined> {
-  return getLibroBySlug(slug);
+  return contentGetLibroBySlug(slug);
 }
 
 // ============= PREGHIERE =============
 export async function getPreghiere(): Promise<Preghiera[]> {
-  return storeGetPreghiere();
+  return contentGetPreghiere();
 }
 
 // ============= EVENTI =============
 export async function getEventi(): Promise<Evento[]> {
-  return storeGetEventi();
+  return contentGetEventi();
 }
 
 export async function getEventoBySlug(slug: string): Promise<Evento | undefined> {
-  return storeGetEventi().find((e) => e.slug === slug);
+  return contentGetEventoBySlug(slug);
 }
 
 // ============= ORARI =============
 export async function getOrari(): Promise<OrarioSettimanale[]> {
-  return storeGetOrari();
+  return contentGetOrari();
 }
 
 // ============= ISCRIZIONI =============
 export async function createIscrizione(iscrizione: IscrizioneEvento): Promise<{ success: boolean }> {
-  // FUTURO: supabase.from('iscrizioni').insert(iscrizione)
   console.log("Nuova iscrizione:", iscrizione);
   return { success: true };
 }

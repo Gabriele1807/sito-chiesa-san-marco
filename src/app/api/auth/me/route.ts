@@ -109,6 +109,7 @@ export async function GET() {
         cognome: user.cognome,
         role: user.role,
         ageGroup: user.ageGroup,
+        chiesa: user.chiesa,
         isAdmin: false,
         adminRequest: user.adminRequest,
       },
