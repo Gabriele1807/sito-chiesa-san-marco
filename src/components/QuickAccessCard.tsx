@@ -8,11 +8,12 @@ interface QuickAccessCardProps {
   description: string;
   highlight?: boolean;
   badge?: string;
+  delay?: number;
 }
 
-export default function QuickAccessCard({ href, icon: Icon, title, description, highlight, badge }: QuickAccessCardProps) {
+export default function QuickAccessCard({ href, icon: Icon, title, description, highlight, badge, delay }: QuickAccessCardProps) {
   return (
-    <Link href={href} className="group">
+    <Link href={href} className="group animate-fade-in-up" style={delay ? { animationDelay: `${delay}ms` } : undefined}>
       <div
         className={`card-hover bg-slate-800 rounded-xl p-6 cursor-pointer h-full relative ${
           highlight

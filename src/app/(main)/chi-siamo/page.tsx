@@ -15,10 +15,10 @@ export default async function ChiSiamoPage() {
     <div className="space-y-16">
       {/* Intro */}
       <section>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 animate-fade-in-up">
           {t("titolo")}
         </h1>
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+        <div className="animate-fade-in-up [animation-delay:100ms] bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex-1">
               <p className="text-lg text-gray-600 leading-relaxed mb-6">
@@ -59,7 +59,7 @@ export default async function ChiSiamoPage() {
             {timelineSteps.map((step, index) => {
               const Icon = step.icon;
               return (
-                <div key={step.key} className="flex gap-6 items-start">
+                <div key={step.key} className="flex gap-6 items-start animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
                   {/* Icon circle */}
                   <div className="relative z-10 w-12 h-12 rounded-full bg-white border-2 border-primary flex items-center justify-center shrink-0 shadow-sm">
                     <Icon className="w-5 h-5 text-primary" />
@@ -88,10 +88,11 @@ export default async function ChiSiamoPage() {
       {/* Images placeholder */}
       <section>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {["La nostra chiesa", "La comunità", "Liturgia"].map((label) => (
+          {["La nostra chiesa", "La comunità", "Liturgia"].map((label, i) => (
             <div
               key={label}
-              className="aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center"
+              className="animate-fade-in-up aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center"
+              style={{ animationDelay: `${i * 80}ms` }}
             >
               <span className="text-sm text-gray-400">{label}</span>
             </div>

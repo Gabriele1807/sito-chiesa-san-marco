@@ -93,12 +93,12 @@ export default function LoginModal() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
         onClick={() => setShowLoginModal(false)}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-[#0F1A2E] rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-sm bg-[#0F1A2E] rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
         {/* Close button */}
         <button
           onClick={() => setShowLoginModal(false)}

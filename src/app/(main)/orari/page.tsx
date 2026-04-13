@@ -11,16 +11,16 @@ export default async function OrariPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 animate-fade-in-up">
           {t("titolo")}
         </h1>
-        <p className="text-gray-600 leading-relaxed max-w-2xl">
+        <p className="text-gray-600 leading-relaxed max-w-2xl animate-fade-in-up [animation-delay:100ms]">
           {t("sottotitolo")}
         </p>
       </div>
 
       {/* Desktop table */}
-      <div className="hidden sm:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="hidden sm:block animate-fade-in-up [animation-delay:150ms] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="bg-primary text-white">
@@ -63,7 +63,7 @@ export default async function OrariPage() {
       {/* Mobile cards */}
       <div className="sm:hidden space-y-4">
         {orari.map((giorno, gi) => (
-          <div key={gi} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div key={gi} className="animate-fade-in-up bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" style={{ animationDelay: `${gi * 80}ms` }}>
             <div className="bg-primary px-4 py-3 flex items-center gap-2">
               <Clock className="w-4 h-4 text-accent" />
               <h3 className="font-semibold text-white text-sm">{giorno.giorno}</h3>

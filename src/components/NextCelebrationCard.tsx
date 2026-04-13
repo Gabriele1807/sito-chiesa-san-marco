@@ -28,7 +28,7 @@ export default function NextCelebrationCard({ orari, title }: NextCelebrationCar
   const badge = celebration?.giorno ?? "";
 
   return (
-    <Link href="/orari" className="group">
+    <Link href="/orari" className="group animate-fade-in-up" style={{ animationDelay: "300ms" }}>
       <div className="card-hover bg-slate-800 rounded-xl p-6 cursor-pointer h-full relative border-2 border-accent hover:border-accent-light">
         {badge && (
           <div className="absolute top-3 right-3">

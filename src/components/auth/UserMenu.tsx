@@ -109,8 +109,8 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
-          <div className="px-4 py-2 border-b border-gray-100">
+        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 animate-scaleIn origin-top-right">
+          <div className="px-4 py-2 border-b border-gray-100 animate-fadeInUp stagger-1">
             <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
             <p className="text-xs text-gray-500">
               {isAdmin && admin
@@ -127,7 +127,7 @@ export default function UserMenu() {
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors animate-fadeInUp stagger-2"
             >
               <Shield className="w-4 h-4" />
               Pannello Admin
@@ -137,13 +137,13 @@ export default function UserMenu() {
           <Link
             href="/profilo"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors animate-fadeInUp stagger-3"
           >
             <UserCircle className="w-4 h-4" />
             Il mio profilo
           </Link>
 
-          <div className="border-t border-gray-100 mt-1 pt-1">
+          <div className="border-t border-gray-100 mt-1 pt-1 animate-fadeInUp stagger-4">
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"

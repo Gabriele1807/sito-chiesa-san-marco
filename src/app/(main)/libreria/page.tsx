@@ -14,10 +14,10 @@ export default async function LibreriaPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 animate-fade-in-up">
           {t("titolo")}
         </h1>
-        <p className="text-gray-600 leading-relaxed max-w-2xl">
+        <p className="text-gray-600 leading-relaxed max-w-2xl animate-fade-in-up [animation-delay:100ms]">
           {t("sottotitolo")}
         </p>
       </div>
@@ -25,15 +25,15 @@ export default async function LibreriaPage() {
       <RestrictedSection message="Per accedere alla libreria registrati o accedi">
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {testi.map((testo) => (
-          <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group">
+        {testi.map((testo, index) => (
+          <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group animate-fade-in-up" style={{ animationDelay: `${index * 60}ms` }}>
             <div className="card-hover bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 h-full flex flex-col">
               <div className="h-44 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center overflow-hidden">
                 {testo.copertina ? (
                   <img
                     src={toGDriveImageUrl(testo.copertina)}
                     alt={testo.titolo}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <BookOpen className="w-12 h-12 text-primary/30" />

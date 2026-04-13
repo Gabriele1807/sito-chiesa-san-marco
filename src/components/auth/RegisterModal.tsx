@@ -188,12 +188,12 @@ export default function RegisterModal() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
         onClick={() => setShowRegisterModal(false)}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-[#0F1A2E] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-md bg-[#0F1A2E] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-in">
         {/* Close */}
         <button
           onClick={() => setShowRegisterModal(false)}

@@ -22,7 +22,7 @@ export default async function ContattiPage() {
   return (
     <div className="space-y-14">
       {/* ── HEADER ── */}
-      <section>
+      <section className="animate-[fadeInUp_0.4s_ease_both]">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
           {t("titolo")}
         </h1>
@@ -43,7 +43,11 @@ export default async function ContattiPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
           {/* Email */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
+          <div
+            key="email"
+            style={{ animationDelay: "0ms" }}
+            className="animate-[fadeInUp_0.4s_ease_both] hover:scale-[1.02] hover:shadow-lg transition-all duration-300"
+          >
             <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
               <Mail className="w-5 h-5 text-primary" />
             </div>
@@ -62,7 +66,11 @@ export default async function ContattiPage() {
           </div>
 
           {/* Telefono */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
+          <div
+            key="telefono"
+            style={{ animationDelay: "60ms" }}
+            className="animate-[fadeInUp_0.4s_ease_both] hover:scale-[1.02] hover:shadow-lg transition-all duration-300"
+          >
             <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center">
               <Phone className="w-5 h-5 text-green-600" />
             </div>
@@ -82,7 +90,11 @@ export default async function ContattiPage() {
           </div>
 
           {/* Indirizzo */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
+          <div
+            key="indirizzo"
+            style={{ animationDelay: "120ms" }}
+            className="animate-[fadeInUp_0.4s_ease_both] hover:scale-[1.02] hover:shadow-lg transition-all duration-300"
+          >
             <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
               <MapPin className="w-5 h-5 text-accent" />
             </div>
@@ -111,7 +123,7 @@ export default async function ContattiPage() {
       {/* ══════════════════════════════════════════════════════════
           SACERDOTI
           ══════════════════════════════════════════════════════════ */}
-      <section>
+      <section className="animate-[fadeIn_0.5s_ease_both]">
         <p className="text-xs font-bold text-primary uppercase tracking-widest mb-4 px-1">
           {t("sacerdoteSezione")}
         </p>

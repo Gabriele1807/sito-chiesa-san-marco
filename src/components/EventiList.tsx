@@ -67,10 +67,11 @@ export default function EventiList({ eventi }: Props) {
   return (
     <>
       <div className="grid gap-6">
-        {eventi.map((evento) => (
+        {eventi.map((evento, index) => (
           <div
             key={evento.id}
-            className="card-hover bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+            className="group card-hover bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up"
+            style={{ animationDelay: `${index * 80}ms` }}
           >
             <div className="flex flex-col sm:flex-row">
               {/* Image or date badge */}
@@ -79,7 +80,7 @@ export default function EventiList({ eventi }: Props) {
                   <img
                     src={toGDriveImageUrl(evento.immagine)}
                     alt={evento.titolo}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
               ) : (
@@ -128,8 +129,8 @@ export default function EventiList({ eventi }: Props) {
 
       {/* Registration modal */}
       {formOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h3 className="text-lg font-bold text-gray-900">{t("formTitolo")}</h3>
               <button
