@@ -63,15 +63,15 @@ export default function IconeGrid({ icone }: Props) {
 
       {/* Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((icona) => (
-          <Link key={icona.id} href={`/icone/${icona.slug}`} className="group">
+        {filtered.map((icona, index) => (
+          <Link key={icona.id} href={`/icone/${icona.slug}`} className="group animate-fade-in-up" style={{ animationDelay: `${index * 60}ms` }}>
             <div className="card-hover bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
               <div className="h-52 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
                 {icona.immagini?.[0] ? (
                   <img
                     src={toGDriveImageUrl(icona.immagini[0])}
                     alt={icona.nomeSanto}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <span className="text-5xl opacity-30">🖼️</span>

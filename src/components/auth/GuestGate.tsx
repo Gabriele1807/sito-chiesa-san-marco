@@ -35,7 +35,7 @@ export default function GuestGate({
       {/* Overlay cliccabile */}
       <div
         onClick={() => setShowLoginModal(true)}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer bg-gray-900/40 rounded-xl backdrop-blur-[2px] transition-colors hover:bg-gray-900/50"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer bg-gray-900/40 rounded-xl backdrop-blur-[2px] transition-colors hover:bg-gray-900/50 animate-fade-in"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {

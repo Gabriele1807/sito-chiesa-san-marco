@@ -21,7 +21,7 @@ export default function PreghieraExpand({ testo, labelRead }: Props) {
         {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
       </button>
       {expanded && (
-        <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+        <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-100 animate-fade-in-up">
           <p className="text-sm text-gray-700 leading-relaxed italic whitespace-pre-line">
             {testo}
           </p>

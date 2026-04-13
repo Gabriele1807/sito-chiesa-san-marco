@@ -36,7 +36,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8">
       {/* ====== ZONA 1 - WELCOME HEADER ====== */}
-      <section className="relative -mx-4 sm:-mx-6 lg:-mx-10 -mt-8 sm:-mt-10 px-4 sm:px-6 lg:px-10 py-8 sm:py-10 bg-gradient-to-r from-primary via-primary-light to-primary overflow-hidden">
+      <section className="relative -mx-4 sm:-mx-6 lg:-mx-10 -mt-8 sm:-mt-10 px-4 sm:px-6 lg:px-10 py-8 sm:py-10 bg-gradient-to-r from-primary via-primary-light to-primary overflow-hidden animate-fade-in-up">
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent via-accent-light to-accent" />
         <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
@@ -52,18 +52,18 @@ export default async function HomePage() {
       {/* ====== ZONA 2 - QUICK ACCESS GRID ====== */}
       <section>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <QuickAccessCard href="/orari" icon={Clock} title={t("quickOrari")} description={t("quickOrariDesc")} />
-          <QuickAccessCard href="/preghiere" icon={BookOpen} title={t("quickPreghiere")} description={t("quickPreghiereDesc")} />
-          <QuickAccessCard href="/icone" icon={ImageIcon} title={t("quickIcone")} description={t("quickIconeDesc")} />
-          <QuickAccessCard href="/libreria" icon={Library} title={t("quickLibreria")} description={t("quickLibreriaDesc")} />
-          <QuickAccessCard href="/eventi" icon={CalendarDays} title={t("quickEventi")} description={t("quickEventiDesc")} />
+          <QuickAccessCard href="/orari" icon={Clock} title={t("quickOrari")} description={t("quickOrariDesc")} delay={0} />
+          <QuickAccessCard href="/preghiere" icon={BookOpen} title={t("quickPreghiere")} description={t("quickPreghiereDesc")} delay={60} />
+          <QuickAccessCard href="/icone" icon={ImageIcon} title={t("quickIcone")} description={t("quickIconeDesc")} delay={120} />
+          <QuickAccessCard href="/libreria" icon={Library} title={t("quickLibreria")} description={t("quickLibreriaDesc")} delay={180} />
+          <QuickAccessCard href="/eventi" icon={CalendarDays} title={t("quickEventi")} description={t("quickEventiDesc")} delay={240} />
           {/* FIX [18] — Dynamic next celebration card */}
           <NextCelebrationCard orari={orari} title={t("quickProssima")} />
         </div>
       </section>
 
       {/* ====== ZONA 3 - DA FARE ====== */}
-      <section>
+      <section className="animate-fade-in-up [animation-delay:200ms]">
         <div className="flex items-center gap-3 mb-4">
           <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide">{t("daFare")}</h2>
           <span className="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">2</span>
@@ -102,7 +102,7 @@ export default async function HomePage() {
 
       {/* ====== ZONA 4 - STAT CARDS ====== */}
       {/* FIX [6] — Stat cards now wrapped in Link for clickability */}
-      <section>
+      <section className="animate-fade-in-up [animation-delay:300ms]">
         <div className="grid grid-cols-2 gap-4">
           <Link href="/orari" className="block cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
             <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center h-full">
@@ -122,7 +122,7 @@ export default async function HomePage() {
       </section>
 
       {/* ====== ZONA 5 - WIDGET 2 COLONNE ====== */}
-      <section>
+      <section className="animate-fade-in-up [animation-delay:400ms]">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-surface rounded-xl border border-gray-200">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
