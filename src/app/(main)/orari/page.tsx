@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getOrari } from "@/lib/db";
 import { Clock } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function OrariPage() {
   const t = await getTranslations("orari");

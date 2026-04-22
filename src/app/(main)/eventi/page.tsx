@@ -3,7 +3,7 @@ import { getEventi } from "@/lib/db";
 import EventiList from "@/components/EventiList";
 import RestrictedSection from "@/components/auth/RestrictedSection";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function EventiPage() {
   const t = await getTranslations("eventi");
