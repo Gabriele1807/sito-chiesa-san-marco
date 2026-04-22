@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthContext";
+import { CHIESE_LIST } from "@/lib/churches";
 
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
@@ -577,7 +578,11 @@ export default function ProfiloPage() {
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("ruoloComunita")}</label>
                     <select
                       value={editForm.role}
-                      onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                      onChange={(e) => setEditForm({
+                        ...editForm,
+                        role: e.target.value,
+                        chiesa: e.target.value === "ospite_chiesa" ? editForm.chiesa : "",
+                      })}
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                     >
                       <option value="credente">{t("ruoloCredente")}</option>
@@ -606,14 +611,18 @@ export default function ProfiloPage() {
                 {editForm.role === "ospite_chiesa" && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("chiesaProvenienza")}</label>
-                    <input
-                      type="text"
+                    <select
                       value={editForm.chiesa}
                       onChange={(e) => setEditForm({ ...editForm, chiesa: e.target.value })}
-                      maxLength={100}
-                      placeholder={t("chiesaPlaceholder")}
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    />
+                    >
+                      <option value="">Seleziona una chiesa...</option>
+                      {CHIESE_LIST.map((chiesa) => (
+                        <option key={chiesa} value={chiesa}>
+                          {chiesa}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
 

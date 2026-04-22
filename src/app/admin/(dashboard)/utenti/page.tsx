@@ -14,6 +14,7 @@ import {
   ShieldOff,
   KeyRound,
 } from "lucide-react";
+import { CHIESE_LIST } from "@/lib/churches";
 
 interface UserPublic {
   _id: string;
@@ -64,7 +65,7 @@ export default function GestioneUtentiPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [editingUser, setEditingUser] = useState<UserPublic | null>(null);
-  const [editForm, setEditForm] = useState({ nome: "", cognome: "", role: "", ageGroup: "", attivo: true });
+  const [editForm, setEditForm] = useState({ nome: "", cognome: "", role: "", ageGroup: "", chiesa: "", attivo: true });
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
@@ -115,7 +116,14 @@ export default function GestioneUtentiPage() {
 
   function openEdit(user: UserPublic) {
     setEditingUser(user);
-    setEditForm({ nome: user.nome, cognome: user.cognome, role: user.role, ageGroup: user.ageGroup, attivo: user.attivo });
+    setEditForm({
+      nome: user.nome,
+      cognome: user.cognome,
+      role: user.role,
+      ageGroup: user.ageGroup,
+      chiesa: user.chiesa ?? "",
+      attivo: user.attivo,
+    });
     setNewPassword("");
     setPasswordMsg(null);
     setPromoteMsg(null);
@@ -136,12 +144,18 @@ export default function GestioneUtentiPage() {
       const res = await fetch("/api/admin/utenti", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingUser._id, ...editForm }),
+        body: JSON.stringify({
+          id: editingUser._id,
+          ...editForm,
+          chiesa: editForm.role === "ospite_chiesa" ? editForm.chiesa : undefined,
+        }),
       });
       const data = await res.json();
       if (data.success) {
         setUsers(prev => prev.map(u =>
-          u._id === editingUser._id ? { ...u, ...editForm } : u
+          u._id === editingUser._id
+            ? { ...u, ...editForm, chiesa: editForm.role === "ospite_chiesa" ? editForm.chiesa : undefined }
+            : u
         ));
         closeEdit();
       } else {
@@ -442,7 +456,11 @@ export default function GestioneUtentiPage() {
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Ruolo nella comunità</label>
                 <select
                   value={editForm.role}
-                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                    onChange={(e) => setEditForm({
+                      ...editForm,
+                      role: e.target.value,
+                      chiesa: e.target.value === "ospite_chiesa" ? editForm.chiesa : "",
+                    })}
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 >
                   <option value="credente">Credente</option>
@@ -476,6 +494,25 @@ export default function GestioneUtentiPage() {
                 />
                 <label htmlFor="edit-attivo" className="text-sm text-gray-700">Account attivo</label>
               </div>
+
+                {editForm.role === "ospite_chiesa" && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Chiesa di provenienza</label>
+                    <select
+                      value={editForm.chiesa}
+                      onChange={(e) => setEditForm({ ...editForm, chiesa: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    >
+                      <option value="">Seleziona una chiesa...</option>
+                      {CHIESE_LIST.map((chiesa) => (
+                        <option key={chiesa} value={chiesa}>
+                          {chiesa}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
               <div className="flex gap-3 pt-1">
                 <button
                   onClick={closeEdit}

@@ -5,16 +5,7 @@ import Image from "next/image";
 import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import type { UserRole, AgeGroup } from "@/types";
-
-// Lista chiese preimpostate per ospiti
-const CHIESE_LIST = [
-  "Chiesa Copta di San Giorgio – Roma",
-  "Chiesa Copta di San Marco – Torino",
-  "Chiesa Copta della Vergine Maria – Bologna",
-  "Chiesa Copta di San Mina – Firenze",
-  "Chiesa Copta di San Paolo – Napoli",
-  "Altra chiesa",
-];
+import { CHIESE_LIST } from "@/lib/churches";
 
 const ROLES: { value: UserRole; label: string; description: string }[] = [
   { value: "credente", label: "Credente", description: "Membro della comunità" },

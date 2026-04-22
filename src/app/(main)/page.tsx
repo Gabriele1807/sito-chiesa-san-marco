@@ -13,7 +13,7 @@ import { getTestiSacri, getPreghiere, getEventi, getOrari } from "@/lib/db";
 import QuickAccessCard from "@/components/QuickAccessCard";
 import NextCelebrationCard from "@/components/NextCelebrationCard";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function HomePage() {
   const t = await getTranslations("home");

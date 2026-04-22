@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 12 aprile 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 22 aprile 2026.
 
 ---
 
@@ -21,7 +21,6 @@ Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto i
 | Voce | Valore |
 |------|--------|
 | Nome progetto | chiesa-san-marco |
-| Workspace Windows | C:\Users\Gabriele\Downloads\sito-v3\sito-chiesa-san-marco |
 | URL dev previsto | http://localhost:3000 |
 | Framework | Next.js 16 App Router |
 | Lingue | italiano, arabo |
@@ -139,7 +138,7 @@ chiesa-san-marco/
 |- next.config.ts
 |- package.json
 |- src/
-|  |- middleware.ts
+|  |- proxy.ts
 |  |- messages/
 |  |  |- it.json
 |  |  \- ar.json
@@ -149,6 +148,7 @@ chiesa-san-marco/
 |  |  \- index.ts
 |  |- lib/
 |  |  |- mock-data.ts
+|  |  |- churches.ts
 |  |  |- db.ts
 |  |  |- gdrive.ts
 |  |  |- actions.ts
@@ -298,8 +298,13 @@ Tipi principali definiti in `src/types/index.ts`:
   - server action `setLocale(locale)` per cambiare lingua via cookie (durata 1 anno)
 
 - `src/lib/gdrive.ts`
-  - utilità per normalizzare URL Google Drive in link immagine, embed PDF, download
+  - utilita per normalizzare URL Google Drive in link immagine, embed PDF, download
   - funzione principale: `extractGDriveId(url)`
+
+- `src/lib/churches.ts`
+  - lista centralizzata delle chiese di provenienza (`CHIESE_LIST`)
+  - usata in registrazione, modifica profilo utente e modifica utente in area admin
+  - evita duplicazioni e mismatch tra form diversi
 
 ### 6.2 Conseguenza pratica fondamentale
 
@@ -327,7 +332,7 @@ L'autenticazione admin e separata dalla gestione contenuti.
 
 - `src/app/api/admin/login/route.ts`
 - `src/app/api/admin/logout/route.ts`
-- `src/middleware.ts`
+- `src/proxy.ts`
 - `src/lib/auth/password.ts`
 - `src/lib/auth/session.ts`
 - `src/lib/auth/rate-limit.ts`
@@ -361,7 +366,7 @@ Definita in `src/lib/auth/session.ts`:
 
 ### 7.4 Middleware
 
-`src/middleware.ts`:
+`src/proxy.ts`:
 
 - protegge `/admin/:path*` e `/api/admin/:path*`
 - esclude `/admin/login` e `/api/admin/login`
@@ -521,7 +526,7 @@ Il progetto usa due database per scopi diversi:
 |-------|----------|--------|
 | Admin auth + sessioni | Supabase (PostgreSQL) | relazionale, gia in uso, RLS |
 | Utenti normali + sessioni | MongoDB | schema flessibile, TTL index, rapido prototipo |
-| Contenuti sito | In-memory store (mock) | non ancora migrato |
+| Contenuti sito | MongoDB Atlas | persistenza reale, seed automatico iniziale |
 
 Regola: **admin auth rimane su Supabase, utenti normali su MongoDB**. Non mescolare.
 
@@ -548,6 +553,10 @@ Endpoint: `POST /api/auth/register`
 Due fasi nel modal:
 1. **Step 1**: nome, cognome, email, username, password (con conferma)
 2. **Step 2 (quiz)**: ruolo, fascia eta, chiesa (se ospite), richiesta admin (opzionale)
+
+Dettaglio implementativo attuale:
+- se il ruolo e `ospite_chiesa`, la chiesa di provenienza viene scelta da menu a tendina
+- le opzioni provengono da `src/lib/churches.ts` (lista unica condivisa)
 
 Validazione lato server: email/username unici, password min 8 chars, ruolo e ageGroup validi.
 Auto-login dopo registrazione.
@@ -590,6 +599,11 @@ Auto-login dopo registrazione.
 - `GET /api/admin/utenti` — lista utenti (richiede `admin.read`)
 - `PUT /api/admin/utenti` — modifica utente (richiede `admin.write`)
 - `DELETE /api/admin/utenti` — elimina utente (richiede `admin.write`)
+
+Aggiornamento UI (22 apr 2026):
+- nel modal di modifica di `/admin/utenti`, quando il ruolo e `ospite_chiesa`, compare il campo `Chiesa di provenienza`
+- il campo e un `select` con opzioni da `src/lib/churches.ts`
+- cambiando ruolo da `ospite_chiesa` a un ruolo diverso, il campo `chiesa` viene svuotato automaticamente
 
 Bug noto risolto (12 apr 2026): nella pagina `/admin/utenti`, aprendo il modal di modifica di un utente, dopo pochi secondi la lista degli utenti in background scompariva.
 Causa: il browser (Chrome/Edge) rileva il campo `type="password"` nel modal (reset password superadmin) e attiva l'autofill, riempiendo il campo `type="text"` piu vicino — ovvero la casella di ricerca — con il username salvato ("admin"). Poiche nessun utente ha "admin" nei propri dati, il filtro restituisce 0 risultati e la lista appare vuota. Chiudere il modal non resetttava la ricerca.
@@ -769,6 +783,9 @@ Stili globali aggiuntivi:
   - dati YouTube aggiornati ogni 2 minuti lato client, cache server 5 minuti
   - mappa Google Maps embed reale (Via Senato, 4, 20121 Milano MI)
   - cross pin animato sovrapposto alla mappa
+  - navbar pubblica fissa in alto con hide/show su direzione scroll (dissolvenza in discesa, riapparizione in risalita)
+  - layout pubblico con offset top coerente (`pt-14`) per evitare overlap contenuti sotto navbar fissa
+  - sidebar pubblica resa piu stabile su pagine lunghe (comportamento desktop/mobili separato, meno effetto doppio scroll)
   - sacerdote: solo nome "Padre Mina Kolta", non contattabile
   - social: solo Facebook (Instagram e WhatsApp rimossi)
   - link Facebook e YouTube reali
@@ -777,6 +794,7 @@ Stili globali aggiuntivi:
   - mostra info utente: nome, cognome, username, email, ruolo nella comunita, chiesa di provenienza (se ospite)
   - mostra stato richiesta admin (pending/approved/rejected) con badge colorati
   - form per modifica profilo utente normale: nome, cognome, email, username (con controllo unicita), ruolo, fascia eta, chiesa (visibile solo se ruolo = ospite_chiesa)
+  - quando il ruolo e `ospite_chiesa`, la chiesa viene scelta da un menu a tendina con opzioni da `src/lib/churches.ts`
   - form per modifica profilo admin: nome, cognome, email (opzionale), username (con controllo unicita) — usa `admin_session`, aggiorna Supabase
   - form per cambio password con validazione (sia utenti normali che admin)
   - sezione "Richiedi accesso admin" per utenti normali
@@ -887,6 +905,10 @@ Caratteristiche gia implementate:
   - **utente normale** (`user_session`): aggiorna nome, cognome, email (unicita), username (unicita), role, ageGroup, chiesa
   - **admin** (`admin_session`): aggiorna nome, cognome, email (unicita), username (unicita) in Supabase; il client aggiorna localStorage ed esegue `refresh()`
 - `GET /api/youtube/channel` — dati canale YouTube (cache 5 min, richiede `YOUTUBE_API_KEY`)
+
+### 13.3 Rendering/caching pagine pubbliche
+
+Le principali pagine pubbliche usano ISR con `revalidate = 60` (invece di `force-dynamic`) per ridurre il delay percepito in apertura sezione e mantenere aggiornamento frequente dei contenuti.
 
 ### 13.2 API admin
 
@@ -1017,9 +1039,9 @@ Nota pratica:
 
 ## 18. Limiti attuali e problemi noti
 
-1. i contenuti del sito non sono persistenti e si resettano al riavvio del server
+1. la shell pubblica usa logiche client-side (navbar hide/show e menu mobile), quindi eventuali modifiche su scroll/overlay vanno testate bene su mobile e desktop
 2. il rate limiter login e in memoria, quindi non e affidabile in multi-istanza/serverless
-3. `middleware.ts` crea un client Supabase inline per compatibilita Edge runtime (non usa `supabaseAdmin` da `server.ts`)
+3. `src/proxy.ts` crea un client Supabase inline per compatibilita Edge runtime (non usa `supabaseAdmin` da `server.ts`)
 4. c'e separazione forte tra auth admin (Supabase) e auth utenti normali (MongoDB): non confondere i due piani
 5. evitare modifiche ai token colore gray/slate in `@theme`
 6. evitare `zoom` in `globals.css`, ha gia creato problemi di layout in passato
@@ -1049,10 +1071,11 @@ Se devi proporre o implementare modifiche su questo progetto, assumi sempre che:
 - l'area pubblica e bilingue, l'admin no
 - la login admin non deve mostrare la shell admin
 - la dashboard admin deve offrire informazioni e azioni utili, non duplicare la sidebar
-- i contenuti sono live ma non persistenti
+- i contenuti sono live e persistenti su MongoDB Atlas
 - l'autenticazione admin e persistita su Supabase, quella utenti normali su MongoDB
 - il login e unificato: un singolo modal/endpoint gestisce sia admin che utenti
 - gli utenti normali possono richiedere di diventare admin (approvazione da superadmin)
 - le sezioni riservate (libreria, eventi) sono limitate ai guest tramite GuestGate
+- la lista chiese per `ospite_chiesa` e centralizzata in `src/lib/churches.ts` e va riusata ovunque
 - le scelte UI recenti su accessibilita, hover, back links, date localizzate e sidebar i18n sono parte dello stato corretto del progetto e non regressioni da reintrodurre
 - i componenti riutilizzabili (QuickAccessCard, BackLink, RelatedResourceCard) vanno usati dove possibile

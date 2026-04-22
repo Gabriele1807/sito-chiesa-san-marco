@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import YouTubeLiveSection from "@/components/YouTubeLiveSection";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const EMAIL = "info@sanmarcocopti.it";
 const PHONE = "+39 02 1234 5678";
@@ -46,7 +46,7 @@ export default async function ContattiPage() {
           <div
             key="email"
             style={{ animationDelay: "0ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] hover:scale-[1.02] hover:shadow-lg transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-slate-50 rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-slate-300 transition-all duration-300"
           >
             <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
               <Mail className="w-5 h-5 text-primary" />
@@ -69,7 +69,7 @@ export default async function ContattiPage() {
           <div
             key="telefono"
             style={{ animationDelay: "60ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] hover:scale-[1.02] hover:shadow-lg transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-emerald-50/35 rounded-2xl border border-emerald-100 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-emerald-200 transition-all duration-300"
           >
             <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center">
               <Phone className="w-5 h-5 text-green-600" />
@@ -93,7 +93,7 @@ export default async function ContattiPage() {
           <div
             key="indirizzo"
             style={{ animationDelay: "120ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] hover:scale-[1.02] hover:shadow-lg transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-amber-50/35 rounded-2xl border border-amber-100 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-amber-200 transition-all duration-300"
           >
             <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
               <MapPin className="w-5 h-5 text-accent" />

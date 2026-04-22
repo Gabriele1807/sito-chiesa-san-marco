@@ -125,7 +125,7 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         id="mobile-sidebar"
-        className="fixed top-14 left-0 z-40 h-[calc(100vh-3.5rem)] w-[260px] bg-sidebar text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:sticky lg:top-14 overflow-y-auto flex flex-col"
+        className="fixed top-14 left-0 z-40 h-[calc(100vh-3.5rem)] w-[260px] bg-sidebar text-white border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:sticky lg:top-14 lg:h-auto lg:min-h-[calc(100vh-3.5rem)] overflow-y-auto lg:overflow-visible flex flex-col"
       >
         {/* Navigation group */}
         <nav className="p-4 space-y-1 flex-1">

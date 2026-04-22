@@ -5,7 +5,7 @@ import { BookOpen, ArrowRight } from "lucide-react";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 import RestrictedSection from "@/components/auth/RestrictedSection";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function LibreriaPage() {
   const t = await getTranslations("libreria");

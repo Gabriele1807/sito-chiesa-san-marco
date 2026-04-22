@@ -4,7 +4,7 @@ import { FileText, Download, BookOpen } from "lucide-react";
 import PreghieraExpand from "@/components/PreghieraExpand";
 import { toGDriveDownloadUrl, toGDrivePreviewUrl, isGDriveUrl } from "@/lib/gdrive";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function PreghierePage() {
   const t = await getTranslations("preghiere");

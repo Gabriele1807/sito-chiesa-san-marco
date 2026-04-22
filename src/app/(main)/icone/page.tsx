@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getIcone } from "@/lib/db";
 import IconeGrid from "@/components/IconeGrid";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function IconePage() {
   const t = await getTranslations("icone");
