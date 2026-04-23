@@ -915,6 +915,8 @@ Ottimizzazioni performance navigazione introdotte (23 apr 2026):
 - `src/lib/db.ts` usa cache server (`unstable_cache`) per liste e dettagli contenuti (icone, libreria, preghiere, eventi, orari) con `revalidate: 60`
 - le principali pagine pubbliche hanno fetch in parallelo (`Promise.all`) invece di catena sequenziale
 - aggiunto `src/app/(main)/loading.tsx` per feedback immediato durante i cambi pagina nel route group pubblico
+- invalidazione cache puntuale dopo CRUD admin contenuti (`/api/admin/libreria`, `/api/admin/icone`, `/api/admin/preghiere`, `/api/admin/eventi`, `/api/admin/orari`) tramite `revalidateTag`
+- fix runtime su `/admin/libreria-privata`: la route ora attende davvero i risultati MongoDB prima di serializzarli, evitando errori tipo `files.map is not a function`
 
 Obiettivo pratico: transizioni tra sezioni piu rapide e meno effetto "connessione lenta" percepita dall'utente.
 
