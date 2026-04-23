@@ -2,6 +2,8 @@
  * Database utility layer — legge da Supabase tramite content.ts.
  */
 
+import { unstable_cache } from "next/cache";
+
 import {
   getLibri as contentGetLibri,
   getLibroBySlug as contentGetLibroBySlug,
@@ -14,41 +16,91 @@ import {
 } from "@/lib/mongo/content";
 import type { Icona, TestoSacro, Preghiera, Evento, OrarioSettimanale, IscrizioneEvento } from "@/types";
 
+const CONTENT_REVALIDATE_SECONDS = 60;
+
+const getIconeCached = unstable_cache(
+  async () => contentGetIcone(),
+  ["content-icone"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "icone"] }
+);
+
+const getIconaBySlugCached = unstable_cache(
+  async (slug: string) => contentGetIconaBySlug(slug),
+  ["content-icona-by-slug"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "icone"] }
+);
+
+const getTestiSacriCached = unstable_cache(
+  async () => contentGetLibri(),
+  ["content-libreria"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "libreria"] }
+);
+
+const getTestoSacroBySlugCached = unstable_cache(
+  async (slug: string) => contentGetLibroBySlug(slug),
+  ["content-libro-by-slug"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "libreria"] }
+);
+
+const getPreghiereCached = unstable_cache(
+  async () => contentGetPreghiere(),
+  ["content-preghiere"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "preghiere"] }
+);
+
+const getEventiCached = unstable_cache(
+  async () => contentGetEventi(),
+  ["content-eventi"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "eventi"] }
+);
+
+const getEventoBySlugCached = unstable_cache(
+  async (slug: string) => contentGetEventoBySlug(slug),
+  ["content-evento-by-slug"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "eventi"] }
+);
+
+const getOrariCached = unstable_cache(
+  async () => contentGetOrari(),
+  ["content-orari"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "orari"] }
+);
+
 // ============= ICONE =============
 export async function getIcone(): Promise<Icona[]> {
-  return contentGetIcone();
+  return getIconeCached();
 }
 
 export async function getIconaBySlug(slug: string): Promise<Icona | undefined> {
-  return contentGetIconaBySlug(slug);
+  return getIconaBySlugCached(slug);
 }
 
 // ============= TESTI SACRI =============
 export async function getTestiSacri(): Promise<TestoSacro[]> {
-  return contentGetLibri();
+  return getTestiSacriCached();
 }
 
 export async function getTestoSacroBySlug(slug: string): Promise<TestoSacro | undefined> {
-  return contentGetLibroBySlug(slug);
+  return getTestoSacroBySlugCached(slug);
 }
 
 // ============= PREGHIERE =============
 export async function getPreghiere(): Promise<Preghiera[]> {
-  return contentGetPreghiere();
+  return getPreghiereCached();
 }
 
 // ============= EVENTI =============
 export async function getEventi(): Promise<Evento[]> {
-  return contentGetEventi();
+  return getEventiCached();
 }
 
 export async function getEventoBySlug(slug: string): Promise<Evento | undefined> {
-  return contentGetEventoBySlug(slug);
+  return getEventoBySlugCached(slug);
 }
 
 // ============= ORARI =============
 export async function getOrari(): Promise<OrarioSettimanale[]> {
-  return contentGetOrari();
+  return getOrariCached();
 }
 
 // ============= ISCRIZIONI =============

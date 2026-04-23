@@ -5,8 +5,7 @@ import { Clock } from "lucide-react";
 export const revalidate = 60;
 
 export default async function OrariPage() {
-  const t = await getTranslations("orari");
-  const orari = await getOrari();
+  const [t, orari] = await Promise.all([getTranslations("orari"), getOrari()]);
 
   return (
     <div className="space-y-8">

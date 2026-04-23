@@ -6,8 +6,7 @@ import RestrictedSection from "@/components/auth/RestrictedSection";
 export const revalidate = 60;
 
 export default async function EventiPage() {
-  const t = await getTranslations("eventi");
-  const eventi = await getEventi();
+  const [t, eventi] = await Promise.all([getTranslations("eventi"), getEventi()]);
 
   return (
     <div className="space-y-8">

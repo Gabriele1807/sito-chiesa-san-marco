@@ -14,12 +14,14 @@ export const revalidate = 60;
 
 export default async function TestoSacroDetailPage({ params }: Props) {
   const { slug } = await params;
-  const t = await getTranslations("libreria");
-  const testo = await getTestoSacroBySlug(slug);
+  const [t, testo, allIcone] = await Promise.all([
+    getTranslations("libreria"),
+    getTestoSacroBySlug(slug),
+    getIcone(),
+  ]);
 
   if (!testo) notFound();
 
-  const allIcone = await getIcone();
   const iconeCorrelate = allIcone.filter((i) => testo.iconeCorrelate.includes(i.id));
 
   return (
