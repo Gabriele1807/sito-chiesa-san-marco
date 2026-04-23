@@ -7,8 +7,7 @@ import { toGDriveDownloadUrl, toGDrivePreviewUrl, isGDriveUrl } from "@/lib/gdri
 export const revalidate = 60;
 
 export default async function PreghierePage() {
-  const t = await getTranslations("preghiere");
-  const preghiere = await getPreghiere();
+  const [t, preghiere] = await Promise.all([getTranslations("preghiere"), getPreghiere()]);
 
   return (
     <div className="space-y-8">

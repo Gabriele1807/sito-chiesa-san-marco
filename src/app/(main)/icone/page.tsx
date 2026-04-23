@@ -5,8 +5,7 @@ import IconeGrid from "@/components/IconeGrid";
 export const revalidate = 60;
 
 export default async function IconePage() {
-  const t = await getTranslations("icone");
-  const icone = await getIcone();
+  const [t, icone] = await Promise.all([getTranslations("icone"), getIcone()]);
 
   return (
     <div className="space-y-8">

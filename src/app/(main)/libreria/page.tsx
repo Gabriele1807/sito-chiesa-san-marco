@@ -8,8 +8,7 @@ import RestrictedSection from "@/components/auth/RestrictedSection";
 export const revalidate = 60;
 
 export default async function LibreriaPage() {
-  const t = await getTranslations("libreria");
-  const testi = await getTestiSacri();
+  const [t, testi] = await Promise.all([getTranslations("libreria"), getTestiSacri()]);
 
   return (
     <div className="space-y-8">

@@ -15,15 +15,17 @@ export const revalidate = 60;
 
 export default async function IconaDetailPage({ params }: Props) {
   const { slug } = await params;
-  const t = await getTranslations("icone");
-  const icona = await getIconaBySlug(slug);
+  const [t, icona, testiSacri, allIcone] = await Promise.all([
+    getTranslations("icone"),
+    getIconaBySlug(slug),
+    getTestiSacri(),
+    getIcone(),
+  ]);
 
   if (!icona) notFound();
 
-  const testiSacri = await getTestiSacri();
   const tCorrelati = testiSacri.filter((ts) => icona.testiCorrelati.includes(ts.id));
 
-  const allIcone = await getIcone();
   const iconeCorrelate = allIcone.filter((i) => icona.iconeCorrelate.includes(i.id));
 
   return (

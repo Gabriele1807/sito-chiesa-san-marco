@@ -16,14 +16,16 @@ import NextCelebrationCard from "@/components/NextCelebrationCard";
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const t = await getTranslations("home");
-  const testiSacri = await getTestiSacri();
-  const preghiere = await getPreghiere();
-  const eventi = await getEventi();
-  const orari = await getOrari();
+  const [t, locale, testiSacri, preghiere, eventi, orari] = await Promise.all([
+    getTranslations("home"),
+    getLocale(),
+    getTestiSacri(),
+    getPreghiere(),
+    getEventi(),
+    getOrari(),
+  ]);
 
   // FIX [4] — Date now formatted with current locale instead of hardcoded "it-IT"
-  const locale = await getLocale();
   const now = new Date();
   const dateLocale = locale === "ar" ? "ar-EG" : "it-IT";
   const dateStr = now.toLocaleDateString(dateLocale, {

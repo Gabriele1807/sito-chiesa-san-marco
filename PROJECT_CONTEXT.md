@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 22 aprile 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 23 aprile 2026.
 
 ---
 
@@ -909,6 +909,16 @@ Caratteristiche gia implementate:
 ### 13.3 Rendering/caching pagine pubbliche
 
 Le principali pagine pubbliche usano ISR con `revalidate = 60` (invece di `force-dynamic`) per ridurre il delay percepito in apertura sezione e mantenere aggiornamento frequente dei contenuti.
+
+Ottimizzazioni performance navigazione introdotte (23 apr 2026):
+
+- `src/lib/db.ts` usa cache server (`unstable_cache`) per liste e dettagli contenuti (icone, libreria, preghiere, eventi, orari) con `revalidate: 60`
+- le principali pagine pubbliche hanno fetch in parallelo (`Promise.all`) invece di catena sequenziale
+- aggiunto `src/app/(main)/loading.tsx` per feedback immediato durante i cambi pagina nel route group pubblico
+- invalidazione cache puntuale dopo CRUD admin contenuti (`/api/admin/libreria`, `/api/admin/icone`, `/api/admin/preghiere`, `/api/admin/eventi`, `/api/admin/orari`) tramite `revalidateTag`
+- fix runtime su `/admin/libreria-privata`: la route ora attende davvero i risultati MongoDB prima di serializzarli, evitando errori tipo `files.map is not a function`
+
+Obiettivo pratico: transizioni tra sezioni piu rapide e meno effetto "connessione lenta" percepita dall'utente.
 
 ### 13.2 API admin
 
