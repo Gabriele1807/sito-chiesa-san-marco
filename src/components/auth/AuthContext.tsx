@@ -61,38 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      // Controlla prima se c'è info admin in localStorage (settata dal login admin)
-      const adminInfoStr = typeof window !== "undefined" ? localStorage.getItem("admin_info") : null;
-      if (adminInfoStr) {
-        try {
-          const adminInfo = JSON.parse(adminInfoStr);
-          setIsExplicitGuest(false);
-          setState({
-            type: "admin",
-            loading: false,
-            user: null,
-            admin: {
-              id: adminInfo.id || "",
-              username: adminInfo.username || "",
-              nome: adminInfo.nome,
-              cognome: adminInfo.cognome,
-              ruolo: adminInfo.ruolo,
-              isAdmin: true,
-            },
-          });
-          return;
-        } catch {
-          // JSON corrupto, ignora
-        }
-      }
-
-      // Controlla sessione utente normale via API
+      // Stato sessione sempre dal server per evitare ruoli admin stale in localStorage.
       const res = await fetch("/api/auth/me");
       const data = await res.json();
 
       if (data.success && data.type === "admin") {
         setIsExplicitGuest(false);
-        // Se i dati admin arrivano dall'API (auto-promozione), salva in localStorage
         if (data.admin) {
           localStorage.setItem("admin_info", JSON.stringify(data.admin));
         }
@@ -111,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } else if (data.success && data.type === "user" && data.user) {
         setIsExplicitGuest(false);
+        localStorage.removeItem("admin_info");
         setState({
           type: "user",
           loading: false,
@@ -118,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           admin: null,
         });
       } else {
+        localStorage.removeItem("admin_info");
         setState({
           type: "guest",
           loading: false,
@@ -126,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch {
+      localStorage.removeItem("admin_info");
       setState({
         type: "guest",
         loading: false,

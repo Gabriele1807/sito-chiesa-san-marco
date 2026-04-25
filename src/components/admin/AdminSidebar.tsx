@@ -10,6 +10,7 @@ import {
   Clock,
   CalendarDays,
   BookOpen,
+  Youtube,
   FolderLock,
   ArrowLeft,
   LogOut,
@@ -26,6 +27,7 @@ const links = [
   { href: "/admin/orari", label: "Gestione Orari", icon: Clock },
   { href: "/admin/eventi", label: "Gestione Eventi", icon: CalendarDays },
   { href: "/admin/preghiere", label: "Gestione Preghiere", icon: BookOpen },
+  { href: "/admin/video-corsi", label: "Video & Corsi", icon: Youtube },
   { href: "/admin/libreria-privata", label: "Libreria Privata", icon: FolderLock },
 ];
 

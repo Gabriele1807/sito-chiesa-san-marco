@@ -5,6 +5,7 @@ import {
   BookOpen,
   CalendarDays,
   Clock,
+  Youtube,
   FolderLock,
   Plus,
   MapPin,
@@ -18,6 +19,7 @@ import {
   getEventi,
   getOrari,
 } from "@/lib/supabase/content";
+import { getVideoCorsi } from "@/lib/db";
 import { getFilePrivati } from "@/lib/data/store";
 
 // Map day index (0=Sun) to Italian day names used in orari
@@ -32,10 +34,11 @@ const giorniMap: Record<number, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  const [libri, icone, preghiere, eventiAll, orari] = await Promise.all([
+  const [libri, icone, preghiere, videoCorsi, eventiAll, orari] = await Promise.all([
     getLibri(),
     getIcone(),
     getPreghiere(),
+    getVideoCorsi(),
     getEventi(),
     getOrari(),
   ]);
@@ -53,6 +56,7 @@ export default async function AdminDashboardPage() {
     { label: "Libri / PDF", value: libri.length, icon: Library, href: "/admin/libreria", bgColor: "bg-amber-100", textColor: "text-amber-600" },
     { label: "Icone", value: icone.length, icon: ImageIcon, href: "/admin/icone", bgColor: "bg-amber-100", textColor: "text-amber-600" },
     { label: "Preghiere", value: preghiere.length, icon: BookOpen, href: "/admin/preghiere", bgColor: "bg-amber-100", textColor: "text-amber-600" },
+    { label: "Video / Corsi", value: videoCorsi.length, icon: Youtube, href: "/admin/video-corsi", bgColor: "bg-red-100", textColor: "text-red-600" },
     { label: "Eventi futuri", value: eventiFuturi.length, icon: CalendarDays, href: "/admin/eventi", bgColor: "bg-blue-100", textColor: "text-blue-700" },
     { label: "File privati", value: filePriv.length, icon: FolderLock, href: "/admin/libreria-privata", bgColor: "bg-blue-100", textColor: "text-blue-700" },
   ];
@@ -61,6 +65,7 @@ export default async function AdminDashboardPage() {
     { label: "Nuovo Evento", href: "/admin/eventi", icon: CalendarDays, color: "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100" },
     { label: "Nuovo Libro / PDF", href: "/admin/libreria", icon: Library, color: "text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100" },
     { label: "Nuova Preghiera", href: "/admin/preghiere", icon: BookOpen, color: "text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100" },
+    { label: "Nuovo Video / Corso", href: "/admin/video-corsi", icon: Youtube, color: "text-red-600 bg-red-50 border-red-200 hover:bg-red-100" },
     { label: "Nuova Icona", href: "/admin/icone", icon: ImageIcon, color: "text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100" },
   ];
 

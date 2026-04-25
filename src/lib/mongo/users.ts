@@ -6,7 +6,7 @@
  */
 
 import { getDb } from "./client";
-import type { UserProfile, UserPublic, AdminRequestStatus } from "@/types";
+import type { UserProfile, UserPublic, AdminRequestStatus, SuperAdminRequestStatus } from "@/types";
 import { ObjectId, type WithId, type Document } from "mongodb";
 
 const COLLECTION = "users";
@@ -33,6 +33,7 @@ export async function ensureIndexes(): Promise<void> {
   await c.createIndex({ email: 1 }, { unique: true });
   await c.createIndex({ username: 1 }, { unique: true });
   await c.createIndex({ adminRequest: 1 });
+  await c.createIndex({ superAdminRequest: 1 });
   indexesEnsured = true;
 }
 
@@ -65,6 +66,7 @@ export async function createUser(data: {
     emailVerificata: false,
     adminRequest: data.adminRequest ? "pending" : "none",
     adminRequestDate: data.adminRequest ? now : undefined,
+    superAdminRequest: "none",
     createdAt: now,
     updatedAt: now,
   };
@@ -136,7 +138,7 @@ export async function listUsers(opts?: {
 
 export async function updateUser(
   id: string,
-  data: Partial<Pick<UserProfile, "nome" | "cognome" | "role" | "ageGroup" | "chiesa" | "attivo" | "emailVerificata" | "adminRequest">>
+  data: Partial<Pick<UserProfile, "nome" | "cognome" | "role" | "ageGroup" | "chiesa" | "attivo" | "emailVerificata" | "adminRequest" | "superAdminRequest" | "superAdminRequestDate">>
 ): Promise<UserPublic | null> {
   const c = await col();
   if (!ObjectId.isValid(id)) return null;
@@ -229,6 +231,49 @@ export async function getPendingAdminRequests(): Promise<UserPublic[]> {
     .find({ adminRequest: "pending" }, { projection: { passwordHash: 0 } })
     .sort({ adminRequestDate: 1 })
     .toArray();
+  return docs.map((d) => ({ ...d, _id: d._id.toString() }) as unknown as UserPublic);
+}
+
+export async function updateSuperAdminRequest(
+  id: string,
+  status: SuperAdminRequestStatus
+): Promise<UserPublic | null> {
+  const c = await col();
+  if (!ObjectId.isValid(id)) return null;
+
+  const now = new Date().toISOString();
+  const update: { $set: Record<string, unknown>; $unset?: Record<string, string> } = {
+    $set: {
+      superAdminRequest: status,
+      updatedAt: now,
+    },
+  };
+
+  if (status === "pending") {
+    update.$set.superAdminRequestDate = now;
+  } else {
+    update.$unset = { superAdminRequestDate: "" };
+  }
+
+  const result = await c.findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    update,
+    { returnDocument: "after", projection: { passwordHash: 0 } }
+  );
+  if (!result) return null;
+  return { ...result, _id: result._id.toString() } as unknown as UserPublic;
+}
+
+export async function getPendingSuperAdminRequests(): Promise<UserPublic[]> {
+  const c = await col();
+  const docs = await c
+    .find(
+      { adminRequest: "approved", superAdminRequest: "pending" },
+      { projection: { passwordHash: 0 } }
+    )
+    .sort({ superAdminRequestDate: 1 })
+    .toArray();
+
   return docs.map((d) => ({ ...d, _id: d._id.toString() }) as unknown as UserPublic);
 }
 

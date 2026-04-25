@@ -123,25 +123,25 @@ export default function UserMenu() {
             </p>
           </div>
 
+          <Link
+            href="/profilo"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors animate-fadeInUp stagger-2"
+          >
+            <UserCircle className="w-4 h-4" />
+            Il mio profilo
+          </Link>
+
           {isAdmin && (
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors animate-fadeInUp stagger-2"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 transition-colors animate-fadeInUp stagger-3"
             >
               <Shield className="w-4 h-4" />
               Pannello Admin
             </Link>
           )}
-
-          <Link
-            href="/profilo"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors animate-fadeInUp stagger-3"
-          >
-            <UserCircle className="w-4 h-4" />
-            Il mio profilo
-          </Link>
 
           <div className="border-t border-gray-100 mt-1 pt-1 animate-fadeInUp stagger-4">
           <button

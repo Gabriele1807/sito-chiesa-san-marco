@@ -41,6 +41,15 @@ export interface Preghiera {
   categoria: string;
 }
 
+export interface VideoCorso {
+  id: string;
+  titolo: string;
+  descrizione: string;
+  urlVideo: string;
+  categoria: string;
+  thumbnail?: string;
+}
+
 export interface Evento {
   id: string;
   slug: string;
@@ -85,6 +94,9 @@ export type AgeGroup = "0-11" | "12-18" | "19-29" | "30-45" | "46-65" | "65+";
 /** Stato della richiesta di diventare admin */
 export type AdminRequestStatus = "none" | "pending" | "approved" | "rejected";
 
+/** Stato della richiesta di diventare superadmin (solo admin) */
+export type SuperAdminRequestStatus = "none" | "pending" | "approved" | "rejected";
+
 /** Profilo utente normale (MongoDB) */
 export interface UserProfile {
   _id?: string;
@@ -107,6 +119,10 @@ export interface UserProfile {
   adminRequest: AdminRequestStatus;
   adminRequestDate?: string; // ISO date
 
+  // Richiesta superadmin (solo per account gia admin)
+  superAdminRequest?: SuperAdminRequestStatus;
+  superAdminRequestDate?: string; // ISO date
+
   // Metadati
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
@@ -116,7 +132,7 @@ export interface UserProfile {
 /** Dati per la creazione di un nuovo utente (senza campi auto-generati) */
 export type CreateUserData = Omit<
   UserProfile,
-  "_id" | "passwordHash" | "attivo" | "emailVerificata" | "adminRequest" | "createdAt" | "updatedAt" | "ultimoAccesso"
+  "_id" | "passwordHash" | "attivo" | "emailVerificata" | "adminRequest" | "superAdminRequest" | "createdAt" | "updatedAt" | "ultimoAccesso"
 > & {
   password: string;
   adminRequest?: boolean; // true se vuole richiedere di diventare admin
@@ -146,6 +162,7 @@ export interface AdminSessionInfo {
   nome: string;
   cognome: string;
   ruolo: "superadmin" | "admin";
+  superAdminRequest?: SuperAdminRequestStatus;
   isAdmin: true;
 }
 

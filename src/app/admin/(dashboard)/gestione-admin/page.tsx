@@ -72,6 +72,15 @@ export default function GestioneAdminPage() {
     adminRequestDate?: string;
     createdAt: string;
   }>>([]);
+  const [pendingSuperAdminRequests, setPendingSuperAdminRequests] = useState<Array<{
+    _id: string;
+    username: string;
+    email: string;
+    nome: string;
+    cognome: string;
+    superAdminRequest?: string;
+    superAdminRequestDate?: string;
+  }>>([]);
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
 
   const fetchAdmins = useCallback(async () => {
@@ -102,10 +111,23 @@ export default function GestioneAdminPage() {
     }
   }, []);
 
+  const fetchPendingSuperAdminRequests = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/richieste-superadmin");
+      const data = await res.json();
+      if (data.success) {
+        setPendingSuperAdminRequests(data.data);
+      }
+    } catch {
+      // silently fail - non-critical
+    }
+  }, []);
+
   useEffect(() => {
     fetchAdmins();
     fetchPendingRequests();
-  }, [fetchAdmins, fetchPendingRequests]);
+    fetchPendingSuperAdminRequests();
+  }, [fetchAdmins, fetchPendingRequests, fetchPendingSuperAdminRequests]);
 
   async function handleApproveRequest(userId: string) {
     setProcessingRequest(userId);
@@ -141,6 +163,48 @@ export default function GestioneAdminPage() {
         await fetchPendingRequests();
       } else {
         alert(data.error || "Errore nel rifiuto");
+      }
+    } catch {
+      alert("Errore di connessione");
+    } finally {
+      setProcessingRequest(null);
+    }
+  }
+
+  async function handleApproveSuperAdminRequest(userId: string) {
+    setProcessingRequest(userId);
+    try {
+      const res = await fetch("/api/admin/richieste-superadmin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "approve" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await Promise.all([fetchPendingSuperAdminRequests(), fetchAdmins()]);
+      } else {
+        alert(data.error || "Errore nell'approvazione richiesta superadmin");
+      }
+    } catch {
+      alert("Errore di connessione");
+    } finally {
+      setProcessingRequest(null);
+    }
+  }
+
+  async function handleRejectSuperAdminRequest(userId: string) {
+    setProcessingRequest(userId);
+    try {
+      const res = await fetch("/api/admin/richieste-superadmin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "reject" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchPendingSuperAdminRequests();
+      } else {
+        alert(data.error || "Errore nel rifiuto richiesta superadmin");
       }
     } catch {
       alert("Errore di connessione");
@@ -493,6 +557,66 @@ export default function GestioneAdminPage() {
                     onClick={() => handleApproveRequest(req._id)}
                     disabled={processingRequest === req._id}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  >
+                    {processingRequest === req._id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Check className="w-3.5 h-3.5" />
+                    )}
+                    Approva
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {pendingSuperAdminRequests.length > 0 && (
+        <div className="bg-white rounded-xl border border-sky-200 overflow-hidden">
+          <div className="px-5 py-4 bg-sky-50 border-b border-sky-200 flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-sky-700" />
+            <h2 className="text-lg font-bold text-gray-900">
+              Richieste Super Admin Pendenti ({pendingSuperAdminRequests.length})
+            </h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {pendingSuperAdminRequests.map((req) => (
+              <div key={req._id} className="px-5 py-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-sky-700 text-xs font-bold shrink-0">
+                    {req.nome?.[0] ?? "?"}{req.cognome?.[0] ?? ""}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {req.nome} {req.cognome}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">{req.email} · @{req.username}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Richiede promozione a superadmin
+                      {req.superAdminRequestDate && (
+                        <> · Richiesta il {new Date(req.superAdminRequestDate).toLocaleDateString("it-IT")}</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleRejectSuperAdminRequest(req._id)}
+                    disabled={processingRequest === req._id}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    {processingRequest === req._id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5" />
+                    )}
+                    Rifiuta
+                  </button>
+                  <button
+                    onClick={() => handleApproveSuperAdminRequest(req._id)}
+                    disabled={processingRequest === req._id}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-sky-700 rounded-lg hover:bg-sky-800 transition-colors disabled:opacity-50"
                   >
                     {processingRequest === req._id ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />

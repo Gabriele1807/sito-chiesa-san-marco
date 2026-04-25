@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { X, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "./AuthContext";
 
 export default function LoginModal() {
   const { showLoginModal, setShowLoginModal, setShowRegisterModal, setIsExplicitGuest, refresh } = useAuth();
-  const router = useRouter();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -66,10 +64,6 @@ export default function LoginModal() {
 
         setShowLoginModal(false);
         await refresh();
-
-        if (data.type === "admin") {
-          router.push("/admin");
-        }
       } else {
         let msg = data.error || "Credenziali non valide";
         if (data.remaining !== undefined && data.remaining > 0) {
