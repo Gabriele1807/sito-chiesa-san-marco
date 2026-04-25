@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
-import { findUserById } from "@/lib/mongo/users";
+import { findUserById, findUserByUsername } from "@/lib/mongo/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 /**
@@ -15,12 +15,90 @@ export async function GET() {
     const token = cookieStore.get("user_session")?.value;
     const adminToken = cookieStore.get("admin_session")?.value;
 
-    // Se c'è una sessione admin, ritorna il tipo admin (senza dettagli - quelli vengono dal localStorage)
+    // Se c'è una sessione admin, validala lato DB e ritorna sempre dati aggiornati
     if (adminToken) {
+      const { data: session, error: sessionError } = await supabaseAdmin
+        .from("admin_sessions")
+        .select(
+          `
+            expires_at,
+            admin_user_id,
+            admin_users (
+              id,
+              username,
+              nome,
+              cognome,
+              ruolo,
+              attivo
+            )
+          `
+        )
+        .eq("session_token", adminToken)
+        .single();
+
+      if (sessionError || !session) {
+        const response = NextResponse.json({
+          success: true,
+          type: "guest",
+          authenticated: false,
+        });
+        response.cookies.delete("admin_session");
+        return response;
+      }
+
+      if (new Date(session.expires_at) < new Date()) {
+        await supabaseAdmin
+          .from("admin_sessions")
+          .delete()
+          .eq("session_token", adminToken);
+
+        const response = NextResponse.json({
+          success: true,
+          type: "guest",
+          authenticated: false,
+        });
+        response.cookies.delete("admin_session");
+        return response;
+      }
+
+      const rawAdminUser = session.admin_users as unknown;
+      const adminUser = (Array.isArray(rawAdminUser) ? rawAdminUser[0] : rawAdminUser) as {
+        id: string;
+        username: string;
+        nome: string;
+        cognome: string;
+        ruolo: "superadmin" | "admin";
+        attivo: boolean;
+      } | null;
+
+      if (!adminUser || !adminUser.attivo) {
+        const response = NextResponse.json({
+          success: true,
+          type: "guest",
+          authenticated: false,
+        });
+        response.cookies.delete("admin_session");
+        return response;
+      }
+
+      const relatedUser = await findUserByUsername(adminUser.username);
+      const superAdminRequest = adminUser.ruolo === "superadmin"
+        ? "approved"
+        : relatedUser?.superAdminRequest ?? "none";
+
       return NextResponse.json({
         success: true,
         type: "admin",
         authenticated: true,
+        admin: {
+          id: adminUser.id,
+          username: adminUser.username,
+          nome: adminUser.nome,
+          cognome: adminUser.cognome,
+          ruolo: adminUser.ruolo,
+          isAdmin: true,
+          superAdminRequest,
+        },
       });
     }
 
@@ -82,6 +160,8 @@ export async function GET() {
             nome: adminUser.nome,
             cognome: adminUser.cognome,
             ruolo: adminUser.ruolo,
+            isAdmin: true,
+            superAdminRequest: adminUser.ruolo === "superadmin" ? "approved" : "none",
           },
         });
 

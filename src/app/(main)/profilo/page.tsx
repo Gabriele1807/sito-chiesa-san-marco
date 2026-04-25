@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import {
   User,
   Mail,
   Shield,
+  CalendarDays,
+  Image as ImageIcon,
+  Library,
+  BookOpen,
+  Users,
   Key,
   Check,
   AlertCircle,
@@ -16,7 +22,7 @@ import {
   ArrowRight,
   Settings,
   Pencil,
-  X,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -24,7 +30,8 @@ import { CHIESE_LIST } from "@/lib/churches";
 
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
-  const { type, user, admin, setShowLoginModal, refresh } = useAuth();
+  const router = useRouter();
+  const { type, user, admin, setShowLoginModal, refresh, logout } = useAuth();
 
   // Refresh on mount so the profile always reflects the latest DB state
   useEffect(() => {
@@ -55,6 +62,8 @@ export default function ProfiloPage() {
   /* â”€â”€ Admin request state â”€â”€ */
   const [requestingAdmin, setRequestingAdmin] = useState(false);
   const [adminReqMessage, setAdminReqMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [requestingSuperAdmin, setRequestingSuperAdmin] = useState(false);
+  const [superAdminReqMessage, setSuperAdminReqMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   /* â”€â”€ Guest â”€â”€ */
   if (type === "guest") {
@@ -78,6 +87,7 @@ export default function ProfiloPage() {
 
   /* â”€â”€ Derived display values â”€â”€ */
   const isAdmin = type === "admin";
+  const isSuperAdmin = isAdmin && admin?.ruolo === "superadmin";
   const nome = isAdmin ? (admin?.nome ?? "") : (user?.nome ?? "");
   const cognome = isAdmin ? (admin?.cognome ?? "") : (user?.cognome ?? "");
   const fullName = [nome, cognome].filter(Boolean).join(" ");
@@ -96,6 +106,64 @@ export default function ProfiloPage() {
   const roleDisplay = isAdmin
     ? roleLabels[admin?.ruolo ?? "admin"] ?? t("ruoloAdmin")
     : roleLabels[user?.role ?? ""] ?? user?.role ?? "";
+
+  const adminRequestTone =
+    user?.adminRequest === "approved"
+      ? "border-green-200 bg-green-50 text-green-700"
+      : user?.adminRequest === "pending"
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : user?.adminRequest === "rejected"
+          ? "border-red-200 bg-red-50 text-red-700"
+          : "border-gray-200 bg-gray-50 text-gray-600";
+
+  const adminRequestSummary =
+    user?.adminRequest === "approved"
+      ? t("adminApprovato")
+      : user?.adminRequest === "pending"
+        ? t("adminGiaRichiesto")
+        : user?.adminRequest === "rejected"
+          ? t("adminRequest_rejected")
+          : t("nessunaRichiestaAdmin");
+
+  const siteQuickActions = [
+    { href: "/eventi", label: t("azioneSitoEventi"), icon: CalendarDays, tone: "bg-blue-50 text-blue-700" },
+    { href: "/icone", label: t("azioneSitoIcone"), icon: ImageIcon, tone: "bg-indigo-50 text-indigo-700" },
+    { href: "/preghiere", label: t("azioneSitoPreghiere"), icon: BookOpen, tone: "bg-violet-50 text-violet-700" },
+    { href: "/libreria", label: t("azioneSitoLibreria"), icon: Library, tone: "bg-emerald-50 text-emerald-700" },
+  ];
+
+  const adminQuickActions = isSuperAdmin
+    ? [
+        { href: "/admin/gestione-admin", label: t("azioneSuperAdminGestioneAdmin"), icon: Shield, prominent: true },
+        { href: "/admin/utenti", label: t("azioneSuperAdminUtenti"), icon: Users, prominent: true },
+        { href: "/admin/eventi", label: t("azioneAdminEvento"), icon: CalendarDays, prominent: false },
+        { href: "/admin/icone", label: t("azioneAdminIcona"), icon: ImageIcon, prominent: false },
+      ]
+    : [
+        { href: "/admin/eventi", label: t("azioneAdminEvento"), icon: CalendarDays, prominent: false },
+        { href: "/admin/icone", label: t("azioneAdminIcona"), icon: ImageIcon, prominent: false },
+        { href: "/admin/preghiere", label: t("azioneAdminPreghiera"), icon: BookOpen, prominent: false },
+        { href: "/admin/libreria", label: t("azioneAdminLibreria"), icon: Library, prominent: false },
+      ];
+
+  const superAdminRequest = admin?.superAdminRequest ?? "none";
+  const superAdminRequestTone =
+    superAdminRequest === "approved"
+      ? "border-green-200 bg-green-50 text-green-700"
+      : superAdminRequest === "pending"
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : superAdminRequest === "rejected"
+          ? "border-red-200 bg-red-50 text-red-700"
+          : "border-gray-200 bg-gray-50 text-gray-600";
+
+  const superAdminRequestSummary =
+    superAdminRequest === "approved"
+      ? t("superAdminApprovato")
+      : superAdminRequest === "pending"
+        ? t("superAdminGiaRichiesto")
+        : superAdminRequest === "rejected"
+          ? t("superAdminRequest_rejected")
+          : t("nessunaRichiestaSuperAdmin");
 
   /* â”€â”€ Open edit form (pre-fill) â”€â”€ */
   function openEdit() {
@@ -175,6 +243,34 @@ export default function ProfiloPage() {
     }
   }
 
+  async function handleRequestSuperAdmin() {
+    setRequestingSuperAdmin(true);
+    setSuperAdminReqMessage(null);
+    try {
+      const res = await fetch("/api/auth/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestSuperAdmin: true }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuperAdminReqMessage({ type: "success", text: t("richiestaSuperAdminInviata") });
+        if (data.admin) {
+          const stored = localStorage.getItem("admin_info");
+          const prev = stored ? JSON.parse(stored) : {};
+          localStorage.setItem("admin_info", JSON.stringify({ ...prev, ...data.admin }));
+        }
+        await refresh();
+      } else {
+        setSuperAdminReqMessage({ type: "error", text: data.error || t("erroreGenerico") });
+      }
+    } catch {
+      setSuperAdminReqMessage({ type: "error", text: t("erroreGenerico") });
+    } finally {
+      setRequestingSuperAdmin(false);
+    }
+  }
+
   /* â”€â”€ Password change â”€â”€ */
   async function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
@@ -213,6 +309,11 @@ export default function ProfiloPage() {
     setShowPasswordSection(false);
     setPasswordMessage(null);
     setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+  }
+
+  async function handleLogoutFromProfile() {
+    await logout();
+    router.push("/");
   }
 
   /* ── Admin edit handlers ── */
@@ -270,11 +371,13 @@ export default function ProfiloPage() {
 
   /* ── Render ── */
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="mx-auto max-w-7xl">
+      <div className="grid items-start gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,1fr)] 2xl:gap-8">
+        <div className="min-w-0 space-y-5">
 
       {/* â”€â”€ Hero card â”€â”€ */}
       <div
-        className={`relative overflow-hidden rounded-2xl p-6 text-white shadow-md ${
+        className={`relative overflow-hidden rounded-2xl p-4 sm:p-6 text-white shadow-md ${
           isAdmin
             ? "bg-gradient-to-br from-amber-600 to-amber-700"
             : "bg-gradient-to-br from-primary to-primary-light"
@@ -282,8 +385,8 @@ export default function ProfiloPage() {
       >
         <div aria-hidden className="absolute -right-8 -top-8 w-36 h-36 rounded-full opacity-10 bg-white" />
         <div aria-hidden className="absolute -right-2 -bottom-10 w-24 h-24 rounded-full opacity-10 bg-white" />
-        <div className="relative flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0 shadow-inner bg-white/20 text-white">
+        <div className="relative flex items-center gap-4 sm:gap-5">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0 shadow-inner bg-white/20 text-white">
             {initials || <User className="w-8 h-8" />}
           </div>
           <div className="min-w-0">
@@ -302,7 +405,7 @@ export default function ProfiloPage() {
       {/* â”€â”€ Info rows â”€â”€ */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
         {email && (
-          <div className="flex items-center gap-4 px-5 py-4">
+          <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
             <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
               <Mail className="w-4 h-4 text-blue-500" />
             </div>
@@ -312,7 +415,7 @@ export default function ProfiloPage() {
             </div>
           </div>
         )}
-        <div className="flex items-center gap-4 px-5 py-4">
+        <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
           <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
             <Shield className="w-4 h-4 text-purple-500" />
           </div>
@@ -322,7 +425,7 @@ export default function ProfiloPage() {
           </div>
         </div>
         {username && (
-          <div className="flex items-center gap-4 px-5 py-4">
+          <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
             <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
               <User className="w-4 h-4 text-gray-500" />
             </div>
@@ -334,7 +437,7 @@ export default function ProfiloPage() {
         )}
 
         {!isAdmin && user?.chiesa && user.role === "ospite_chiesa" && (
-          <div className="flex items-center gap-4 px-5 py-4">
+          <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
             <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
               <Shield className="w-4 h-4 text-green-500" />
             </div>
@@ -389,7 +492,13 @@ export default function ProfiloPage() {
       {isAdmin && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <button
-            onClick={() => { showAdminEditSection ? closeAdminEdit() : openAdminEdit(); }}
+            onClick={() => {
+              if (showAdminEditSection) {
+                closeAdminEdit();
+              } else {
+                openAdminEdit();
+              }
+            }}
             className="flex items-center justify-between w-full px-5 py-4 hover:bg-gray-50 transition-colors"
             aria-expanded={showAdminEditSection}
           >
@@ -477,18 +586,18 @@ export default function ProfiloPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3 pt-1">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
                   <button
                     type="submit"
                     disabled={adminEditLoading}
-                    className="px-5 py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-xl hover:bg-amber-700 transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto px-5 py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-xl hover:bg-amber-700 transition-colors disabled:opacity-50"
                   >
                     {adminEditLoading ? t("salvataggioInCorso") : t("salvaModifiche")}
                   </button>
                   <button
                     type="button"
                     onClick={closeAdminEdit}
-                    className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
                   >
                     {t("annulla")}
                   </button>
@@ -503,7 +612,13 @@ export default function ProfiloPage() {
       {!isAdmin && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <button
-            onClick={() => { showEditSection ? closeEdit() : openEdit(); }}
+            onClick={() => {
+              if (showEditSection) {
+                closeEdit();
+              } else {
+                openEdit();
+              }
+            }}
             className="flex items-center justify-between w-full px-5 py-4 hover:bg-gray-50 transition-colors"
             aria-expanded={showEditSection}
           >
@@ -643,18 +758,18 @@ export default function ProfiloPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3 pt-1">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
                   <button
                     type="submit"
                     disabled={editLoading}
-                    className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-light transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-light transition-colors disabled:opacity-50"
                   >
                     {editLoading ? t("salvataggioInCorso") : t("salvaModifiche")}
                   </button>
                   <button
                     type="button"
                     onClick={closeEdit}
-                    className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
                   >
                     {t("annulla")}
                   </button>
@@ -802,18 +917,18 @@ export default function ProfiloPage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-3 pt-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
                 <button
                   type="submit"
                   disabled={passwordLoading}
-                  className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {passwordLoading ? t("salvataggioInCorso") : t("salvaPassword")}
                 </button>
                 <button
                   type="button"
                   onClick={closePasswordSection}
-                  className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
                 >
                   {t("annulla")}
                 </button>
@@ -821,6 +936,168 @@ export default function ProfiloPage() {
             </form>
           </div>
         )}
+      </div>
+
+      <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
+        <button
+          type="button"
+          onClick={handleLogoutFromProfile}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </button>
+      </div>
+        </div>
+
+        <aside className="space-y-4 xl:sticky xl:top-20">
+
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{t("azioniRapide")}</p>
+
+            <div className="mt-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{t("azioniSitoTitle")}</p>
+              <div className="mt-2 space-y-2">
+                {siteQuickActions.map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <Link
+                      key={action.href}
+                      href={action.href}
+                      className="group flex w-full items-center justify-between rounded-xl border border-gray-200 px-3.5 py-3 text-left transition-colors hover:bg-gray-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${action.tone}`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{action.label}</span>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-gray-400 transition-colors group-hover:text-gray-600" />
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {isAdmin && (
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                    {isSuperAdmin ? t("azioniSuperAdminTitle") : t("azioniAdminTitle")}
+                  </p>
+
+                  <div className="mt-2 space-y-2">
+                    <Link
+                      href="/admin"
+                      className="group flex w-full items-center justify-between rounded-xl border border-amber-200 bg-amber-50/70 px-3.5 py-3 text-left transition-colors hover:bg-amber-100/70"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
+                          <Crown className="h-4 w-4 text-amber-600" />
+                        </div>
+                        <span className="text-sm font-medium text-amber-900">{t("pannelloAdmin")}</span>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-amber-500 transition-colors group-hover:text-amber-700" />
+                    </Link>
+
+                    {adminQuickActions.map((action) => {
+                      const Icon = action.icon;
+                      const highlighted = action.prominent;
+                      return (
+                        <Link
+                          key={action.href}
+                          href={action.href}
+                          className={`group flex w-full items-center justify-between rounded-xl border px-3.5 py-3 text-left transition-colors ${
+                            highlighted
+                              ? "border-sky-200 bg-sky-50/80 hover:bg-sky-100"
+                              : "border-amber-100 bg-amber-50/40 hover:bg-amber-100/70"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                                highlighted ? "bg-white text-sky-700" : "bg-white text-amber-700"
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <span className={`text-sm font-medium ${highlighted ? "text-sky-900" : "text-amber-900"}`}>
+                              {action.label}
+                            </span>
+                          </div>
+                          <ArrowRight
+                            className={`h-4 w-4 transition-colors ${
+                              highlighted ? "text-sky-500 group-hover:text-sky-700" : "text-amber-500 group-hover:text-amber-700"
+                            }`}
+                          />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {!isAdmin && (
+            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+                  <Shield className="h-4 w-4 text-gray-600" />
+                </div>
+                <p className="text-sm font-semibold text-gray-900">{t("richiediAdmin")}</p>
+              </div>
+
+              <div className={`rounded-xl border px-3 py-2.5 text-sm ${adminRequestTone}`}>
+                {adminRequestSummary}
+              </div>
+
+              <p className="mt-3 text-xs text-gray-500">{t("suggerimentoSicurezza")}</p>
+            </div>
+          )}
+
+          {isAdmin && !isSuperAdmin && (
+            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+                  <Shield className="h-4 w-4 text-gray-600" />
+                </div>
+                <p className="text-sm font-semibold text-gray-900">{t("richiediSuperAdmin")}</p>
+              </div>
+
+              <div className={`rounded-xl border px-3 py-2.5 text-sm ${superAdminRequestTone}`}>
+                {superAdminRequestSummary}
+              </div>
+
+              {(superAdminRequest === "none" || superAdminRequest === "rejected") && (
+                <button
+                  type="button"
+                  onClick={handleRequestSuperAdmin}
+                  disabled={requestingSuperAdmin}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <UserCheck className="h-4 w-4" />
+                  {requestingSuperAdmin ? t("salvataggioInCorso") : t("richiediSuperAdmin")}
+                </button>
+              )}
+
+              {superAdminReqMessage && (
+                <div
+                  className={`mt-3 flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm ${
+                    superAdminReqMessage.type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {superAdminReqMessage.type === "success" ? (
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  )}
+                  {superAdminReqMessage.text}
+                </div>
+              )}
+            </div>
+          )}
+        </aside>
       </div>
     </div>
   );

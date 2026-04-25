@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
         if (data.user) {
           localStorage.setItem("admin_info", JSON.stringify(data.user));
         }
-        router.push("/admin");
+        router.push("/profilo");
       } else {
         let msg = data.error || "Credenziali non valide";
         if (data.remaining !== undefined && data.remaining > 0) {

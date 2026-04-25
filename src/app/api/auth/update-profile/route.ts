@@ -7,6 +7,8 @@ import {
   updateUserEmail,
   updateUserUsername,
   updateAdminRequest,
+  findUserByUsername,
+  updateSuperAdminRequest,
 } from "@/lib/mongo/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserRole, AgeGroup, AdminRequestStatus } from "@/types";
@@ -41,7 +43,7 @@ export async function POST(request: Request) {
     // PERCORSO ADMIN
     // ══════════════════════════════════════════════════
     if (adminToken && !userToken) {
-      const { nome, cognome, email, username } = body;
+      const { nome, cognome, email, username, requestSuperAdmin } = body;
 
       // Valida sessione admin
       const { data: sessionRow } = await supabaseAdmin
@@ -67,6 +69,8 @@ export async function POST(request: Request) {
       if (!currentAdmin) {
         return NextResponse.json({ success: false, error: "Amministratore non trovato" }, { status: 404 });
       }
+
+      const mongoUser = await findUserByUsername(currentAdmin.username);
 
       // Validation
       if (email !== undefined) {
@@ -120,8 +124,24 @@ export async function POST(request: Request) {
       if (email !== undefined && typeof email === "string") adminUpdate.email = email.trim();
       if (username !== undefined && typeof username === "string") adminUpdate.username = username.trim();
 
+      if (requestSuperAdmin === true && currentAdmin.ruolo === "admin" && mongoUser) {
+        const currentStatus = mongoUser.superAdminRequest ?? "none";
+        if (currentStatus === "none" || currentStatus === "rejected") {
+          await updateSuperAdminRequest(mongoUser._id as string, "pending");
+        }
+      }
+
       if (Object.keys(adminUpdate).length === 0) {
-        return NextResponse.json({ success: true, admin: currentAdmin });
+        return NextResponse.json({
+          success: true,
+          admin: {
+            ...currentAdmin,
+            superAdminRequest:
+              currentAdmin.ruolo === "superadmin"
+                ? "approved"
+                : (mongoUser?.superAdminRequest ?? "none"),
+          },
+        });
       }
 
       const { data: updated, error: updateError } = await supabaseAdmin
@@ -136,7 +156,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: "Errore durante il salvataggio" }, { status: 500 });
       }
 
-      return NextResponse.json({ success: true, admin: updated });
+      const refreshedMongoUser = await findUserByUsername(updated.username);
+
+      return NextResponse.json({
+        success: true,
+        admin: {
+          ...updated,
+          superAdminRequest:
+            updated.ruolo === "superadmin"
+              ? "approved"
+              : (refreshedMongoUser?.superAdminRequest ?? "none"),
+        },
+      });
     }
 
     // ══════════════════════════════════════════════════

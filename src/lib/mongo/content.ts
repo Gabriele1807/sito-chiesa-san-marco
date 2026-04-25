@@ -11,12 +11,13 @@
  */
 
 import { getDb } from "@/lib/mongo/client";
-import type { Icona, TestoSacro, Preghiera, Evento, OrarioSettimanale } from "@/types";
+import type { Icona, TestoSacro, Preghiera, VideoCorso, Evento, OrarioSettimanale } from "@/types";
 import type { FilePrivato } from "@/lib/data/store";
 import {
   icone as iconeInit,
   testiSacri as testiSacriInit,
   preghiere as preghiereInit,
+  videoCorsi as videoCorsiInit,
   eventi as eventiInit,
   orariSettimanali as orariInit,
 } from "@/lib/mock-data";
@@ -58,6 +59,7 @@ async function ensureIndexes(): Promise<void> {
     db.collection("testi_sacri").createIndex({ slug: 1 }, { unique: true }),
     db.collection("preghiere").createIndex({ id: 1 }, { unique: true }),
     db.collection("preghiere").createIndex({ slug: 1 }, { sparse: true, unique: true }),
+    db.collection("video_corsi").createIndex({ id: 1 }, { unique: true }),
     db.collection("eventi").createIndex({ id: 1 }, { unique: true }),
     db.collection("eventi").createIndex({ slug: 1 }, { unique: true }),
     db.collection("orari_settimanali").createIndex({ giorno: 1 }, { unique: true }),
@@ -212,6 +214,48 @@ export async function updatePreghiera(id: string, data: Partial<Preghiera>): Pro
 export async function deletePreghiera(id: string): Promise<boolean> {
   const db = await getDb();
   const result = await db.collection("preghiere").deleteOne({ id });
+  return result.deletedCount > 0;
+}
+
+// ============================================================
+//  VIDEO E CORSI
+// ============================================================
+
+export async function getVideoCorsi(): Promise<VideoCorso[]> {
+  await ensureIndexes();
+  await seedIfEmpty("video_corsi", videoCorsiInit);
+  const db = await getDb();
+  return (await db.collection("video_corsi").find({}).toArray()).map((d) => clean<VideoCorso>(d));
+}
+
+export async function getVideoCorsoById(id: string): Promise<VideoCorso | undefined> {
+  const db = await getDb();
+  const doc = await db.collection("video_corsi").findOne({ id });
+  return doc ? clean<VideoCorso>(doc) : undefined;
+}
+
+export async function addVideoCorso(data: Omit<VideoCorso, "id">): Promise<VideoCorso> {
+  await ensureIndexes();
+  const id = await nextId("video_corsi");
+  const nuovo: VideoCorso = { ...data, id };
+  const db = await getDb();
+  await db.collection("video_corsi").insertOne({ ...nuovo });
+  return nuovo;
+}
+
+export async function updateVideoCorso(id: string, data: Partial<VideoCorso>): Promise<VideoCorso | null> {
+  const db = await getDb();
+  const result = await db.collection("video_corsi").findOneAndUpdate(
+    { id },
+    { $set: data },
+    { returnDocument: "after" }
+  );
+  return result ? clean<VideoCorso>(result) : null;
+}
+
+export async function deleteVideoCorso(id: string): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.collection("video_corsi").deleteOne({ id });
   return result.deletedCount > 0;
 }
 

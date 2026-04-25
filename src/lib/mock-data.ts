@@ -1,4 +1,4 @@
-import { Icona, TestoSacro, Preghiera, Evento, OrarioSettimanale } from "@/types";
+import { Icona, TestoSacro, Preghiera, VideoCorso, Evento, OrarioSettimanale } from "@/types";
 
 // ============================================================
 // ICONE MOCK DATA
@@ -463,6 +463,33 @@ export const preghiere: Preghiera[] = [
     testoInline:
       "Crediamo in un solo Dio, Padre onnipotente, creatore del cielo e della terra, di tutte le cose visibili e invisibili. Crediamo in un solo Signore Gesù Cristo, Figlio unigenito di Dio, nato dal Padre prima di tutti i secoli...",
     urlPDF: "/pdf/credo-niceno.pdf",
+  },
+];
+
+// ============================================================
+// VIDEO E CORSI MOCK DATA
+// ============================================================
+export const videoCorsi: VideoCorso[] = [
+  {
+    id: "1",
+    titolo: "Canto dei Vespri",
+    descrizione: "Un esempio di canto liturgico per accompagnare la preghiera comunitaria serale.",
+    categoria: "Canti liturgici",
+    urlVideo: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  },
+  {
+    id: "2",
+    titolo: "Introduzione all'Agpeya",
+    descrizione: "Un percorso video introduttivo alla struttura e all'uso dell'Agpeya.",
+    categoria: "Corsi di preghiera",
+    urlVideo: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  },
+  {
+    id: "3",
+    titolo: "Preghiera e silenzio",
+    descrizione: "Una breve guida video per coltivare il raccoglimento personale e la preghiera quotidiana.",
+    categoria: "Meditazioni",
+    urlVideo: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
 ];
 

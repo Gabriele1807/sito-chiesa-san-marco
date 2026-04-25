@@ -114,9 +114,12 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       user: {
+        id: user.id,
+        username: user.username,
         nome: user.nome,
         cognome: user.cognome,
         ruolo: user.ruolo,
+        isAdmin: true,
       },
     });
   } catch (err) {

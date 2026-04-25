@@ -10,11 +10,12 @@ import {
   getIcone as contentGetIcone,
   getIconaBySlug as contentGetIconaBySlug,
   getPreghiere as contentGetPreghiere,
+  getVideoCorsi as contentGetVideoCorsi,
   getEventi as contentGetEventi,
   getEventoBySlug as contentGetEventoBySlug,
   getOrari as contentGetOrari,
 } from "@/lib/mongo/content";
-import type { Icona, TestoSacro, Preghiera, Evento, OrarioSettimanale, IscrizioneEvento } from "@/types";
+import type { Icona, TestoSacro, Preghiera, VideoCorso, Evento, OrarioSettimanale, IscrizioneEvento } from "@/types";
 
 const CONTENT_REVALIDATE_SECONDS = 60;
 
@@ -46,6 +47,12 @@ const getPreghiereCached = unstable_cache(
   async () => contentGetPreghiere(),
   ["content-preghiere"],
   { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "preghiere"] }
+);
+
+const getVideoCorsiCached = unstable_cache(
+  async () => contentGetVideoCorsi(),
+  ["content-video-corsi"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "video-corsi"] }
 );
 
 const getEventiCached = unstable_cache(
@@ -87,6 +94,10 @@ export async function getTestoSacroBySlug(slug: string): Promise<TestoSacro | un
 // ============= PREGHIERE =============
 export async function getPreghiere(): Promise<Preghiera[]> {
   return getPreghiereCached();
+}
+
+export async function getVideoCorsi(): Promise<VideoCorso[]> {
+  return getVideoCorsiCached();
 }
 
 // ============= EVENTI =============

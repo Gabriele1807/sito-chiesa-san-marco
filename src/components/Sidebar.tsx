@@ -16,6 +16,7 @@ import {
   Lock,
   Phone,
   User,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthContext";
 
@@ -47,6 +48,13 @@ const profileLink: NavLink = {
   icon: User,
   key: "profilo",
   subKey: "subProfilo",
+};
+
+const adminPanelLink: NavLink = {
+  href: "/admin",
+  icon: Shield,
+  key: "pannelloAdmin",
+  subKey: "subPannelloAdmin",
 };
 
 export default function Sidebar() {
@@ -140,7 +148,12 @@ export default function Sidebar() {
             {ts("informazioni")}
           </p>
           {infoLinks.map(renderLink)}
-          {type !== "guest" && renderLink(profileLink)}
+          {type !== "guest" && (
+            <>
+              {renderLink(profileLink)}
+              {type === "admin" && renderLink(adminPanelLink)}
+            </>
+          )}
         </nav>
 
         {/* QR widget bottom */}
