@@ -62,8 +62,6 @@ export default function ProfiloPage() {
   /* â”€â”€ Admin request state â”€â”€ */
   const [requestingAdmin, setRequestingAdmin] = useState(false);
   const [adminReqMessage, setAdminReqMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [requestingSuperAdmin, setRequestingSuperAdmin] = useState(false);
-  const [superAdminReqMessage, setSuperAdminReqMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   /* â”€â”€ Guest â”€â”€ */
   if (type === "guest") {
@@ -240,34 +238,6 @@ export default function ProfiloPage() {
       setAdminReqMessage({ type: "error", text: t("erroreGenerico") });
     } finally {
       setRequestingAdmin(false);
-    }
-  }
-
-  async function handleRequestSuperAdmin() {
-    setRequestingSuperAdmin(true);
-    setSuperAdminReqMessage(null);
-    try {
-      const res = await fetch("/api/auth/update-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestSuperAdmin: true }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSuperAdminReqMessage({ type: "success", text: t("richiestaSuperAdminInviata") });
-        if (data.admin) {
-          const stored = localStorage.getItem("admin_info");
-          const prev = stored ? JSON.parse(stored) : {};
-          localStorage.setItem("admin_info", JSON.stringify({ ...prev, ...data.admin }));
-        }
-        await refresh();
-      } else {
-        setSuperAdminReqMessage({ type: "error", text: data.error || t("erroreGenerico") });
-      }
-    } catch {
-      setSuperAdminReqMessage({ type: "error", text: t("erroreGenerico") });
-    } finally {
-      setRequestingSuperAdmin(false);
     }
   }
 
@@ -1054,49 +1024,6 @@ export default function ProfiloPage() {
             </div>
           )}
 
-          {isAdmin && !isSuperAdmin && (
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <div className="mb-3 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
-                  <Shield className="h-4 w-4 text-gray-600" />
-                </div>
-                <p className="text-sm font-semibold text-gray-900">{t("richiediSuperAdmin")}</p>
-              </div>
-
-              <div className={`rounded-xl border px-3 py-2.5 text-sm ${superAdminRequestTone}`}>
-                {superAdminRequestSummary}
-              </div>
-
-              {(superAdminRequest === "none" || superAdminRequest === "rejected") && (
-                <button
-                  type="button"
-                  onClick={handleRequestSuperAdmin}
-                  disabled={requestingSuperAdmin}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <UserCheck className="h-4 w-4" />
-                  {requestingSuperAdmin ? t("salvataggioInCorso") : t("richiediSuperAdmin")}
-                </button>
-              )}
-
-              {superAdminReqMessage && (
-                <div
-                  className={`mt-3 flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm ${
-                    superAdminReqMessage.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
-                >
-                  {superAdminReqMessage.type === "success" ? (
-                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  )}
-                  {superAdminReqMessage.text}
-                </div>
-              )}
-            </div>
-          )}
         </aside>
       </div>
     </div>
