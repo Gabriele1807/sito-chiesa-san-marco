@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 23 aprile 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 1 maggio 2026.
 
 ---
 
@@ -668,30 +668,32 @@ Token principali (nuova palette):
 
 | Token | Valore | Uso |
 |-------|--------|-----|
-| `--color-background` | `#FDFCFB` | sfondo generale (crema sofisticata) |
-| `--color-foreground` | `#2B2420` | testo principale (marrone scuro elegante) |
-| `--color-primary` | `#6B1C23` | burgundy brand (sacralità, tradizione) |
-| `--color-primary-hover` | `#8B2B37` | burgundy hover |
-| `--color-primary-light` | `#3D5A47` | sage green (pace, eternità) |
-| `--color-accent` | `#C9A961` | oro ricco (illuminazione, benedizione) |
-| `--color-accent-light` | `#E8C968` | oro chiaro |
+| `--color-background` | `#FFF9F2` | sfondo generale (crema sofisticata) |
+| `--color-foreground` | `#231913` | testo principale (marrone scuro elegante) |
+| `--color-primary` | `#0F1A2E` | navy brand (tradizione, stabilita, sacralita) |
+| `--color-primary-hover` | `#1E3A5F` | navy hover |
+| `--color-primary-light` | `#3D5A47` | sage green (pace, eternita) |
+| `--color-accent` | `#B45309` | ambra ricca (illuminazione, benedizione) |
+| `--color-accent-light` | `#D97706` | ambra chiara |
 | `--color-surface` | `#FFFFFF` | card e superfici principali |
-| `--color-surface-alt` | `#F9F7F4` | sfondi alternativi (crema) |
-| `--color-surface-2` | `#EFE9E3` | sfondi secondari |
-| `--color-border` | `#E5DDD4` | bordi (neutro elegante) |
+| `--color-surface-alt` | `#FFF3E6` | sfondi alternativi (crema) |
+| `--color-surface-2` | `#F4E1CC` | sfondi secondari |
+| `--color-border` | `#E7D1B8` | bordi (neutro elegante) |
 | `--color-danger` | `#DC2626` | errori e stati critici |
 | `--color-success` | `#059669` | successo |
 | `--color-warning` | `#D97706` | avvisi |
-| `--color-sidebar` | `#2B2420` | sidebar pubblica e admin |
+| `--color-sidebar` | `#231913` | sidebar pubblica e admin |
 | `--color-sage` | `#3D5A47` | accenti secondari (pace) |
-| `--color-gold` | `#C9A961` | accenti primari (oro) |
-| `--color-burgundy` | `#6B1C23` | colore brand principale |
+| `--color-gold` | `#B45309` | accenti primari (ambra) |
+| `--color-burgundy` | `#0F1A2E` | colore brand principale (navy heritage) |
 | `--font-sans` | `var(--font-inter)` | font principale |
 
-**Razionale del redesign:**
-- Transizione da palette aziendale (navy + ambra) a palette spirituale-liturgica (burgundy + oro + sage)
-- Colori comunicano: profondità, tradizione, accoglienza, illuminazione divina
-- Migliorata gerarchia visiva e contrasto
+**Razionale della palette finale (1 maggio 2026):**
+- Palette definitiva unisce valori spirituali con stabilita visiva
+- Navy (#0F1A2E) trasmette tradizione, sacralita, gravitas (mantiene le radici del design originario)
+- Ambra (#B45309) comunica illuminazione divina, calore, accoglienza
+- Sage green (#3D5A47) simboleggia pace e armonia con l'eternita
+- Crema e marrone neutrali assicurano leggibilita e eleganza
 - Centralizzazione completa dei colori via CSS variables
 
 Importante:
@@ -702,8 +704,8 @@ Importante:
 ### 10.2 Admin
 
 L'area admin utilizza la stessa palette del sito pubblico per coerenza visiva:
-- Background burgundy (#6B1C23) per sidebar e login
-- Accenti oro (#C9A961) per link attivi e hover
+- Background navy (#0F1A2E) per sidebar e login
+- Accenti ambra (#B45309) per link attivi e hover
 - Sage green (#3D5A47) come colore secondario per status indicators
 - Palette di neutrali eleganti per UI admin
 
@@ -784,6 +786,9 @@ Stili globali aggiuntivi:
 - pagina orari:
   - su mobile la colonna note e nascosta
   - giorni accentati correttamente, es. Martedi/Giovedi non devono essere senza accento
+  - legenda "Come leggere gli orari" con punti colorati verticali ben spaziati
+  - card "Prossima celebrazione" non contiene piu il badge giorno (rimosso per pulizia estetica)
+  - colori legenda: navy (#0F1A2E) per orari, amber (#B45309) per elementi evidenziati
 
 - pagina contatti:
   - sezione YouTube dinamica (`YouTubeLiveSection`) con dati dal canale reale (`@SanMarco-Milano`)
