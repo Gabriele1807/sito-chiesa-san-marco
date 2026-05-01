@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, UserX, UserPlus, LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
 import { useAuth } from "./AuthContext";
+import { useTranslations } from "next-intl";
 
 export default function UserMenu() {
+  const t = useTranslations("auth");
   const { type, loading, user, admin, isExplicitGuest, setShowLoginModal, setShowRegisterModal, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -35,14 +37,14 @@ export default function UserMenu() {
       <div className="flex items-center gap-1.5">
         <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-lg">
           <UserX className="w-3.5 h-3.5" />
-          <span>Ospite</span>
+          <span>{t("userMenuGuest")}</span>
         </div>
         <button
           onClick={() => setShowLoginModal(true)}
           className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-[#0F1A2E] rounded-lg hover:bg-[#1E3A5F] active:bg-[#1E3A5F] transition-colors"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span>Accedi</span>
+          <span>{t("userMenuLogin")}</span>
         </button>
       </div>
     );
@@ -57,14 +59,14 @@ export default function UserMenu() {
           className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-[#0F1A2E] rounded-lg hover:bg-[#1E3A5F] active:bg-[#1E3A5F] transition-colors"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span>Accedi</span>
+          <span>{t("userMenuLogin")}</span>
         </button>
         <button
           onClick={() => setShowRegisterModal(true)}
           className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-[#0F1A2E] bg-white border border-[#0F1A2E] rounded-lg hover:bg-[#0F1A2E]/5 active:bg-[#0F1A2E]/10 transition-colors"
         >
           <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span className="hidden sm:inline">Registrati</span>
+          <span className="hidden sm:inline">{t("userMenuRegister")}</span>
         </button>
       </div>
     );
@@ -75,7 +77,7 @@ export default function UserMenu() {
     ? `${admin.nome} ${admin.cognome}`
     : type === "user" && user
     ? `${user.nome} ${user.cognome}`
-    : "Utente";
+    : t("userMenuUser");
 
   const initials = type === "admin" && admin
     ? `${admin.nome[0]}${admin.cognome[0]}`
@@ -114,12 +116,12 @@ export default function UserMenu() {
             <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
             <p className="text-xs text-gray-500">
               {isAdmin && admin
-                ? admin.ruolo === "superadmin" ? "Super Admin" : "Admin"
-                : user?.role === "credente" ? "Credente"
-                : user?.role === "madre" ? "Madre"
-                : user?.role === "padre" ? "Padre"
-                : user?.role === "ospite_chiesa" ? "Ospite"
-                : "Utente"}
+                ? admin.ruolo === "superadmin" ? t("userMenuRoleSuperAdmin") : t("userMenuRoleAdmin")
+                : user?.role === "credente" ? t("userMenuRoleCredente")
+                : user?.role === "madre" ? t("userMenuRoleMadre")
+                : user?.role === "padre" ? t("userMenuRolePadre")
+                : user?.role === "ospite_chiesa" ? t("userMenuRoleOspite")
+                : t("userMenuUser")}
             </p>
           </div>
 
@@ -129,7 +131,7 @@ export default function UserMenu() {
             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors animate-fadeInUp stagger-2"
           >
             <UserCircle className="w-4 h-4" />
-            Il mio profilo
+            {t("userMenuProfile")}
           </Link>
 
           {isAdmin && (
@@ -139,7 +141,7 @@ export default function UserMenu() {
               className="flex items-center gap-2 px-4 py-2 text-sm text-[#D97706] hover:bg-[#D97706]/10 transition-colors animate-fadeInUp stagger-3"
             >
               <Shield className="w-4 h-4" />
-              Pannello Admin
+              {t("userMenuAdminPanel")}
             </Link>
           )}
 
@@ -149,7 +151,7 @@ export default function UserMenu() {
             className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
           >
             <LogOut className="w-4 h-4" />
-            Logout
+            {t("userMenuLogout")}
           </button>
           </div>
         </div>

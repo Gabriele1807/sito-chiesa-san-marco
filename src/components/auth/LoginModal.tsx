@@ -3,9 +3,12 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { X, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "./AuthContext";
 
 export default function LoginModal() {
+  const t = useTranslations("auth");
+  const tc = useTranslations("common");
   const { showLoginModal, setShowLoginModal, setShowRegisterModal, setIsExplicitGuest, refresh } = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +16,23 @@ export default function LoginModal() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const errorMap: Record<string, string> = {
+    "Credenziali non valide": t("loginErrorInvalid"),
+    "Credenziali obbligatorie": t("loginErrorRequired"),
+    "Troppi tentativi. Riprova tra 15 minuti.": t("loginErrorRateLimit"),
+    "Errore del server": t("loginErrorServer"),
+    "Account admin disattivato. Contatta il superadmin.": t("loginErrorAdminDisabled"),
+    "Account disattivato.": t("loginErrorUserDisabled"),
+  };
+
+  function formatError(errorText?: string, remaining?: number) {
+    const base = errorText && errorMap[errorText] ? errorMap[errorText] : t("loginErrorGeneric");
+    if (remaining !== undefined && remaining > 0) {
+      return `${base} ${t("loginAttemptsRemaining", { count: remaining })}`;
+    }
+    return base;
+  }
 
   // Reset form quando si apre
   useEffect(() => {
@@ -65,14 +85,10 @@ export default function LoginModal() {
         setShowLoginModal(false);
         await refresh();
       } else {
-        let msg = data.error || "Credenziali non valide";
-        if (data.remaining !== undefined && data.remaining > 0) {
-          msg += ` (${data.remaining} tentativi rimasti)`;
-        }
-        setError(msg);
+        setError(formatError(data.error, data.remaining));
       }
     } catch {
-      setError("Errore di connessione");
+      setError(t("loginErrorConnection"));
     } finally {
       setLoading(false);
     }
@@ -97,7 +113,7 @@ export default function LoginModal() {
         <button
           onClick={() => setShowLoginModal(false)}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
-          aria-label="Chiudi"
+          aria-label={tc("close")}
         >
           <X className="w-5 h-5" />
         </button>
@@ -108,14 +124,14 @@ export default function LoginModal() {
             <div className="w-24 h-24 mx-auto mb-3">
               <Image
                 src="/logo-san-marco.png"
-                alt="Logo Chiesa Copta San Marco"
+                alt={tc("logoAlt")}
                 width={96}
                 height={96}
                 className="rounded-2xl"
               />
             </div>
-            <h2 className="text-xl font-bold text-white">Accedi</h2>
-            <p className="text-gray-400 text-sm mt-1">Chiesa di San Marco – Milano</p>
+            <h2 className="text-xl font-bold text-white">{t("loginTitle")}</h2>
+            <p className="text-gray-400 text-sm mt-1">{t("loginSubtitle")}</p>
           </div>
 
           {/* Errore */}
@@ -130,13 +146,13 @@ export default function LoginModal() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
-                Email o Username
+                {t("loginIdentifierLabel")}
               </label>
               <input
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="email@esempio.it"
+                placeholder={t("loginIdentifierPlaceholder")}
                 required
                 autoComplete="username"
                 className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
@@ -145,7 +161,7 @@ export default function LoginModal() {
 
             <div>
               <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
-                Password
+                {t("loginPasswordLabel")}
               </label>
               <div className="relative">
                 <input
@@ -178,7 +194,7 @@ export default function LoginModal() {
                 className="w-4 h-4 rounded border-white/20 bg-white/10 text-gold focus:ring-gold focus:ring-offset-0"
               />
               <label htmlFor="login-remember" className="text-sm text-gray-400 select-none cursor-pointer">
-                Ricordami per 7 giorni
+                {t("loginRemember")}
               </label>
             </div>
 
@@ -187,19 +203,19 @@ export default function LoginModal() {
               disabled={loading}
               className="w-full py-2.5 rounded-lg bg-gold text-white font-semibold text-sm hover:bg-gold-light transition-colors disabled:opacity-50"
             >
-              {loading ? "Accesso in corso..." : "Accedi"}
+              {loading ? t("loginLoading") : t("loginButton")}
             </button>
           </form>
 
           {/* Link a registrazione */}
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-400">
-              Non hai un account?{" "}
+              {t("loginNoAccount")}{" "}
               <button
                 onClick={handleSwitchToRegister}
                 className="text-gold hover:text-gold-light font-semibold transition-colors"
               >
-                Registrati
+                {t("loginRegisterAction")}
               </button>
             </p>
           </div>
@@ -213,7 +229,7 @@ export default function LoginModal() {
               }}
               className="text-xs text-gray-500 hover:text-gray-400 transition-colors"
             >
-              Continua come ospite
+              {t("loginGuest")}
             </button>
           </div>
         </div>

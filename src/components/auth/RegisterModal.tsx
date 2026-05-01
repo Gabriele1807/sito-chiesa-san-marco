@@ -3,29 +3,16 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "./AuthContext";
 import type { UserRole, AgeGroup } from "@/types";
 import { CHIESE_LIST } from "@/lib/churches";
 
-const ROLES: { value: UserRole; label: string; description: string }[] = [
-  { value: "credente", label: "Credente", description: "Membro della comunità" },
-  { value: "madre", label: "Madre", description: "Madre di famiglia" },
-  { value: "padre", label: "Padre", description: "Padre di famiglia" },
-  { value: "ospite_chiesa", label: "Ospite da un'altra chiesa", description: "Proveniente da un'altra parrocchia" },
-];
-
-const AGE_GROUPS: { value: AgeGroup; label: string }[] = [
-  { value: "0-11", label: "0–11 anni" },
-  { value: "12-18", label: "12–18 anni" },
-  { value: "19-29", label: "19–29 anni" },
-  { value: "30-45", label: "30–45 anni" },
-  { value: "46-65", label: "46–65 anni" },
-  { value: "65+", label: "65+ anni" },
-];
-
 type Step = "credentials" | "quiz" | "confirm";
 
 export default function RegisterModal() {
+  const t = useTranslations("auth");
+  const tc = useTranslations("common");
   const { showRegisterModal, setShowRegisterModal, setShowLoginModal, refresh } = useAuth();
 
   const [step, setStep] = useState<Step>("credentials");
@@ -48,6 +35,42 @@ export default function RegisterModal() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const roles: { value: UserRole; label: string; description: string }[] = [
+    { value: "credente", label: t("registerRoleCredente"), description: t("registerRoleCredenteDesc") },
+    { value: "madre", label: t("registerRoleMadre"), description: t("registerRoleMadreDesc") },
+    { value: "padre", label: t("registerRolePadre"), description: t("registerRolePadreDesc") },
+    { value: "ospite_chiesa", label: t("registerRoleOspite"), description: t("registerRoleOspiteDesc") },
+  ];
+
+  const ageGroups: { value: AgeGroup; label: string }[] = [
+    { value: "0-11", label: t("registerAge_0_11") },
+    { value: "12-18", label: t("registerAge_12_18") },
+    { value: "19-29", label: t("registerAge_19_29") },
+    { value: "30-45", label: t("registerAge_30_45") },
+    { value: "46-65", label: t("registerAge_46_65") },
+    { value: "65+", label: t("registerAge_65_plus") },
+  ];
+
+  const errorMap: Record<string, string> = {
+    "Tutti i campi obbligatori devono essere compilati": t("registerErrorFillAll"),
+    "Email non valida": t("registerErrorEmailInvalid"),
+    "Username non valido (3-30 caratteri, solo lettere, numeri, . _ -)": t("registerErrorUsernameInvalid"),
+    "La password deve essere tra 8 e 128 caratteri": t("registerErrorPasswordRange"),
+    "Ruolo non valido": t("registerErrorRoleInvalid"),
+    "Fascia d'età non valida": t("registerErrorAgeInvalid"),
+    "Nome non valido": t("registerErrorNameInvalid"),
+    "Cognome non valido": t("registerErrorSurnameInvalid"),
+    "Email già registrata": t("registerErrorEmailTaken"),
+    "Username già in uso": t("registerErrorUsernameTaken"),
+    "Email o username già in uso": t("registerErrorDuplicate"),
+    "Errore del server": t("registerErrorServer"),
+  };
+
+  function mapRegisterError(errorText?: string) {
+    if (!errorText) return "";
+    return errorMap[errorText] ?? "";
+  }
 
   // Reset form quando si apre
   useEffect(() => {
@@ -86,23 +109,23 @@ export default function RegisterModal() {
   function handleNextToQuiz() {
     setError("");
     if (!nome.trim() || !cognome.trim() || !email.trim() || !username.trim() || !password) {
-      setError("Compila tutti i campi");
+      setError(t("registerErrorFillAll"));
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Email non valida");
+      setError(t("registerErrorEmailInvalid"));
       return;
     }
     if (username.length < 3 || !/^[a-zA-Z0-9_.-]+$/.test(username)) {
-      setError("Username: min 3 caratteri, solo lettere, numeri, . _ -");
+      setError(t("registerErrorUsernameInvalid"));
       return;
     }
     if (password.length < 8) {
-      setError("La password deve avere almeno 8 caratteri");
+      setError(t("registerErrorPasswordLength"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Le password non coincidono");
+      setError(t("registerErrorPasswordMismatch"));
       return;
     }
     setStep("quiz");
@@ -111,11 +134,11 @@ export default function RegisterModal() {
   async function handleSubmit() {
     setError("");
     if (!role || !ageGroup) {
-      setError("Seleziona il tuo ruolo e la fascia d'età");
+      setError(t("registerErrorRoleAge"));
       return;
     }
     if (role === "ospite_chiesa" && !chiesa) {
-      setError("Seleziona la tua chiesa di provenienza");
+      setError(t("registerErrorChurch"));
       return;
     }
 
@@ -161,10 +184,11 @@ export default function RegisterModal() {
           setShowRegisterModal(false);
         }, 1500);
       } else {
-        setError(data.error || "Errore nella registrazione");
+        const mapped = mapRegisterError(data.error);
+        setError(mapped || t("registerErrorGeneric"));
       }
     } catch {
-      setError("Errore di connessione");
+      setError(t("registerErrorConnection"));
     } finally {
       setLoading(false);
     }
@@ -189,7 +213,7 @@ export default function RegisterModal() {
         <button
           onClick={() => setShowRegisterModal(false)}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
-          aria-label="Chiudi"
+          aria-label={tc("close")}
         >
           <X className="w-5 h-5" />
         </button>
@@ -200,18 +224,18 @@ export default function RegisterModal() {
             <div className="w-24 h-24 mx-auto mb-3">
               <Image
                 src="/logo-san-marco.png"
-                alt="Logo Chiesa Copta San Marco"
+                alt={tc("logoAlt")}
                 width={96}
                 height={96}
                 className="rounded-2xl"
               />
             </div>
             <h2 className="text-xl font-bold text-white">
-              {success ? "Registrazione completata!" : step === "credentials" ? "Registrati" : "Completa il profilo"}
+              {success ? t("registerTitleSuccess") : step === "credentials" ? t("registerTitle") : t("registerTitleComplete")}
             </h2>
             {!success && (
               <p className="text-gray-400 text-sm mt-1">
-                {step === "credentials" ? "Passaggio 1 di 2" : "Passaggio 2 di 2"}
+                {step === "credentials" ? t("registerStep1") : t("registerStep2")}
               </p>
             )}
           </div>
@@ -222,7 +246,7 @@ export default function RegisterModal() {
               <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
                 <span className="text-3xl">✓</span>
               </div>
-              <p className="text-green-400 text-sm">Benvenuto nella comunità!</p>
+              <p className="text-green-400 text-sm">{t("registerSuccess")}</p>
             </div>
           )}
 
@@ -239,7 +263,7 @@ export default function RegisterModal() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Nome</label>
+                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldNome")}</label>
                   <input
                     type="text"
                     value={nome}
@@ -249,7 +273,7 @@ export default function RegisterModal() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Cognome</label>
+                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldCognome")}</label>
                   <input
                     type="text"
                     value={cognome}
@@ -261,12 +285,12 @@ export default function RegisterModal() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Email</label>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldEmail")}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@esempio.it"
+                  placeholder={t("registerPlaceholderEmail")}
                   required
                   autoComplete="email"
                   className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
@@ -274,12 +298,12 @@ export default function RegisterModal() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Username</label>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldUsername")}</label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username"
+                  placeholder={t("registerPlaceholderUsername")}
                   required
                   autoComplete="username"
                   className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
@@ -287,13 +311,13 @@ export default function RegisterModal() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Password</label>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldPassword")}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min. 8 caratteri"
+                    placeholder={t("registerPlaceholderPassword")}
                     required
                     autoComplete="new-password"
                     className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors pr-10"
@@ -310,12 +334,12 @@ export default function RegisterModal() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Conferma Password</label>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldPasswordConfirm")}</label>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Ripeti la password"
+                  placeholder={t("registerPlaceholderPasswordConfirm")}
                   required
                   autoComplete="new-password"
                   className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
@@ -327,7 +351,7 @@ export default function RegisterModal() {
                 onClick={handleNextToQuiz}
                 className="w-full py-2.5 rounded-lg bg-gold text-white font-semibold text-sm hover:bg-gold-light transition-colors flex items-center justify-center gap-2 mt-2"
               >
-                Continua <ChevronRight className="w-4 h-4" />
+                {t("registerContinue")} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           )}
@@ -337,9 +361,9 @@ export default function RegisterModal() {
             <div className="space-y-4">
               {/* Ruolo */}
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Il tuo ruolo</label>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">{t("registerRoleTitle")}</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {ROLES.map((r) => (
+                  {roles.map((r) => (
                     <button
                       key={r.value}
                       type="button"
@@ -363,13 +387,13 @@ export default function RegisterModal() {
               {/* Chiesa (solo per ospiti) */}
               {role === "ospite_chiesa" && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Chiesa di provenienza</label>
+                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">{t("registerChurchLabel")}</label>
                   <select
                     value={chiesa}
                     onChange={(e) => setChiesa(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
                   >
-                    <option value="" className="bg-primary">Seleziona...</option>
+                    <option value="" className="bg-primary">{t("registerChurchPlaceholder")}</option>
                     {CHIESE_LIST.map((c) => (
                       <option key={c} value={c} className="bg-primary">{c}</option>
                     ))}
@@ -379,9 +403,9 @@ export default function RegisterModal() {
 
               {/* Fascia d'età */}
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Fascia d&apos;età</label>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">{t("registerAgeTitle")}</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {AGE_GROUPS.map((ag) => (
+                  {ageGroups.map((ag) => (
                     <button
                       key={ag.value}
                       type="button"
@@ -409,11 +433,11 @@ export default function RegisterModal() {
                     className="w-4 h-4 rounded border-white/20 bg-white/10 text-amber-600 focus:ring-amber-600 focus:ring-offset-0"
                   />
                   <label htmlFor="reg-request-admin" className="text-sm text-gray-300 select-none cursor-pointer">
-                    Richiedi accesso admin
+                    {t("registerRequestAdmin")}
                   </label>
                 </div>
                 <p className="text-[10px] text-gray-500 mt-1 ml-6">
-                  La richiesta verrà valutata da un super admin. Fino all&apos;approvazione avrai accesso come utente normale.
+                  {t("registerRequestAdminHelp")}
                 </p>
               </div>
 
@@ -424,7 +448,7 @@ export default function RegisterModal() {
                   onClick={() => setStep("credentials")}
                   className="flex-1 py-2.5 rounded-lg border border-white/20 text-gray-300 font-semibold text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Indietro
+                  <ChevronLeft className="w-4 h-4" /> {t("registerBack")}
                 </button>
                 <button
                   type="button"
@@ -432,7 +456,7 @@ export default function RegisterModal() {
                   disabled={loading}
                   className="flex-1 py-2.5 rounded-lg bg-amber-600 text-white font-semibold text-sm hover:bg-amber-700 transition-colors disabled:opacity-50"
                 >
-                  {loading ? "Registrazione..." : "Registrati"}
+                  {loading ? t("registerLoading") : t("registerButton")}
                 </button>
               </div>
             </div>
@@ -442,12 +466,12 @@ export default function RegisterModal() {
           {!success && (
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-400">
-                Hai già un account?{" "}
+                {t("registerHaveAccount")}{" "}
                 <button
                   onClick={handleSwitchToLogin}
                   className="text-amber-500 hover:text-amber-400 font-semibold transition-colors"
                 >
-                  Accedi
+                  {t("registerLoginAction")}
                 </button>
               </p>
             </div>
