@@ -43,7 +43,7 @@ export default async function LibreriaPage() {
                   {testo.tipo}
                 </span>
                 {/* FIX [21] — Title gray-900 at rest, amber-600 on hover only */}
-                <h3 className="font-bold text-gray-900 mt-1 group-hover:text-amber-600 transition-colors">
+                <h3 className="font-bold text-gray-900 mt-1 group-hover:text-gold transition-colors">
                   {testo.titolo}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">{testo.autore}</p>
@@ -51,7 +51,7 @@ export default async function LibreriaPage() {
                   {testo.descrizione}
                 </p>
                 {/* FIX [21] — Link text amber-600 on hover */}
-                <div className="flex items-center gap-1 text-gray-500 font-medium text-sm mt-3 group-hover:text-amber-600 transition-colors">
+                <div className="flex items-center gap-1 text-gray-500 font-medium text-sm mt-3 group-hover:text-gold transition-colors">
                   {t("leggiOnline")}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>

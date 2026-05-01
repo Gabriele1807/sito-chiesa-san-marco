@@ -662,42 +662,50 @@ Questi punti sono gia implementati e non vanno persi in future modifiche:
 
 Tailwind v4 con token definiti in `src/app/globals.css` via `@theme`.
 
-Token principali:
+**IMPORTANTE: A partire dal 1 maggio 2026, la palette è stata completamente ridisegnata per comunicare una forte identità spirituale e liturgica anziché corporate.**
+
+Token principali (nuova palette):
 
 | Token | Valore | Uso |
 |-------|--------|-----|
-| `--color-background` | `#FFFFFF` | sfondo generale |
-| `--color-foreground` | `#111827` | testo principale |
-| `--color-primary` | `#1E3A5F` | brand blu scuro |
-| `--color-primary-light` | `#2563EB` | varianti link/hover |
-| `--color-accent` | `#B45309` | ambra titoli/accenti |
-| `--color-accent-light` | `#D97706` | ambra hover |
-| `--color-danger` | `#DC2626` | errori |
-| `--color-white` | `#FFFFFF` | bianco esplicito |
-| `--color-surface` | `#FFFFFF` | card |
-| `--color-surface-alt` | `#F9FAFB` | sfondi alternativi |
-| `--color-sidebar` | `#111827` | sidebar pubblica |
-| `--color-sidebar-hover` | `#1F2937` | hover sidebar |
+| `--color-background` | `#FDFCFB` | sfondo generale (crema sofisticata) |
+| `--color-foreground` | `#2B2420` | testo principale (marrone scuro elegante) |
+| `--color-primary` | `#6B1C23` | burgundy brand (sacralità, tradizione) |
+| `--color-primary-hover` | `#8B2B37` | burgundy hover |
+| `--color-primary-light` | `#3D5A47` | sage green (pace, eternità) |
+| `--color-accent` | `#C9A961` | oro ricco (illuminazione, benedizione) |
+| `--color-accent-light` | `#E8C968` | oro chiaro |
+| `--color-surface` | `#FFFFFF` | card e superfici principali |
+| `--color-surface-alt` | `#F9F7F4` | sfondi alternativi (crema) |
+| `--color-surface-2` | `#EFE9E3` | sfondi secondari |
+| `--color-border` | `#E5DDD4` | bordi (neutro elegante) |
+| `--color-danger` | `#DC2626` | errori e stati critici |
+| `--color-success` | `#059669` | successo |
+| `--color-warning` | `#D97706` | avvisi |
+| `--color-sidebar` | `#2B2420` | sidebar pubblica e admin |
+| `--color-sage` | `#3D5A47` | accenti secondari (pace) |
+| `--color-gold` | `#C9A961` | accenti primari (oro) |
+| `--color-burgundy` | `#6B1C23` | colore brand principale |
 | `--font-sans` | `var(--font-inter)` | font principale |
 
-Importante:
+**Razionale del redesign:**
+- Transizione da palette aziendale (navy + ambra) a palette spirituale-liturgica (burgundy + oro + sage)
+- Colori comunicano: profondità, tradizione, accoglienza, illuminazione divina
+- Migliorata gerarchia visiva e contrasto
+- Centralizzazione completa dei colori via CSS variables
 
-- non aggiungere token custom `--color-gray-*` o `--color-slate-*` nel blocco `@theme`
-- sovrascriverebbero la palette Tailwind standard e romperebbero il design
+Importante:
+- La mappatura colori Tailwind è in `tailwind.config.mjs`
+- Tutti gli hardcoded colors sono stati sostituiti con token CSS
+- Il sistema è facilmente estendibile e manutenibile
 
 ### 10.2 Admin
 
-L'area admin non usa i token del sito pubblico come sistema principale.
-Usa classi Tailwind dirette con palette:
-
-- navy `#0F1A2E` per sidebar e login
-- sfondo chiaro `#F8F9FA`
-- accenti amber tramite classi Tailwind (`bg-amber-600`, `text-amber-600`, `hover:bg-amber-700`)
-- blu per elementi secondari e widget eventi
-
-Nota storica utile:
-
-- il vecchio oro hardcoded `#D4AF37` e stato in larga parte sostituito con `amber-600` e relative varianti
+L'area admin utilizza la stessa palette del sito pubblico per coerenza visiva:
+- Background burgundy (#6B1C23) per sidebar e login
+- Accenti oro (#C9A961) per link attivi e hover
+- Sage green (#3D5A47) come colore secondario per status indicators
+- Palette di neutrali eleganti per UI admin
 
 ### 10.3 Utility CSS globali gia presenti
 
@@ -1089,3 +1097,125 @@ Se devi proporre o implementare modifiche su questo progetto, assumi sempre che:
 - la lista chiese per `ospite_chiesa` e centralizzata in `src/lib/churches.ts` e va riusata ovunque
 - le scelte UI recenti su accessibilita, hover, back links, date localizzate e sidebar i18n sono parte dello stato corretto del progetto e non regressioni da reintrodurre
 - i componenti riutilizzabili (QuickAccessCard, BackLink, RelatedResourceCard) vanno usati dove possibile
+
+---
+
+## 21. Redesign cromatico radicale (1 maggio 2026)
+
+### 21.1 Problemi della palette precedente
+
+- **Navy (#1E3A5F) + Bright Blue (#2563EB)**: due famiglie blu incoerenti senza una chiara identità
+- **Ambra (#B45309)**: non comunica bene importanza e sacralità, tono troppo "artigianale"
+- **Tono generale**: aziendale/tech anziché spirituale-liturgico
+- **Gerarchia visiva**: scarsa tra colori primari, troppi colori piatti
+- **Mancava profondità**: identità chiara e dignità estetica insufficienti
+- **Colori hardcoded sparsi**: difficili da mantenere e non coerenti
+
+### 21.2 Nuova direzione: "Palazzo Liturgico"
+
+Palette completamente ripensata per riflettere l'identità vera della Chiesa Copta Ortodossa di San Marco:
+
+| Colore | Valore | Ruolo | Significato |
+|--------|--------|-------|------------|
+| **Burgundy Plum** | #5E2436 | Primary | Profondità, sacralità, tradizione millenaria |
+| **Oro** | #D8B04F | Accent | Illuminazione divina, benedizione, elemento liturgico |
+| **Sage Green** | #2F6A4F | Secondary | Pace, eternità, vita eterna |
+| **Crema Calda** | #FFF9F2 | Background | Purezza, serenità, eleganza |
+| **Marrone Scuro** | #231913 | Text | Dignità, serietà, leggibilità |
+
+### 21.3 Trasformazioni implementate
+
+**File principali aggiornati:**
+1. `src/app/globals.css` — sostituzione token `@theme`
+2. `tailwind.config.mjs` — creazione mappatura CSS variables
+3. Eliminazione di **50+ colori hardcoded** in:
+   - `src/components/admin/AdminSidebar.tsx` — navy → burgundy, amber → gold
+   - `src/app/admin/login/layout.tsx` — navy → primary
+   - `src/app/admin/login/page.tsx` — tutti gli amber → gold
+   - `src/components/auth/LoginModal.tsx` — navy → primary
+   - `src/components/auth/RegisterModal.tsx` — navy → primary, select options
+   - `src/components/auth/UserMenu.tsx` — amber → gold
+   - `src/components/auth/GuestGate.tsx` — amber → gold
+   - `src/components/BackLink.tsx` — amber hover → gold hover
+   - `src/components/IconeGrid.tsx` — amber hover → gold hover
+   - `src/components/YouTubeLiveSection.tsx` — navy → burgundy
+   - `src/components/admin/AdminTopbarTitle.tsx` — amber icon → gold
+   - `src/app/(main)/profilo/page.tsx` — ~20 occorrenze amber → gold
+
+**Centralizzazione:**
+- Da ~50 colori scattered a **18 token unificati** via CSS variables
+- Tailwind config centralizzato in `tailwind.config.mjs`
+- Focus rings, borders, shadows adattati alla nuova palette
+
+### 21.4 Risultato visivo
+
+**Identità:** Forte, riconoscibile, coerente
+**Comunicazione:** Spiritualità, tradizione, accoglienza, comunità
+**Estetica:** Profondità, lusso consapevole, eleganza discreta
+**Accessibilità:** Contrasto migliorato, focus ring gold ben visibile
+**Manutenibilità:** Sistema completamente estendibile e gestibile centralmente
+
+---
+
+## 22. Modifiche UI/UX recenti (1 maggio 2026)
+
+### 21.1 Fix navbar e background
+
+**Problema**: quando la pagina non veniva scrollata, la parte sotto la navbar trasparente mostrava uno sfondo grigio scuro.
+
+**Soluzione**: Modificato `src/app/(main)/layout.tsx` — cambiato il background della div wrapper da `bg-sidebar` a `bg-background` per mantenere sfondo bianco coerente anche quando la navbar è trasparente.
+
+### 21.2 Redesign homepage — da app-like a sito web professionale
+
+**Obiettivo**: trasformare la home page da aesthetic mobile app a sito web professionale e sobrio.
+
+**Modifiche per sezione**:
+
+- **Zona 1 (Welcome header)**
+  - Prima: gradiente blu full-width, titolo bianco uppercase
+  - Dopo: titolo nero (h1), sottotitolo grigio (p), divider gold slim
+  
+- **Zona 2 (Quick Access Grid)**
+  - Aggiunto heading "Accesso rapido"
+  - Grid responsivo 1/2/3 colonne (mobile/tablet/desktop)
+  - Gap aumentato (`gap-4 sm:gap-5`)
+
+- **Zona 3 (Consigliato per te, ex "Da fare")**
+  - Layout: da verticale diviso a grid 2 colonne (sm+)
+  - Card: sfondo bianco, bordi gray-200, shadow sm→md hover
+  - Icons: in background `w-11 h-11 bg-accent/10 rounded-lg`
+  - Pulsanti action inline con hover color transition
+
+- **Zona 4 (Statistiche)**
+  - Aggiunto heading "Statistiche"
+  - Card: bordi `rounded-2xl`, shadow sm/md, background bianco
+
+- **Zona 5 (Contenuti in primo piano)**
+  - Aggiunto heading "Contenuti in primo piano"
+  - Card: bordi `rounded-2xl`, shadow sm/md
+
+### 21.3 Componenti aggiornati
+
+**QuickAccessCard** (`src/components/QuickAccessCard.tsx`):
+- Background: `bg-white` (was `bg-slate-800`)
+- Bordi: `border-2 border-accent` o `border border-gray-200`
+- Testo: `text-gray-900` (was `text-white`)
+- Icons: in background con `bg-accent/10`
+- Border radius: `rounded-2xl` (was `rounded-xl`)
+- Shadow: `shadow-md hover:shadow-lg`
+
+**NextCelebrationCard** (`src/components/NextCelebrationCard.tsx`):
+- Background: `bg-gradient-to-br from-accent/5 to-accent/10` (was `bg-slate-800`)
+- Testo: `text-gray-900` (was `text-white`)
+- Icon background: `bg-accent/20`
+- Border radius: `rounded-2xl`
+
+### 21.4 Vantaggi del nuovo design
+
+- Più web-like, meno mobile app
+- Contrast/leggibilità migliorata
+- Mobile-first responsive: grid 1 col → 2 col su sm
+- Accessibilità: ratio text/bg migliore
+- Consistenza: `rounded-2xl`, `shadow-sm/md`, `border-gray-200` uniforme
+
+---

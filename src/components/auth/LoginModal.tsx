@@ -92,7 +92,7 @@ export default function LoginModal() {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-[#0F1A2E] rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      <div className="relative w-full max-w-sm bg-primary rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
         {/* Close button */}
         <button
           onClick={() => setShowLoginModal(false)}
@@ -139,7 +139,7 @@ export default function LoginModal() {
                 placeholder="email@esempio.it"
                 required
                 autoComplete="username"
-                className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
               />
             </div>
 
@@ -155,7 +155,7 @@ export default function LoginModal() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors pr-10"
+                  className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors pr-10"
                 />
                 <button
                   type="button"
@@ -175,7 +175,7 @@ export default function LoginModal() {
                 id="login-remember"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-white/10 text-amber-600 focus:ring-amber-600 focus:ring-offset-0"
+                className="w-4 h-4 rounded border-white/20 bg-white/10 text-gold focus:ring-gold focus:ring-offset-0"
               />
               <label htmlFor="login-remember" className="text-sm text-gray-400 select-none cursor-pointer">
                 Ricordami per 7 giorni
@@ -185,7 +185,7 @@ export default function LoginModal() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-lg bg-amber-600 text-white font-semibold text-sm hover:bg-amber-700 transition-colors disabled:opacity-50"
+              className="w-full py-2.5 rounded-lg bg-gold text-white font-semibold text-sm hover:bg-gold-light transition-colors disabled:opacity-50"
             >
               {loading ? "Accesso in corso..." : "Accedi"}
             </button>
@@ -197,7 +197,7 @@ export default function LoginModal() {
               Non hai un account?{" "}
               <button
                 onClick={handleSwitchToRegister}
-                className="text-amber-500 hover:text-amber-400 font-semibold transition-colors"
+                className="text-gold hover:text-gold-light font-semibold transition-colors"
               >
                 Registrati
               </button>

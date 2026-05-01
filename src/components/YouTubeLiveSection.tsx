@@ -76,7 +76,7 @@ export default function YouTubeLiveSection() {
 
   return (
     <section>
-      <div className="rounded-2xl overflow-hidden bg-[#0F1A2E] shadow-2xl">
+      <div className="rounded-2xl overflow-hidden bg-primary shadow-2xl">
         {/* Top bar decorativo */}
         <div className="h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
 

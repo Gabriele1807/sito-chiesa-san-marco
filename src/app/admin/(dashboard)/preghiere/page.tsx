@@ -111,7 +111,7 @@ export default function AdminPreghierePage() {
           <h1 className="text-2xl font-bold text-gray-900">Gestione Preghiere</h1>
           <p className="text-sm text-gray-500 mt-1">{preghiere.length} preghiere</p>
         </div>
-        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors">
+        <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors">
           <Plus className="w-4 h-4" /> Aggiungi preghiera
         </button>
       </div>
@@ -122,11 +122,11 @@ export default function AdminPreghierePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Titolo</label>
-              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo preghiera" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
+              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo preghiera" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Categoria</label>
-              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600">
+              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold">
                 {categorie.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>

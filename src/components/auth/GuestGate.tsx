@@ -52,7 +52,7 @@ export default function GuestGate({
           <p className="text-white/90 text-sm font-medium text-center max-w-xs">
             {message}
           </p>
-          <span className="text-amber-500 text-xs font-semibold uppercase tracking-wider">
+          <span className="text-gold text-xs font-semibold uppercase tracking-wider">
             Accedi o Registrati
           </span>
         </div>

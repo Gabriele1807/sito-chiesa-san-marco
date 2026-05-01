@@ -70,7 +70,7 @@ export default function Navbar({ locale }: Props) {
               height={40}
               className="rounded-full"
             />
-            <span className="hidden sm:inline text-sm font-bold text-primary">San Marco</span>
+            <span className="hidden sm:inline text-sm font-bold text-[#0F1A2E]">San Marco</span>
           </Link>
         </div>
 

@@ -184,7 +184,7 @@ export default function RegisterModal() {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-[#0F1A2E] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-in">
+      <div className="relative w-full max-w-md bg-primary rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-in">
         {/* Close */}
         <button
           onClick={() => setShowRegisterModal(false)}
@@ -245,7 +245,7 @@ export default function RegisterModal() {
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
                   />
                 </div>
                 <div>
@@ -255,7 +255,7 @@ export default function RegisterModal() {
                     value={cognome}
                     onChange={(e) => setCognome(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
                   />
                 </div>
               </div>
@@ -269,7 +269,7 @@ export default function RegisterModal() {
                   placeholder="email@esempio.it"
                   required
                   autoComplete="email"
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export default function RegisterModal() {
                   placeholder="Username"
                   required
                   autoComplete="username"
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
                 />
               </div>
 
@@ -296,7 +296,7 @@ export default function RegisterModal() {
                     placeholder="Min. 8 caratteri"
                     required
                     autoComplete="new-password"
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors pr-10"
+                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors pr-10"
                   />
                   <button
                     type="button"
@@ -318,14 +318,14 @@ export default function RegisterModal() {
                   placeholder="Ripeti la password"
                   required
                   autoComplete="new-password"
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={handleNextToQuiz}
-                className="w-full py-2.5 rounded-lg bg-amber-600 text-white font-semibold text-sm hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 mt-2"
+                className="w-full py-2.5 rounded-lg bg-gold text-white font-semibold text-sm hover:bg-gold-light transition-colors flex items-center justify-center gap-2 mt-2"
               >
                 Continua <ChevronRight className="w-4 h-4" />
               </button>
@@ -369,9 +369,9 @@ export default function RegisterModal() {
                     onChange={(e) => setChiesa(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
                   >
-                    <option value="" className="bg-[#0F1A2E]">Seleziona...</option>
+                    <option value="" className="bg-primary">Seleziona...</option>
                     {CHIESE_LIST.map((c) => (
-                      <option key={c} value={c} className="bg-[#0F1A2E]">{c}</option>
+                      <option key={c} value={c} className="bg-primary">{c}</option>
                     ))}
                   </select>
                 </div>

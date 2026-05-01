@@ -301,7 +301,7 @@ export default function GestioneUtentiPage() {
             placeholder="Cerca utente..."
             autoComplete="off"
             aria-label="Cerca utente"
-            className="pl-9 pr-4 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 w-full sm:w-64"
+            className="pl-9 pr-4 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold w-full sm:w-64"
           />
         </div>
       </div>
@@ -490,7 +490,7 @@ export default function GestioneUtentiPage() {
                   id="edit-attivo"
                   checked={editForm.attivo}
                   onChange={(e) => setEditForm({ ...editForm, attivo: e.target.checked })}
-                  className="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                    className="w-4 h-4 rounded border-gray-300 text-gold focus:ring-gold"
                 />
                 <label htmlFor="edit-attivo" className="text-sm text-gray-700">Account attivo</label>
               </div>
@@ -501,7 +501,7 @@ export default function GestioneUtentiPage() {
                     <select
                       value={editForm.chiesa}
                       onChange={(e) => setEditForm({ ...editForm, chiesa: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
                     >
                       <option value="">Seleziona una chiesa...</option>
                       {CHIESE_LIST.map((chiesa) => (
@@ -523,7 +523,7 @@ export default function GestioneUtentiPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50"
+                  className="flex-1 py-2 rounded-lg bg-gold text-white text-sm font-semibold hover:bg-gold-light transition-colors disabled:opacity-50"
                 >
                   {saving ? "Salvataggio..." : "Salva modifiche"}
                 </button>
@@ -537,7 +537,7 @@ export default function GestioneUtentiPage() {
                 {/* Promozione / Revoca admin */}
                 <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-amber-600" />
+                    <ShieldCheck className="w-4 h-4 text-gold" />
                     <p className="text-sm font-semibold text-gray-800">Accesso Admin</p>
                   </div>
 
@@ -566,7 +566,7 @@ export default function GestioneUtentiPage() {
                         <select
                           value={promoteRuolo}
                           onChange={(e) => setPromoteRuolo(e.target.value as "admin" | "superadmin")}
-                          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
                         >
                           <option value="admin">Admin</option>
                           <option value="superadmin">Superadmin</option>
@@ -605,12 +605,12 @@ export default function GestioneUtentiPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       autoComplete="new-password"
-                      className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
                     />
                     <button
                       onClick={handleResetPassword}
                       disabled={savingPassword || !newPassword}
-                      className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50"
+                      className="px-4 py-2 rounded-lg bg-gold text-white text-sm font-semibold hover:bg-gold-light transition-colors disabled:opacity-50"
                     >
                       {savingPassword ? "..." : "Salva"}
                     </button>

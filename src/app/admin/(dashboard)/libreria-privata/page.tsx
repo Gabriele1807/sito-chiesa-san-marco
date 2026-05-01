@@ -82,7 +82,7 @@ export default function AdminLibreriaPrivataPage() {
           <h1 className="text-2xl font-bold text-gray-900">Libreria Privata</h1>
           <p className="text-sm text-gray-500 mt-1">{files.length} file privati — visibili solo all&apos;admin</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors">
+        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors">
           <Plus className="w-4 h-4" /> Carica file
         </button>
       </div>
@@ -93,26 +93,26 @@ export default function AdminLibreriaPrivataPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Nome / Titolo</label>
-              <input type="text" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required placeholder="Nome del file" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
+              <input type="text" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required placeholder="Nome del file" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Tipo</label>
-              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600">
+              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold">
                 {tipiFile.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione (opzionale)</label>
-            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={2} placeholder="Breve descrizione" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
+            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={2} placeholder="Breve descrizione" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">URL / Link Google Drive</label>
-            <input type="text" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} required placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
+            <input type="text" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} required placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
             <p className="text-xs text-gray-400 mt-1">Incolla il link di condivisione di Google Drive</p>
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50">
               {saving ? "Caricando..." : "Carica"}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">Annulla</button>
@@ -140,7 +140,7 @@ export default function AdminLibreriaPrivataPage() {
                 <td className="px-4 py-3 text-gray-600">{f.tipo}</td>
                 <td className="px-4 py-3 text-gray-600">{new Date(f.dataCaricamento).toLocaleDateString("it-IT")}</td>
                 <td className="px-4 py-3 text-right">
-                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors inline-block"><Download className="w-4 h-4" /></a>
+                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-400 hover:text-gold transition-colors inline-block"><Download className="w-4 h-4" /></a>
                   <button onClick={() => setDeleteTarget(f)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>

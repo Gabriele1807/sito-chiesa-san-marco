@@ -127,7 +127,7 @@ export default function AdminVideoCorsiPage() {
         </div>
         <button
           onClick={openAdd}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors"
         >
           <Plus className="w-4 h-4" /> Aggiungi video
         </button>
@@ -145,7 +145,7 @@ export default function AdminVideoCorsiPage() {
                 onChange={(e) => setForm({ ...form, titolo: e.target.value })}
                 required
                 placeholder="Titolo video"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
               />
             </div>
             <div>

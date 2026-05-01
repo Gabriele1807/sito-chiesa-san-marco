@@ -114,7 +114,7 @@ export default function AdminSidebar() {
               onClick={closeMobile}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 isActive
-                  ? "bg-amber-600/20 text-amber-600 font-semibold"
+                  ? "bg-[#B45309]/20 text-[#F59E0B] font-semibold"
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
@@ -137,7 +137,7 @@ export default function AdminSidebar() {
               onClick={closeMobile}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 pathname === "/admin/utenti"
-                  ? "bg-amber-600/20 text-amber-600 font-semibold"
+                  ? "bg-[#B45309]/20 text-[#F59E0B] font-semibold"
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
@@ -149,7 +149,7 @@ export default function AdminSidebar() {
               onClick={closeMobile}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 pathname === "/admin/gestione-admin"
-                  ? "bg-amber-600/20 text-amber-600 font-semibold"
+                  ? "bg-[#B45309]/20 text-[#F59E0B] font-semibold"
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
@@ -167,7 +167,7 @@ export default function AdminSidebar() {
           <div className="flex items-center gap-2.5 px-3 py-2">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
-                isSuperAdmin ? "bg-amber-500" : "bg-blue-500"
+                isSuperAdmin ? "bg-[#D97706]" : "bg-sage"
               }`}
             >
               {adminInfo.nome[0]}{adminInfo.cognome[0]}

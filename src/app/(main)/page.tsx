@@ -36,24 +36,25 @@ export default async function HomePage() {
   });
 
   return (
-    <div className="space-y-8">
-      {/* ====== ZONA 1 - WELCOME HEADER ====== */}
-      <section className="relative -mx-4 sm:-mx-6 lg:-mx-10 -mt-8 sm:-mt-10 px-4 sm:px-6 lg:px-10 py-8 sm:py-10 bg-gradient-to-r from-primary via-primary-light to-primary overflow-hidden animate-fade-in-up">
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent via-accent-light to-accent" />
-        <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight">
-              {t("dashboardTitolo")}
-            </h1>
-            <p className="text-white/70 text-sm mt-1">{t("dashboardSottotitolo")}</p>
+    <div className="space-y-10">
+      {/* ====== ZONA 1 - WELCOME HEADER - SOPRIO E ELEGANTE ====== */}
+      <section className="animate-fade-in-up">
+        <div className="space-y-4">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+            {t("dashboardTitolo")}
+          </h1>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-gray-600 text-base">{t("dashboardSottotitolo")}</p>
+            <p className="text-gray-500 text-sm font-medium">{dateStr}</p>
           </div>
-          <p className="text-white/50 text-xs uppercase tracking-wider font-medium">{dateStr}</p>
+          <div className="h-1 w-16 bg-gradient-to-r from-accent to-accent-light rounded-full"></div>
         </div>
       </section>
 
-      {/* ====== ZONA 2 - QUICK ACCESS GRID ====== */}
-      <section>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* ====== ZONA 2 - QUICK ACCESS GRID - RESPONSIVE ====== */}
+      <section className="animate-fade-in-up [animation-delay:100ms]">
+        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide mb-6">Accesso rapido</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           <QuickAccessCard href="/orari" icon={Clock} title={t("quickOrari")} description={t("quickOrariDesc")} delay={0} />
           <QuickAccessCard href="/preghiere" icon={BookOpen} title={t("quickPreghiere")} description={t("quickPreghiereDesc")} delay={60} />
           <QuickAccessCard href="/icone" icon={ImageIcon} title={t("quickIcone")} description={t("quickIconeDesc")} delay={120} />
@@ -70,34 +71,38 @@ export default async function HomePage() {
           <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide">{t("daFare")}</h2>
           <span className="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">2</span>
         </div>
-        <div className="bg-surface rounded-xl border border-gray-200 divide-y divide-gray-200">
-          <div className="flex items-center justify-between p-4 gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                <HandHeart className="w-5 h-5 text-accent" />
+        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide mb-6 flex items-center gap-3">
+          Consigliato per te
+          <span className="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">2</span>
+        </h2>
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                <HandHeart className="w-6 h-6 text-accent" />
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{t("prossimaPreghiera")}</p>
-                <p className="text-xs text-gray-500">{t("prossimaPreghieraOrario")}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900">{t("prossimaPreghiera")}</p>
+                <p className="text-xs text-gray-500 mt-1">{t("prossimaPreghieraOrario")}</p>
+                <Link href="/preghiere" className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg hover:bg-gold-light transition-colors">
+                  {t("vaiPreghiere")} <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
-            <Link href="/preghiere" className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg btn-hover">
-              {t("vaiPreghiere")} <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
-          <div className="flex items-center justify-between p-4 gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <ImageIcon className="w-5 h-5 text-primary" />
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <ImageIcon className="w-6 h-6 text-primary" />
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{t("nuoveIcone")}</p>
-                <p className="text-xs text-gray-500">{t("nuoveIconeDesc")}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900">{t("nuoveIcone")}</p>
+                <p className="text-xs text-gray-500 mt-1">{t("nuoveIconeDesc")}</p>
+                <Link href="/icone" className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg hover:bg-gold-light transition-colors">
+                  {t("esploraIconeBtn")} <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
-            <Link href="/icone" className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg btn-hover">
-              {t("esploraIconeBtn")} <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
         </div>
       </section>
@@ -105,16 +110,17 @@ export default async function HomePage() {
       {/* ====== ZONA 4 - STAT CARDS ====== */}
       {/* FIX [6] — Stat cards now wrapped in Link for clickability */}
       <section className="animate-fade-in-up [animation-delay:300ms]">
-        <div className="grid grid-cols-2 gap-4">
-          <Link href="/orari" className="block cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
-            <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center h-full">
+        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide mb-6">Statistiche</h2>
+        <div className="grid grid-cols-2 gap-4 sm:gap-5">
+          <Link href="/orari" className="block cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center h-full shadow-sm hover:shadow-md transition-shadow">
               <Clock className="w-6 h-6 text-accent mx-auto mb-2" />
               <p className="text-5xl font-bold text-gray-900">5</p>
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statCelebrazioni")}</p>
             </div>
           </Link>
-          <Link href="/libreria" className="block cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">
-            <div className="bg-surface rounded-xl border border-gray-200 p-6 text-center h-full">
+          <Link href="/libreria" className="block cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center h-full shadow-sm hover:shadow-md transition-shadow">
               <Library className="w-6 h-6 text-accent mx-auto mb-2" />
               <p className="text-5xl font-bold text-gray-900">{testiSacri.length}</p>
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">{t("statTesti")}</p>
@@ -125,12 +131,13 @@ export default async function HomePage() {
 
       {/* ====== ZONA 5 - WIDGET 2 COLONNE ====== */}
       <section className="animate-fade-in-up [animation-delay:400ms]">
+          <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide mb-6">Contenuti in primo piano</h2>
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-surface rounded-xl border border-gray-200">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{t("prossimiEventi")}</h3>
               {/* FIX [7d] — "Vedi tutti" button more prominent with arrow */}
-              <Link href="/eventi" className="text-amber-600 font-semibold text-sm hover:text-amber-700 hover:underline flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">{t("vediTutti")} <span aria-hidden="true" className="text-base">→</span></Link>
+              <Link href="/eventi" className="text-gold font-semibold text-sm hover:text-gold-light hover:underline flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">{t("vediTutti")} <span aria-hidden="true" className="text-base">→</span></Link>
             </div>
             <div className="p-5 space-y-3">
               {eventi.length > 0 ? (
@@ -142,7 +149,7 @@ export default async function HomePage() {
                     <Link key={ev.id} href="/eventi" className="flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 hover:bg-gray-100 cursor-pointer transition-colors duration-150 group">
                       <span className="shrink-0 inline-block bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md">{dayStr}</span>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-amber-600 transition-colors">{ev.titolo}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-gold transition-colors">{ev.titolo}</p>
                         <p className="text-xs text-gray-500">{ev.luogo}</p>
                       </div>
                     </Link>
@@ -158,11 +165,11 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="bg-surface rounded-xl border border-gray-200">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{t("ultimePreghiere")}</h3>
               {/* FIX [8d] — "Vedi tutte" button more prominent with arrow */}
-              <Link href="/preghiere" className="text-amber-600 font-semibold text-sm hover:text-amber-700 hover:underline flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2">{t("vediTutte")} <span aria-hidden="true" className="text-base">→</span></Link>
+              <Link href="/preghiere" className="text-gold font-semibold text-sm hover:text-gold-light hover:underline flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">{t("vediTutte")} <span aria-hidden="true" className="text-base">→</span></Link>
             </div>
             <div className="p-5 space-y-3">
               {preghiere.slice(0, 3).map((p) => (
@@ -172,7 +179,7 @@ export default async function HomePage() {
                     <BookOpen className="w-4 h-4 text-accent" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate group-hover:text-amber-600 transition-colors">{p.titolo}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate group-hover:text-gold transition-colors">{p.titolo}</p>
                     <p className="text-xs text-gray-500">{p.categoria}</p>
                   </div>
                 </Link>
