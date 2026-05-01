@@ -1,9 +1,12 @@
 export const CHIESE_LIST = [
-  "Chiesa Copta di San Giorgio – Roma",
-  "Chiesa Copta di San Marco – Torino",
-  "Chiesa Copta della Vergine Maria – Bologna",
-  "Chiesa Copta di San Mina – Firenze",
-  "Chiesa Copta di San Paolo – Napoli",
+  "Chiesa Copta della Vergine Maria e Sant'Antonio – Cinisello",
+  "Chiesa Copta di San Simeone e Sant'Anna – Gorla",
+  "Chiesa Copta dei Santi Zaccaria ed Elisabetta – Melchiorre Gioia",
+  "Chiesa Copta di San Mina – Pero",
+  "Chiesa Copta dei Santi Apostoli - San Giuseppe d'Arimatea – Corvetto",
+  "Chiesa Copta di San Shenuda Archimandrita – Lacchiarella",
+  "Chiesa Copta di Sant'Abramo – Vigevano",
+  "Chiesa Copta dell'Arcangelo Michele – Brescia",
   "Altra chiesa",
 ] as const;
 

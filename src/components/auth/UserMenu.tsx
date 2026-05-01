@@ -39,7 +39,7 @@ export default function UserMenu() {
         </div>
         <button
           onClick={() => setShowLoginModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light active:bg-primary-light transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-[#0F1A2E] rounded-lg hover:bg-[#1E3A5F] active:bg-[#1E3A5F] transition-colors"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span>Accedi</span>
@@ -54,14 +54,14 @@ export default function UserMenu() {
       <div className="flex items-center gap-1.5">
         <button
           onClick={() => setShowLoginModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-light active:bg-primary-light transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-[#0F1A2E] rounded-lg hover:bg-[#1E3A5F] active:bg-[#1E3A5F] transition-colors"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span>Accedi</span>
         </button>
         <button
           onClick={() => setShowRegisterModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-primary bg-white border border-primary rounded-lg hover:bg-primary/5 active:bg-primary/10 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-[#0F1A2E] bg-white border border-[#0F1A2E] rounded-lg hover:bg-[#0F1A2E]/5 active:bg-[#0F1A2E]/10 transition-colors"
         >
           <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span className="hidden sm:inline">Registrati</span>
@@ -100,7 +100,7 @@ export default function UserMenu() {
       >
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-offset-1 ${
-            isAdmin ? "bg-amber-500 ring-amber-200" : "bg-primary ring-primary/20"
+            isAdmin ? "bg-[#D97706] ring-[#D97706]/30" : "bg-[#0F1A2E] ring-[#0F1A2E]/20"
           }`}
         >
           {initials}
@@ -136,7 +136,7 @@ export default function UserMenu() {
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 transition-colors animate-fadeInUp stagger-3"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-[#D97706] hover:bg-[#D97706]/10 transition-colors animate-fadeInUp stagger-3"
             >
               <Shield className="w-4 h-4" />
               Pannello Admin

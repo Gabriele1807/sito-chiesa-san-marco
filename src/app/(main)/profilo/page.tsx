@@ -109,7 +109,7 @@ export default function ProfiloPage() {
     user?.adminRequest === "approved"
       ? "border-green-200 bg-green-50 text-green-700"
       : user?.adminRequest === "pending"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
+        ? "border-gold/30 bg-gold/5 text-gold"
         : user?.adminRequest === "rejected"
           ? "border-red-200 bg-red-50 text-red-700"
           : "border-gray-200 bg-gray-50 text-gray-600";
@@ -149,7 +149,7 @@ export default function ProfiloPage() {
     superAdminRequest === "approved"
       ? "border-green-200 bg-green-50 text-green-700"
       : superAdminRequest === "pending"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
+        ? "border-gold/20 bg-gold/10 text-gold"
         : superAdminRequest === "rejected"
           ? "border-red-200 bg-red-50 text-red-700"
           : "border-gray-200 bg-gray-50 text-gray-600";
@@ -349,7 +349,7 @@ export default function ProfiloPage() {
       <div
         className={`relative overflow-hidden rounded-2xl p-4 sm:p-6 text-white shadow-md ${
           isAdmin
-            ? "bg-gradient-to-br from-amber-600 to-amber-700"
+            ? "bg-gradient-to-br from-gold to-gold-light"
             : "bg-gradient-to-br from-primary to-primary-light"
         }`}
       >
@@ -426,7 +426,7 @@ export default function ProfiloPage() {
                 user.adminRequest === "approved"
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : user.adminRequest === "pending"
-                    ? "bg-amber-50 text-amber-700 border border-amber-200"
+                    ? "bg-gold/10 text-gold border border-gold/20"
                     : "bg-red-50 text-red-700 border border-red-200"
               }`}
             >
@@ -445,8 +445,8 @@ export default function ProfiloPage() {
             className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group"
           >
             <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-                <Settings className="w-4 h-4 text-amber-600" />
+              <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                <Settings className="w-4 h-4 text-gold" />
               </div>
               <div>
                 <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("visitaAdmin")}</p>
@@ -473,8 +473,8 @@ export default function ProfiloPage() {
             aria-expanded={showAdminEditSection}
           >
             <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-                <Pencil className="w-4 h-4 text-amber-600" />
+              <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                <Pencil className="w-4 h-4 text-gold" />
               </div>
               <div className="text-left">
                 <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("account")}</p>
@@ -497,7 +497,7 @@ export default function ProfiloPage() {
                       value={adminEditForm.nome}
                       onChange={(e) => setAdminEditForm({ ...adminEditForm, nome: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                   <div>
@@ -507,7 +507,7 @@ export default function ProfiloPage() {
                       value={adminEditForm.cognome}
                       onChange={(e) => setAdminEditForm({ ...adminEditForm, cognome: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -519,7 +519,7 @@ export default function ProfiloPage() {
                     onChange={(e) => setAdminEditForm({ ...adminEditForm, email: e.target.value })}
                     autoComplete="email"
                     placeholder={t("emailPlaceholderAdmin")}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 outline-none transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -534,7 +534,7 @@ export default function ProfiloPage() {
                       minLength={3}
                       maxLength={30}
                       pattern="[a-zA-Z0-9_.\-]+"
-                      className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 outline-none transition-all"
+                      className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -560,7 +560,7 @@ export default function ProfiloPage() {
                   <button
                     type="submit"
                     disabled={adminEditLoading}
-                    className="w-full sm:w-auto px-5 py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-xl hover:bg-amber-700 transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto px-5 py-2.5 bg-gold text-white text-sm font-semibold rounded-xl hover:bg-gold-light transition-colors disabled:opacity-50"
                   >
                     {adminEditLoading ? t("salvataggioInCorso") : t("salvaModifiche")}
                   </button>
@@ -783,7 +783,7 @@ export default function ProfiloPage() {
               {/* Already has pending request */}
               {user?.adminRequest === "pending" && (
                 <div className="mt-5 pt-5 border-t border-gray-100">
-                  <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                  <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-gold/10 text-gold border border-gold/20">
                     <UserCheck className="w-4 h-4" />
                     {t("adminGiaRichiesto")}
                   </div>
@@ -957,15 +957,15 @@ export default function ProfiloPage() {
                   <div className="mt-2 space-y-2">
                     <Link
                       href="/admin"
-                      className="group flex w-full items-center justify-between rounded-xl border border-amber-200 bg-amber-50/70 px-3.5 py-3 text-left transition-colors hover:bg-amber-100/70"
+                      className="group flex w-full items-center justify-between rounded-xl border border-gold/20 bg-gold/5 px-3.5 py-3 text-left transition-colors hover:bg-gold/10"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-                          <Crown className="h-4 w-4 text-amber-600" />
+                          <Crown className="h-4 w-4 text-gold" />
                         </div>
-                        <span className="text-sm font-medium text-amber-900">{t("pannelloAdmin")}</span>
+                        <span className="text-sm font-medium text-burgundy">{t("pannelloAdmin")}</span>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-amber-500 transition-colors group-hover:text-amber-700" />
+                      <ArrowRight className="h-4 w-4 text-gold transition-colors group-hover:text-gold-light" />
                     </Link>
 
                     {adminQuickActions.map((action) => {
@@ -978,24 +978,24 @@ export default function ProfiloPage() {
                           className={`group flex w-full items-center justify-between rounded-xl border px-3.5 py-3 text-left transition-colors ${
                             highlighted
                               ? "border-sky-200 bg-sky-50/80 hover:bg-sky-100"
-                              : "border-amber-100 bg-amber-50/40 hover:bg-amber-100/70"
+                              : "border-gold/20 bg-gold/5 hover:bg-gold/10"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <div
                               className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                                highlighted ? "bg-white text-sky-700" : "bg-white text-amber-700"
+                                highlighted ? "bg-white text-sky-700" : "bg-white text-gold"
                               }`}
                             >
                               <Icon className="h-4 w-4" />
                             </div>
-                            <span className={`text-sm font-medium ${highlighted ? "text-sky-900" : "text-amber-900"}`}>
+                            <span className={`text-sm font-medium ${highlighted ? "text-sky-900" : "text-burgundy"}`}>
                               {action.label}
                             </span>
                           </div>
                           <ArrowRight
                             className={`h-4 w-4 transition-colors ${
-                              highlighted ? "text-sky-500 group-hover:text-sky-700" : "text-amber-500 group-hover:text-amber-700"
+                              highlighted ? "text-sky-500 group-hover:text-sky-700" : "text-gold group-hover:text-gold-light"
                             }`}
                           />
                         </Link>

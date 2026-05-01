@@ -53,9 +53,9 @@ export default async function AdminDashboardPage() {
   const orarioOggi = orari.find((o) => o.giorno === oggi);
 
   const stats = [
-    { label: "Libri / PDF", value: libri.length, icon: Library, href: "/admin/libreria", bgColor: "bg-amber-100", textColor: "text-amber-600" },
-    { label: "Icone", value: icone.length, icon: ImageIcon, href: "/admin/icone", bgColor: "bg-amber-100", textColor: "text-amber-600" },
-    { label: "Preghiere", value: preghiere.length, icon: BookOpen, href: "/admin/preghiere", bgColor: "bg-amber-100", textColor: "text-amber-600" },
+    { label: "Libri / PDF", value: libri.length, icon: Library, href: "/admin/libreria", bgColor: "bg-gold/10", textColor: "text-gold" },
+    { label: "Icone", value: icone.length, icon: ImageIcon, href: "/admin/icone", bgColor: "bg-gold/10", textColor: "text-gold" },
+    { label: "Preghiere", value: preghiere.length, icon: BookOpen, href: "/admin/preghiere", bgColor: "bg-gold/10", textColor: "text-gold" },
     { label: "Video / Corsi", value: videoCorsi.length, icon: Youtube, href: "/admin/video-corsi", bgColor: "bg-red-100", textColor: "text-red-600" },
     { label: "Eventi futuri", value: eventiFuturi.length, icon: CalendarDays, href: "/admin/eventi", bgColor: "bg-blue-100", textColor: "text-blue-700" },
     { label: "File privati", value: filePriv.length, icon: FolderLock, href: "/admin/libreria-privata", bgColor: "bg-blue-100", textColor: "text-blue-700" },
@@ -63,10 +63,10 @@ export default async function AdminDashboardPage() {
 
   const quickActions = [
     { label: "Nuovo Evento", href: "/admin/eventi", icon: CalendarDays, color: "text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100" },
-    { label: "Nuovo Libro / PDF", href: "/admin/libreria", icon: Library, color: "text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100" },
-    { label: "Nuova Preghiera", href: "/admin/preghiere", icon: BookOpen, color: "text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100" },
+    { label: "Nuovo Libro / PDF", href: "/admin/libreria", icon: Library, color: "text-gold bg-gold/5 border-gold/20 hover:bg-gold/10" },
+    { label: "Nuova Preghiera", href: "/admin/preghiere", icon: BookOpen, color: "text-gold bg-gold/5 border-gold/20 hover:bg-gold/10" },
     { label: "Nuovo Video / Corso", href: "/admin/video-corsi", icon: Youtube, color: "text-red-600 bg-red-50 border-red-200 hover:bg-red-100" },
-    { label: "Nuova Icona", href: "/admin/icone", icon: ImageIcon, color: "text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100" },
+    { label: "Nuova Icona", href: "/admin/icone", icon: ImageIcon, color: "text-gold bg-gold/5 border-gold/20 hover:bg-gold/10" },
   ];
 
   // Format event date nicely
@@ -121,7 +121,7 @@ export default async function AdminDashboardPage() {
             <h2 className="text-lg font-bold text-gray-900">Prossimi eventi</h2>
             <Link
               href="/admin/eventi"
-              className="text-xs font-medium text-amber-600 hover:text-amber-700 flex items-center gap-1 transition-colors"
+              className="text-xs font-medium text-gold hover:text-gold-light flex items-center gap-1 transition-colors"
             >
               Vedi tutti <ChevronRight className="w-3.5 h-3.5" />
             </Link>
@@ -184,8 +184,8 @@ export default async function AdminDashboardPage() {
             <div className="space-y-3">
               {orarioOggi.celebrazioni.map((cel, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-4 h-4 text-amber-600" />
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-4 h-4 text-gold" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-gray-900">{cel.tipo}</p>
@@ -201,7 +201,7 @@ export default async function AdminDashboardPage() {
 
           <Link
             href="/admin/orari"
-            className="mt-4 flex items-center justify-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 transition-colors"
+            className="mt-4 flex items-center justify-center gap-1 text-xs font-medium text-gold hover:text-gold-light transition-colors"
           >
             Gestisci orari <ChevronRight className="w-3.5 h-3.5" />
           </Link>

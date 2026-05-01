@@ -125,7 +125,7 @@ export default function AdminOrariPage() {
           <p className="text-sm text-gray-500 mt-1">{orari.length} giorni configurati</p>
         </div>
         {giorniDisponibili.length > 0 && (
-          <button onClick={() => setShowAddForm(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors">
+          <button onClick={() => setShowAddForm(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors">
             <Plus className="w-4 h-4" /> Aggiungi giorno
           </button>
         )}
@@ -140,7 +140,7 @@ export default function AdminOrariPage() {
               {giorniDisponibili.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
-          <button type="submit" disabled={saving} className="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg">{saving ? "..." : "Aggiungi"}</button>
+          <button type="submit" disabled={saving} className="px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg">{saving ? "..." : "Aggiungi"}</button>
           <button type="button" onClick={() => setShowAddForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg">Annulla</button>
         </form>
       )}
@@ -151,7 +151,7 @@ export default function AdminOrariPage() {
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
               <h3 className="font-bold text-gray-900">{orario.giorno}</h3>
               <div className="flex gap-1">
-                <button onClick={() => startEdit(orario)} className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => startEdit(orario)} className="p-1.5 text-gray-400 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => setDeleteTarget(orario.giorno)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
@@ -167,7 +167,7 @@ export default function AdminOrariPage() {
                   </div>
                 ))}
                 <div className="flex gap-3">
-                  <button onClick={addCelebrazione} className="text-sm text-amber-600 font-medium hover:underline">+ Aggiungi riga</button>
+                  <button onClick={addCelebrazione} className="text-sm text-gold font-medium hover:underline">+ Aggiungi riga</button>
                   <button onClick={handleSave} disabled={saving} className="px-3 py-1.5 bg-amber-600 text-white text-sm font-semibold rounded-lg">{saving ? "..." : "Salva"}</button>
                   <button onClick={() => setEditGiorno(null)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg">Annulla</button>
                 </div>

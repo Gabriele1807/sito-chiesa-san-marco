@@ -2,7 +2,7 @@
 // so /admin/login renders without sidebar
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-surface-alt">
       {children}
     </div>
   );

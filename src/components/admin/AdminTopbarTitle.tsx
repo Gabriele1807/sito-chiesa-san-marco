@@ -30,7 +30,7 @@ export default function AdminTopbarTitle() {
 
   return (
     <div className="flex items-center gap-2">
-      <Icon className="w-5 h-5 text-amber-600" />
+      <Icon className="w-5 h-5 text-[#D97706]" />
       <span className="text-sm font-bold uppercase tracking-wider text-gray-700">
         {entry.label}
       </span>

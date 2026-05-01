@@ -659,7 +659,7 @@ export default function GestioneAdminPage() {
                     value={form.nome}
                     onChange={(e) => setForm({ ...form, nome: e.target.value })}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold"
                   />
                 </div>
                 <div>
@@ -686,7 +686,7 @@ export default function GestioneAdminPage() {
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                   required
                   disabled={!!editingId}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600 disabled:bg-gray-100 disabled:text-gray-400"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold disabled:bg-gray-100 disabled:text-gray-400"
                 />
               </div>
 

@@ -93,7 +93,7 @@ export default async function ContattiPage() {
           <div
             key="indirizzo"
             style={{ animationDelay: "120ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] bg-amber-50/35 rounded-2xl border border-amber-100 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-amber-200 transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-gold/10 rounded-2xl border border-gold/20 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-gold/30 transition-all duration-300"
           >
             <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
               <MapPin className="w-5 h-5 text-accent" />
