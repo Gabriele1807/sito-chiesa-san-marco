@@ -7,12 +7,14 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import MobileMenuButton from "./MobileMenuButton";
 import TopbarTitle from "./TopbarTitle";
 import UserMenu from "./auth/UserMenu";
+import { useTranslations } from "next-intl";
 
 interface Props {
   locale: string;
 }
 
 export default function Navbar({ locale }: Props) {
+  const t = useTranslations("common");
   const [isVisible, setIsVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
@@ -65,12 +67,12 @@ export default function Navbar({ locale }: Props) {
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <Image
               src="/logo-san-marco.png"
-              alt="Logo Chiesa Copta San Marco"
+              alt={t("logoAlt")}
               width={40}
               height={40}
               className="rounded-full"
             />
-            <span className="hidden sm:inline text-sm font-bold text-[#0F1A2E]">San Marco</span>
+            <span className="hidden sm:inline text-sm font-bold text-[#0F1A2E]">{t("sanMarco")}</span>
           </Link>
         </div>
 

@@ -2,6 +2,7 @@
 
 import { useAuth } from "./AuthContext";
 import { Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface GuestGateProps {
   children: React.ReactNode;
@@ -15,9 +16,11 @@ interface GuestGateProps {
  */
 export default function GuestGate({
   children,
-  message = "Per accedere a questa sezione registrati o accedi",
+  message,
 }: GuestGateProps) {
+  const t = useTranslations("auth");
   const { type, loading, setShowLoginModal } = useAuth();
+  const resolvedMessage = message ?? t("guestGateMessage");
 
   // Se l'utente è autenticato (user o admin), mostra il contenuto normalmente
   if (loading || type === "user" || type === "admin") {
@@ -50,10 +53,10 @@ export default function GuestGate({
             <Lock className="w-6 h-6 text-white/70" />
           </div>
           <p className="text-white/90 text-sm font-medium text-center max-w-xs">
-            {message}
+            {resolvedMessage}
           </p>
           <span className="text-gold text-xs font-semibold uppercase tracking-wider">
-            Accedi o Registrati
+            {t("guestGateCta")}
           </span>
         </div>
       </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function MobileMenuButton() {
+  const t = useTranslations("common");
   function handleClick() {
     // Toggle sidebar visibility
     const sidebar = document.getElementById("mobile-sidebar");
@@ -18,7 +20,7 @@ export default function MobileMenuButton() {
     <button
       onClick={handleClick}
       className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-      aria-label="Apri menu"
+      aria-label={t("openMenu")}
     >
       <Menu className="w-5 h-5" />
     </button>

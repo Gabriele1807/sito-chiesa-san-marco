@@ -76,7 +76,10 @@ export default async function HomePage() {
           <span className="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">2</span>
         </h2>
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <Link
+            href="/preghiere"
+            className="group bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+          >
             <div className="flex items-start gap-4">
               <div className="w-11 h-11 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
                 <HandHeart className="w-6 h-6 text-accent" />
@@ -84,12 +87,12 @@ export default async function HomePage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900">{t("prossimaPreghiera")}</p>
                 <p className="text-xs text-gray-500 mt-1">{t("prossimaPreghieraOrario")}</p>
-                <Link href="/preghiere" className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg hover:bg-gold-light transition-colors">
+                <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-accent text-white text-xs font-semibold rounded-lg transition-colors group-hover:bg-gold-light">
                   {t("vaiPreghiere")} <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
+                </span>
               </div>
             </div>
-          </div>
+          </Link>
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="flex items-start gap-4">
               <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
