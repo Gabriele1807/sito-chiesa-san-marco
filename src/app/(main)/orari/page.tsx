@@ -7,7 +7,11 @@ import OrariTable from "@/components/OrariTable";
 export const revalidate = 60;
 
 export default async function OrariPage() {
-  const [t, orari] = await Promise.all([getTranslations("orari"), getOrari()]);
+  const [t, tHome, orari] = await Promise.all([
+    getTranslations("orari"),
+    getTranslations("home"),
+    getOrari(),
+  ]);
 
   const totalCelebrazioni = orari.reduce((count, giorno) => count + giorno.celebrazioni.length, 0);
 
@@ -85,7 +89,11 @@ export default async function OrariPage() {
         </div>
 
         <div className="space-y-6 animate-fade-in-up [animation-delay:250ms]">
-          <NextCelebrationCard orari={orari} title="Prossima celebrazione" />
+          <NextCelebrationCard
+            orari={orari}
+            title={tHome("quickProssima")}
+            emptyLabel={tHome("noCelebration")}
+          />
           <div className="rounded-3xl border border-gold/15 bg-white p-6 shadow-sm">
             <h2 className="text-base font-bold text-gray-900 mb-2">Come leggere gli orari</h2>
             <p className="text-sm text-gray-600 leading-relaxed">

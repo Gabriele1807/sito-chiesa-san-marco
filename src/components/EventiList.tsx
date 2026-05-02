@@ -116,8 +116,7 @@ export default function EventiList({ eventi }: Props) {
                 </p>
                 <button
                   onClick={() => openForm(evento.id)}
-                  className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-accent text-white
-                             font-semibold rounded-lg btn-hover text-sm cursor-pointer"
+                  className="mt-4 btn-primary"
                 >
                   {t("iscriviti")}
                 </button>
@@ -151,7 +150,7 @@ export default function EventiList({ eventi }: Props) {
                 </p>
                 <button
                   onClick={() => setFormOpen(null)}
-                  className="mt-4 px-6 py-2 bg-primary text-white rounded-lg btn-hover text-sm font-medium cursor-pointer"
+                  className="mt-4 btn-secondary"
                 >
                   {t("chiudi")}
                 </button>
@@ -214,7 +213,7 @@ export default function EventiList({ eventi }: Props) {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-accent text-white font-semibold rounded-lg btn-hover text-sm cursor-pointer"
+                  className="w-full btn-primary"
                 >
                   {t("invia")}
                 </button>

@@ -93,7 +93,7 @@ export default function Sidebar() {
             closeMobile();
             setShowLoginModal(true);
           }}
-          className="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium w-full text-left opacity-50 cursor-not-allowed text-gray-500 hover:text-gray-400 hover:bg-white/5 transition-colors"
+          className="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium w-full text-left opacity-60 cursor-not-allowed text-white/40 hover:text-white/50 hover:bg-white/5 transition-colors"
         >
           <Icon className="w-5 h-5 shrink-0" />
           <div className="min-w-0 flex-1">
@@ -110,12 +110,12 @@ export default function Sidebar() {
         key={link.href}
         href={link.href}
         onClick={closeMobile}
-          className={`sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent ${active ? "bg-[#B45309]/20 text-[#F59E0B] border-l-2 border-[#D97706]" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+          className={`sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent ${active ? "bg-gold/20 text-gold border-l-2 border-gold" : "text-white/70 hover:text-white hover:bg-white/5"}`}
       >
         <Icon className="w-5 h-5 shrink-0" />
         <div className="min-w-0">
           <span className="block truncate">{t(link.key as Parameters<typeof t>[0])}</span>
-          {link.subKey && <span className="block text-[10px] text-gray-500 truncate">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
+          {link.subKey && <span className="block text-[10px] text-white/40 truncate">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
         </div>
       </Link>
     );
@@ -126,25 +126,25 @@ export default function Sidebar() {
       {/* Mobile overlay */}
       <div
         id="sidebar-overlay"
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden lg:hidden"
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm hidden lg:hidden"
         onClick={closeMobile}
       />
 
       {/* Sidebar */}
       <aside
         id="mobile-sidebar"
-        className="fixed top-14 left-0 z-40 h-[calc(100vh-3.5rem)] w-[260px] bg-[#0F1A2E] text-white border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:sticky lg:top-14 lg:h-auto lg:min-h-[calc(100vh-3.5rem)] overflow-y-auto lg:overflow-visible flex flex-col"
+        className="fixed top-[88px] left-0 z-40 h-[calc(100vh-88px)] w-[260px] bg-sidebar text-white border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:sticky lg:top-[88px] lg:h-auto lg:min-h-[calc(100vh-88px)] overflow-y-auto lg:overflow-visible flex flex-col"
       >
         {/* Navigation group */}
         <nav className="p-4 space-y-1 flex-1">
           {/* FIX [1] — Section labels now translated */}
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 px-3">
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3 px-3">
             {ts("navigazione")}
           </p>
           {navLinks.map(renderLink)}
 
           <div className="pt-4" />
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 px-3">
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3 px-3">
             {ts("informazioni")}
           </p>
           {infoLinks.map(renderLink)}
@@ -159,13 +159,13 @@ export default function Sidebar() {
         {/* QR widget bottom */}
         <div className="p-4 border-t border-white/10">
           <Link href="/icone" onClick={closeMobile} className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-lg bg-[#B45309]/20 flex items-center justify-center shrink-0">
-              <QrCode className="w-5 h-5 text-[#F59E0B]" />
+            <div className="w-9 h-9 rounded-lg bg-gold/20 flex items-center justify-center shrink-0">
+              <QrCode className="w-5 h-5 text-gold" />
             </div>
             <div className="min-w-0 flex-1">
               {/* FIX [1] — QR widget text translated */}
               <p className="text-xs font-semibold text-white">{ts("seiInChiesa")}</p>
-              <p className="text-[10px] text-gray-400 flex items-center gap-0.5">
+              <p className="text-[10px] text-white/50 flex items-center gap-0.5">
                 {ts("scansionaQR")} <ChevronRight className="w-3 h-3" />
               </p>
             </div>

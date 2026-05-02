@@ -13,29 +13,37 @@ interface QuickAccessCardProps {
 
 export default function QuickAccessCard({ href, icon: Icon, title, description, highlight, badge, delay }: QuickAccessCardProps) {
   return (
-    <Link href={href} className="group animate-fade-in-up" style={delay ? { animationDelay: `${delay}ms` } : undefined}>
+    <Link
+      href={href}
+      className="group animate-fade-in-up focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      style={delay ? { animationDelay: `${delay}ms` } : undefined}
+    >
       <div
-        className={`card-hover bg-white rounded-2xl p-6 cursor-pointer h-full relative transition-all duration-300 ${
+        className={`card-hover bg-surface rounded-3xl p-6 cursor-pointer h-full relative transition-all duration-300 ${
           highlight
             ? "border-2 border-accent shadow-lg hover:shadow-xl"
-            : "border border-gray-200 shadow-md hover:shadow-lg hover:border-accent"
+            : "border border-border shadow-sm hover:shadow-lg hover:border-accent"
         }`}
       >
         {badge && (
           <div className="absolute top-3 right-3">
-            <span className="inline-block bg-accent text-white text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
+            <span className="inline-block bg-accent text-white text-[10px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full">
               {badge}
             </span>
           </div>
         )}
-        <div className="flex flex-col items-center text-center gap-3">
-          <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
+        <div className="flex flex-col gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center">
             <Icon className="w-6 h-6 text-accent" />
           </div>
-          <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wide">{title}</h3>
-          <p className={`text-xs leading-relaxed ${highlight ? "text-accent font-semibold" : "text-gray-600"}`}>
-            {description}
-          </p>
+          <div>
+            <h3 className="text-foreground font-semibold text-sm uppercase tracking-[0.2em]">
+              {title}
+            </h3>
+            <p className={`text-sm leading-relaxed mt-2 ${highlight ? "text-accent font-semibold" : "text-foreground/70"}`}>
+              {description}
+            </p>
+          </div>
         </div>
       </div>
     </Link>

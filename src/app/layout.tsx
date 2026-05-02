@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Cormorant_Garamond, Noto_Naskh_Arabic, Source_Sans_3 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { AuthProvider } from "@/components/auth/AuthContext";
@@ -7,9 +7,22 @@ import LoginModal from "@/components/auth/LoginModal";
 import RegisterModal from "@/components/auth/RegisterModal";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const bodyFont = Source_Sans_3({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const displayFont = Cormorant_Garamond({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+const arabicFont = Noto_Naskh_Arabic({
+  variable: "--font-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +41,10 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
+      <body
+        className={`${bodyFont.variable} ${displayFont.variable} ${arabicFont.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             {children}

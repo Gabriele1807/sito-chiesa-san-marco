@@ -208,11 +208,11 @@ export default function RegisterModal() {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-primary rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-in">
+      <div className="relative w-full max-w-md bg-surface rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-in border border-border">
         {/* Close */}
         <button
           onClick={() => setShowRegisterModal(false)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 text-foreground/40 hover:text-foreground/70 transition-colors z-10"
           aria-label={tc("close")}
         >
           <X className="w-5 h-5" />
@@ -230,11 +230,11 @@ export default function RegisterModal() {
                 className="rounded-2xl"
               />
             </div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-foreground">
               {success ? t("registerTitleSuccess") : step === "credentials" ? t("registerTitle") : t("registerTitleComplete")}
             </h2>
             {!success && (
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-foreground/60 text-sm mt-1">
                 {step === "credentials" ? t("registerStep1") : t("registerStep2")}
               </p>
             )}
@@ -263,29 +263,29 @@ export default function RegisterModal() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldNome")}</label>
+                  <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldNome")}</label>
                   <input
                     type="text"
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldCognome")}</label>
+                  <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldCognome")}</label>
                   <input
                     type="text"
                     value={cognome}
                     onChange={(e) => setCognome(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldEmail")}</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldEmail")}</label>
                 <input
                   type="email"
                   value={email}
@@ -293,12 +293,12 @@ export default function RegisterModal() {
                   placeholder={t("registerPlaceholderEmail")}
                   required
                   autoComplete="email"
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
+                  className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldUsername")}</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldUsername")}</label>
                 <input
                   type="text"
                   value={username}
@@ -306,12 +306,12 @@ export default function RegisterModal() {
                   placeholder={t("registerPlaceholderUsername")}
                   required
                   autoComplete="username"
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
+                  className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldPassword")}</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldPassword")}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -320,12 +320,12 @@ export default function RegisterModal() {
                     placeholder={t("registerPlaceholderPassword")}
                     required
                     autoComplete="new-password"
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors pr-10"
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -334,7 +334,7 @@ export default function RegisterModal() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">{t("registerFieldPasswordConfirm")}</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldPasswordConfirm")}</label>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
@@ -342,14 +342,14 @@ export default function RegisterModal() {
                   placeholder={t("registerPlaceholderPasswordConfirm")}
                   required
                   autoComplete="new-password"
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
+                  className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={handleNextToQuiz}
-                className="w-full py-2.5 rounded-lg bg-gold text-white font-semibold text-sm hover:bg-gold-light transition-colors flex items-center justify-center gap-2 mt-2"
+                className="btn-primary w-full justify-center gap-2 mt-2"
               >
                 {t("registerContinue")} <ChevronRight className="w-4 h-4" />
               </button>
@@ -361,7 +361,7 @@ export default function RegisterModal() {
             <div className="space-y-4">
               {/* Ruolo */}
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">{t("registerRoleTitle")}</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-2">{t("registerRoleTitle")}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {roles.map((r) => (
                     <button
@@ -373,8 +373,8 @@ export default function RegisterModal() {
                       }}
                       className={`p-3 rounded-lg border text-left transition-all ${
                         role === r.value
-                          ? "border-amber-600 bg-amber-600/20 text-white"
-                          : "border-white/20 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                          ? "border-accent bg-accent/20 text-foreground"
+                          : "border-border bg-background/50 text-foreground/60 hover:bg-background/80 hover:text-foreground"
                       }`}
                     >
                       <p className="text-sm font-semibold">{r.label}</p>
@@ -387,15 +387,15 @@ export default function RegisterModal() {
               {/* Chiesa (solo per ospiti) */}
               {role === "ospite_chiesa" && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">{t("registerChurchLabel")}</label>
+                  <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1.5">{t("registerChurchLabel")}</label>
                   <select
                     value={chiesa}
                     onChange={(e) => setChiesa(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   >
-                    <option value="" className="bg-primary">{t("registerChurchPlaceholder")}</option>
+                    <option value="" className="bg-surface">{t("registerChurchPlaceholder")}</option>
                     {CHIESE_LIST.map((c) => (
-                      <option key={c} value={c} className="bg-primary">{c}</option>
+                      <option key={c} value={c} className="bg-surface">{c}</option>
                     ))}
                   </select>
                 </div>
@@ -403,7 +403,7 @@ export default function RegisterModal() {
 
               {/* Fascia d'età */}
               <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">{t("registerAgeTitle")}</label>
+                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-2">{t("registerAgeTitle")}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {ageGroups.map((ag) => (
                     <button
@@ -412,8 +412,8 @@ export default function RegisterModal() {
                       onClick={() => setAgeGroup(ag.value)}
                       className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
                         ageGroup === ag.value
-                          ? "border-amber-600 bg-amber-600/20 text-white"
-                          : "border-white/20 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                          ? "border-accent bg-accent/20 text-foreground"
+                          : "border-border bg-background/50 text-foreground/60 hover:bg-background/80 hover:text-foreground"
                       }`}
                     >
                       {ag.label}
@@ -423,20 +423,20 @@ export default function RegisterModal() {
               </div>
 
               {/* Richiesta admin */}
-              <div className="border border-white/10 rounded-lg p-3">
+              <div className="border border-border rounded-lg p-3 bg-background/30">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="reg-request-admin"
                     checked={requestAdmin}
                     onChange={(e) => setRequestAdmin(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/20 bg-white/10 text-amber-600 focus:ring-amber-600 focus:ring-offset-0"
+                    className="w-4 h-4 rounded border-border bg-background/50 text-accent focus:ring-accent focus:ring-offset-0"
                   />
-                  <label htmlFor="reg-request-admin" className="text-sm text-gray-300 select-none cursor-pointer">
+                  <label htmlFor="reg-request-admin" className="text-sm text-foreground/70 select-none cursor-pointer">
                     {t("registerRequestAdmin")}
                   </label>
                 </div>
-                <p className="text-[10px] text-gray-500 mt-1 ml-6">
+                <p className="text-[10px] text-foreground/40 mt-1 ml-6">
                   {t("registerRequestAdminHelp")}
                 </p>
               </div>
@@ -446,7 +446,7 @@ export default function RegisterModal() {
                 <button
                   type="button"
                   onClick={() => setStep("credentials")}
-                  className="flex-1 py-2.5 rounded-lg border border-white/20 text-gray-300 font-semibold text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+                  className="btn-secondary flex-1 justify-center gap-2"
                 >
                   <ChevronLeft className="w-4 h-4" /> {t("registerBack")}
                 </button>
@@ -454,7 +454,7 @@ export default function RegisterModal() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1 py-2.5 rounded-lg bg-amber-600 text-white font-semibold text-sm hover:bg-amber-700 transition-colors disabled:opacity-50"
+                  className="btn-primary flex-1"
                 >
                   {loading ? t("registerLoading") : t("registerButton")}
                 </button>
@@ -465,11 +465,11 @@ export default function RegisterModal() {
           {/* Link a login */}
           {!success && (
             <div className="mt-4 text-center">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-foreground/60">
                 {t("registerHaveAccount")}{" "}
                 <button
                   onClick={handleSwitchToLogin}
-                  className="text-amber-500 hover:text-amber-400 font-semibold transition-colors"
+                  className="text-accent hover:text-accent font-semibold transition-colors"
                 >
                   {t("registerLoginAction")}
                 </button>

@@ -19,7 +19,7 @@ export default function MobileMenuButton() {
   return (
     <button
       onClick={handleClick}
-      className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+      className="p-2.5 rounded-xl text-foreground/70 hover:text-foreground hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       aria-label={t("openMenu")}
     >
       <Menu className="w-5 h-5" />

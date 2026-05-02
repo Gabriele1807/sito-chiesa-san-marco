@@ -35,13 +35,13 @@ export default function UserMenu() {
   if (type === "guest" && isExplicitGuest) {
     return (
       <div className="flex items-center gap-1.5">
-        <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-lg">
+        <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-foreground/60 bg-surface border border-border rounded-lg">
           <UserX className="w-3.5 h-3.5" />
           <span>{t("userMenuGuest")}</span>
         </div>
         <button
           onClick={() => setShowLoginModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-[#0F1A2E] rounded-lg hover:bg-[#1E3A5F] active:bg-[#1E3A5F] transition-colors"
+          className="btn-primary text-xs"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span>{t("userMenuLogin")}</span>
@@ -56,17 +56,17 @@ export default function UserMenu() {
       <div className="flex items-center gap-1.5">
         <button
           onClick={() => setShowLoginModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-[#0F1A2E] rounded-lg hover:bg-[#1E3A5F] active:bg-[#1E3A5F] transition-colors"
+          className="btn-primary text-xs"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span>{t("userMenuLogin")}</span>
         </button>
         <button
           onClick={() => setShowRegisterModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-[#0F1A2E] bg-white border border-[#0F1A2E] rounded-lg hover:bg-[#0F1A2E]/5 active:bg-[#0F1A2E]/10 transition-colors"
+          className="btn-secondary text-xs hidden sm:inline-flex"
         >
           <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span className="hidden sm:inline">{t("userMenuRegister")}</span>
+          <span>{t("userMenuRegister")}</span>
         </button>
       </div>
     );

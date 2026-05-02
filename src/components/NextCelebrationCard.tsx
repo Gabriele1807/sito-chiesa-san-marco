@@ -8,9 +8,10 @@ import { getNextCelebration } from "@/lib/next-celebration";
 interface NextCelebrationCardProps {
   orari: OrarioSettimanale[];
   title: string;
+  emptyLabel: string;
 }
 
-export default function NextCelebrationCard({ orari, title }: NextCelebrationCardProps) {
+export default function NextCelebrationCard({ orari, title, emptyLabel }: NextCelebrationCardProps) {
   const [celebration, setCelebration] = useState(() => getNextCelebration(orari));
 
   useEffect(() => {
@@ -23,17 +24,17 @@ export default function NextCelebrationCard({ orari, title }: NextCelebrationCar
 
   const description = celebration
     ? `${celebration.tipo} – ${celebration.orario}`
-    : "Nessuna celebrazione in programma";
+    : emptyLabel;
 
   return (
     <div className="animate-fade-in-up" style={{ animationDelay: "300ms" }}>
-      <div className="bg-gradient-to-br from-accent/5 to-accent/10 rounded-2xl p-6 h-full border-2 border-accent shadow-sm">
+      <div className="bg-gradient-to-br from-surface to-surface-2 rounded-3xl p-6 h-full border border-accent/40 shadow-sm">
         <div className="flex flex-col items-center text-center gap-3">
-          <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-accent/15 flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-accent" />
           </div>
-          <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wide">{title}</h3>
-          <p className="text-xs leading-relaxed text-accent font-semibold">{description}</p>
+          <h3 className="text-foreground font-semibold text-sm uppercase tracking-[0.2em]">{title}</h3>
+          <p className="text-sm leading-relaxed text-accent font-semibold">{description}</p>
         </div>
       </div>
     </div>

@@ -62,6 +62,7 @@ export default function YouTubeLiveSection() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
     const interval = setInterval(fetchData, 2 * 60 * 1000);
     return () => clearInterval(interval);

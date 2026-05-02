@@ -108,11 +108,11 @@ export default function LoginModal() {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-primary rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+      <div className="relative w-full max-w-sm bg-surface rounded-2xl shadow-2xl overflow-hidden animate-scale-in border border-border">
         {/* Close button */}
         <button
           onClick={() => setShowLoginModal(false)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 text-foreground/40 hover:text-foreground/70 transition-colors z-10"
           aria-label={tc("close")}
         >
           <X className="w-5 h-5" />
@@ -130,8 +130,8 @@ export default function LoginModal() {
                 className="rounded-2xl"
               />
             </div>
-            <h2 className="text-xl font-bold text-white">{t("loginTitle")}</h2>
-            <p className="text-gray-400 text-sm mt-1">{t("loginSubtitle")}</p>
+            <h2 className="text-xl font-bold text-foreground">{t("loginTitle")}</h2>
+            <p className="text-foreground/60 text-sm mt-1">{t("loginSubtitle")}</p>
           </div>
 
           {/* Errore */}
@@ -145,7 +145,7 @@ export default function LoginModal() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1.5">
                 {t("loginIdentifierLabel")}
               </label>
               <input
@@ -155,12 +155,12 @@ export default function LoginModal() {
                 placeholder={t("loginIdentifierPlaceholder")}
                 required
                 autoComplete="username"
-                className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1.5">
                 {t("loginPasswordLabel")}
               </label>
               <div className="relative">
@@ -171,12 +171,12 @@ export default function LoginModal() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors pr-10"
+                  className="w-full px-4 py-2.5 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -191,9 +191,9 @@ export default function LoginModal() {
                 id="login-remember"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-white/10 text-gold focus:ring-gold focus:ring-offset-0"
+                className="w-4 h-4 rounded border-border bg-background/50 text-accent focus:ring-accent focus:ring-offset-0"
               />
-              <label htmlFor="login-remember" className="text-sm text-gray-400 select-none cursor-pointer">
+              <label htmlFor="login-remember" className="text-sm text-foreground/60 select-none cursor-pointer">
                 {t("loginRemember")}
               </label>
             </div>
@@ -201,7 +201,7 @@ export default function LoginModal() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-lg bg-gold text-white font-semibold text-sm hover:bg-gold-light transition-colors disabled:opacity-50"
+              className="btn-primary w-full justify-center"
             >
               {loading ? t("loginLoading") : t("loginButton")}
             </button>
@@ -209,11 +209,11 @@ export default function LoginModal() {
 
           {/* Link a registrazione */}
           <div className="mt-4 text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-foreground/60">
               {t("loginNoAccount")}{" "}
               <button
                 onClick={handleSwitchToRegister}
-                className="text-gold hover:text-gold-light font-semibold transition-colors"
+                className="text-accent hover:text-accent font-semibold transition-colors"
               >
                 {t("loginRegisterAction")}
               </button>
@@ -227,7 +227,7 @@ export default function LoginModal() {
                 setIsExplicitGuest(true);
                 setShowLoginModal(false);
               }}
-              className="text-xs text-gray-500 hover:text-gray-400 transition-colors"
+              className="text-xs text-foreground/40 hover:text-foreground/60 transition-colors"
             >
               {t("loginGuest")}
             </button>
