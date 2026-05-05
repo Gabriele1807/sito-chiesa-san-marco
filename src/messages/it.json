@@ -238,6 +238,7 @@
   "auth": {
     "loginTitle": "Accedi",
     "loginSubtitle": "Chiesa di San Marco – Milano",
+    "loginReminder": "Se non sei registrato, prima crea un account: solo gli utenti registrati possono accedere.",
     "loginIdentifierLabel": "Email o Username",
     "loginIdentifierPlaceholder": "email@esempio.it",
     "loginPasswordLabel": "Password",

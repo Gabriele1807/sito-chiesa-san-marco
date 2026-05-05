@@ -13,7 +13,6 @@ import {
   Info,
   QrCode,
   ChevronRight,
-  Lock,
   Phone,
   User,
   Shield,
@@ -26,16 +25,16 @@ type NavLink = {
   icon: React.ElementType;
   key: string;
   subKey: string;
-  restricted?: boolean;
+  comingSoon?: boolean;
 };
 
 const navLinks: NavLink[] = [
   { href: "/", icon: Home, key: "home", subKey: "" },
   { href: "/orari", icon: Clock, key: "orari", subKey: "subOrari" },
   { href: "/preghiere", icon: BookOpen, key: "preghiere", subKey: "subPreghiere" },
-  { href: "/icone", icon: ImageIcon, key: "icone", subKey: "subIcone" },
-  { href: "/libreria", icon: Library, key: "libreria", subKey: "subLibreria", restricted: true },
-  { href: "/eventi", icon: CalendarDays, key: "eventi", subKey: "subEventi", restricted: true },
+  { href: "/icone", icon: ImageIcon, key: "icone", subKey: "subIcone", comingSoon: true },
+  { href: "/libreria", icon: Library, key: "libreria", subKey: "subLibreria", comingSoon: true },
+  { href: "/eventi", icon: CalendarDays, key: "eventi", subKey: "subEventi", comingSoon: true },
 ];
 
 const infoLinks: NavLink[] = [
@@ -60,10 +59,10 @@ const adminPanelLink: NavLink = {
 export default function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations("nav");
-  const ts = useTranslations("sidebar"); // FIX [1] — sidebar-specific translations
-  const { type, setShowLoginModal } = useAuth();
+  const ts = useTranslations("sidebar");
+  const { type } = useAuth();
 
-  const isGuest = type === "guest";
+  const isAdmin = type === "admin";
 
   function closeMobile() {
     const sidebar = document.getElementById("mobile-sidebar");
@@ -83,25 +82,21 @@ export default function Sidebar() {
   function renderLink(link: NavLink) {
     const active = isActive(link.href);
     const Icon = link.icon;
-    const locked = link.restricted && isGuest;
+    const isComingSoon = link.comingSoon && !isAdmin;
 
-    if (locked) {
+    if (isComingSoon) {
       return (
-        <button
+        <div
           key={link.href}
-          onClick={() => {
-            closeMobile();
-            setShowLoginModal(true);
-          }}
-          className="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium w-full text-left opacity-60 cursor-not-allowed text-white/40 hover:text-white/50 hover:bg-white/5 transition-colors"
+          className="sidebar-link flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm font-medium opacity-60 cursor-not-allowed text-white/40"
         >
-          <Icon className="w-5 h-5 shrink-0" />
+          <Icon className="w-4.5 h-4.5 shrink-0" />
           <div className="min-w-0 flex-1">
             <span className="block truncate">{t(link.key as Parameters<typeof t>[0])}</span>
-            {link.subKey && <span className="block text-[10px] text-gray-600 truncate">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
+            {link.subKey && <span className="block text-[10px] text-gray-600 truncate leading-tight">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
           </div>
-          <Lock className="w-3.5 h-3.5 shrink-0 text-gray-500" />
-        </button>
+          <span className="text-[10px] font-bold text-white/30 shrink-0 uppercase tracking-wider">Soon</span>
+        </div>
       );
     }
 
@@ -110,12 +105,12 @@ export default function Sidebar() {
         key={link.href}
         href={link.href}
         onClick={closeMobile}
-          className={`sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent ${active ? "bg-gold/20 text-gold border-l-2 border-gold" : "text-white/70 hover:text-white hover:bg-white/5"}`}
+        className={`sidebar-link flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent ${active ? "bg-accent/20 text-accent border-l-2 border-accent" : "text-white/70 hover:text-white hover:bg-white/5"}`}
       >
-        <Icon className="w-5 h-5 shrink-0" />
+        <Icon className="w-4.5 h-4.5 shrink-0" />
         <div className="min-w-0">
           <span className="block truncate">{t(link.key as Parameters<typeof t>[0])}</span>
-          {link.subKey && <span className="block text-[10px] text-white/40 truncate">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
+          {link.subKey && <span className="block text-[10px] text-white/40 truncate leading-tight">{ts(link.subKey as Parameters<typeof ts>[0])}</span>}
         </div>
       </Link>
     );
@@ -133,18 +128,18 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         id="mobile-sidebar"
-        className="fixed top-[88px] left-0 z-40 h-[calc(100vh-88px)] w-[260px] bg-sidebar text-white border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:sticky lg:top-[88px] lg:h-auto lg:min-h-[calc(100vh-88px)] overflow-y-auto lg:overflow-visible flex flex-col"
+        className="fixed top-[56px] left-0 z-40 h-[calc(100vh-56px)] w-[240px] bg-sidebar text-white border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:sticky lg:top-[88px] lg:h-auto lg:min-h-[calc(100vh-88px)] overflow-y-auto lg:overflow-visible flex flex-col"
       >
         {/* Navigation group */}
-        <nav className="p-4 space-y-1 flex-1">
+        <nav className="p-3 space-y-0.5 flex-1">
           {/* FIX [1] — Section labels now translated */}
-          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3 px-3">
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2.5">
             {ts("navigazione")}
           </p>
           {navLinks.map(renderLink)}
 
-          <div className="pt-4" />
-          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3 px-3">
+          <div className="pt-3" />
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2.5">
             {ts("informazioni")}
           </p>
           {infoLinks.map(renderLink)}
@@ -156,21 +151,22 @@ export default function Sidebar() {
           )}
         </nav>
 
-        {/* QR widget bottom */}
-        <div className="p-4 border-t border-white/10">
-          <Link href="/icone" onClick={closeMobile} className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-lg bg-gold/20 flex items-center justify-center shrink-0">
-              <QrCode className="w-5 h-5 text-gold" />
-            </div>
-            <div className="min-w-0 flex-1">
-              {/* FIX [1] — QR widget text translated */}
-              <p className="text-xs font-semibold text-white">{ts("seiInChiesa")}</p>
-              <p className="text-[10px] text-white/50 flex items-center gap-0.5">
-                {ts("scansionaQR")} <ChevronRight className="w-3 h-3" />
-              </p>
-            </div>
-          </Link>
-        </div>
+        {/* QR widget bottom - Only for admins */}
+        {isAdmin && (
+          <div className="p-3 border-t border-white/10">
+            <Link href="/icone" onClick={closeMobile} className="flex items-center gap-3 group">
+              <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
+                <QrCode className="w-4.5 h-4.5 text-accent" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-white">{ts("seiInChiesa")}</p>
+                <p className="text-[10px] text-white/50 flex items-center gap-0.5">
+                  {ts("scansionaQR")} <ChevronRight className="w-3 h-3" />
+                </p>
+              </div>
+            </Link>
+          </div>
+        )}
       </aside>
     </>
   );

@@ -18,50 +18,50 @@ export default async function OrariPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-gold/25 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
+        <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
           <Clock className="w-3.5 h-3.5" />
           Orari settimanali
         </div>
         <div className="max-w-3xl space-y-3">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 animate-fade-in-up">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground animate-fade-in-up">
             {t("titolo")}
           </h1>
-          <p className="text-gray-600 leading-relaxed animate-fade-in-up [animation-delay:100ms]">
+          <p className="text-foreground/70 leading-relaxed animate-fade-in-up [animation-delay:100ms]">
             {t("sottotitolo")}
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3 animate-fade-in-up [animation-delay:150ms]">
-          <div className="rounded-2xl border border-gold/15 bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border border-accent/15 bg-surface p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-                <CalendarDays className="w-5 h-5 text-gold" />
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                <CalendarDays className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <p className="text-xl font-bold text-gray-900">{orari.length}</p>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Giorni attivi</p>
+                <p className="text-xl font-bold text-foreground">{orari.length}</p>
+                <p className="text-xs font-medium text-foreground/50 uppercase tracking-wider">Giorni attivi</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-gold/15 bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border border-accent/15 bg-surface p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <p className="text-xl font-bold text-gray-900">{totalCelebrazioni}</p>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Celebrazioni</p>
+                <p className="text-xl font-bold text-foreground">{totalCelebrazioni}</p>
+                <p className="text-xs font-medium text-foreground/50 uppercase tracking-wider">Celebrazioni</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-gold/15 bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border border-accent/15 bg-surface p-4 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <p className="text-xl font-bold text-gray-900">Live</p>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Aggiornamento ogni minuto</p>
+                <p className="text-xl font-bold text-foreground">Live</p>
+                <p className="text-xs font-medium text-foreground/50 uppercase tracking-wider">Aggiornamento ogni minuto</p>
               </div>
             </div>
           </div>
@@ -69,11 +69,11 @@ export default async function OrariPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] items-start">
-        <div className="rounded-3xl border border-gold/15 bg-white shadow-sm overflow-hidden animate-fade-in-up [animation-delay:200ms]">
-          <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100 bg-surface-alt/70">
+        <div className="rounded-3xl border border-border bg-surface shadow-sm overflow-hidden animate-fade-in-up [animation-delay:200ms]">
+          <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border bg-surface-alt/70">
             <div>
-              <h2 className="text-base font-bold text-gray-900">Calendario settimanale</h2>
-              <p className="text-sm text-gray-500">Tutti gli orari della liturgia disponibili in settimana</p>
+              <h2 className="text-base font-bold text-foreground">Calendario settimanale</h2>
+              <p className="text-sm text-foreground/50">Tutti gli orari della liturgia disponibili in settimana</p>
             </div>
           </div>
 

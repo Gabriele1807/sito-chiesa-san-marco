@@ -149,7 +149,7 @@ export default function AdminPreghierePage() {
             <textarea value={form.testoInline} onChange={(e) => setForm({ ...form, testoInline: e.target.value })} rows={5} placeholder="Testo completo della preghiera" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600" />
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="btn-primary text-sm">
               {saving ? "Salvando..." : editId ? "Salva modifiche" : "Aggiungi"}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">Annulla</button>
@@ -174,7 +174,7 @@ export default function AdminPreghierePage() {
                 <td className="px-4 py-3 text-gray-600">{p.categoria}</td>
                 <td className="px-4 py-3 text-gray-600">{p.testoInline ? "Testo" : "PDF"}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openEdit(p)} className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(p)} className="p-1.5 text-foreground/40 hover:text-accent transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => setDeleteTarget(p)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>

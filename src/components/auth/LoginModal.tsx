@@ -134,6 +134,12 @@ export default function LoginModal() {
             <p className="text-foreground/60 text-sm mt-1">{t("loginSubtitle")}</p>
           </div>
 
+          <div className="mb-4 rounded-xl border border-accent/20 bg-accent/10 px-4 py-3">
+            <p className="text-sm text-foreground/75 leading-relaxed">
+              {t("loginReminder")}
+            </p>
+          </div>
+
           {/* Errore */}
           {error && (
             <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/30 rounded-xl px-4 py-3 mb-4">

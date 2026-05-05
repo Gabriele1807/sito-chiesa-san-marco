@@ -168,7 +168,7 @@ export default function AdminOrariPage() {
                 ))}
                 <div className="flex gap-3">
                   <button onClick={addCelebrazione} className="text-sm text-gold font-medium hover:underline">+ Aggiungi riga</button>
-                  <button onClick={handleSave} disabled={saving} className="px-3 py-1.5 bg-amber-600 text-white text-sm font-semibold rounded-lg">{saving ? "..." : "Salva"}</button>
+                  <button onClick={handleSave} disabled={saving} className="btn-primary text-sm">{saving ? "..." : "Salva"}</button>
                   <button onClick={() => setEditGiorno(null)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg">Annulla</button>
                 </div>
               </div>

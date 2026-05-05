@@ -34,17 +34,26 @@ export default function UserMenu() {
   // Ospite esplicito: mostra indicatore ospite con possibilità di accedere
   if (type === "guest" && isExplicitGuest) {
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 flex-nowrap justify-end">
         <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-foreground/60 bg-surface border border-border rounded-lg">
           <UserX className="w-3.5 h-3.5" />
           <span>{t("userMenuGuest")}</span>
         </div>
         <button
           onClick={() => setShowLoginModal(true)}
-          className="btn-primary text-xs"
+          aria-label={t("userMenuLogin")}
+          className="btn-primary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span>{t("userMenuLogin")}</span>
+          <span className="hidden sm:inline">{t("userMenuLogin")}</span>
+        </button>
+        <button
+          onClick={() => setShowRegisterModal(true)}
+          aria-label={t("userMenuRegister")}
+          className="btn-secondary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
+        >
+          <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          <span className="hidden sm:inline">{t("userMenuRegister")}</span>
         </button>
       </div>
     );
@@ -53,20 +62,22 @@ export default function UserMenu() {
   // Guest non esplicito: bottoni login + registrazione
   if (type === "guest") {
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 flex-nowrap justify-end">
         <button
           onClick={() => setShowLoginModal(true)}
-          className="btn-primary text-xs"
+          aria-label={t("userMenuLogin")}
+          className="btn-primary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
         >
           <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span>{t("userMenuLogin")}</span>
+          <span className="hidden sm:inline">{t("userMenuLogin")}</span>
         </button>
         <button
           onClick={() => setShowRegisterModal(true)}
-          className="btn-secondary text-xs hidden sm:inline-flex"
+          aria-label={t("userMenuRegister")}
+          className="btn-secondary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
         >
           <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span>{t("userMenuRegister")}</span>
+          <span className="hidden sm:inline">{t("userMenuRegister")}</span>
         </button>
       </div>
     );

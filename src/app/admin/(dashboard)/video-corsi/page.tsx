@@ -127,33 +127,33 @@ export default function AdminVideoCorsiPage() {
         </div>
         <button
           onClick={openAdd}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors"
+          className="btn-primary text-sm"
         >
           <Plus className="w-4 h-4" /> Aggiungi video
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">{editId ? "Modifica video" : "Nuovo video"}</h3>
+        <form onSubmit={handleSubmit} className="bg-surface rounded-xl border border-border p-6 space-y-4">
+          <h3 className="text-lg font-bold text-foreground">{editId ? "Modifica video" : "Nuovo video"}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Titolo</label>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Titolo</label>
               <input
                 type="text"
                 value={form.titolo}
                 onChange={(e) => setForm({ ...form, titolo: e.target.value })}
                 required
                 placeholder="Titolo video"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent bg-background text-foreground"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Categoria</label>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Categoria</label>
               <select
                 value={form.categoria}
                 onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600"
+                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent bg-background text-foreground"
               >
                 {categorie.map((categoria) => (
                   <option key={categoria} value={categoria}>
@@ -198,7 +198,7 @@ export default function AdminVideoCorsiPage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
+              className="btn-primary text-sm disabled:opacity-50"
             >
               {saving ? "Salvando..." : editId ? "Salva modifiche" : "Aggiungi"}
             </button>
@@ -216,24 +216,24 @@ export default function AdminVideoCorsiPage() {
       <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
         <table className="w-full text-sm min-w-[720px]">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Titolo</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Categoria</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Link</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Azioni</th>
+            <tr className="bg-surface border-b border-border">
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Titolo</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Categoria</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Link</th>
+              <th className="text-right px-4 py-3 font-semibold text-foreground/70">Azioni</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item, index) => (
-              <tr key={item.id} className={index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                <td className="px-4 py-3 font-medium text-gray-900">{item.titolo}</td>
-                <td className="px-4 py-3 text-gray-600">{item.categoria}</td>
-                <td className="px-4 py-3 text-gray-600 truncate max-w-[240px]">{item.urlVideo}</td>
+              <tr key={item.id} className={index % 2 === 0 ? "bg-background" : "bg-surface/50"}>
+                <td className="px-4 py-3 font-medium text-foreground">{item.titolo}</td>
+                <td className="px-4 py-3 text-foreground/70">{item.categoria}</td>
+                <td className="px-4 py-3 text-foreground/70 truncate max-w-[240px]">{item.urlVideo}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openEdit(item)} className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors">
+                  <button onClick={() => openEdit(item)} className="p-1.5 text-foreground/40 hover:text-accent transition-colors">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setDeleteTarget(item)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1">
+                  <button onClick={() => setDeleteTarget(item)} className="p-1.5 text-foreground/40 hover:text-red-500 transition-colors ml-1">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </td>
@@ -241,11 +241,11 @@ export default function AdminVideoCorsiPage() {
             ))}
           </tbody>
         </table>
-        {items.length === 0 && <p className="text-center py-8 text-gray-400 text-sm">Nessun video presente</p>}
+        {items.length === 0 && <p className="text-center py-8 text-foreground/30 text-sm">Nessun video presente</p>}
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-gray-500">
-        <Youtube className="w-3.5 h-3.5 text-amber-600" />
+      <div className="flex items-center gap-2 text-xs text-foreground/50">
+        <Youtube className="w-3.5 h-3.5 text-accent" />
         I contenuti qui modificati vengono pubblicati nella sezione pubblica Preghiere & Testi.
       </div>
 

@@ -14,22 +14,22 @@ export default async function Footer() {
   ]);
 
   return (
-    <footer className="mt-16 bg-primary text-white/75 border-t border-white/10">
+    <footer className="mt-16 bg-surface-2 text-foreground/70 border-t border-border">
       <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10 py-12">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gold/20 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">☦</span>
+              <div className="w-11 h-11 rounded-2xl bg-accent/20 flex items-center justify-center">
+                <span className="text-foreground font-bold text-sm">☦</span>
               </div>
               <div>
-                <p className="font-display text-white text-base">
+                <p className="font-display text-foreground text-base">
                   {tCommon("nomeChiesa")}
                 </p>
-                <p className="text-xs text-white/50">{tFooter("aboutTitle")}</p>
+                <p className="text-xs text-foreground/50">{tFooter("aboutTitle")}</p>
               </div>
             </div>
-            <p className="text-sm text-white/70 leading-relaxed">
+            <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("aboutText")}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -43,22 +43,22 @@ export default async function Footer() {
           </div>
 
           <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/40">
               {tFooter("orariTitle")}
             </p>
-            <p className="text-sm text-white/70 leading-relaxed">
+            <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("orariDesc")}
             </p>
-            <Link href="/orari" className="btn-link text-white hover:text-white">
+            <Link href="/orari" className="btn-link text-foreground hover:text-accent">
               {tFooter("orariCta")}
             </Link>
           </div>
 
           <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/40">
               {tNav("contatti")}
             </p>
-            <div className="text-sm text-white/70 space-y-2">
+            <div className="text-sm text-foreground/70 space-y-2">
               <p>{tContact("indirizzoVia")}</p>
               <p>{tContact("indirizzo2")}</p>
               <p>{tContact("emailIndirizzo")}</p>
@@ -68,39 +68,39 @@ export default async function Footer() {
               href={ADDRESS_MAPS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-link text-white hover:text-white"
+              className="btn-link text-foreground hover:text-accent"
             >
               {tContact("indicazioniButton")}
             </a>
           </div>
 
           <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/40">
               {tFooter("quickLinksTitle")}
             </p>
             <nav className="grid gap-2 text-sm">
-              <Link href="/" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/" className="text-foreground/70 hover:text-foreground transition-colors">
                 {tNav("home")}
               </Link>
-              <Link href="/orari" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/orari" className="text-foreground/70 hover:text-foreground transition-colors">
                 {tNav("orari")}
               </Link>
-              <Link href="/eventi" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/eventi" className="text-foreground/70 hover:text-foreground transition-colors">
                 {tNav("eventi")}
               </Link>
-              <Link href="/libreria" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/libreria" className="text-foreground/70 hover:text-foreground transition-colors">
                 {tNav("libreria")}
               </Link>
-              <Link href="/icone" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/icone" className="text-foreground/70 hover:text-foreground transition-colors">
                 {tNav("icone")}
               </Link>
-              <Link href="/chi-siamo" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/chi-siamo" className="text-foreground/70 hover:text-foreground transition-colors">
                 {tNav("chiSiamo")}
               </Link>
             </nav>
 
             <div className="pt-3">
-              <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/40 mb-2">
                 {tFooter("socialTitle")}
               </p>
               <div className="flex items-center gap-3 text-sm">
@@ -108,7 +108,7 @@ export default async function Footer() {
                   href={FACEBOOK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/70 hover:text-white transition-colors"
+                  className="text-foreground/70 hover:text-foreground transition-colors"
                 >
                   {tFooter("facebook")}
                 </a>
@@ -116,7 +116,7 @@ export default async function Footer() {
                   href={YOUTUBE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/70 hover:text-white transition-colors"
+                  className="text-foreground/70 hover:text-foreground transition-colors"
                 >
                   {tFooter("youtube")}
                 </a>
@@ -125,7 +125,7 @@ export default async function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
+        <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-foreground/40">
           <p>{tCommon("copyright")}</p>
           <p>{tFooter("note")}</p>
         </div>

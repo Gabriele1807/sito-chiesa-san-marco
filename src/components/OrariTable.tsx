@@ -37,11 +37,11 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
       <div className="hidden sm:block overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="bg-primary text-white">
-              <th className="text-left px-6 py-4 text-sm font-semibold">{labels.giorno}</th>
-              <th className="text-left px-6 py-4 text-sm font-semibold">{labels.celebrazione}</th>
-              <th className="text-left px-6 py-4 text-sm font-semibold">{labels.orario}</th>
-              <th className="hidden md:table-cell text-left px-6 py-4 text-sm font-semibold">{labels.note}</th>
+            <tr className="bg-surface border-b border-border">
+              <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.giorno}</th>
+              <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.celebrazione}</th>
+              <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.orario}</th>
+              <th className="hidden md:table-cell text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.note}</th>
             </tr>
           </thead>
           <tbody>
@@ -50,18 +50,18 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
                 const isNext = nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`;
                 const isToday = giorno.giorno === todayName;
                 const isNextDay = nextCelebration?.giorno === giorno.giorno;
-                const rowBg = isNext ? "bg-gold/20" : gi % 2 === 0 ? "bg-gray-50/50" : "bg-white";
-                const rowBorder = isNext ? "border-gold/30" : "border-gray-50";
+                const rowBg = isNext ? "bg-accent/20" : gi % 2 === 0 ? "bg-background" : "bg-surface/50";
+                const rowBorder = isNext ? "border-accent/30" : "border-border/30";
                 const dayClasses = isToday
                   ? "text-accent underline decoration-accent/60 underline-offset-4"
                   : isNextDay
-                  ? "text-gold underline decoration-gold/60 underline-offset-4"
-                  : "text-gray-900";
+                  ? "text-accent underline decoration-accent/60 underline-offset-4"
+                  : "text-foreground";
 
                 return (
                   <tr
                     key={`${gi}-${ci}`}
-                    className={`border-b ${rowBorder} ${rowBg} hover:bg-primary/5 transition-colors`}
+                    className={`border-b ${rowBorder} ${rowBg} hover:bg-accent/10 transition-colors`}
                   >
                     {ci === 0 && (
                       <td
@@ -74,13 +74,13 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
                         </div>
                       </td>
                     )}
-                    <td className={`px-6 py-3 text-sm ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "text-gray-700"}`}>
+                    <td className={`px-6 py-3 text-sm ${isNext ? "font-semibold text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground/70"}`}>
                       {cel.tipo}
                     </td>
-                    <td className={`px-6 py-3 text-sm font-medium ${isNext ? "text-gold underline decoration-gold/60 underline-offset-4" : "text-primary"}`}>
+                    <td className={`px-6 py-3 text-sm font-medium ${isNext ? "text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground"}`}>
                       {cel.orario}
                     </td>
-                    <td className={`hidden md:table-cell px-6 py-3 text-sm ${isNext ? "text-gold" : "text-gray-500"}`}>
+                    <td className={`hidden md:table-cell px-6 py-3 text-sm ${isNext ? "text-accent" : "text-foreground/50"}`}>
                       {cel.note || "–"}
                     </td>
                   </tr>
@@ -95,7 +95,7 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
         {orari.map((giorno, gi) => {
           const isToday = giorno.giorno === todayName;
           const isNextDay = nextCelebration?.giorno === giorno.giorno;
-          const headerBg = isToday ? "bg-accent" : isNextDay ? "bg-gold" : "bg-primary";
+          const headerBg = isToday ? "bg-accent" : isNextDay ? "bg-accent" : "bg-surface";
           return (
             <div key={gi} className="animate-fade-in-up bg-surface rounded-2xl shadow-sm border border-gray-100 overflow-hidden" style={{ animationDelay: `${gi * 80}ms` }}>
               <div className={`px-4 py-3 flex items-center gap-2 ${headerBg}`}>

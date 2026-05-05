@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import MobileMenuButton from "./MobileMenuButton";
 import TopbarTitle from "./TopbarTitle";
@@ -16,20 +15,10 @@ interface Props {
 
 export default function Navbar({ locale }: Props) {
   const t = useTranslations("common");
-  const tNav = useTranslations("nav");
-  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
-
-  const navLinks = [
-    { href: "/orari", key: "orari" },
-    { href: "/eventi", key: "eventi" },
-    { href: "/libreria", key: "libreria" },
-    { href: "/icone", key: "icone" },
-    { href: "/contatti", key: "contatti" },
-  ] as const;
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
@@ -89,30 +78,13 @@ export default function Navbar({ locale }: Props) {
           </Link>
         </div>
 
-        {/* Center: desktop nav / mid-size title */}
-        <nav className="hidden lg:flex items-center gap-1.5 rounded-full border border-border/70 bg-surface-alt/70 px-2 py-1">
-          {navLinks.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={active ? "page" : undefined}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                  active
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-foreground/70 hover:text-foreground hover:bg-background"
-                }`}
-              >
-                {tNav(link.key as Parameters<typeof tNav>[0])}
-              </Link>
-            );
-          })}
-        </nav>
-        <TopbarTitle className="hidden sm:flex lg:hidden" />
+        {/* Center: current section title */}
+        <div className="flex items-center justify-center flex-1 px-4">
+          <TopbarTitle className="flex" />
+        </div>
 
         {/* Right: user menu + language switch */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <UserMenu />
           <LanguageSwitcher currentLocale={locale} />
         </div>

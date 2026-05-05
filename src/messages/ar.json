@@ -238,6 +238,7 @@
   "auth": {
     "loginTitle": "تسجيل الدخول",
     "loginSubtitle": "كنيسة القديس مرقس – ميلانو",
+    "loginReminder": "إذا لم تكن مسجلاً، أنشئ حسابًا أولاً: فقط المستخدمون المسجلون يمكنهم الدخول.",
     "loginIdentifierLabel": "البريد الإلكتروني أو اسم المستخدم",
     "loginIdentifierPlaceholder": "email@esempio.it",
     "loginPasswordLabel": "كلمة المرور",

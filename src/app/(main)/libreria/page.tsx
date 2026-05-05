@@ -3,25 +3,23 @@ import { getTranslations } from "next-intl/server";
 import { getTestiSacri } from "@/lib/db";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { toGDriveImageUrl } from "@/lib/gdrive";
-import RestrictedSection from "@/components/auth/RestrictedSection";
+import AdminGate from "@/components/auth/AdminGate";
 
 export const revalidate = 60;
 
 export default async function LibreriaPage() {
   const [t, testi] = await Promise.all([getTranslations("libreria"), getTestiSacri()]);
 
-  return (
+  const content = (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 animate-fade-in-up">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 animate-fade-in-up">
           {t("titolo")}
         </h1>
-        <p className="text-gray-600 leading-relaxed max-w-2xl animate-fade-in-up [animation-delay:100ms]">
+        <p className="text-foreground/60 leading-relaxed max-w-2xl animate-fade-in-up [animation-delay:100ms]">
           {t("sottotitolo")}
         </p>
       </div>
-
-      <RestrictedSection message="Per accedere alla libreria registrati o accedi">
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {testi.map((testo, index) => (
@@ -60,7 +58,12 @@ export default async function LibreriaPage() {
           </Link>
         ))}
       </div>
-      </RestrictedSection>
     </div>
+  );
+
+  return (
+    <AdminGate title={t("titolo")}>
+      {content}
+    </AdminGate>
   );
 }

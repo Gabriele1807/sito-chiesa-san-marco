@@ -20,13 +20,13 @@ export default async function ContattiPage() {
   const t = await getTranslations("contatti");
 
   return (
-    <div className="space-y-14">
+    <div className="space-y-14 text-foreground">
       {/* ── HEADER ── */}
       <section className="animate-[fadeInUp_0.4s_ease_both]">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
           {t("titolo")}
         </h1>
-        <p className="text-gray-500 leading-relaxed max-w-2xl">
+        <p className="text-foreground/70 leading-relaxed max-w-2xl">
           {t("sottotitolo")}
         </p>
       </section>
@@ -46,19 +46,19 @@ export default async function ContattiPage() {
           <div
             key="email"
             style={{ animationDelay: "0ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] bg-slate-50 rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-slate-300 transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-surface rounded-2xl border border-border/80 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-accent/30 transition-all duration-300"
           >
-            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Mail className="w-5 h-5 text-primary" />
+            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
+              <Mail className="w-5 h-5 text-accent" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-gray-900 mb-1">{t("emailSezione")}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed mb-3">{t("emailDesc")}</p>
-              <p className="text-sm font-semibold text-primary break-all">{EMAIL}</p>
+              <h3 className="font-bold text-foreground mb-1">{t("emailSezione")}</h3>
+              <p className="text-sm text-foreground/70 leading-relaxed mb-3">{t("emailDesc")}</p>
+              <p className="text-sm font-semibold text-accent break-all">{EMAIL}</p>
             </div>
             <a
               href={`mailto:${EMAIL}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-light transition-colors"
+              className="btn-primary w-fit"
             >
               <Mail className="w-4 h-4" />
               {t("emailButton")}
@@ -69,20 +69,20 @@ export default async function ContattiPage() {
           <div
             key="telefono"
             style={{ animationDelay: "60ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] bg-emerald-50/35 rounded-2xl border border-emerald-100 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-emerald-200 transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-surface rounded-2xl border border-border/80 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-accent/30 transition-all duration-300"
           >
-            <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center">
-              <Phone className="w-5 h-5 text-green-600" />
+            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
+              <Phone className="w-5 h-5 text-accent" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-gray-900 mb-1">{t("telefonoSezione")}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed mb-2">{t("telefonoDesc")}</p>
-              <p className="text-sm font-bold text-gray-900 mb-1">{PHONE}</p>
-              <p className="text-xs text-gray-400">{t("telefonoOrari")}</p>
+              <h3 className="font-bold text-foreground mb-1">{t("telefonoSezione")}</h3>
+              <p className="text-sm text-foreground/70 leading-relaxed mb-2">{t("telefonoDesc")}</p>
+              <p className="text-sm font-bold text-foreground mb-1">{PHONE}</p>
+              <p className="text-xs text-foreground/50">{t("telefonoOrari")}</p>
             </div>
             <a
               href={`tel:${PHONE.replace(/\s/g, "")}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-colors"
+              className="btn-primary w-fit"
             >
               <Phone className="w-4 h-4" />
               Chiama ora
@@ -93,15 +93,15 @@ export default async function ContattiPage() {
           <div
             key="indirizzo"
             style={{ animationDelay: "120ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] bg-gold/10 rounded-2xl border border-gold/20 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-gold/30 transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-surface rounded-2xl border border-border/80 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-accent/30 transition-all duration-300"
           >
             <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
               <MapPin className="w-5 h-5 text-accent" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-gray-900 mb-1">{t("indirizzoSezione")}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed mb-3">{t("indirizzoDesc")}</p>
-              <address className="not-italic text-sm text-gray-700 leading-relaxed">
+              <h3 className="font-bold text-foreground mb-1">{t("indirizzoSezione")}</h3>
+              <p className="text-sm text-foreground/70 leading-relaxed mb-3">{t("indirizzoDesc")}</p>
+              <address className="not-italic text-sm text-foreground/80 leading-relaxed">
                 <span className="font-medium">{t("indirizzoVia")}</span><br />
                 {t("indirizzo2")}<br />
                 {t("indirizzo3")}
@@ -111,7 +111,7 @@ export default async function ContattiPage() {
               href={ADDRESS_MAPS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-semibold rounded-xl hover:bg-accent-light transition-colors"
+              className="btn-primary w-fit"
             >
               <MapPin className="w-4 h-4" />
               {t("indicazioniButton")}
@@ -124,40 +124,40 @@ export default async function ContattiPage() {
           SACERDOTI
           ══════════════════════════════════════════════════════════ */}
       <section className="animate-[fadeIn_0.5s_ease_both]">
-        <p className="text-xs font-bold text-primary uppercase tracking-widest mb-4 px-1">
+        <p className="text-xs font-bold text-accent uppercase tracking-widest mb-4 px-1">
           {t("sacerdoteSezione")}
         </p>
         <div className="grid sm:grid-cols-3 gap-4">
           {/* Padre Mina Kolta */}
-          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20 p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-              <Cross className="w-6 h-6 text-primary" />
+          <div className="bg-gradient-to-br from-surface to-surface-2 rounded-2xl border border-border/80 p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+              <Cross className="w-6 h-6 text-accent" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-sm leading-tight">{t("sacerdote1Nome")}</h3>
-              <p className="text-xs text-gray-500 mt-0.5">{t("sacerdoteRuolo")}</p>
+              <h3 className="font-bold text-foreground text-sm leading-tight">{t("sacerdote1Nome")}</h3>
+              <p className="text-xs text-foreground/60 mt-0.5">{t("sacerdoteRuolo")}</p>
             </div>
           </div>
 
           {/* Padre Gabriele */}
-          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20 p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-              <Cross className="w-6 h-6 text-primary" />
+          <div className="bg-gradient-to-br from-surface to-surface-2 rounded-2xl border border-border/80 p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+              <Cross className="w-6 h-6 text-accent" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-sm leading-tight">{t("sacerdote2Nome")}</h3>
-              <p className="text-xs text-gray-500 mt-0.5">{t("sacerdoteRuolo")}</p>
+              <h3 className="font-bold text-foreground text-sm leading-tight">{t("sacerdote2Nome")}</h3>
+              <p className="text-xs text-foreground/60 mt-0.5">{t("sacerdoteRuolo")}</p>
             </div>
           </div>
 
           {/* Padre Anghelos */}
-          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20 p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-              <Cross className="w-6 h-6 text-primary" />
+          <div className="bg-gradient-to-br from-surface to-surface-2 rounded-2xl border border-border/80 p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+              <Cross className="w-6 h-6 text-accent" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-sm leading-tight">{t("sacerdote3Nome")}</h3>
-              <p className="text-xs text-gray-500 mt-0.5">{t("sacerdoteRuolo")}</p>
+              <h3 className="font-bold text-foreground text-sm leading-tight">{t("sacerdote3Nome")}</h3>
+              <p className="text-xs text-foreground/60 mt-0.5">{t("sacerdoteRuolo")}</p>
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default async function ContattiPage() {
           SOCIAL MEDIA
           ══════════════════════════════════════════════════════════ */}
       <section>
-        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide mb-5">
+        <h2 className="text-lg font-bold text-foreground uppercase tracking-wide mb-5">
           {t("socialSezione")}
         </h2>
 
@@ -176,18 +176,18 @@ export default async function ContattiPage() {
           href={FACEBOOK_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md hover:border-blue-200 transition-all group"
+          className="flex items-center gap-4 bg-surface rounded-2xl border border-border/80 shadow-sm p-5 hover:shadow-md hover:border-accent/30 transition-all group"
         >
           <div className="w-12 h-12 rounded-xl bg-[#1877F2] flex items-center justify-center shrink-0">
             <Facebook className="w-6 h-6 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-bold text-gray-900 group-hover:text-[#1877F2] transition-colors">
+            <p className="font-bold text-foreground group-hover:text-accent transition-colors">
               Facebook
             </p>
-            <p className="text-sm text-gray-500">{t("facebookDesc")}</p>
+            <p className="text-sm text-foreground/70">{t("facebookDesc")}</p>
           </div>
-          <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-[#1877F2] transition-colors shrink-0" />
+          <ExternalLink className="w-4 h-4 text-foreground/30 group-hover:text-accent transition-colors shrink-0" />
         </a>
       </section>
 
@@ -195,7 +195,7 @@ export default async function ContattiPage() {
           MAPPA GOOGLE MAPS EMBED
           ══════════════════════════════════════════════════════════ */}
       <section>
-        <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm relative">
+        <div className="rounded-2xl overflow-hidden border border-border/80 shadow-sm relative bg-surface">
           {/* Google Maps iframe */}
           <div className="h-52 sm:h-72 relative">
             <iframe
@@ -235,15 +235,15 @@ export default async function ContattiPage() {
             href={ADDRESS_MAPS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between px-5 py-3 bg-white hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between px-5 py-3 bg-surface hover:bg-surface-2 transition-colors"
           >
             <div>
-              <p className="text-sm font-bold text-gray-900">{t("indirizzoVia")}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm font-bold text-foreground">{t("indirizzoVia")}</p>
+              <p className="text-xs text-foreground/70">
                 {t("indirizzo2")} · {t("indirizzo3")}
               </p>
             </div>
-            <div className="flex items-center gap-1.5 text-primary text-sm font-semibold">
+            <div className="flex items-center gap-1.5 text-accent text-sm font-semibold">
               <MapPin className="w-4 h-4" />
               {t("indicazioniButton")}
               <ExternalLink className="w-3.5 h-3.5" />

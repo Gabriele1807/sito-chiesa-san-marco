@@ -354,7 +354,7 @@ export default function GestioneUtentiPage() {
                       </span>
                     )}
                     {user.adminRequest === "pending" && (
-                      <span className="inline-block px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-xs font-medium">Pendente</span>
+                      <span className="inline-block px-2 py-0.5 bg-accent/10 text-accent rounded text-xs font-medium">Pendente</span>
                     )}
                     {user.adminRequest === "rejected" && (
                       <span className="inline-block px-2 py-0.5 bg-red-50 text-red-700 rounded text-xs font-medium">Rifiutato</span>
@@ -364,7 +364,7 @@ export default function GestioneUtentiPage() {
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => openEdit(user)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                        className="p-1.5 rounded-lg text-foreground/40 hover:text-accent hover:bg-accent/10 transition-colors"
                         title="Modifica"
                       >
                         <Pencil className="w-4 h-4" />
