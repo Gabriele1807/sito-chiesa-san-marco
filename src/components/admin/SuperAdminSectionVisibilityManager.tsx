@@ -60,13 +60,25 @@ export default function SuperAdminSectionVisibilityManager({
     setError("");
     
     try {
+      // Legge la sezione attuale per fare il merge corretto
+      const currentSection = sections.find((s) => s.sectionId === sectionId);
+      if (!currentSection) {
+        setError("Sezione non trovata");
+        setSaving(null);
+        return;
+      }
+      
+      // Crea la nuova configurazione mergiata
+      const newRoleConfig = {
+        ...currentSection.roleConfig,
+        [role]: access,
+      };
+      
       const res = await fetch(`/api/admin/section-visibility/${sectionId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          roleConfig: {
-            [role]: access,
-          },
+          roleConfig: newRoleConfig,
         }),
       });
       
@@ -79,9 +91,10 @@ export default function SuperAdminSectionVisibilityManager({
         setSuccess("Configurazione aggiornata con successo!");
         setTimeout(() => setSuccess(""), 3000);
       } else {
-        setError("Errore nell'aggiornamento");
+        setError(data.error || "Errore nell'aggiornamento");
       }
     } catch (err) {
+      console.error("Errore nel salvataggio della configurazione:", err);
       setError("Errore di connessione");
     } finally {
       setSaving(null);
@@ -152,7 +165,7 @@ export default function SuperAdminSectionVisibilityManager({
                     <tr key={role} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-3 font-medium text-gray-900">{label}</td>
                       {ACCESS_OPTIONS.map((opt) => {
-                        const currentAccess = section.roleConfig[role as keyof typeof section.roleConfig];
+                        const currentAccess = section.roleConfig[role as keyof typeof section.roleConfig] || "hidden";
                         const isSelected = currentAccess === opt.value;
                         const Icon = opt.icon;
                         

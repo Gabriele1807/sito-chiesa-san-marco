@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import SuperAdminSectionVisibilityManager from "@/components/admin/SuperAdminSectionVisibilityManager";
 import { getAllSectionVisibilities } from "@/lib/mongo/visibility";
+import type { SectionVisibility } from "@/types";
 
 export const metadata: Metadata = {
   title: "Gestione Permessi Sezioni | Admin",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function SuperAdminPermissionsPage() {
   // Carica i dati lato server
-  let sections = [];
+  let sections: SectionVisibility[] = [];
   try {
     sections = await getAllSectionVisibilities();
   } catch (error) {

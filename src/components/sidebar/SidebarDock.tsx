@@ -23,7 +23,7 @@ export default function SidebarDock() {
   const [sectionVisibilities, setSectionVisibilities] = useState<SectionVisibility[]>([]);
   const [visibilitiesLoaded, setVisibilitiesLoaded] = useState(false);
 
-  const isAdmin = type === "admin" || type === "admin";
+  const isAdmin = type === "admin";
 
   // Determina il ruolo dell'utente per i controlli di visibilità
   function getUserRole(): "guest" | "credente" | "madre" | "padre" | "ospite_chiesa" | "admin" | "superadmin" {
@@ -257,7 +257,7 @@ export default function SidebarDock() {
     <>
       <div
         id="sidebar-overlay"
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-out lg:hidden"
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out lg:hidden"
         onClick={closeMobile}
       />
 
@@ -267,10 +267,8 @@ export default function SidebarDock() {
           width: isCompact ? DOCK_WIDTH_COMPACT : DOCK_WIDTH,
           top: "var(--topbar-offset)",
           height: "calc(100vh - var(--topbar-offset))",
-          transition:
-            "width 260ms cubic-bezier(0.22, 1, 0.36, 1), transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms ease-out",
         }}
-        className="fixed left-0 z-40 bg-sidebar text-white border-r border-white/10 transform -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100 flex flex-col min-h-0 will-change-transform"
+        className="fixed left-0 z-40 bg-sidebar text-white border-r border-white/10 flex flex-col min-h-0 will-change-transform transform -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100 transition-transform duration-300 ease-in-out"
         data-compact={isCompact ? "true" : "false"}
       >
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-3 pb-6 lg:pb-3">

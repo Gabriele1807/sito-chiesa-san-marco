@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getPreghiere, getVideoCorsi } from "@/lib/db";
 import PreghiereTabs from "@/components/PreghiereTabs";
+import SectionVisibilityGate from "@/components/SectionVisibilityGate";
 
 export const revalidate = 60;
 
@@ -27,7 +28,7 @@ export default async function PreghierePage() {
     youtubeChannel: YOUTUBE_CHANNEL_URL,
   } as Record<string, string>;
 
-  return (
+  const content = (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 animate-fade-in-up">{texts.titolo}</h1>
@@ -36,5 +37,11 @@ export default async function PreghierePage() {
 
       <PreghiereTabs preghiere={preghiere} videoCorsi={videoCorsi} texts={texts} />
     </div>
+  );
+
+  return (
+    <SectionVisibilityGate sectionId="preghiere" title={texts.titolo}>
+      {content}
+    </SectionVisibilityGate>
   );
 }

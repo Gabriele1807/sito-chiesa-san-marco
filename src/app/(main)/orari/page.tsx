@@ -3,6 +3,7 @@ import { getOrari } from "@/lib/db";
 import { Clock, CalendarDays, Sparkles } from "lucide-react";
 import NextCelebrationCard from "@/components/NextCelebrationCard";
 import OrariTable from "@/components/OrariTable";
+import SectionVisibilityGate from "@/components/SectionVisibilityGate";
 
 export const revalidate = 60;
 
@@ -15,7 +16,7 @@ export default async function OrariPage() {
 
   const totalCelebrazioni = orari.reduce((count, giorno) => count + giorno.celebrazioni.length, 0);
 
-  return (
+  const content = (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
@@ -113,5 +114,11 @@ export default async function OrariPage() {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <SectionVisibilityGate sectionId="orari" title={t("titolo")}>
+      {content}
+    </SectionVisibilityGate>
   );
 }

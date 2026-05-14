@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import AdminSectionVisibilityManager from "@/components/admin/AdminSectionVisibilityManager";
 import { getAllSectionVisibilities } from "@/lib/mongo/visibility";
+import type { SectionVisibility } from "@/types";
 
 export const metadata: Metadata = {
   title: "Gestione Sezioni | Admin",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function AdminSectionsPage() {
   // Carica i dati lato server
-  let sections = [];
+  let sections: SectionVisibility[] = [];
   try {
     sections = await getAllSectionVisibilities();
   } catch (error) {

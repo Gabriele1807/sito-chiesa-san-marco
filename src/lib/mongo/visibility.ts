@@ -180,6 +180,7 @@ export async function updateSectionActive(sectionId: string, isActive: boolean):
 /**
  * Aggiorna la configurazione dei permessi per ruolo di una sezione.
  * Usato dai superadmin per configurazioni avanzate.
+ * MERGE: combina la nuova configurazione con quella esistente anziché sostituirla.
  */
 export async function updateSectionRoleConfig(
   sectionId: string,
@@ -188,9 +189,20 @@ export async function updateSectionRoleConfig(
   await ensureIndexes();
   const db = await getDb();
   const now = new Date().toISOString();
+  
+  // Legge il documento attuale
+  const current = await db.collection("section_visibility").findOne({ sectionId });
+  if (!current) return null;
+  
+  // Merge con la configurazione attuale (non sostituire)
+  const mergedRoleConfig = {
+    ...current.roleConfig,
+    ...roleConfig,
+  };
+  
   const result = await db.collection("section_visibility").findOneAndUpdate(
     { sectionId },
-    { $set: { roleConfig, updatedAt: now } },
+    { $set: { roleConfig: mergedRoleConfig, updatedAt: now } },
     { returnDocument: "after" }
   );
   return result ? clean<SectionVisibility>(result) : null;

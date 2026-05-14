@@ -56,13 +56,15 @@ export default function AdminSectionVisibilityManager({
         setSections((prev) =>
           prev.map((s) => (s.sectionId === sectionId ? data.data : s))
         );
-        setSuccess("Stato aggiornato!");
+        setSuccess(`Sezione ${isActive ? "attivata" : "disattivata"}!`);
         setTimeout(() => setSuccess(""), 2000);
       } else {
-        setError("Errore nell'aggiornamento");
+        setError(data.error || "Errore nell'aggiornamento");
+        console.error("Errore nel toggle della sezione:", data);
       }
     } catch (err) {
-      setError("Errore di connessione");
+      console.error("Errore di rete nel toggle della sezione:", err);
+      setError("Errore di connessione. Verifica la console per dettagli.");
     } finally {
       setSaving(null);
     }

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getIcone } from "@/lib/db";
 import IconeGrid from "@/components/IconeGrid";
 import AdminGate from "@/components/auth/AdminGate";
+import SectionVisibilityGate from "@/components/SectionVisibilityGate";
 
 export const revalidate = 60;
 
@@ -24,8 +25,10 @@ export default async function IconePage() {
   );
 
   return (
-    <AdminGate title={t("titolo")}>
-      {content}
-    </AdminGate>
+    <SectionVisibilityGate sectionId="icone" title={t("titolo")}>
+      <AdminGate title={t("titolo")}>
+        {content}
+      </AdminGate>
+    </SectionVisibilityGate>
   );
 }

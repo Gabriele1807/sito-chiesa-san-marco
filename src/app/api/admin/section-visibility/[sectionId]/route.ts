@@ -55,7 +55,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     // TODO: Se l'utente è admin (non superadmin), permettere solo di aggiornare isActive
     
     // Se è una semplice toggling di isActive (admin)
-    if (body.isActive !== undefined && body.roleConfig === undefined) {
+    if (body.isActive !== undefined && body.roleConfig === undefined && body.sectionLabel === undefined) {
       const updated = await updateSectionActive(sectionId, body.isActive);
       if (!updated) {
         return NextResponse.json(
@@ -78,8 +78,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ success: true, data: updated });
     }
     
-    // Se è un aggiornamento completo
-    if (body.sectionLabel !== undefined || body.isActive !== undefined || body.roleConfig !== undefined) {
+    // Se è un aggiornamento completo (isActive e/o sectionLabel)
+    if (body.sectionLabel !== undefined || body.isActive !== undefined) {
       const updated = await updateSectionVisibility(sectionId, body);
       if (!updated) {
         return NextResponse.json(
