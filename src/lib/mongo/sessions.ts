@@ -107,3 +107,34 @@ export async function cleanExpiredUserSessions(): Promise<void> {
   const c = await col();
   await c.deleteMany({ expiresAt: { $lt: new Date().toISOString() } });
 }
+
+// --------------- Helper for server-side access checks ---------------
+
+/**
+ * Recupera l'utente associato a una sessione, se valida.
+ * Usato per verificare il ruolo dell'utente nelle route server-side.
+ */
+export async function getUserFromSessionToken(
+  sessionToken: string
+): Promise<{ userId: string; role: string } | null> {
+  if (!sessionToken) return null;
+
+  try {
+    const session = await validateUserSession(sessionToken);
+    if (!session) return null;
+
+    // Importa dinamicamente per evitare circular dependencies
+    const { findUserById } = await import("./users");
+    const user = await findUserById(session.userId);
+
+    if (!user) return null;
+
+    return {
+      userId: session.userId,
+      role: user.role,
+    };
+  } catch (error) {
+    console.error("[getUserFromSessionToken] Errore:", error);
+    return null;
+  }
+}

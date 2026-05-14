@@ -27,7 +27,11 @@ const titlesConfig: Record<string, { icon: React.ElementType; key: string }> = {
   "/profilo": { icon: User, key: "profilo" },
 };
 
-export default function TopbarTitle() {
+interface TopbarTitleProps {
+  className?: string;
+}
+
+export default function TopbarTitle({ className }: TopbarTitleProps) {
   const pathname = usePathname();
   const t = useTranslations("topbar");
 
@@ -42,9 +46,9 @@ export default function TopbarTitle() {
   const Icon = match.icon;
 
   return (
-    <div className="hidden sm:flex items-center gap-2">
-      <Icon className="w-5 h-5 text-accent" />
-      <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+    <div className={`flex items-center gap-2 min-w-0 ${className ?? ""}`}>
+      <Icon className="w-5 h-5 text-accent shrink-0" />
+      <span className="min-w-0 truncate text-[11px] sm:text-xs font-display font-semibold text-foreground uppercase tracking-[0.26em] sm:tracking-[0.3em] text-center">
         {t(match.key as Parameters<typeof t>[0])}
       </span>
     </div>

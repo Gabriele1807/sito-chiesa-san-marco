@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 1 maggio 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 12 maggio 2026.
 
 ---
 
@@ -42,6 +42,8 @@ Fatti importanti da sapere subito:
 - l'autenticazione admin invece e persistita su Supabase
 - la route di login admin non deve mostrare sidebar o topbar admin
 - la dashboard admin e gia stata ripulita dalle ridondanze: non deve tornare a contenere link duplicati della sidebar
+- la shell pubblica usa un dock laterale fisso su desktop e una bottom dock su mobile
+- la navbar pubblica resta fissa e si nasconde/riappare in base allo scroll, comunicando il proprio stato alla sidebar tramite una variabile CSS globale
 
 ---
 
@@ -104,8 +106,10 @@ Attenzione: questo punto era obsoleto in versioni precedenti del file.
 
 - `src/app/(main)/layout.tsx`
   - layout pubblico
-  - struttura: `Navbar + Sidebar + main content + Footer`
-  - sidebar pubblica sempre disponibile, con comportamento responsive/mobile overlay
+  - struttura: `Navbar + SidebarDock + MobileDock + main content + Footer`
+  - la shell pubblica usa `.main-shell` per riservare spazio al dock desktop e al dock mobile
+  - la sidebar pubblica e un dock fisso laterale su desktop, non una colonna statica nel flow
+  - su mobile la navigazione principale e le utility si appoggiano a una bottom dock coerente con la sidebar desktop
 
 - `src/app/admin/layout.tsx`
   - layout admin base minimale
@@ -181,6 +185,10 @@ chiesa-san-marco/
 |  |  |- QuickAccessCard.tsx
 |  |  |- BackLink.tsx
 |  |  |- RelatedResourceCard.tsx
+|  |  |- sidebar/
+|  |  |  |- SidebarDock.tsx
+|  |  |  |- MobileDock.tsx
+|  |  |  |- nav-config.ts
 |  |  |- auth/
 |  |  |  |- AuthContext.tsx
 |  |  |  |- LoginModal.tsx
@@ -724,11 +732,19 @@ Stili globali aggiuntivi:
 - `[dir="rtl"] { text-align: right }` per arabo
 - `html { scroll-behavior: smooth }`
 - body usa font-family `var(--font-sans)`
+- variabili globali della shell pubblica: `--dock-width`, `--dock-width-compact`, `--dock-bottom-height`, `--topbar-height`, `--topbar-offset`
+- `.main-shell` per gestire il padding del layout pubblico in funzione di dock desktop e dock mobile
 
 ### 10.4 Font
 
 - font principale: Inter
 - definito in root layout con CSS variable `--font-inter`
+
+### 10.5 Footer e dock
+
+- il footer pubblico e stato rifinito con una tinta piu calda e un gradiente leggero per separarlo meglio dal contenuto
+- le CTA del footer usano colori piu leggibili e focus ring coerenti con il resto del sito
+- il dock laterale usa il fondo scuro del brand, con stato attivo chiaro ad alto contrasto e hover sobrio
 
 ---
 
@@ -737,9 +753,19 @@ Stili globali aggiuntivi:
 ### 11.1 Layout pubblico
 
 - navbar in alto
-- sidebar laterale con overlay mobile
+- sidebar laterale come dock fisso persistente su desktop
+- bottom dock mobile con icone, pensata per non coprire il contenuto critico
+- pannello sidebar mobile separato, richiamabile dal bottone menu e dalla bottom dock
 - footer sotto il contenuto
 - `dir="rtl"` automatico per arabo
+
+### 11.1b Comportamento dock/sidebar
+
+- la sidebar desktop non scorre via con il contenuto: resta ancorata al viewport
+- quando la navbar si nasconde nello scroll, la sidebar riallinea automaticamente il proprio offset superiore tramite `html[data-topbar-hidden]`
+- la sidebar desktop supporta una modalita compatta persistente salvata in `localStorage` (`dock_compact`)
+- la navigazione primaria, le utility e il toggle di compattezza sono separati in zone distinte
+- su mobile la bottom dock mostra le destinazioni piu usate e un pulsante menu per aprire il pannello laterale
 
 ### 11.2 Pagine pubbliche presenti
 
@@ -772,6 +798,51 @@ Stili globali aggiuntivi:
 
 - pagina eventi:
   - iscrizione con telefono opzionale
+
+---
+
+## 12. Recenti modifiche UI (maggio 2026)
+
+Breve riepilogo delle modifiche recenti al front-end che è importante conoscere per sviluppo e test.
+
+- Footer responsive: su mobile/tablet il footer è stato trasformato in una serie di accordion collassabili per risparmiare spazio verticale; su desktop resta il layout a 4 colonne.
+  - File principali: `src/components/Footer.tsx` (aggiornato), `src/components/FooterAccordion.tsx` (nuovo componente client).
+  - Comportamento: ogni sezione (Orari, Contatti, Link veloci, Social) è un accordion; la sezione About resta visibile. L'accordion accetta la prop `isLast` per evitare il bordo inferiore sull'ultimo elemento.
+  - Scroll intelligente: quando un accordion viene aperto viene eseguito un controllo che calcola il bounding rect del contenuto e, se necessario, scorre la pagina fino a rendere visibile tutto il contenuto.
+    - Implementazione: `FooterAccordion` usa `scrollBy({ behavior: 'smooth' })` con un piccolo padding (10px) e un timeout di 50ms per lasciare partire l'animazione di espansione.
+    - Nota: se preferisci forzare la visuale fino al fondo dell'accordion (es. `block: 'end'`) posso cambiare il comportamento.
+
+- Separazione client/server: il codice che gestisce l'interattività è stato spostato in `FooterAccordion.tsx` (component client), mentre `Footer.tsx` rimane server component per continuare a usare `getTranslations` e server-side rendering delle stringhe.
+
+- Sidebar mobile — comportamento uniforme con admin:
+  - Obiettivo: rendere l'apertura/chiusura della sidebar principale identica a quella del pannello admin.
+  - File modificati: `src/components/sidebar/SidebarDock.tsx` (classi CSS e overlay), `src/components/MobileMenuButton.tsx` (toggle delle classi). L'`AdminMobileMenuButton.tsx` rimane come riferimento (toggle classico `-translate-x-full` / `translate-x-0`).
+  - Implementazione: la sidebar principale ora usa toggle semplice delle classi CSS (`-translate-x-full`, `translate-x-0`, `opacity-0`, `opacity-100`) e l'overlay usa `pointer-events-none`/`opacity-0` per disabilitare l'interazione quando nascosto. Le transizioni CSS sono coerenti con quelle dell'admin (duration/ timing semplificati a `duration-300 ease-in-out`).
+
+### File aggiunti / modificati
+
+- Aggiunti:
+  - `src/components/FooterAccordion.tsx` (nuovo)
+
+- Modificati:
+  - `src/components/Footer.tsx` (mobile: accordion, desktop: mantiene griglia a 4 colonne)
+  - `src/components/sidebar/SidebarDock.tsx` (toggle/overlay/transition)
+  - `src/components/MobileMenuButton.tsx` (toggle classi coerente con admin)
+  - `src/components/Footer.tsx` ora utilizza il nuovo `FooterAccordion`
+
+### Come testare velocemente le modifiche
+
+1. Avviare il dev server:
+   ```bash
+   npm run dev
+   ```
+2. Aprire il sito e passare alla vista mobile (DevTools). Verificare:
+   - Footer: aprire ogni accordion; se l'accordion è parzialmente nascosto, la pagina dovrebbe scorrere automaticamente per mostrarlo tutto.
+   - Social: non deve avere una riga di separazione dopo l'ultimo accordion (prop `isLast` impostata).
+   - Sidebar mobile: il pulsante menu deve aprire/chiudere la sidebar con la stessa animazione usata nell'admin.
+
+Se vuoi, posso cambiare il padding (attuale 10px) o il delay (attuale 50ms) per adattarlo a dispositivi più lenti: suggerisco provare `padding: 20` o `delay: 120ms` se noti che lo scroll parte troppo presto.
+
   - nome e email restano obbligatori
 
 - pagine icone:
@@ -798,7 +869,7 @@ Stili globali aggiuntivi:
   - cross pin animato sovrapposto alla mappa
   - navbar pubblica fissa in alto con hide/show su direzione scroll (dissolvenza in discesa, riapparizione in risalita)
   - layout pubblico con offset top coerente (`pt-14`) per evitare overlap contenuti sotto navbar fissa
-  - sidebar pubblica resa piu stabile su pagine lunghe (comportamento desktop/mobili separato, meno effetto doppio scroll)
+  - dock laterale desktop persistente e bottom dock mobile separata, con comportamento piu stabile sulle pagine lunghe
   - sacerdote: solo nome "Padre Mina Kolta", non contattabile
   - social: solo Facebook (Instagram e WhatsApp rimossi)
   - link Facebook e YouTube reali
@@ -902,6 +973,8 @@ Caratteristiche gia implementate:
 - content area adattata a sidebar desktop
 - tabelle admin pensate per scroll orizzontale nelle pagine CRUD
 
+Nota: l'area admin resta separata dalla nuova shell pubblica e non usa il dock laterale ispirato a Webflow University.
+
 ---
 
 ## 13. API esistenti
@@ -930,6 +1003,7 @@ Ottimizzazioni performance navigazione introdotte (23 apr 2026):
 - aggiunto `src/app/(main)/loading.tsx` per feedback immediato durante i cambi pagina nel route group pubblico
 - invalidazione cache puntuale dopo CRUD admin contenuti (`/api/admin/libreria`, `/api/admin/icone`, `/api/admin/preghiere`, `/api/admin/eventi`, `/api/admin/orari`) tramite `revalidateTag`
 - fix runtime su `/admin/libreria-privata`: la route ora attende davvero i risultati MongoDB prima di serializzarli, evitando errori tipo `files.map is not a function`
+- la shell pubblica ora dipende anche dallo stato della navbar che si nasconde su scroll, quindi i cambi di layout vanno verificati in combinazione con il comportamento del dock
 
 Obiettivo pratico: transizioni tra sezioni piu rapide e meno effetto "connessione lenta" percepita dall'utente.
 
@@ -1060,6 +1134,191 @@ Nota pratica:
 
 ---
 
+## 24. Integrazione della visibilità nelle pagine pubbliche (14 maggio 2026)
+
+### 24.1 Nuovo sistema: SectionVisibilityGate
+
+Partendo dal sistema di gestione della visibilità creato in precedenza (sezione 23), è stato aggiunto un controllo della visibilità anche a livello delle pagine pubbliche. Quando un admin imposta una sezione come "coming_soon", i visitatori vedono una pagina di "In Arrivo" anziché il contenuto.
+
+**File nuovo principale:**
+
+- `src/lib/section-access.ts` — funzioni utility server-side per verificare l'accesso
+  - `getUserRoleServer()` — determina il ruolo dell'utente dal cookie `user_session` (lato server)
+  - `getSectionAccess(sectionId)` — ritorna il livello di accesso ("full", "coming_soon", "hidden")
+
+- `src/components/SectionVisibilityGate.tsx` — server component che wrappa il contenuto delle pagine
+  - Verifica l'accesso alla sezione
+  - Mostra il contenuto normale se accesso è "full"
+  - Mostra ComingSoonPage se accesso è "coming_soon"
+  - Mostra messaggio di accesso negato se accesso è "hidden"
+
+**Estensione in `src/lib/mongo/sessions.ts`:**
+
+- `getUserFromSessionToken(sessionToken)` — funzione helper che:
+  - Valida la sessione utente
+  - Recupera l'utente associato da MongoDB
+  - Ritorna userId e role
+
+### 24.2 Pagine pubbliche aggiornate
+
+Le seguenti pagine sono state avvolte con `SectionVisibilityGate` per applicare il controllo della visibilità:
+
+- `src/app/(main)/eventi/page.tsx` — sectionId: "eventi"
+- `src/app/(main)/icone/page.tsx` — sectionId: "icone"
+- `src/app/(main)/libreria/page.tsx` — sectionId: "libreria"
+- `src/app/(main)/orari/page.tsx` — sectionId: "orari"
+- `src/app/(main)/preghiere/page.tsx` — sectionId: "preghiere"
+
+**Struttura del wrapper (esempio - pagina eventi):**
+
+```tsx
+<SectionVisibilityGate sectionId="eventi" title={t("titolo")}>
+  <AdminGate title={t("titolo")}>
+    {content}
+  </AdminGate>
+</SectionVisibilityGate>
+```
+
+Il gate è avvolto attorno a `AdminGate` (quando presente) o direttamente attorno al contenuto (quando assente).
+
+### 24.3 Flusso di autenticazione lato server
+
+Quando una pagina pubblica viene caricata:
+
+1. Il server component `SectionVisibilityGate` chiama `getSectionAccess(sectionId)`
+2. `getSectionAccess()` legge il cookie `user_session` dal client
+3. Se il cookie esiste, chiama `getUserFromSessionToken(sessionToken)` che:
+   - Valida la sessione in MongoDB (`user_sessions` collection)
+   - Recupera l'utente completo da MongoDB (`users` collection)
+   - Ritorna userId e role
+4. Se il cookie non esiste (guest), ritorna "guest" come ruolo
+5. Chiama `getRoleAccessToSection(sectionId, role)` per verificare i permessi in MongoDB
+6. Ritorna l'accesso ("full", "coming_soon", "hidden")
+
+### 24.4 Comportamento visuale per il visitatore
+
+**Utente guest (non autenticato):**
+
+- Vede le sezioni configurate come "full" per il ruolo "guest"
+- Se una sezione è "coming_soon" per guest, vede il messaggio di "In Arrivo"
+- Se una sezione è "hidden" per guest, vede il messaggio di "Accesso Negato"
+
+**Utente autenticato (es. ruolo "credente"):**
+
+- Vede le sezioni configurate come "full" per il suo ruolo specifico
+- Se una sezione è "coming_soon" per il suo ruolo, vede il messaggio di "In Arrivo"
+- Se una sezione è "hidden" per il suo ruolo, vede il messaggio di "Accesso Negato"
+
+### 24.5 Configurazione di default
+
+Nel file `src/lib/mongo/visibility.ts`, la configurazione di default è:
+
+| Sezione | Guest | Credente | Madre | Padre | Ospite Chiesa | Admin | SuperAdmin |
+|---------|-------|----------|-------|-------|---------------|-------|------------|
+| orari | full | full | full | full | full | full | full |
+| preghiere | full | full | full | full | full | full | full |
+| icone | full | full | full | full | full | full | full |
+| libreria | coming_soon | full | full | full | full | full | full |
+| eventi | coming_soon | full | full | full | full | full | full |
+| video-corsi | coming_soon | full | full | full | full | full | full |
+
+**Significato pratico**: I guest vedono "In Arrivo" per libreria, eventi e video-corsi, mentre gli utenti autenticati hanno accesso completo.
+
+### 24.6 API pubblica per il caricamento della visibilità
+
+La sidebar client-side (`SidebarDock.tsx`) continua a usare l'endpoint pubblico:
+
+- `GET /api/public/section-visibility` — ritorna tutte le configurazioni di visibilità per il caricamento lato client
+
+Questo endpoint è già stato creato e funziona correttamente. È usato dal componente SidebarDock per nascondere i link delle sezioni nella navigazione laterale se non accessibili all'utente corrente.
+
+### 24.7 Integrazione con il sistema di visibilità admin
+
+Il sistema è completamente integrato con i pannelli di gestione admin:
+
+- `/admin/gestione-sezioni` — admin e superadmin possono toggle `isActive` per ogni sezione (nasconde completamente la sezione per tutti)
+- `/admin/gestione-permessi` — superadmin possono configurare i permessi per ruolo e impostare "coming_soon" per sezioni in preparazione
+
+Quando un superadmin:
+1. Va su `/admin/gestione-permessi`
+2. Imposta una sezione (es. "libreria") come "coming_soon" per il ruolo "guest"
+3. Salva la configurazione
+4. Un visitatore guest che accede a `/libreria` vede il messaggio "In Arrivo" anziché il contenuto
+
+### 24.8 Avvertenze e limiti
+
+- Le pagine pubbliche controllano la visibilità **lato server**, garantendo sicurezza (non è aggirata da client)
+- Se un utente conosce direttamente l'URL (es. `/libreria/[slug]`), il controllo viene applicato a livello della pagina container (es. `/libreria`)
+- Le pagine di dettaglio (icone/[slug], libreria/[slug]) non hanno controlli separati; ereditano il comportamento dalla pagina container
+- Il sistema assume che il ruolo sia sempre presente nel token sessione; se assente, di default nega accesso ("hidden")
+- In caso di errore nel caricamento della visibilità da MongoDB, il fallback è "full" (accesso consentito) per garantire che il sito rimanga consultabile in caso di problemi al database
+
+### 24.9 Testing della funzionalità
+
+Per verificare che il sistema funzioni correttamente:
+
+**Come ospite (guest):**
+1. Apri un browser privato/incognito
+2. Accedi a `http://localhost:3000/eventi`
+3. Dovresti vedere il messaggio "In Arrivo" (secondo la configurazione di default)
+
+**Come utente autenticato:**
+1. Accedi alla login con un account utente (es. ruolo "credente")
+2. Accedi a `http://localhost:3000/eventi`
+3. Dovresti vedere la lista degli eventi normalmente
+
+**Come superadmin per cambiare la configurazione:**
+1. Accedi come superadmin
+2. Vai a `/admin/gestione-permessi`
+3. Modifica lo stato della sezione "eventi" per il ruolo "guest" da "coming_soon" a "full"
+4. Salva
+5. Accedi come guest (browser privato) a `/eventi`
+6. Ora dovresti vedere il contenuto normale
+
+---
+
+## 25. Limiti attuali e problemi noti
+
+1. la shell pubblica usa logiche client-side (navbar hide/show e menu mobile), quindi eventuali modifiche su scroll/overlay vanno testate bene su mobile e desktop
+2. il rate limiter login e in memoria, quindi non e affidabile in multi-istanza/serverless
+3. `src/proxy.ts` crea un client Supabase inline per compatibilita Edge runtime (non usa `supabaseAdmin` da `server.ts`)
+4. c'e separazione forte tra auth admin (Supabase) e auth utenti normali (MongoDB): non confondere i due piani
+5. evitare modifiche ai token colore gray/slate in `@theme`
+6. evitare `zoom` in `globals.css`, ha gia creato problemi di layout in passato
+7. `ADMIN_SESSION_SECRET` e dichiarato nelle variabili ma non e ancora usato attivamente (la session security e basata su token UUID in DB + cookie httpOnly)
+8. il middleware protegge solo le route admin; le route `/api/auth/*` sono pubbliche
+9. quando un utente viene approvato come admin, le stesse credenziali di login funzionano per l'accesso admin (non serve piu password temporanea)
+10. la shell pubblica e in fase di rifinitura continua: i file chiave del dock sono `src/components/sidebar/SidebarDock.tsx`, `src/components/sidebar/MobileDock.tsx` e `src/components/sidebar/nav-config.ts`
+11. il dock compatto desktop e persistito con `localStorage` (`dock_compact`), quindi ogni modifica va controllata sia in stato esteso sia in stato compatto
+
+---
+
+## 26. Roadmap plausibile futura
+
+- migrare i contenuti del sito da store in memoria a Supabase
+- upload immagini/file reale e non solo URL
+- SEO piu avanzato per pagine dettaglio
+- sitemap e metadata per pagine dinamiche
+- PWA
+- rate limiting centralizzato via Redis
+- eventuale auditing permessi admin piu fine-grained
+
+# generare hash bcrypt
+npm run generate-hash -- "NuovaPassword"
+
+# Windows: terminare processi node bloccati
+taskkill /f /im node.exe
+
+# Windows PowerShell: pulizia build cache
+Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
+```
+
+Nota pratica:
+
+- se `next dev` fallisce per lock `.next/dev/lock`, di solito c'e gia un'altra istanza del server attiva
+
+---
+
 ## 18. Limiti attuali e problemi noti
 
 1. la shell pubblica usa logiche client-side (navbar hide/show e menu mobile), quindi eventuali modifiche su scroll/overlay vanno testate bene su mobile e desktop
@@ -1071,6 +1330,8 @@ Nota pratica:
 7. `ADMIN_SESSION_SECRET` e dichiarato nelle variabili ma non e ancora usato attivamente (la session security e basata su token UUID in DB + cookie httpOnly)
 8. il middleware protegge solo le route admin; le route `/api/auth/*` sono pubbliche
 9. quando un utente viene approvato come admin, le stesse credenziali di login funzionano per l'accesso admin (non serve piu password temporanea)
+10. la shell pubblica e in fase di rifinitura continua: i file chiave del dock sono `src/components/sidebar/SidebarDock.tsx`, `src/components/sidebar/MobileDock.tsx` e `src/components/sidebar/nav-config.ts`
+11. il dock compatto desktop e persistito con `localStorage` (`dock_compact`), quindi ogni modifica va controllata sia in stato esteso sia in stato compatto
 
 ---
 
@@ -1162,7 +1423,7 @@ Palette completamente ripensata per riflettere l'identità vera della Chiesa Cop
 
 ---
 
-## 22. Modifiche UI/UX recenti (1 maggio 2026)
+## 22. Modifiche UI/UX recenti (8 maggio 2026)
 
 ### 21.1 Fix navbar e background
 
@@ -1222,5 +1483,169 @@ Palette completamente ripensata per riflettere l'identità vera della Chiesa Cop
 - Mobile-first responsive: grid 1 col → 2 col su sm
 - Accessibilità: ratio text/bg migliore
 - Consistenza: `rounded-2xl`, `shadow-sm/md`, `border-gray-200` uniforme
+
+### 22.3 Shell pubblica e footer aggiornati (8 maggio 2026)
+
+- introdotto un dock laterale fisso desktop ispirato a Webflow University, con gerarchia visiva separata tra navigazione primaria, utility e toggle di compattezza
+- introdotta una bottom dock mobile coerente con la sidebar desktop, per mantenere continuita visiva e funzionale sui piccoli schermi
+- la navbar pubblica continua a nascondersi su scroll e ora comunica il proprio stato alla sidebar tramite `html[data-topbar-hidden]`
+- il logo e stato rimosso dalla sidebar per evitare ridondanza con la navbar, lasciando il brand solo nell'header superiore
+- il footer e stato ripulito cromaticamente con CTA piu chiare e contrasto migliore sui link, per evitare l'effetto troppo spento della versione precedente
+
+### 22.4 Migliorie navbar/sidebar/home/orari + dashboard (8 maggio 2026)
+
+- Navbar mobile: layout a 3 colonne con titolo centrale troncato e spaziature piu stabili (Navbar.tsx, TopbarTitle.tsx)
+- Sidebar mobile: overlay con fade + easing piu morbido, scroll interno stabilizzato, sottotitoli attivi leggibili e spaziature uniformate (SidebarDock.tsx, MobileDock.tsx, MobileMenuButton.tsx)
+- Home mobile: hero full-height con indicatore scroll animato e chiave i18n `home.scrollHint` (page.tsx, globals.css, messages/it.json, messages/ar.json)
+- Orari: cards mobile piu leggibili; evidenzia solo la prossima celebrazione (giorno + riga) anche su desktop (OrariTable.tsx)
+- Dashboard admin: conteggi e box "Oggi" ora letti dal layer MongoDB contenuti; file privati da Mongo (admin/(dashboard)/page.tsx)
+
+### 22.5 Orari settimanali normalizzati (12 maggio 2026)
+
+- il layer contenuti Mongo ordina sempre gli orari nella sequenza canonica Domenica → Sabato, cosi la tabella pubblica e la vista admin non dipendono piu dall'ordine fisico dei documenti nel database (src/lib/mongo/content.ts)
+- la normalizzazione viene applicata anche ai ritorni di create/update degli orari, per mantenere coerente l'output API dopo modifiche admin
+
+---
+
+## 23. Gestione della visibilità delle sezioni e bug corretti (14 maggio 2026)
+
+### 23.1 Sistema di visibilità delle sezioni
+
+Il sito implementa un sistema di gestione della visibilità per le sezioni, permettendo ai superadmin di controllare chi può accedere a ogni sezione (icone, libreria, eventi, preghiere, etc.) e come visualizzarla.
+
+**Componenti principali:**
+
+- `src/lib/mongo/visibility.ts` — layer MongoDB per la gestione della visibilità
+  - Collezione: `section_visibility` (seeding automatico con DEFAULT_SECTIONS)
+  - Funzioni: `getAllSectionVisibilities()`, `getSectionVisibility()`, `updateSectionActive()`, `updateSectionRoleConfig()`, `getRoleAccessToSection()`
+
+- `src/components/admin/AdminSectionVisibilityManager.tsx` — componente per admin
+  - Toggle semplice on/off per attivare/disattivare una sezione
+  - Usa `/api/admin/section-visibility/[sectionId]` con `PUT { isActive }`
+
+- `src/components/admin/SuperAdminSectionVisibilityManager.tsx` — componente per superadmin
+  - Matrice di controllo permessi: ruoli × accessi (full/coming_soon/hidden)
+  - Permette configurazione granulare per ruolo
+
+- `src/components/sidebar/SidebarDock.tsx` — integrazione nella navbar pubblica
+  - Carica visibilità dal server al mount
+  - Applica `getAccessForSection()` per determinare se mostrare un link
+  - Support per coming_soon (badge "Soon" grigio)
+
+**Pagine admin correlate:**
+
+- `/admin/gestione-sezioni` — gestione semplice (admin + superadmin)
+- `/admin/gestione-permessi` — gestione avanzata permessi per ruolo (solo superadmin)
+
+### 23.2 Bug corretti (14 maggio 2026)
+
+#### Bug #1: roleConfig sostituito anziché mergiato
+
+**Problema**: Quando il superadmin cambiava l'accesso di un ruolo (es. `credente: "full"` → `credente: "coming_soon"`), il payload inviato era:
+```json
+{ "roleConfig": { "credente": "coming_soon" } }
+```
+
+La funzione MongoDB `updateSectionRoleConfig()` usava `$set: { roleConfig, ... }`, che **sostituiva completamente** il roleConfig, perdendo tutte le altre configurazioni di ruoli precedentemente salvate.
+
+**Fix applicato** in `src/lib/mongo/visibility.ts`:
+- Aggiunto merge del roleConfig: legge il documento attuale, combina la nuova config con quella esistente
+- Usa spread operator per il merge: `{ ...current.roleConfig, ...roleConfig }`
+
+**File modificato**: `src/lib/mongo/visibility.ts` — funzione `updateSectionRoleConfig()`
+
+#### Bug #2: Componente invia configurazione incompleta
+
+**Problema**: Il componente `SuperAdminSectionVisibilityManager.tsx` inviava solo il ruolo selezionato senza gli altri dati:
+```json
+{ "roleConfig": { "credente": "full" } }
+```
+
+Anche se il server faceva il merge, era comunque inefficiente e potrebbe creare inconsistenze.
+
+**Fix applicato** in `src/components/admin/SuperAdminSectionVisibilityManager.tsx`:
+- Nel handler `handleAccessChange()`, prima di inviare la richiesta:
+  - Legge la sezione attuale dallo stato locale
+  - Crea la nuova configurazione mergiata sul client
+  - Invia il `roleConfig` completo con tutti i ruoli
+
+**File modificato**: `src/components/admin/SuperAdminSectionVisibilityManager.tsx` — funzione `handleAccessChange()`
+
+#### Bug #3: Logica ambigua nella route API PUT
+
+**Problema**: La route `PUT /api/admin/section-visibility/[sectionId]` aveva tre branch che potevano sovrapporsi:
+1. Se `isActive` definito e `roleConfig` no → `updateSectionActive()`
+2. Se `roleConfig` definito → `updateSectionRoleConfig()`
+3. Se almeno uno dei tre (isActive, sectionLabel, roleConfig) definito → `updateSectionVisibility()`
+
+La terza condizione poteva essere vera anche quando le prime due erano vere, causando double-update.
+
+**Fix applicato** in `src/app/api/admin/section-visibility/[sectionId]/route.ts`:
+- Rresa esplicita la logica con check piu stretti
+- Prima condizione: `isActive !== undefined && roleConfig === undefined && sectionLabel === undefined` (true toggle)
+- Seconda condizione: `roleConfig !== undefined` (permessi)
+- Terza condizione: `sectionLabel !== undefined || isActive !== undefined` (aggiornamento completo, solo se non roleConfig)
+
+**File modificato**: `src/app/api/admin/section-visibility/[sectionId]/route.ts` — funzione `PUT()`
+
+#### Bug #4: Fallback assente per ruoli non configurati
+
+**Problema**: Nel componente `SuperAdminSectionVisibilityManager`, quando un ruolo non aveva una configurazione nel `roleConfig`, la riga del ruolo non mostrava nessun pulsante selezionato (tutti gli accessi apparivano deselezionati).
+
+**Fix applicato** in `src/components/admin/SuperAdminSectionVisibilityManager.tsx`:
+- Aggiunto fallback a `"hidden"` quando il ruolo non è nel roleConfig
+- `const currentAccess = section.roleConfig[role as keyof typeof section.roleConfig] || "hidden";`
+
+**File modificato**: `src/components/admin/SuperAdminSectionVisibilityManager.tsx` — rendering della matrice permessi
+
+#### Bug #5: Messaggi di errore poco informativi
+
+**Problema**: Nel componente `AdminSectionVisibilityManager`, i messaggi di errore non davano informazioni utili per il debug.
+
+**Fix applicato** in `src/components/admin/AdminSectionVisibilityManager.tsx`:
+- Aggiunto logging nella console per errori
+- Messaggi di successo più descrittivi: `"Sezione attivata!"` vs `"Sezione disattivata!"`
+- Error display include `data.error` del server se disponibile
+
+**File modificato**: `src/components/admin/AdminSectionVisibilityManager.tsx` — funzione `handleToggle()`
+
+### 23.3 Come funziona il sistema di visibilità
+
+1. **Caricamento iniziale**: Le sezioni e la loro configurazione vengono caricate da MongoDB al primo accesso via `getAllSectionVisibilities()`
+
+2. **Seeding automatico**: Se la collezione è vuota, viene auto-populata con `DEFAULT_SECTIONS` (tutte le sezioni hanno accesso "full" o "coming_soon" per default)
+
+3. **Amministrazione**:
+   - Admin possono toggle `isActive` per ogni sezione (on/off globale)
+   - Superadmin possono configurare `roleConfig` per ogni ruolo
+
+4. **Integrazione pubblica**:
+   - Il componente `SidebarDock` carica le visibilità al mount
+   - Per ogni link della sidebar, calcola `getAccessForSection(sectionId, userRole)`
+   - Se `isActive === false` → non renderizza il link
+   - Se `roleConfig[userRole] === "hidden"` → non renderizza il link
+   - Se `roleConfig[userRole] === "coming_soon"` → renderizza con badge "Soon"
+
+5. **Persistenza**: Tutte le modifiche sono salvate immediatamente in MongoDB via API `PUT`, nessun cache da invalidare
+
+### 23.4 Note di implementazione
+
+- Il layer MongoDB fa automaticamente il merge dei permessi (non sostituisce)
+- Il componente client costruisce il payload completo prima di inviare al server
+- La logica del server è stata resa esplicita per evitare branch overlapping
+- Tutti i ruoli possibili (guest, credente, madre, padre, ospite_chiesa, admin, superadmin) sono sempre presenti nel DEFAULT_SECTIONS
+- Non ci sono problemi di cache: le visibilità vengono sempre lette fresh dal client al mount di SidebarDock
+
+### 23.5 Testing del sistema
+
+Passi per verificare che i bug siano risolti:
+
+1. **Test Bug #1/2**: Vai a `/admin/gestione-permessi`, seleziona una sezione, cambia il permesso di un ruolo (es. credente → coming_soon), verifica che gli altri ruoli rimangano invariati
+
+2. **Test Bug #3**: Cambia rapidamente l'accesso di ruoli diversi nella stessa sezione senza aspettare, verifica che ogni cambio sia registrato correttamente
+
+3. **Test Bug #4**: Se nessun ruolo ha una configurazione iniziale, verifica che la matrice mostri tutti i pulsanti (tutti grigi per default)
+
+4. **Test Bug #5**: Cambia l'accesso a una sezione e guarda la console browser; dovrebbe mostrare successo/errore con dettagli
 
 ---

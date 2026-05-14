@@ -22,14 +22,37 @@
   --color-gold: #B45309;
   --color-gold-light: #D97706;
   --color-burgundy: #0F1A2E;
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-body);
+}
+
+:root {
+  --dock-width: 240px;
+  --dock-width-compact: 72px;
+  --dock-bottom-height: 64px;
+  --topbar-height: 56px;
+  --topbar-offset: var(--topbar-height);
+}
+
+html[data-topbar-hidden="true"] {
+  --topbar-offset: 0px;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), sans-serif;
   overflow-x: hidden;
+}
+
+.main-shell {
+  padding-bottom: var(--dock-bottom-height);
+}
+
+@media (min-width: 1024px) {
+  .main-shell {
+    padding-left: var(--dock-width);
+    padding-bottom: 0;
+  }
 }
 
 html {
@@ -39,6 +62,10 @@ html {
 
 [dir="rtl"] {
   text-align: right;
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-sans), sans-serif;
 }
 
 /* Scrollbar */
@@ -78,6 +105,32 @@ html {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@layer components {
+  .font-display {
+    font-family: var(--font-display), var(--font-sans), serif;
+  }
+
+  [dir="rtl"] .font-display {
+    font-family: var(--font-arabic), var(--font-sans), serif;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent text-white px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white text-accent px-5 py-2.5 text-sm font-semibold border border-accent/30 shadow-sm transition-all duration-200 hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white/5 text-white px-4 py-2 text-xs font-semibold border border-white/20 transition-all duration-200 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary;
+  }
+
+  .btn-link {
+    @apply inline-flex items-center gap-1.5 text-accent font-semibold text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
 /* ====== Entry animations ====== */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(16px); }
@@ -94,9 +147,16 @@ html {
   to   { opacity: 1; transform: scale(1); }
 }
 
+@keyframes scrollHint {
+  0% { opacity: 0.6; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(6px); }
+  100% { opacity: 0.6; transform: translateY(0); }
+}
+
 .animate-fade-in-up { animation: fadeInUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both; }
 .animate-fade-in    { animation: fadeIn   0.25s ease both; }
 .animate-scale-in   { animation: scaleIn  0.25s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.animate-scroll-hint { animation: scrollHint 1.6s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,

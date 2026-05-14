@@ -67,14 +67,14 @@ export default function ProfiloPage() {
   if (type === "guest") {
     return (
       <div className="min-h-[55vh] flex flex-col items-center justify-center text-center px-4">
-        <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-5">
-          <User className="w-10 h-10 text-gray-300" />
+        <div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center mb-5">
+          <User className="w-10 h-10 text-foreground/30" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("titoloGuest")}</h1>
-        <p className="text-gray-500 mb-8 max-w-sm">{t("messaggioGuest")}</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">{t("titoloGuest")}</h1>
+        <p className="text-foreground/60 mb-8 max-w-sm">{t("messaggioGuest")}</p>
         <button
           onClick={() => setShowLoginModal(true)}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-light transition-colors shadow-sm"
+          className="btn-primary"
         >
           <User className="w-4 h-4" />
           {t("accedi")}

@@ -16,6 +16,8 @@ import {
   LogOut,
   Users,
   UsersRound,
+  Eye,
+  Lock,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -124,9 +126,41 @@ export default function AdminSidebar() {
           );
         })}
 
-        {/* Solo superadmin: gestione admin */}
+        {/* Gestione Sezioni (tutti gli admin) */}
+        <div className="pt-3 pb-1 px-3">
+          <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+            Visibilità
+          </p>
+        </div>
+        <Link
+          href="/admin/gestione-sezioni"
+          onClick={closeMobile}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+            pathname === "/admin/gestione-sezioni"
+              ? "bg-[#B45309]/20 text-[#F59E0B] font-semibold"
+              : "text-gray-400 hover:text-white hover:bg-white/5"
+          }`}
+        >
+          <Eye className="w-4.5 h-4.5" />
+          Gestione Sezioni
+        </Link>
+
+        {/* Solo superadmin: gestione admin e permessi */}
         {isSuperAdmin && (
           <>
+            <Link
+              href="/admin/gestione-permessi"
+              onClick={closeMobile}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                pathname === "/admin/gestione-permessi"
+                  ? "bg-[#B45309]/20 text-[#F59E0B] font-semibold"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Lock className="w-4.5 h-4.5" />
+              Gestione Permessi
+            </Link>
+
             <div className="pt-3 pb-1 px-3">
               <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
                 Amministrazione

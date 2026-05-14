@@ -13,7 +13,7 @@ export default async function MainLayout({
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar locale={locale} />
-      <div className="flex flex-1 min-w-0 bg-background pt-14">
+      <div className="main-shell flex flex-1 min-w-0 bg-background pt-14">
         <Sidebar />
         <main className="flex-1 min-w-0 flex flex-col w-0 bg-background">
           <div className="px-4 sm:px-6 lg:px-10 py-8 sm:py-10 flex-1 max-w-full">

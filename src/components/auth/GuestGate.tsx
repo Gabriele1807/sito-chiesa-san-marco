@@ -38,7 +38,7 @@ export default function GuestGate({
       {/* Overlay cliccabile */}
       <div
         onClick={() => setShowLoginModal(true)}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer bg-gray-900/40 rounded-xl backdrop-blur-[2px] transition-colors hover:bg-gray-900/50 animate-fade-in"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer bg-background/60 rounded-xl backdrop-blur-[2px] transition-colors hover:bg-background/70 animate-fade-in border border-border"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -49,13 +49,13 @@ export default function GuestGate({
         }}
       >
         <div className="flex flex-col items-center gap-3 p-6">
-          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-            <Lock className="w-6 h-6 text-white/70" />
+          <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+            <Lock className="w-6 h-6 text-accent" />
           </div>
-          <p className="text-white/90 text-sm font-medium text-center max-w-xs">
+          <p className="text-foreground/80 text-sm font-medium text-center max-w-xs">
             {resolvedMessage}
           </p>
-          <span className="text-gold text-xs font-semibold uppercase tracking-wider">
+          <span className="text-accent text-xs font-semibold uppercase tracking-wider">
             {t("guestGateCta")}
           </span>
         </div>
