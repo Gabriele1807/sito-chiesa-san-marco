@@ -240,6 +240,12 @@ export default function RegisterModal() {
             )}
           </div>
 
+          <div className="mb-4 rounded-xl border border-accent/20 bg-accent/10 px-4 py-3">
+            <p className="text-sm text-foreground/75 leading-relaxed">
+              {t("registerReminder")}
+            </p>
+          </div>
+
           {/* Success */}
           {success && (
             <div className="text-center py-4">

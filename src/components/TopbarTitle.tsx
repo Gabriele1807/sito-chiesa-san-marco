@@ -46,9 +46,9 @@ export default function TopbarTitle({ className }: TopbarTitleProps) {
   const Icon = match.icon;
 
   return (
-    <div className={`items-center gap-2 ${className ?? ""}`}>
-      <Icon className="w-5 h-5 text-accent" />
-      <span className="text-xs font-display font-semibold text-gray-900 uppercase tracking-[0.3em]">
+    <div className={`flex items-center gap-2 min-w-0 ${className ?? ""}`}>
+      <Icon className="w-5 h-5 text-accent shrink-0" />
+      <span className="min-w-0 truncate text-[11px] sm:text-xs font-display font-semibold text-foreground uppercase tracking-[0.26em] sm:tracking-[0.3em] text-center">
         {t(match.key as Parameters<typeof t>[0])}
       </span>
     </div>

@@ -17,10 +17,11 @@
     "dashboardSottotitolo": "Orari delle celebrazioni, preghiere, icone sacre e molto altro.",
     "heroEyebrow": "Comunita copta di Milano",
     "heroTitle": "Una chiesa antica, una comunità viva",
-    "heroSubtitle": "Scopri la Chiesa Copta Ortodossa di San Marco di Milano: un ponte tra tradizione millenaria e comunità moderna. Esplora le nostre icone sacre, i testi liturgici e collegati al mondo spirituale attraverso i QR code presenti in chiesa.",
+    "heroSubtitle": "Scopri le icone sacre, i testi liturgici e il mondo spirituale della Chiesa Copta di Milano. Una comunità antica che vive oggi.",
     "heroCtaPrimary": "Scopri gli orari",
     "heroCtaSecondary": "Guarda la diretta",
     "heroMetaLocation": "Milano, Italia",
+    "scrollHint": "Scorri verso il basso",
     "esploraIcone": "Esplora le icone",
     "chiSiamo": "Chi siamo",
     "chiSiamoPreview": "La Chiesa Copta Ortodossa di San Marco di Milano è una comunità viva e accogliente, radicata nella tradizione cristiana più antica d'Egitto. Fondata per servire la comunità copta milanese, la nostra chiesa è un luogo di preghiera, di crescita spirituale e di incontro tra culture.",
@@ -212,6 +213,7 @@
   "sidebar": {
     "navigazione": "Navigazione",
     "informazioni": "Informazioni",
+    "utility": "Utility",
     "subOrari": "Liturgie settimanali",
     "subPreghiere": "Agpeya e celebrazioni",
     "subIcone": "Con QR code",
@@ -222,7 +224,9 @@
     "pannelloAdmin": "Pannello Admin",
     "subPannelloAdmin": "Accesso rapido gestione",
     "seiInChiesa": "Sei in chiesa?",
-    "scansionaQR": "Scansiona il QR"
+    "scansionaQR": "Scansiona il QR",
+    "menu": "Menu",
+    "dockCompatto": "Dock compatto"
   },
   "topbar": {
     "dashboard": "HOME",
@@ -239,6 +243,7 @@
     "loginTitle": "Accedi",
     "loginSubtitle": "Chiesa di San Marco – Milano",
     "loginReminder": "Se non sei registrato, prima crea un account: solo gli utenti registrati possono accedere.",
+    "registerReminder": "Se hai già un account, vai alla sezione per accedere. Il nome utente è univoco, diverso dalla mail, e verrà usato per effettuare l'accesso.",
     "loginIdentifierLabel": "Email o Username",
     "loginIdentifierPlaceholder": "email@esempio.it",
     "loginPasswordLabel": "Password",
@@ -357,7 +362,7 @@
     "socialTitle": "Social",
     "facebook": "Facebook",
     "youtube": "YouTube",
-    "note": "Sito bilingue italiano/arabo per la comunita copta."
+    "note": "Sito bilingue italiano/arabo per la comunità copta."
   },
   "profilo": {
     "titolo": "Il tuo profilo",

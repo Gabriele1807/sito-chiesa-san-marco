@@ -25,11 +25,34 @@
   --font-sans: var(--font-body);
 }
 
+:root {
+  --dock-width: 240px;
+  --dock-width-compact: 72px;
+  --dock-bottom-height: 64px;
+  --topbar-height: 56px;
+  --topbar-offset: var(--topbar-height);
+}
+
+html[data-topbar-hidden="true"] {
+  --topbar-offset: 0px;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans), sans-serif;
   overflow-x: hidden;
+}
+
+.main-shell {
+  padding-bottom: var(--dock-bottom-height);
+}
+
+@media (min-width: 1024px) {
+  .main-shell {
+    padding-left: var(--dock-width);
+    padding-bottom: 0;
+  }
 }
 
 html {
@@ -124,9 +147,16 @@ html {
   to   { opacity: 1; transform: scale(1); }
 }
 
+@keyframes scrollHint {
+  0% { opacity: 0.6; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(6px); }
+  100% { opacity: 0.6; transform: translateY(0); }
+}
+
 .animate-fade-in-up { animation: fadeInUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both; }
 .animate-fade-in    { animation: fadeIn   0.25s ease both; }
 .animate-scale-in   { animation: scaleIn  0.25s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.animate-scroll-hint { animation: scrollHint 1.6s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,

@@ -5,8 +5,6 @@ import { Clock } from "lucide-react";
 import type { OrarioSettimanale } from "@/types";
 import { getNextCelebration } from "@/lib/next-celebration";
 
-const GIORNI_IT = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
-
 interface OrariTableProps {
   orari: OrarioSettimanale[];
   labels: {
@@ -25,7 +23,6 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const todayName = GIORNI_IT[now.getDay()];
   const nextCelebration = useMemo(() => getNextCelebration(orari, now), [orari, now]);
   const nextKey = useMemo(() => {
     if (!nextCelebration) return null;
@@ -48,32 +45,30 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
             {orari.map((giorno, gi) =>
               giorno.celebrazioni.map((cel, ci) => {
                 const isNext = nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`;
-                const isToday = giorno.giorno === todayName;
-                const isNextDay = nextCelebration?.giorno === giorno.giorno;
+                const isFirstInDay = ci === 0;
                 const rowBg = isNext ? "bg-accent/20" : gi % 2 === 0 ? "bg-background" : "bg-surface/50";
                 const rowBorder = isNext ? "border-accent/30" : "border-border/30";
-                const dayClasses = isToday
-                  ? "text-accent underline decoration-accent/60 underline-offset-4"
-                  : isNextDay
-                  ? "text-accent underline decoration-accent/60 underline-offset-4"
-                  : "text-foreground";
+                const dayClasses = isNext
+                  ? "text-accent underline decoration-accent/60 underline-offset-4 font-semibold"
+                  : isFirstInDay
+                  ? "text-foreground font-semibold"
+                  : "text-foreground/50";
 
                 return (
                   <tr
                     key={`${gi}-${ci}`}
                     className={`border-b ${rowBorder} ${rowBg} hover:bg-accent/10 transition-colors`}
                   >
-                    {ci === 0 && (
-                      <td
-                        rowSpan={giorno.celebrazioni.length}
-                        className={`px-6 py-3 font-semibold align-top ${dayClasses}`}
-                      >
-                        <div className="flex items-center gap-2">
+                    <td className={`px-6 py-3 align-top ${dayClasses}`}>
+                      <div className="flex items-center gap-2">
+                        {isFirstInDay ? (
                           <Clock className="w-4 h-4 text-accent" />
-                          {giorno.giorno}
-                        </div>
-                      </td>
-                    )}
+                        ) : (
+                          <span className="w-4 h-4" aria-hidden="true" />
+                        )}
+                        <span className="truncate">{giorno.giorno}</span>
+                      </div>
+                    </td>
                     <td className={`px-6 py-3 text-sm ${isNext ? "font-semibold text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground/70"}`}>
                       {cel.tipo}
                     </td>
@@ -91,29 +86,40 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
         </table>
       </div>
 
-      <div className="sm:hidden space-y-4 p-4">
+      <div className="sm:hidden space-y-4 px-4 pb-4">
         {orari.map((giorno, gi) => {
-          const isToday = giorno.giorno === todayName;
-          const isNextDay = nextCelebration?.giorno === giorno.giorno;
-          const headerBg = isToday ? "bg-accent" : isNextDay ? "bg-accent" : "bg-surface";
+          const hasNextInDay = giorno.celebrazioni.some(
+            (cel) => nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`
+          );
+          const headerClass = hasNextInDay ? "bg-accent text-white" : "bg-surface-alt text-foreground";
           return (
-            <div key={gi} className="animate-fade-in-up bg-surface rounded-2xl shadow-sm border border-gray-100 overflow-hidden" style={{ animationDelay: `${gi * 80}ms` }}>
-              <div className={`px-4 py-3 flex items-center gap-2 ${headerBg}`}>
-                <Clock className="w-4 h-4 text-white" />
-                <h3 className="font-semibold text-white text-sm">{giorno.giorno}</h3>
+            <div key={gi} className="animate-fade-in-up bg-surface rounded-2xl shadow-sm border border-border overflow-hidden" style={{ animationDelay: `${gi * 80}ms` }}>
+              <div className={`px-4 py-3 flex items-center gap-2 ${headerClass}`}>
+                <Clock className={`w-4 h-4 ${hasNextInDay ? "text-white" : "text-accent"}`} />
+                <h3 className={`font-semibold text-sm ${hasNextInDay ? "text-white" : "text-foreground"}`}>
+                  {giorno.giorno}
+                </h3>
               </div>
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-border/70">
                 {giorno.celebrazioni.map((cel, ci) => {
                   const isNext = nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`;
                   return (
-                    <div key={ci} className={`px-4 py-3 ${isNext ? "bg-gold/20" : ""}`}>
-                      <p className={`text-sm ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "font-medium text-gray-900"}`}>
-                        {cel.tipo}
-                      </p>
-                      <p className={`text-sm mt-0.5 ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "text-primary font-semibold"}`}>
-                        {cel.orario}
-                      </p>
-                      {cel.note && <p className={`text-xs mt-0.5 ${isNext ? "text-gold" : "text-gray-500"}`}>{cel.note}</p>}
+                    <div key={ci} className={`px-4 py-3 transition-colors ${isNext ? "bg-gold/15" : "bg-surface"}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className={`text-sm ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "font-medium text-foreground"}`}>
+                            {cel.tipo}
+                          </p>
+                          {cel.note && (
+                            <p className={`text-xs mt-1 ${isNext ? "text-gold/80" : "text-foreground/60"}`}>
+                              {cel.note}
+                            </p>
+                          )}
+                        </div>
+                        <p className={`shrink-0 text-sm ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "text-primary font-semibold"}`}>
+                          {cel.orario}
+                        </p>
+                      </div>
                     </div>
                   );
                 })}

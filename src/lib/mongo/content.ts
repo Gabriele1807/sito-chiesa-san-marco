@@ -22,6 +22,9 @@ import {
   orariSettimanali as orariInit,
 } from "@/lib/mock-data";
 
+const GIORNI_SETTIMANA = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+const GIORNO_TO_INDEX = new Map(GIORNI_SETTIMANA.map((giorno, index) => [giorno, index]));
+
 // ============================================================
 //  HELPERS
 // ============================================================
@@ -32,6 +35,16 @@ function clean<T>(doc: any): T {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { _id, ...rest } = doc;
   return rest as T;
+}
+
+function sortOrariByWeekOrder(orari: OrarioSettimanale[]): OrarioSettimanale[] {
+  return [...orari].sort((a, b) => {
+    const indexA = GIORNO_TO_INDEX.get(a.giorno) ?? Number.POSITIVE_INFINITY;
+    const indexB = GIORNO_TO_INDEX.get(b.giorno) ?? Number.POSITIVE_INFINITY;
+
+    if (indexA !== indexB) return indexA - indexB;
+    return a.giorno.localeCompare(b.giorno, "it");
+  });
 }
 
 // Genera ID stringa numerica incrementale (compatibile con lo store)
@@ -315,15 +328,16 @@ export async function getOrari(): Promise<OrarioSettimanale[]> {
   await ensureIndexes();
   await seedIfEmpty("orari_settimanali", orariInit);
   const db = await getDb();
-  return (await db.collection("orari_settimanali").find({}).toArray()).map((d) =>
+  const orari = (await db.collection("orari_settimanali").find({}).toArray()).map((d) =>
     clean<OrarioSettimanale>(d)
   );
+  return sortOrariByWeekOrder(orari);
 }
 
 export async function addOrario(data: OrarioSettimanale): Promise<OrarioSettimanale> {
   const db = await getDb();
   await db.collection("orari_settimanali").insertOne({ ...data });
-  return data;
+  return sortOrariByWeekOrder([data])[0];
 }
 
 export async function updateOrario(giorno: string, data: OrarioSettimanale): Promise<OrarioSettimanale | null> {
@@ -333,7 +347,7 @@ export async function updateOrario(giorno: string, data: OrarioSettimanale): Pro
     { $set: data },
     { returnDocument: "after" }
   );
-  return result ? clean<OrarioSettimanale>(result) : null;
+  return result ? sortOrariByWeekOrder([clean<OrarioSettimanale>(result)])[0] : null;
 }
 
 export async function deleteOrario(giorno: string): Promise<boolean> {

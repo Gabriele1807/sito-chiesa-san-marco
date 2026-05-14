@@ -52,15 +52,21 @@ export default function Navbar({ locale }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.dataset.topbarHidden = isVisible ? "false" : "true";
+    }
+  }, [isVisible]);
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3 pointer-events-none"
       } ${isAtTop ? "shadow-sm" : "shadow-md"}`}
     >
-      <div className="flex items-center justify-between h-14 px-4 lg:px-6">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center h-14 px-4 lg:px-6 gap-2 sm:gap-3">
         {/* Left: hamburger (mobile) + logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="lg:hidden">
             <MobileMenuButton />
           </div>
@@ -79,12 +85,12 @@ export default function Navbar({ locale }: Props) {
         </div>
 
         {/* Center: current section title */}
-        <div className="flex items-center justify-center flex-1 px-4">
-          <TopbarTitle className="flex" />
+        <div className="flex items-center justify-center min-w-0 px-2 sm:px-4">
+          <TopbarTitle className="flex min-w-0" />
         </div>
 
         {/* Right: user menu + language switch */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
           <UserMenu />
           <LanguageSwitcher currentLocale={locale} />
         </div>

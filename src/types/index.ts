@@ -168,3 +168,35 @@ export interface AdminSessionInfo {
 
 /** Tipo unificato per la sessione utente (admin o normale) */
 export type SessionInfo = UserSessionInfo | AdminSessionInfo;
+
+// ============================================================
+// GESTIONE VISIBILITÀ SEZIONI (NAVIGATION VISIBILITY)
+// ============================================================
+
+/** Tutti i ruoli possibili nel sistema */
+export type SystemRole = UserRole | "admin" | "superadmin" | "guest";
+
+/** Accessibilità di una sezione per un ruolo specifico */
+export type RoleAccessType = "full" | "coming_soon" | "hidden";
+
+/** Configurazione di accesso per i ruoli di una sezione */
+export interface SectionRoleConfig {
+  guest?: RoleAccessType;
+  credente?: RoleAccessType;
+  madre?: RoleAccessType;
+  padre?: RoleAccessType;
+  ospite_chiesa?: RoleAccessType;
+  admin?: RoleAccessType;
+  superadmin?: RoleAccessType;
+}
+
+/** Configurazione completa di una sezione */
+export interface SectionVisibility {
+  id: string;
+  sectionId: string; // es. "orari", "preghiere", "icone", etc.
+  sectionLabel: string; // es. "Orari settimanali"
+  isActive: boolean; // global on/off
+  roleConfig: SectionRoleConfig;
+  createdAt: string; // ISO date
+  updatedAt: string; // ISO date
+}

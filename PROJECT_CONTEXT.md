@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 1 maggio 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 12 maggio 2026.
 
 ---
 
@@ -42,6 +42,8 @@ Fatti importanti da sapere subito:
 - l'autenticazione admin invece e persistita su Supabase
 - la route di login admin non deve mostrare sidebar o topbar admin
 - la dashboard admin e gia stata ripulita dalle ridondanze: non deve tornare a contenere link duplicati della sidebar
+- la shell pubblica usa un dock laterale fisso su desktop e una bottom dock su mobile
+- la navbar pubblica resta fissa e si nasconde/riappare in base allo scroll, comunicando il proprio stato alla sidebar tramite una variabile CSS globale
 
 ---
 
@@ -104,8 +106,10 @@ Attenzione: questo punto era obsoleto in versioni precedenti del file.
 
 - `src/app/(main)/layout.tsx`
   - layout pubblico
-  - struttura: `Navbar + Sidebar + main content + Footer`
-  - sidebar pubblica sempre disponibile, con comportamento responsive/mobile overlay
+  - struttura: `Navbar + SidebarDock + MobileDock + main content + Footer`
+  - la shell pubblica usa `.main-shell` per riservare spazio al dock desktop e al dock mobile
+  - la sidebar pubblica e un dock fisso laterale su desktop, non una colonna statica nel flow
+  - su mobile la navigazione principale e le utility si appoggiano a una bottom dock coerente con la sidebar desktop
 
 - `src/app/admin/layout.tsx`
   - layout admin base minimale
@@ -181,6 +185,10 @@ chiesa-san-marco/
 |  |  |- QuickAccessCard.tsx
 |  |  |- BackLink.tsx
 |  |  |- RelatedResourceCard.tsx
+|  |  |- sidebar/
+|  |  |  |- SidebarDock.tsx
+|  |  |  |- MobileDock.tsx
+|  |  |  |- nav-config.ts
 |  |  |- auth/
 |  |  |  |- AuthContext.tsx
 |  |  |  |- LoginModal.tsx
@@ -724,11 +732,19 @@ Stili globali aggiuntivi:
 - `[dir="rtl"] { text-align: right }` per arabo
 - `html { scroll-behavior: smooth }`
 - body usa font-family `var(--font-sans)`
+- variabili globali della shell pubblica: `--dock-width`, `--dock-width-compact`, `--dock-bottom-height`, `--topbar-height`, `--topbar-offset`
+- `.main-shell` per gestire il padding del layout pubblico in funzione di dock desktop e dock mobile
 
 ### 10.4 Font
 
 - font principale: Inter
 - definito in root layout con CSS variable `--font-inter`
+
+### 10.5 Footer e dock
+
+- il footer pubblico e stato rifinito con una tinta piu calda e un gradiente leggero per separarlo meglio dal contenuto
+- le CTA del footer usano colori piu leggibili e focus ring coerenti con il resto del sito
+- il dock laterale usa il fondo scuro del brand, con stato attivo chiaro ad alto contrasto e hover sobrio
 
 ---
 
@@ -737,9 +753,19 @@ Stili globali aggiuntivi:
 ### 11.1 Layout pubblico
 
 - navbar in alto
-- sidebar laterale con overlay mobile
+- sidebar laterale come dock fisso persistente su desktop
+- bottom dock mobile con icone, pensata per non coprire il contenuto critico
+- pannello sidebar mobile separato, richiamabile dal bottone menu e dalla bottom dock
 - footer sotto il contenuto
 - `dir="rtl"` automatico per arabo
+
+### 11.1b Comportamento dock/sidebar
+
+- la sidebar desktop non scorre via con il contenuto: resta ancorata al viewport
+- quando la navbar si nasconde nello scroll, la sidebar riallinea automaticamente il proprio offset superiore tramite `html[data-topbar-hidden]`
+- la sidebar desktop supporta una modalita compatta persistente salvata in `localStorage` (`dock_compact`)
+- la navigazione primaria, le utility e il toggle di compattezza sono separati in zone distinte
+- su mobile la bottom dock mostra le destinazioni piu usate e un pulsante menu per aprire il pannello laterale
 
 ### 11.2 Pagine pubbliche presenti
 
@@ -798,7 +824,7 @@ Stili globali aggiuntivi:
   - cross pin animato sovrapposto alla mappa
   - navbar pubblica fissa in alto con hide/show su direzione scroll (dissolvenza in discesa, riapparizione in risalita)
   - layout pubblico con offset top coerente (`pt-14`) per evitare overlap contenuti sotto navbar fissa
-  - sidebar pubblica resa piu stabile su pagine lunghe (comportamento desktop/mobili separato, meno effetto doppio scroll)
+  - dock laterale desktop persistente e bottom dock mobile separata, con comportamento piu stabile sulle pagine lunghe
   - sacerdote: solo nome "Padre Mina Kolta", non contattabile
   - social: solo Facebook (Instagram e WhatsApp rimossi)
   - link Facebook e YouTube reali
@@ -902,6 +928,8 @@ Caratteristiche gia implementate:
 - content area adattata a sidebar desktop
 - tabelle admin pensate per scroll orizzontale nelle pagine CRUD
 
+Nota: l'area admin resta separata dalla nuova shell pubblica e non usa il dock laterale ispirato a Webflow University.
+
 ---
 
 ## 13. API esistenti
@@ -930,6 +958,7 @@ Ottimizzazioni performance navigazione introdotte (23 apr 2026):
 - aggiunto `src/app/(main)/loading.tsx` per feedback immediato durante i cambi pagina nel route group pubblico
 - invalidazione cache puntuale dopo CRUD admin contenuti (`/api/admin/libreria`, `/api/admin/icone`, `/api/admin/preghiere`, `/api/admin/eventi`, `/api/admin/orari`) tramite `revalidateTag`
 - fix runtime su `/admin/libreria-privata`: la route ora attende davvero i risultati MongoDB prima di serializzarli, evitando errori tipo `files.map is not a function`
+- la shell pubblica ora dipende anche dallo stato della navbar che si nasconde su scroll, quindi i cambi di layout vanno verificati in combinazione con il comportamento del dock
 
 Obiettivo pratico: transizioni tra sezioni piu rapide e meno effetto "connessione lenta" percepita dall'utente.
 
@@ -1071,6 +1100,8 @@ Nota pratica:
 7. `ADMIN_SESSION_SECRET` e dichiarato nelle variabili ma non e ancora usato attivamente (la session security e basata su token UUID in DB + cookie httpOnly)
 8. il middleware protegge solo le route admin; le route `/api/auth/*` sono pubbliche
 9. quando un utente viene approvato come admin, le stesse credenziali di login funzionano per l'accesso admin (non serve piu password temporanea)
+10. la shell pubblica e in fase di rifinitura continua: i file chiave del dock sono `src/components/sidebar/SidebarDock.tsx`, `src/components/sidebar/MobileDock.tsx` e `src/components/sidebar/nav-config.ts`
+11. il dock compatto desktop e persistito con `localStorage` (`dock_compact`), quindi ogni modifica va controllata sia in stato esteso sia in stato compatto
 
 ---
 
@@ -1162,7 +1193,7 @@ Palette completamente ripensata per riflettere l'identità vera della Chiesa Cop
 
 ---
 
-## 22. Modifiche UI/UX recenti (1 maggio 2026)
+## 22. Modifiche UI/UX recenti (8 maggio 2026)
 
 ### 21.1 Fix navbar e background
 
@@ -1222,5 +1253,26 @@ Palette completamente ripensata per riflettere l'identità vera della Chiesa Cop
 - Mobile-first responsive: grid 1 col → 2 col su sm
 - Accessibilità: ratio text/bg migliore
 - Consistenza: `rounded-2xl`, `shadow-sm/md`, `border-gray-200` uniforme
+
+### 22.3 Shell pubblica e footer aggiornati (8 maggio 2026)
+
+- introdotto un dock laterale fisso desktop ispirato a Webflow University, con gerarchia visiva separata tra navigazione primaria, utility e toggle di compattezza
+- introdotta una bottom dock mobile coerente con la sidebar desktop, per mantenere continuita visiva e funzionale sui piccoli schermi
+- la navbar pubblica continua a nascondersi su scroll e ora comunica il proprio stato alla sidebar tramite `html[data-topbar-hidden]`
+- il logo e stato rimosso dalla sidebar per evitare ridondanza con la navbar, lasciando il brand solo nell'header superiore
+- il footer e stato ripulito cromaticamente con CTA piu chiare e contrasto migliore sui link, per evitare l'effetto troppo spento della versione precedente
+
+### 22.4 Migliorie navbar/sidebar/home/orari + dashboard (8 maggio 2026)
+
+- Navbar mobile: layout a 3 colonne con titolo centrale troncato e spaziature piu stabili (Navbar.tsx, TopbarTitle.tsx)
+- Sidebar mobile: overlay con fade + easing piu morbido, scroll interno stabilizzato, sottotitoli attivi leggibili e spaziature uniformate (SidebarDock.tsx, MobileDock.tsx, MobileMenuButton.tsx)
+- Home mobile: hero full-height con indicatore scroll animato e chiave i18n `home.scrollHint` (page.tsx, globals.css, messages/it.json, messages/ar.json)
+- Orari: cards mobile piu leggibili; evidenzia solo la prossima celebrazione (giorno + riga) anche su desktop (OrariTable.tsx)
+- Dashboard admin: conteggi e box "Oggi" ora letti dal layer MongoDB contenuti; file privati da Mongo (admin/(dashboard)/page.tsx)
+
+### 22.5 Orari settimanali normalizzati (12 maggio 2026)
+
+- il layer contenuti Mongo ordina sempre gli orari nella sequenza canonica Domenica → Sabato, cosi la tabella pubblica e la vista admin non dipendono piu dall'ordine fisico dei documenti nel database (src/lib/mongo/content.ts)
+- la normalizzazione viene applicata anche ai ritorni di create/update degli orari, per mantenere coerente l'output API dopo modifiche admin
 
 ---

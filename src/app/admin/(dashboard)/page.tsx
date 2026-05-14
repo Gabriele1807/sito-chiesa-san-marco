@@ -18,9 +18,9 @@ import {
   getPreghiere,
   getEventi,
   getOrari,
-} from "@/lib/supabase/content";
+  getFilePrivati,
+} from "@/lib/mongo/content";
 import { getVideoCorsi } from "@/lib/db";
-import { getFilePrivati } from "@/lib/data/store";
 
 // Map day index (0=Sun) to Italian day names used in orari
 const giorniMap: Record<number, string> = {
@@ -34,20 +34,19 @@ const giorniMap: Record<number, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  const [libri, icone, preghiere, videoCorsi, eventiAll, orari] = await Promise.all([
+  const [libri, icone, preghiere, videoCorsi, eventiAll, orari, filePriv] = await Promise.all([
     getLibri(),
     getIcone(),
     getPreghiere(),
     getVideoCorsi(),
     getEventi(),
     getOrari(),
+    getFilePrivati(),
   ]);
   const now = new Date();
   const eventiFuturi = eventiAll
     .filter((e) => new Date(e.data) > now)
     .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
-  const filePriv = getFilePrivati();
-  
   // Today's schedule
   const oggi = giorniMap[now.getDay()];
   const orarioOggi = orari.find((o) => o.giorno === oggi);
