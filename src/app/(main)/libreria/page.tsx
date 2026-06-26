@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 import { getTestiSacri } from "@/lib/db";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { toGDriveImageUrl } from "@/lib/gdrive";
-import AdminGate from "@/components/auth/AdminGate";
 import SectionVisibilityGate from "@/components/SectionVisibilityGate";
 
 export const revalidate = 60;
@@ -64,9 +63,7 @@ export default async function LibreriaPage() {
 
   return (
     <SectionVisibilityGate sectionId="libreria" title={t("titolo")}>
-      <AdminGate title={t("titolo")}>
-        {content}
-      </AdminGate>
+      {content}
     </SectionVisibilityGate>
   );
 }

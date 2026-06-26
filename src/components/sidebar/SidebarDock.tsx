@@ -175,10 +175,8 @@ export default function SidebarDock() {
     const active = isActive(item);
     const Icon = item.icon;
     
-    // Determina se mostrare coming soon:
-    // - Se sectionAccess è "coming_soon", mostra coming soon
-    // - Se l'item ha comingSoon=true e l'utente non è admin, mostra coming soon (legacy)
-    const isComingSoon = (sectionAccess === "coming_soon" && visibilitiesLoaded) || (item.comingSoon && !isAdmin);
+    // Determina se mostrare coming soon solo in base al DB (section_visibility)
+    const isComingSoon = sectionAccess === "coming_soon" && visibilitiesLoaded;
     
     const isToggle = item.type === "mode-toggle";
     const isSelected = isToggle && item.actionId === "toggleDock" ? isCompact : false;

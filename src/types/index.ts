@@ -62,12 +62,45 @@ export interface Evento {
   immagine?: string;
 }
 
+/**
+ * Iscrizione a un evento (collezione MongoDB "event_registrations").
+ *
+ * I dati del partecipante e del padre devono corrispondere al documento
+ * d'identità: vengono usati al momento dell'ingresso all'evento.
+ *
+ * Logica famiglia / duplicati:
+ *  - stesso (padreNome + padreCognome) + stesso (nome + cognome) => DUPLICATO
+ *  - stesso (padreNome + padreCognome) + (nome|cognome) diverso  => stessa FAMIGLIA
+ */
 export interface IscrizioneEvento {
+  _id?: string;
+  id?: string;
+  eventoId: string;        // id dell'evento (campo "id" del documento Evento)
+  // Partecipante (come da documento d'identità)
   nome: string;
-  email: string;
+  cognome: string;
+  // Padre (per distinguere omonimi e raggruppare le famiglie)
+  padreNome: string;
+  padreCognome: string;
+  // Contatti
   telefono: string;
+  email?: string;          // opzionale
   note?: string;
-  eventoId: string;
+  // Metadati
+  createdAt?: string;      // ISO date
+}
+
+/** Dati inviati dal form pubblico per creare una nuova iscrizione */
+export type CreateIscrizioneData = Omit<IscrizioneEvento, "_id" | "id" | "createdAt">;
+
+/** Esito della creazione di un'iscrizione */
+export interface CreateIscrizioneResult {
+  success: boolean;
+  iscrizione?: IscrizioneEvento;
+  /** Codice errore applicativo per messaggi specifici lato client */
+  errorCode?: "duplicate" | "full" | "validation" | "server";
+  /** Se la stessa famiglia (stesso padre) ha già altre iscrizioni */
+  sameFamily?: boolean;
 }
 
 export interface OrarioSettimanale {
