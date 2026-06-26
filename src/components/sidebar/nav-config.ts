@@ -78,7 +78,6 @@ export const primarySection: SidebarSection = {
       icon: ImageIcon,
       href: "/icone",
       sectionId: "icone",
-      comingSoon: true,
     },
     {
       id: "libreria",
@@ -88,7 +87,6 @@ export const primarySection: SidebarSection = {
       icon: Library,
       href: "/libreria",
       sectionId: "libreria",
-      comingSoon: true,
     },
     {
       id: "eventi",
@@ -98,7 +96,6 @@ export const primarySection: SidebarSection = {
       icon: CalendarDays,
       href: "/eventi",
       sectionId: "eventi",
-      comingSoon: true,
     },
   ],
 };

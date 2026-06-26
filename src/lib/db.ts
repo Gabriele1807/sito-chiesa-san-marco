@@ -13,9 +13,27 @@ import {
   getVideoCorsi as contentGetVideoCorsi,
   getEventi as contentGetEventi,
   getEventoBySlug as contentGetEventoBySlug,
+  getEventoById as contentGetEventoById,
   getOrari as contentGetOrari,
 } from "@/lib/mongo/content";
-import type { Icona, TestoSacro, Preghiera, VideoCorso, Evento, OrarioSettimanale, IscrizioneEvento } from "@/types";
+import {
+  createIscrizione as regCreateIscrizione,
+  getIscrizioniByEvento as regGetIscrizioniByEvento,
+  countIscrizioniByEvento as regCountIscrizioniByEvento,
+  countIscrizioniPerEvento as regCountIscrizioniPerEvento,
+  deleteIscrizione as regDeleteIscrizione,
+} from "@/lib/mongo/registrations";
+import type {
+  Icona,
+  TestoSacro,
+  Preghiera,
+  VideoCorso,
+  Evento,
+  OrarioSettimanale,
+  IscrizioneEvento,
+  CreateIscrizioneData,
+  CreateIscrizioneResult,
+} from "@/types";
 
 const CONTENT_REVALIDATE_SECONDS = 60;
 
@@ -109,13 +127,32 @@ export async function getEventoBySlug(slug: string): Promise<Evento | undefined>
   return getEventoBySlugCached(slug);
 }
 
+export async function getEventoById(id: string): Promise<Evento | undefined> {
+  return contentGetEventoById(id);
+}
+
 // ============= ORARI =============
 export async function getOrari(): Promise<OrarioSettimanale[]> {
   return getOrariCached();
 }
 
 // ============= ISCRIZIONI =============
-export async function createIscrizione(iscrizione: IscrizioneEvento): Promise<{ success: boolean }> {
-  console.log("Nuova iscrizione:", iscrizione);
-  return { success: true };
+export async function createIscrizione(data: CreateIscrizioneData): Promise<CreateIscrizioneResult> {
+  return regCreateIscrizione(data);
+}
+
+export async function getIscrizioniByEvento(eventoId: string): Promise<IscrizioneEvento[]> {
+  return regGetIscrizioniByEvento(eventoId);
+}
+
+export async function countIscrizioniByEvento(eventoId: string): Promise<number> {
+  return regCountIscrizioniByEvento(eventoId);
+}
+
+export async function countIscrizioniPerEvento(): Promise<Record<string, number>> {
+  return regCountIscrizioniPerEvento();
+}
+
+export async function deleteIscrizione(id: string): Promise<boolean> {
+  return regDeleteIscrizione(id);
 }

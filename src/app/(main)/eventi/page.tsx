@@ -1,13 +1,16 @@
 import { getTranslations } from "next-intl/server";
-import { getEventi } from "@/lib/db";
+import { getEventi, countIscrizioniPerEvento } from "@/lib/db";
 import EventiList from "@/components/EventiList";
-import AdminGate from "@/components/auth/AdminGate";
 import SectionVisibilityGate from "@/components/SectionVisibilityGate";
 
 export const revalidate = 60;
 
 export default async function EventiPage() {
-  const [t, eventi] = await Promise.all([getTranslations("eventi"), getEventi()]);
+  const [t, eventi, iscrittiCount] = await Promise.all([
+    getTranslations("eventi"),
+    getEventi(),
+    countIscrizioniPerEvento(),
+  ]);
 
   const content = (
     <div className="space-y-8">
@@ -20,15 +23,13 @@ export default async function EventiPage() {
         </p>
       </div>
 
-      <EventiList eventi={eventi} />
+      <EventiList eventi={eventi} iscrittiCount={iscrittiCount} />
     </div>
   );
 
   return (
     <SectionVisibilityGate sectionId="eventi" title={t("titolo")}>
-      <AdminGate title={t("titolo")}>
-        {content}
-      </AdminGate>
+      {content}
     </SectionVisibilityGate>
   );
 }

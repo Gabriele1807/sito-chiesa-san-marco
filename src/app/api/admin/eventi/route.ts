@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getEventi, addEvento, updateEvento, deleteEvento } from "@/lib/mongo/content";
+import { deleteIscrizioniByEvento } from "@/lib/mongo/registrations";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 
 export async function GET() {
@@ -37,6 +38,8 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ error: "ID mancante" }, { status: 400 });
     const deleted = await deleteEvento(id);
     if (!deleted) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
+    // Rimuove a cascata tutte le iscrizioni associate all'evento
+    await deleteIscrizioniByEvento(id);
     revalidatePublicContent("eventi");
     return NextResponse.json({ success: true });
   } catch {
