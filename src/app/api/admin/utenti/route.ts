@@ -53,6 +53,16 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, error: "ID utente richiesto" }, { status: 400 });
     }
 
+    const ALLOWED_ROLES = ["credente", "madre", "padre", "diacono", "ospite_chiesa", "prete"];
+    const ALLOWED_AGE_GROUPS = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
+
+    if (body.role !== undefined && !ALLOWED_ROLES.includes(body.role)) {
+      return NextResponse.json({ success: false, error: "Ruolo non valido" }, { status: 400 });
+    }
+    if (body.ageGroup !== undefined && !ALLOWED_AGE_GROUPS.includes(body.ageGroup)) {
+      return NextResponse.json({ success: false, error: "Fascia d'età non valida" }, { status: 400 });
+    }
+
     // Whitelist esplicita dei campi modificabili — username escluso intenzionalmente
     const safeData: Record<string, unknown> = {};
     if (body.nome !== undefined) safeData.nome = body.nome;

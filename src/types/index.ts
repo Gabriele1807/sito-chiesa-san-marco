@@ -120,7 +120,7 @@ export type Locale = "it" | "ar";
 // ============================================================
 
 /** Ruolo applicativo dell'utente, scelto nel quiz di registrazione */
-export type UserRole = "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa";
+export type UserRole = "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "prete";
 
 /** Fascia d'età per filtraggio contenuti */
 export type AgeGroup = "0-11" | "12-18" | "19-29" | "30-45" | "46-65" | "65+";
@@ -220,8 +220,7 @@ export interface SectionRoleConfig {
   madre?: RoleAccessType;
   padre?: RoleAccessType;
   diacono?: RoleAccessType;
-  ospite_chiesa?: RoleAccessType;
-  admin?: RoleAccessType;
+  ospite_chiesa?: RoleAccessType;  prete?: RoleAccessType;  admin?: RoleAccessType;
   superadmin?: RoleAccessType;
 }
 

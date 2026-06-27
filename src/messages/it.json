@@ -376,6 +376,7 @@
     "userMenuRolePadre": "Padre",
     "userMenuRoleDiacono": "Diacono",
     "userMenuRoleOspite": "Ospite",
+    "userMenuRolePrete": "Prete",
     "userMenuProfile": "Il mio profilo",
     "userMenuAdminPanel": "Pannello Admin",
     "userMenuLogout": "Logout"
@@ -426,6 +427,7 @@
     "ruoloPadre": "Padre",
     "ruoloDiacono": "Diacono",
     "ruoloOspite": "Ospite di altra chiesa",
+    "ruoloPrete": "Prete",
     "ruoloAdmin": "Amministratore",
     "ruoloSuperAdmin": "Super Amministratore",
     "pannelloAdmin": "Pannello di amministrazione",

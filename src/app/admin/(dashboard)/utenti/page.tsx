@@ -38,6 +38,7 @@ const ROLE_LABELS: Record<string, string> = {
   padre: "Padre",
   diacono: "Diacono",
   ospite_chiesa: "Ospite",
+  prete: "Prete",
 };
 
 const AGE_LABELS: Record<string, string> = {
@@ -469,6 +470,7 @@ export default function GestioneUtentiPage() {
                   <option value="padre">Padre</option>
                   <option value="diacono">Diacono</option>
                   <option value="ospite_chiesa">Ospite da altra chiesa</option>
+                  <option value="prete">Prete</option>
                 </select>
               </div>
               <div>

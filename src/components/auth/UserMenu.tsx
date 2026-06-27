@@ -85,6 +85,7 @@ export default function UserMenu() {
                 : user?.role === "padre" ? t("userMenuRolePadre")
                 : user?.role === "diacono" ? t("userMenuRoleDiacono")
                 : user?.role === "ospite_chiesa" ? t("userMenuRoleOspite")
+                : user?.role === "prete" ? t("userMenuRolePrete")
                 : t("userMenuUser")}
             </p>
           </div>

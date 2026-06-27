@@ -121,6 +121,7 @@ export default function ProfiloPage() {
     padre: t("ruoloPadre"),
     diacono: t("ruoloDiacono"),
     ospite_chiesa: t("ruoloOspite"),
+    prete: t("ruoloPrete"),
     admin: t("ruoloAdmin"),
     superadmin: t("ruoloSuperAdmin"),
   };

@@ -270,7 +270,7 @@ export async function createSectionVisibility(
  */
 export async function getRoleAccessToSection(
   sectionId: string,
-  role: "guest" | "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "admin" | "superadmin"
+  role: "guest" | "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "prete" | "admin" | "superadmin"
 ): Promise<RoleAccessType> {
   const visibility = await getSectionVisibility(sectionId);
   

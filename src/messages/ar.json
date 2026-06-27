@@ -376,6 +376,7 @@
     "userMenuRolePadre": "أب",
     "userMenuRoleDiacono": "شماس",
     "userMenuRoleOspite": "ضيف",
+    "userMenuRolePrete": "قس",
     "userMenuProfile": "ملفي الشخصي",
     "userMenuAdminPanel": "لوحة الإدارة",
     "userMenuLogout": "تسجيل الخروج"
@@ -426,6 +427,7 @@
     "ruoloPadre": "أب",
     "ruoloDiacono": "شماس",
     "ruoloOspite": "ضيف من كنيسة أخرى",
+    "ruoloPrete": "قس",
     "ruoloAdmin": "مسؤول",
     "ruoloSuperAdmin": "المسؤول الأعلى",
     "pannelloAdmin": "لوحة الإدارة",

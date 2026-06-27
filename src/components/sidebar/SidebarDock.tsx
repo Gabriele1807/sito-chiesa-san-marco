@@ -26,7 +26,7 @@ export default function SidebarDock() {
   const isAdmin = type === "admin";
 
   // Determina il ruolo dell'utente per i controlli di visibilità
-  function getUserRole(): "guest" | "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "admin" | "superadmin" {
+  function getUserRole(): "guest" | "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "prete" | "admin" | "superadmin" {
     if (type === "admin") {
       return admin?.ruolo === "superadmin" ? "superadmin" : "admin";
     }
