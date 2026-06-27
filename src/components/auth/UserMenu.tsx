@@ -83,7 +83,6 @@ export default function UserMenu() {
                 : user?.role === "credente" ? t("userMenuRoleCredente")
                 : user?.role === "madre" ? t("userMenuRoleMadre")
                 : user?.role === "padre" ? t("userMenuRolePadre")
-                : user?.role === "diacono" ? t("userMenuRoleDiacono")
                 : user?.role === "ospite_chiesa" ? t("userMenuRoleOspite")
                 : user?.role === "prete" ? t("userMenuRolePrete")
                 : t("userMenuUser")}

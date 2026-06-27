@@ -14,7 +14,7 @@ import { getSectionVisibility } from "@/lib/mongo/visibility";
  * Legge dalla sessione utente memorizzata nei cookie
  */
 export async function getUserRoleServer(): Promise<
-  "guest" | "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "prete" | "admin" | "superadmin"
+  "guest" | "credente" | "madre" | "padre" | "ospite_chiesa" | "prete" | "admin" | "superadmin"
 > {
   try {
     const cookieStore = await cookies();
@@ -39,7 +39,7 @@ export async function getUserRoleServer(): Promise<
       return "guest";
     }
 
-    const validRoles: SystemRole[] = ["guest", "credente", "madre", "padre", "diacono", "ospite_chiesa", "prete", "admin", "superadmin"];
+    const validRoles: SystemRole[] = ["guest", "credente", "madre", "padre", "ospite_chiesa", "prete", "admin", "superadmin"];
     return validRoles.includes(user.role as SystemRole) ? (user.role as SystemRole) : "guest";
   } catch (error) {
     console.error("[getUserRoleServer] Errore:", error);

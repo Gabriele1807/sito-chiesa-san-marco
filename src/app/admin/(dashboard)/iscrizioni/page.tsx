@@ -92,6 +92,8 @@ export default function AdminIscrizioniPage() {
   const [loadingDettaglio, setLoadingDettaglio] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   
   // Stati per Eliminazione
   const [deleteTarget, setDeleteTarget] = useState<Iscrizione | null>(null);
@@ -293,6 +295,19 @@ export default function AdminIscrizioniPage() {
     });
   }, [iscrizioni, search]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+  const paginatedIscrizioni = filtered.slice((page - 1) * limit, page * limit);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, selectedId]);
+
   function formatDate(dateStr?: string) {
     if (!dateStr) return "—";
     return new Date(dateStr).toLocaleString("it-IT", {
@@ -460,15 +475,33 @@ export default function AdminIscrizioniPage() {
           </div>
 
           {/* Ricerca */}
-          <div className="relative max-w-sm">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cerca per nome, padre, telefono..."
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
-            />
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto] items-end">
+            <div className="relative max-w-sm">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cerca per nome, padre, telefono..."
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>Mostra</span>
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+              >
+                {[10, 20, 50, 100].map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              <span>di {filtered.length}</span>
+            </div>
           </div>
 
           {/* Tabella iscritti */}
@@ -486,12 +519,12 @@ export default function AdminIscrizioniPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((i, idx) => {
+                {paginatedIscrizioni.map((i, idx) => {
                   const fk = familyKeyOf(i);
                   const isFamily = familyCounts[fk] > 1;
                   return (
                     <tr key={i._id} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                      <td className="px-4 py-3 text-gray-400">{idx + 1}</td>
+                      <td className="px-4 py-3 text-gray-400">{(page - 1) * limit + idx + 1}</td>
                       <td className="px-4 py-3 font-medium text-gray-900">
                         {i.nome} {i.cognome}
                       </td>

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "./AuthContext";
 import type { UserRole, AgeGroup } from "@/types";
 import { CHIESE_LIST } from "@/lib/churches";
+import { validatePasswordRules } from "@/lib/auth/password-rules";
 
 type Step = "credentials" | "quiz" | "confirm";
 
@@ -25,6 +26,7 @@ export default function RegisterModal() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const passwordRules = validatePasswordRules(password);
 
   // Step 2: quiz
   const [role, setRole] = useState<UserRole | "">("");
@@ -40,7 +42,6 @@ export default function RegisterModal() {
     { value: "credente", label: t("registerRoleCredente"), description: t("registerRoleCredenteDesc") },
     { value: "madre", label: t("registerRoleMadre"), description: t("registerRoleMadreDesc") },
     { value: "padre", label: t("registerRolePadre"), description: t("registerRolePadreDesc") },
-    { value: "diacono", label: t("registerRoleDiacono"), description: t("registerRoleDiaconoDesc") },
     { value: "ospite_chiesa", label: t("registerRoleOspite"), description: t("registerRoleOspiteDesc") },
   ];
 
@@ -58,6 +59,7 @@ export default function RegisterModal() {
     "Email non valida": t("registerErrorEmailInvalid"),
     "Username non valido (3-30 caratteri, solo lettere, numeri, . _ -)": t("registerErrorUsernameInvalid"),
     "La password deve essere tra 8 e 128 caratteri": t("registerErrorPasswordRange"),
+    "La password deve contenere almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale": t("registerErrorPasswordRules"),
     "Ruolo non valido": t("registerErrorRoleInvalid"),
     "Fascia d'età non valida": t("registerErrorAgeInvalid"),
     "Nome non valido": t("registerErrorNameInvalid"),
@@ -123,6 +125,10 @@ export default function RegisterModal() {
     }
     if (password.length < 8) {
       setError(t("registerErrorPasswordLength"));
+      return;
+    }
+    if (Object.values(passwordRules).some((rule) => !rule)) {
+      setError(t("registerErrorPasswordRules"));
       return;
     }
     if (password !== confirmPassword) {
@@ -317,17 +323,27 @@ export default function RegisterModal() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldPassword")}</label>
+              <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+                {/* <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                  <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    {t("registerFieldPassword")}
+                  </label>
+                  <p className="text-xs text-gray-500 sm:text-right">
+                    Esempi: <span className="font-semibold text-gray-700">!@#$%^&*()</span>
+                  </p>
+                </div> */}
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError("");
+                    }}
                     placeholder={t("registerPlaceholderPassword")}
                     required
                     autoComplete="new-password"
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
+                    className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
                   />
                   <button
                     type="button"
@@ -337,6 +353,25 @@ export default function RegisterModal() {
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
+                </div>
+                <div className="mt-3 text-xs text-gray-500">
+                  Esempi di caratteri speciali: <span className="font-medium text-gray-700">!@#$%^&*()</span>
+                </div>
+                <div className="mt-3 grid gap-2 text-sm text-gray-500">
+                  {([
+                    { key: "length", label: t("registerPasswordRuleLength"), ok: passwordRules.length },
+                    { key: "lowercase", label: t("registerPasswordRuleLowercase"), ok: passwordRules.lowercase },
+                    { key: "uppercase", label: t("registerPasswordRuleUppercase"), ok: passwordRules.uppercase },
+                    { key: "number", label: t("registerPasswordRuleNumber"), ok: passwordRules.number },
+                    { key: "special", label: t("registerPasswordRuleSpecial"), ok: passwordRules.special },
+                  ] as const).map((rule) => (
+                    <div key={rule.key} className="flex items-center gap-2">
+                      <span className={rule.ok ? "text-emerald-600" : "text-gray-400"}>
+                        <Check className="w-4 h-4" />
+                      </span>
+                      <span className={rule.ok ? "text-gray-900" : "text-gray-500"}>{rule.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -353,13 +388,15 @@ export default function RegisterModal() {
                 />
               </div>
 
-              <button
-                type="button"
-                onClick={handleNextToQuiz}
-                className="btn-primary w-full justify-center gap-2 mt-2"
-              >
-                {t("registerContinue")} <ChevronRight className="w-4 h-4" />
-              </button>
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleNextToQuiz}
+                  className="btn-primary w-full justify-center gap-2 mt-2"
+                >
+                  {t("registerContinue")} <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -367,9 +404,17 @@ export default function RegisterModal() {
           {step === "quiz" && !success && (
             <div className="space-y-4">
               {/* Ruolo */}
-              <div>
+              <div className="flex items-center justify-between gap-3">
                 <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-2">{t("registerRoleTitle")}</label>
-                <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStep("credentials")}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  {t("registerBack")}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
                   {roles.map((r) => (
                     <button
                       key={r.value}
@@ -389,8 +434,6 @@ export default function RegisterModal() {
                     </button>
                   ))}
                 </div>
-              </div>
-
               {/* Chiesa (solo per ospiti) */}
               {role === "ospite_chiesa" && (
                 <div>

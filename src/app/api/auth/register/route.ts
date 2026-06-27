@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { hashPassword } from "@/lib/auth/password";
+import { validatePasswordRules } from "@/lib/auth/password-rules";
 import { createUser, findUserByEmail, findUserByUsername } from "@/lib/mongo/users";
 import type { UserRole, AgeGroup } from "@/types";
 
-const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "diacono", "ospite_chiesa"];
+const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "ospite_chiesa"];
 const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
 
 export async function POST(request: Request) {
@@ -36,6 +37,14 @@ export async function POST(request: Request) {
     if (typeof password !== "string" || password.length < 8 || password.length > 128) {
       return NextResponse.json(
         { success: false, error: "La password deve essere tra 8 e 128 caratteri" },
+        { status: 400 }
+      );
+    }
+
+    const passwordRules = validatePasswordRules(password);
+    if (Object.values(passwordRules).some((rule) => !rule)) {
+      return NextResponse.json(
+        { success: false, error: "La password deve contenere almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale" },
         { status: 400 }
       );
     }

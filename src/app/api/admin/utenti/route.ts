@@ -19,12 +19,14 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "50");
+  const query = url.searchParams.get("q") || undefined;
   const adminRequestFilter = url.searchParams.get("adminRequest") as "none" | "pending" | "approved" | "rejected" | null;
 
   try {
     const result = await listUsers({
       page,
       limit,
+      query,
       adminRequestFilter: adminRequestFilter || undefined,
     });
     return NextResponse.json({ success: true, ...result });
@@ -53,7 +55,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, error: "ID utente richiesto" }, { status: 400 });
     }
 
-    const ALLOWED_ROLES = ["credente", "madre", "padre", "diacono", "ospite_chiesa", "prete"];
+    const ALLOWED_ROLES = ["credente", "madre", "padre", "ospite_chiesa", "prete"];
     const ALLOWED_AGE_GROUPS = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
 
     if (body.role !== undefined && !ALLOWED_ROLES.includes(body.role)) {

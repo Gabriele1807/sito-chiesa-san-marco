@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, Pencil, Plus, Trash2, Youtube } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -26,6 +26,9 @@ const emptyForm: Omit<VideoCorso, "id"> = {
 
 export default function AdminVideoCorsiPage() {
   const [items, setItems] = useState<VideoCorso[]>([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -40,9 +43,33 @@ export default function AdminVideoCorsiPage() {
     setLoading(false);
   }
 
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return items;
+    return items.filter((item) =>
+      item.titolo.toLowerCase().includes(query) ||
+      item.descrizione.toLowerCase().includes(query) ||
+      item.urlVideo.toLowerCase().includes(query) ||
+      item.categoria.toLowerCase().includes(query)
+    );
+  }, [items, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / limit));
+  const paginatedItems = filteredItems.slice((page - 1) * limit, page * limit);
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, limit]);
 
   function openAdd() {
     setEditId(null);
@@ -120,10 +147,10 @@ export default function AdminVideoCorsiPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestione Video & Corsi</h1>
-          <p className="text-sm text-gray-500 mt-1">{items.length} contenuti video</p>
+          <p className="text-sm text-gray-500 mt-1">{filteredItems.length} contenuti video</p>
         </div>
         <button
           onClick={openAdd}
@@ -131,6 +158,30 @@ export default function AdminVideoCorsiPage() {
         >
           <Plus className="w-4 h-4" /> Aggiungi video
         </button>
+      </div>
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative max-w-sm w-full sm:w-72">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cerca video..."
+            className="w-full pl-3 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600"
+          />
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>Mostra</span>
+          <select
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+          >
+            {[5, 10, 20, 50].map((size) => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+          <span>di {filteredItems.length}</span>
+        </div>
       </div>
 
       {showForm && (
@@ -224,7 +275,7 @@ export default function AdminVideoCorsiPage() {
             </tr>
           </thead>
           <tbody>
-            {items.map((item, index) => (
+            {paginatedItems.map((item, index) => (
               <tr key={item.id} className={index % 2 === 0 ? "bg-background" : "bg-surface/50"}>
                 <td className="px-4 py-3 font-medium text-foreground">{item.titolo}</td>
                 <td className="px-4 py-3 text-foreground/70">{item.categoria}</td>
@@ -241,8 +292,29 @@ export default function AdminVideoCorsiPage() {
             ))}
           </tbody>
         </table>
-        {items.length === 0 && <p className="text-center py-8 text-foreground/30 text-sm">Nessun video presente</p>}
+        {paginatedItems.length === 0 && <p className="text-center py-8 text-foreground/30 text-sm">{search ? "Nessun video trovato" : "Nessun video presente"}</p>}
       </div>
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 text-sm text-gray-500 border-t border-gray-200">
+          <span>Pagina {page} di {totalPages}</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="rounded-lg border border-gray-300 px-3 py-1 disabled:opacity-50"
+            >
+              Precedente
+            </button>
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="rounded-lg border border-gray-300 px-3 py-1 disabled:opacity-50"
+            >
+              Successiva
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-2 text-xs text-foreground/50">
         <Youtube className="w-3.5 h-3.5 text-accent" />

@@ -27,6 +27,7 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthContext";
 import { CHIESE_LIST } from "@/lib/churches";
+import { validatePasswordRules } from "@/lib/auth/password-rules";
 
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
@@ -43,6 +44,7 @@ export default function ProfiloPage() {
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const passwordRules = validatePasswordRules(newPassword);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -119,7 +121,6 @@ export default function ProfiloPage() {
     credente: t("ruoloCredente"),
     madre: t("ruoloMadre"),
     padre: t("ruoloPadre"),
-    diacono: t("ruoloDiacono"),
     ospite_chiesa: t("ruoloOspite"),
     prete: t("ruoloPrete"),
     admin: t("ruoloAdmin"),
@@ -272,8 +273,8 @@ export default function ProfiloPage() {
       setPasswordMessage({ type: "error", text: t("passwordNonCoincidono") });
       return;
     }
-    if (newPassword.length < 8) {
-      setPasswordMessage({ type: "error", text: t("passwordTroppoCorta") });
+    if (Object.values(passwordRules).some((rule) => !rule)) {
+      setPasswordMessage({ type: "error", text: t("passwordErrorRules") });
       return;
     }
     setPasswordLoading(true);
@@ -697,7 +698,6 @@ export default function ProfiloPage() {
                       <option value="credente">{t("ruoloCredente")}</option>
                       <option value="madre">{t("ruoloMadre")}</option>
                       <option value="padre">{t("ruoloPadre")}</option>
-                      <option value="diacono">{t("ruoloDiacono")}</option>
                       <option value="ospite_chiesa">{t("ruoloOspite")}</option>
                     </select>
                   </div>
@@ -869,17 +869,39 @@ export default function ProfiloPage() {
                 />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div>
+                <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("nuovaPassword")}</label>
                   <input
                     type="password"
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      if (passwordMessage?.type === "error") setPasswordMessage(null);
+                    }}
                     required
                     minLength={8}
                     autoComplete="new-password"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                   />
+                  <div className="mt-3 text-xs text-gray-500">
+                    Esempi di caratteri speciali: <span className="font-medium text-gray-700">!@#$%^&*()</span>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm text-gray-500">
+                    {([
+                      { label: t("passwordRuleLength"), ok: passwordRules.length },
+                      { label: t("passwordRuleLowercase"), ok: passwordRules.lowercase },
+                      { label: t("passwordRuleUppercase"), ok: passwordRules.uppercase },
+                      { label: t("passwordRuleNumber"), ok: passwordRules.number },
+                      { label: t("passwordRuleSpecial"), ok: passwordRules.special },
+                    ] as const).map((rule) => (
+                      <div key={rule.label} className="flex items-center gap-2">
+                        <span className={rule.ok ? "text-emerald-600" : "text-gray-400"}>
+                          <Check className="w-4 h-4" />
+                        </span>
+                        <span className={rule.ok ? "text-gray-900" : "text-gray-500"}>{rule.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("confermaPassword")}</label>

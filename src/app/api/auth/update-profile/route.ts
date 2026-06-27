@@ -14,7 +14,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserRole, AgeGroup, AdminRequestStatus } from "@/types";
 import { validateSession } from "@/lib/auth/session";
 
-const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "diacono", "ospite_chiesa"];
+const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "ospite_chiesa"];
 const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
 
 /**

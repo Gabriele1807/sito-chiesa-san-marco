@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserByIdFull, findUserByUsername, updateUserPassword } from "@/lib/mongo/users";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
+import { validatePasswordRules } from "@/lib/auth/password-rules";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types";
 import { validateSession } from "@/lib/auth/session";
@@ -33,6 +34,17 @@ export async function POST(request: Request) {
     if (typeof newPassword !== "string" || newPassword.length < 8) {
       return NextResponse.json(
         { success: false, error: "La nuova password deve avere almeno 8 caratteri" },
+        { status: 400 }
+      );
+    }
+
+    const passwordRules = validatePasswordRules(newPassword);
+    if (Object.values(passwordRules).some((rule) => !rule)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "La nuova password deve contenere almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale",
+        },
         { status: 400 }
       );
     }

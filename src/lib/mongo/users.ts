@@ -112,6 +112,7 @@ export async function listUsers(opts?: {
   page?: number;
   limit?: number;
   adminRequestFilter?: AdminRequestStatus;
+  query?: string;
 }): Promise<{ users: UserPublic[]; total: number }> {
   const c = await col();
   const page = opts?.page ?? 1;
@@ -121,6 +122,17 @@ export async function listUsers(opts?: {
   const filter: Record<string, unknown> = {};
   if (opts?.adminRequestFilter) {
     filter.adminRequest = opts.adminRequestFilter;
+  }
+
+  if (opts?.query?.trim()) {
+    const escapedQuery = opts.query.trim().replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+    const regex = new RegExp(escapedQuery, "i");
+    filter.$or = [
+      { nome: regex },
+      { cognome: regex },
+      { username: regex },
+      { email: regex },
+    ];
   }
 
   const [docs, total] = await Promise.all([

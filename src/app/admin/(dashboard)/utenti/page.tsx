@@ -36,7 +36,6 @@ const ROLE_LABELS: Record<string, string> = {
   credente: "Credente",
   madre: "Madre",
   padre: "Padre",
-  diacono: "Diacono",
   ospite_chiesa: "Ospite",
   prete: "Prete",
 };
@@ -66,6 +65,8 @@ export default function GestioneUtentiPage() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
+  const [limit, setLimit] = useState(10);
   const [editingUser, setEditingUser] = useState<UserPublic | null>(null);
   const [editForm, setEditForm] = useState({ nome: "", cognome: "", role: "", ageGroup: "", chiesa: "", attivo: true });
   const [saving, setSaving] = useState(false);
@@ -82,12 +83,16 @@ export default function GestioneUtentiPage() {
   const callerRuolo = getCallerRuolo();
   const isSuperAdmin = callerRuolo === "superadmin";
 
-  const limit = 20;
-
   const fetchUsers = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
-      const res = await fetch(`/api/admin/utenti?page=${page}&limit=${limit}`);
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (query) params.set("q", query);
+      const res = await fetch(`/api/admin/utenti?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         setUsers(data.users);
@@ -100,21 +105,21 @@ export default function GestioneUtentiPage() {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, limit, query]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const filteredUsers = search
-    ? users.filter(
-        (u) =>
-          u.nome.toLowerCase().includes(search.toLowerCase()) ||
-          u.cognome.toLowerCase().includes(search.toLowerCase()) ||
-          u.email.toLowerCase().includes(search.toLowerCase()) ||
-          u.username.toLowerCase().includes(search.toLowerCase())
-      )
-    : users;
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setPage(1);
+      setQuery(search.trim());
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  const filteredUsers = users;
 
   function openEdit(user: UserPublic) {
     setEditingUser(user);
@@ -271,7 +276,13 @@ export default function GestioneUtentiPage() {
     }
   }
 
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   if (loading && users.length === 0) {
     return (
@@ -394,9 +405,24 @@ export default function GestioneUtentiPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-            <p className="text-sm text-gray-500">Pagina {page} di {totalPages}</p>
-            <div className="flex gap-1">
+          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 gap-3 border-t border-gray-200">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>Mostra</span>
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+              >
+                {[10, 20, 50, 100].map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              <span>di {total} utenti</span>
+            </div>
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
@@ -404,6 +430,7 @@ export default function GestioneUtentiPage() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
+              <span className="text-sm text-gray-500">Pagina {page} di {totalPages}</span>
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
@@ -468,7 +495,6 @@ export default function GestioneUtentiPage() {
                   <option value="credente">Credente</option>
                   <option value="madre">Madre</option>
                   <option value="padre">Padre</option>
-                  <option value="diacono">Diacono</option>
                   <option value="ospite_chiesa">Ospite da altra chiesa</option>
                   <option value="prete">Prete</option>
                 </select>
