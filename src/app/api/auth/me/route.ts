@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById, findUserByUsername } from "@/lib/mongo/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { createSession, validateSession } from "@/lib/auth/session";
 
 /**
  * GET /api/auth/me
@@ -17,60 +18,7 @@ export async function GET() {
 
     // Se c'è una sessione admin, validala lato DB e ritorna sempre dati aggiornati
     if (adminToken) {
-      const { data: session, error: sessionError } = await supabaseAdmin
-        .from("admin_sessions")
-        .select(
-          `
-            expires_at,
-            admin_user_id,
-            admin_users (
-              id,
-              username,
-              nome,
-              cognome,
-              ruolo,
-              attivo
-            )
-          `
-        )
-        .eq("session_token", adminToken)
-        .single();
-
-      if (sessionError || !session) {
-        const response = NextResponse.json({
-          success: true,
-          type: "guest",
-          authenticated: false,
-        });
-        response.cookies.delete("admin_session");
-        return response;
-      }
-
-      if (new Date(session.expires_at) < new Date()) {
-        await supabaseAdmin
-          .from("admin_sessions")
-          .delete()
-          .eq("session_token", adminToken);
-
-        const response = NextResponse.json({
-          success: true,
-          type: "guest",
-          authenticated: false,
-        });
-        response.cookies.delete("admin_session");
-        return response;
-      }
-
-      const rawAdminUser = session.admin_users as unknown;
-      const adminUser = (Array.isArray(rawAdminUser) ? rawAdminUser[0] : rawAdminUser) as {
-        id: string;
-        username: string;
-        nome: string;
-        cognome: string;
-        ruolo: "superadmin" | "admin";
-        attivo: boolean;
-      } | null;
-
+      const adminUser = await validateSession(adminToken);
       if (!adminUser || !adminUser.attivo) {
         const response = NextResponse.json({
           success: true,
@@ -141,14 +89,7 @@ export async function GET() {
         .single();
 
       if (adminUser) {
-        const sessionToken = crypto.randomUUID();
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-        await supabaseAdmin.from("admin_sessions").insert({
-          admin_user_id: adminUser.id,
-          session_token: sessionToken,
-          expires_at: expiresAt.toISOString(),
-        });
+        const { token: sessionToken } = await createSession(adminUser.id, new Request(requestUrlFromHeaders()), false);
 
         const response = NextResponse.json({
           success: true,
@@ -201,4 +142,8 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+function requestUrlFromHeaders() {
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 }

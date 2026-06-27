@@ -4,7 +4,7 @@ import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById, findUserByUsername } from "@/lib/mongo/users";
 import { getIscrizioniByUser } from "@/lib/mongo/registrations";
 import { getEventoById } from "@/lib/mongo/content";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { validateSession } from "@/lib/auth/session";
 
 export async function GET() {
   try {
@@ -17,14 +17,8 @@ export async function GET() {
     let targetEmail: string | undefined = undefined;
 
     if (adminToken) {
-      const { data: session } = await supabaseAdmin
-        .from("admin_sessions")
-        .select(`admin_users ( username, nome, cognome )`)
-        .eq("session_token", adminToken)
-        .single();
-      
-      if (session && session.admin_users) {
-        const adminUser = Array.isArray(session.admin_users) ? session.admin_users[0] : session.admin_users;
+      const adminUser = await validateSession(adminToken);
+      if (adminUser) {
         targetNome = adminUser.nome;
         targetCognome = adminUser.cognome;
         // Provo a recuperare l'email dall'utente MongoDB corrispondente (se esiste)

@@ -28,7 +28,7 @@
 :root {
   --dock-width: 240px;
   --dock-width-compact: 72px;
-  --dock-bottom-height: 64px;
+  --dock-bottom-height: 76px;
   --topbar-height: 56px;
   --topbar-offset: var(--topbar-height);
 }
@@ -60,11 +60,11 @@ html {
   overflow-x: hidden;
 }
 
-[dir="rtl"] {
+[data-locale="ar"] {
   text-align: right;
 }
 
-[dir="rtl"] body {
+[data-locale="ar"] body {
   font-family: var(--font-arabic), var(--font-sans), sans-serif;
 }
 
@@ -110,7 +110,7 @@ html {
     font-family: var(--font-display), var(--font-sans), serif;
   }
 
-  [dir="rtl"] .font-display {
+  [data-locale="ar"] .font-display {
     font-family: var(--font-arabic), var(--font-sans), serif;
   }
 

@@ -43,6 +43,7 @@ export const DEFAULT_SECTIONS: Omit<SectionVisibility, "id" | "createdAt" | "upd
       credente: "full",
       madre: "full",
       padre: "full",
+      diacono: "full",
       ospite_chiesa: "full",
       admin: "full",
       superadmin: "full",
@@ -57,6 +58,7 @@ export const DEFAULT_SECTIONS: Omit<SectionVisibility, "id" | "createdAt" | "upd
       credente: "full",
       madre: "full",
       padre: "full",
+      diacono: "full",
       ospite_chiesa: "full",
       admin: "full",
       superadmin: "full",
@@ -71,6 +73,7 @@ export const DEFAULT_SECTIONS: Omit<SectionVisibility, "id" | "createdAt" | "upd
       credente: "full",
       madre: "full",
       padre: "full",
+      diacono: "full",
       ospite_chiesa: "full",
       admin: "full",
       superadmin: "full",
@@ -85,6 +88,7 @@ export const DEFAULT_SECTIONS: Omit<SectionVisibility, "id" | "createdAt" | "upd
       credente: "full",
       madre: "full",
       padre: "full",
+      diacono: "full",
       ospite_chiesa: "full",
       admin: "full",
       superadmin: "full",
@@ -99,6 +103,7 @@ export const DEFAULT_SECTIONS: Omit<SectionVisibility, "id" | "createdAt" | "upd
       credente: "full",
       madre: "full",
       padre: "full",
+      diacono: "full",
       ospite_chiesa: "full",
       admin: "full",
       superadmin: "full",
@@ -113,6 +118,7 @@ export const DEFAULT_SECTIONS: Omit<SectionVisibility, "id" | "createdAt" | "upd
       credente: "full",
       madre: "full",
       padre: "full",
+      diacono: "full",
       ospite_chiesa: "full",
       admin: "full",
       superadmin: "full",
@@ -264,7 +270,7 @@ export async function createSectionVisibility(
  */
 export async function getRoleAccessToSection(
   sectionId: string,
-  role: "guest" | "credente" | "madre" | "padre" | "ospite_chiesa" | "admin" | "superadmin"
+  role: "guest" | "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "admin" | "superadmin"
 ): Promise<RoleAccessType> {
   const visibility = await getSectionVisibility(sectionId);
   

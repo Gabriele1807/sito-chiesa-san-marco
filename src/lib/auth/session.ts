@@ -1,12 +1,9 @@
 /**
- * Gestione sessioni admin con Supabase.
- *
- * Le sessioni vengono salvate nella tabella admin_sessions.
- * Il token viene generato con crypto.randomUUID() e impostato
- * come cookie httpOnly.
+ * Gestione sessioni admin tramite JWT firmati.
  */
 
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { signJwt, verifyJwt } from "@/lib/auth/jwt";
 
 export interface AdminUser {
   id: string;
@@ -24,33 +21,34 @@ const SESSION_DURATION_DEFAULT = 24 * 60 * 60 * 1000; // 24 ore
 const SESSION_DURATION_REMEMBER = 7 * 24 * 60 * 60 * 1000; // 7 giorni
 
 /**
- * Crea una nuova sessione nel DB e ritorna il token.
+ * Crea un JWT di sessione admin e ritorna il token.
  */
 export async function createSession(
   adminUserId: string,
-  req: Request,
+  _req: Request,
   rememberMe = false
 ): Promise<{ token: string; expiresAt: Date }> {
-  const token = crypto.randomUUID();
   const duration = rememberMe ? SESSION_DURATION_REMEMBER : SESSION_DURATION_DEFAULT;
   const expiresAt = new Date(Date.now() + duration);
-
-  // Estrai IP e User-Agent dalla request
-  const forwarded = req.headers.get("x-forwarded-for");
-  const ipAddress = forwarded ? forwarded.split(",")[0].trim() : "unknown";
-  const userAgent = req.headers.get("user-agent") || "unknown";
-
-  const { error } = await supabaseAdmin.from("admin_sessions").insert({
-    admin_user_id: adminUserId,
-    session_token: token,
-    expires_at: expiresAt.toISOString(),
-    ip_address: ipAddress,
-    user_agent: userAgent,
-  });
-
-  if (error) {
-    throw new Error(`Errore creazione sessione: ${error.message}`);
+  const adminUser = await getAdminUserById(adminUserId);
+  if (!adminUser) {
+    throw new Error("Amministratore non trovato");
   }
+
+  const token = await signJwt(
+    {
+      sub: adminUser.id,
+      sessionType: "admin",
+      username: adminUser.username,
+      email: adminUser.email,
+      nome: adminUser.nome,
+      cognome: adminUser.cognome,
+      ruolo: adminUser.ruolo,
+      attivo: adminUser.attivo,
+      ultimo_accesso: adminUser.ultimo_accesso ?? "",
+    },
+    Math.floor(duration / 1000)
+  );
 
   return { token, expiresAt };
 }
@@ -64,53 +62,31 @@ export async function validateSession(
 ): Promise<AdminUser | null> {
   if (!token) return null;
 
-  const { data, error } = await supabaseAdmin
-    .from("admin_sessions")
-    .select(
-      `
-      id,
-      expires_at,
-      admin_user_id,
-      admin_users (
-        id,
-        username,
-        email,
-        nome,
-        cognome,
-        ruolo,
-        attivo,
-        ultimo_accesso
-      )
-    `
-    )
-    .eq("session_token", token)
-    .single();
+  const payload = await verifyJwt<{
+    sub: string;
+    sessionType?: string;
+    username?: string;
+    email?: string;
+    nome?: string;
+    cognome?: string;
+    ruolo?: "superadmin" | "admin";
+    attivo?: boolean;
+    ultimo_accesso?: string;
+  }>(token);
 
-  if (error || !data) return null;
-
-  // Sessione scaduta
-  if (new Date(data.expires_at) < new Date()) {
-    // Pulizia: rimuovi la sessione scaduta
-    await supabaseAdmin
-      .from("admin_sessions")
-      .delete()
-      .eq("session_token", token);
+  if (!payload || payload.sessionType !== "admin" || !payload.sub || !payload.username || !payload.ruolo) {
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user = data.admin_users as any;
-  if (!user || !user.attivo) return null;
-
   return {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    nome: user.nome,
-    cognome: user.cognome,
-    ruolo: user.ruolo,
-    attivo: user.attivo,
-    ultimo_accesso: user.ultimo_accesso,
+    id: payload.sub,
+    username: payload.username,
+    email: payload.email ?? "",
+    nome: payload.nome ?? "",
+    cognome: payload.cognome ?? "",
+    ruolo: payload.ruolo,
+    attivo: payload.attivo ?? true,
+    ultimo_accesso: payload.ultimo_accesso ?? null,
   };
 }
 
@@ -118,10 +94,7 @@ export async function validateSession(
  * Elimina una sessione dal DB (logout).
  */
 export async function deleteSession(token: string): Promise<void> {
-  await supabaseAdmin
-    .from("admin_sessions")
-    .delete()
-    .eq("session_token", token);
+  void token;
 }
 
 /**
@@ -129,8 +102,27 @@ export async function deleteSession(token: string): Promise<void> {
  * Da chiamare ad ogni login per mantenere pulita la tabella.
  */
 export async function cleanExpiredSessions(): Promise<void> {
-  await supabaseAdmin
-    .from("admin_sessions")
-    .delete()
-    .lt("expires_at", new Date().toISOString());
+  return Promise.resolve();
+}
+
+export async function getAdminUserById(id: string): Promise<AdminUser | null> {
+  const { data, error } = await supabaseAdmin
+    .from("admin_users")
+    .select("id, username, email, nome, cognome, ruolo, attivo, ultimo_accesso")
+    .eq("id", id)
+    .eq("attivo", true)
+    .single();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    username: data.username,
+    email: data.email,
+    nome: data.nome,
+    cognome: data.cognome,
+    ruolo: data.ruolo,
+    attivo: data.attivo,
+    ultimo_accesso: data.ultimo_accesso,
+  };
 }

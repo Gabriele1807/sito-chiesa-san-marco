@@ -16,7 +16,7 @@ export default async function MainLayout({
       <div className="main-shell flex flex-1 min-w-0 bg-background pt-14">
         <Sidebar />
         <main className="flex-1 min-w-0 flex flex-col w-0 bg-background">
-          <div className="px-4 sm:px-6 lg:px-10 py-8 sm:py-10 flex-1 max-w-full">
+          <div className="px-3 py-6 sm:px-6 sm:py-10 lg:px-10 flex-1 max-w-full">
             {children}
           </div>
           <Footer />

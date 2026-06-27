@@ -12,8 +12,9 @@ import {
 } from "@/lib/mongo/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserRole, AgeGroup, AdminRequestStatus } from "@/types";
+import { validateSession } from "@/lib/auth/session";
 
-const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "ospite_chiesa"];
+const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "diacono", "ospite_chiesa"];
 const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
 
 /**
@@ -46,17 +47,12 @@ export async function POST(request: Request) {
       const { nome, cognome, email, username, requestSuperAdmin } = body;
 
       // Valida sessione admin
-      const { data: sessionRow } = await supabaseAdmin
-        .from("admin_sessions")
-        .select("expires_at, admin_user_id")
-        .eq("session_token", adminToken)
-        .single();
-
-      if (!sessionRow || new Date(sessionRow.expires_at) < new Date()) {
+      const adminSession = await validateSession(adminToken);
+      if (!adminSession) {
         return NextResponse.json({ success: false, error: "Sessione admin scaduta" }, { status: 401 });
       }
 
-      const adminUserId = sessionRow.admin_user_id as string;
+      const adminUserId = adminSession.id;
 
       // Fetch current admin
       const { data: currentAdmin } = await supabaseAdmin

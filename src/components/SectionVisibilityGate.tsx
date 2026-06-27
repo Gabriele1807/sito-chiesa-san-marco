@@ -7,6 +7,7 @@
  */
 
 import { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
 import { getSectionAccess } from "@/lib/section-access";
 import ComingSoonPage from "@/components/ComingSoonPage";
 
@@ -21,6 +22,8 @@ export default async function SectionVisibilityGate({
   title,
   children,
 }: SectionVisibilityGateProps) {
+  const tCommon = await getTranslations("common");
+
   // Verifica l'accesso dell'utente a questa sezione
   const access = await getSectionAccess(sectionId);
 
@@ -30,8 +33,8 @@ export default async function SectionVisibilityGate({
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
           <div className="text-4xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Accesso Negato</h1>
-          <p className="text-foreground/60">Non hai i permessi per visualizzare questa sezione.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{tCommon("accessDenied")}</h1>
+          <p className="text-foreground/60">{tCommon("noPermission")}</p>
         </div>
       </div>
     );
@@ -39,7 +42,7 @@ export default async function SectionVisibilityGate({
 
   // Se accesso coming soon
   if (access === "coming_soon") {
-    return <ComingSoonPage title={title} description="Questa sezione sarà disponibile a breve. Torna presto per scoprire tutte le novità!" />;
+    return <ComingSoonPage title={title} description={tCommon("comingSoonDescription")} />;
   }
 
   // Se accesso completo, mostra il contenuto

@@ -3,7 +3,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { createUser, findUserByEmail, findUserByUsername } from "@/lib/mongo/users";
 import type { UserRole, AgeGroup } from "@/types";
 
-const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "ospite_chiesa"];
+const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "diacono", "ospite_chiesa"];
 const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
 
 export async function POST(request: Request) {

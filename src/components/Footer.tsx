@@ -36,7 +36,7 @@ export default async function Footer() {
             </p>
             <div className="flex flex-wrap gap-2">
               <Link
-                href="/orari"
+                href="/#orari"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-surface-alt"
               >
                 {tFooter("orariCta")}
@@ -57,7 +57,7 @@ export default async function Footer() {
             <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("orariDesc")}
             </p>
-            <Link href="/orari" className="btn-link">
+            <Link href="/#orari" className="btn-link">
               {tFooter("orariCta")}
             </Link>
           </div>
@@ -90,8 +90,11 @@ export default async function Footer() {
               <Link href="/" className="text-foreground/70 hover:text-accent transition-colors">
                 {tNav("home")}
               </Link>
-              <Link href="/orari" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/#orari" className="text-foreground/70 hover:text-accent transition-colors">
                 {tNav("orari")}
+              </Link>
+              <Link href="/video-corsi" className="text-foreground/70 hover:text-accent transition-colors">
+                {tNav("videoCorsi")}
               </Link>
               <Link href="/eventi" className="text-foreground/70 hover:text-accent transition-colors">
                 {tNav("eventi")}
@@ -153,7 +156,7 @@ export default async function Footer() {
             </p>
             <div className="flex flex-wrap gap-2">
               <Link
-                href="/orari"
+                href="/#orari"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light"
               >
                 {tFooter("orariCta")}
@@ -172,7 +175,7 @@ export default async function Footer() {
             <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("orariDesc")}
             </p>
-            <Link href="/orari" className="btn-link text-xs">
+            <Link href="/#orari" className="btn-link text-xs">
               {tFooter("orariCta")}
             </Link>
           </FooterAccordion>
@@ -201,8 +204,11 @@ export default async function Footer() {
               <Link href="/" className="text-foreground/70 hover:text-accent transition-colors">
                 {tNav("home")}
               </Link>
-              <Link href="/orari" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/#orari" className="text-foreground/70 hover:text-accent transition-colors">
                 {tNav("orari")}
+              </Link>
+              <Link href="/video-corsi" className="text-foreground/70 hover:text-accent transition-colors">
+                {tNav("videoCorsi")}
               </Link>
               <Link href="/eventi" className="text-foreground/70 hover:text-accent transition-colors">
                 {tNav("eventi")}

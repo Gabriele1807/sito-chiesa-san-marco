@@ -54,14 +54,6 @@ export async function PATCH(
 
     const nuovoStato = !user.attivo;
 
-    // Se stiamo disattivando, rimuovi tutte le sessioni attive
-    if (!nuovoStato) {
-      await supabaseAdmin
-        .from("admin_sessions")
-        .delete()
-        .eq("admin_user_id", id);
-    }
-
     const { data, error } = await supabaseAdmin
       .from("admin_users")
       .update({ attivo: nuovoStato })

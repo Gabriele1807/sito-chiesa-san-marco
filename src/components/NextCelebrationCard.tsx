@@ -28,9 +28,9 @@ export default function NextCelebrationCard({ orari, title, emptyLabel }: NextCe
 
   return (
     <div className="animate-fade-in-up" style={{ animationDelay: "300ms" }}>
-      <div className="bg-gradient-to-br from-surface to-surface-2 rounded-3xl p-6 h-full border border-accent/40 shadow-sm">
-        <div className="flex flex-col items-center text-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-accent/15 flex items-center justify-center">
+      <div className="h-full rounded-[1.75rem] border border-accent/40 bg-gradient-to-br from-surface to-surface-2 p-5 shadow-sm sm:rounded-3xl sm:p-6">
+        <div className="flex flex-col items-center gap-2.5 text-center sm:gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 sm:h-12 sm:w-12">
             <Sparkles className="w-6 h-6 text-accent" />
           </div>
           <h3 className="text-foreground font-semibold text-sm uppercase tracking-[0.2em]">{title}</h3>

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo, UserPlus } from "lucide-react";
+import { useLocale } from "next-intl";
+import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo } from "lucide-react";
 import type { Evento } from "@/types";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -25,8 +26,8 @@ const emptyForm = {
 
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const t = useTranslations("eventi");
-  const tAuth = useTranslations("auth");
-  const { type, loading, user, admin, setShowLoginModal, setShowRegisterModal } = useAuth();
+  const locale = useLocale();
+  const { type, loading, user, admin } = useAuth();
   const isAuthenticated = type === "user" || type === "admin";
   const [formOpen, setFormOpen] = useState<string | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
@@ -170,7 +171,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   }
 
   function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString("it-IT", {
+    return new Date(dateStr).toLocaleDateString(locale === "ar" ? "ar-EG" : "it-IT", {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -201,23 +202,9 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-foreground/60 sm:text-base">
           {t("guestDescription")}
         </p>
-        <div className="mx-auto mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => setShowLoginModal(true)}
-            className="btn-primary inline-flex items-center justify-center gap-2"
-          >
-            <Lock className="h-4 w-4" />
-            {tAuth("userMenuLogin")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowRegisterModal(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-          >
-            <UserPlus className="h-4 w-4" />
-            {tAuth("registerButton")}
-          </button>
+        <div className="mx-auto mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-surface-alt px-4 py-2 text-xs font-medium text-foreground/70">
+          <Lock className="h-3.5 w-3.5" />
+          <span>{t("guestDescription")}</span>
         </div>
       </div>
     );

@@ -26,7 +26,7 @@ export default function SidebarDock() {
   const isAdmin = type === "admin";
 
   // Determina il ruolo dell'utente per i controlli di visibilità
-  function getUserRole(): "guest" | "credente" | "madre" | "padre" | "ospite_chiesa" | "admin" | "superadmin" {
+  function getUserRole(): "guest" | "credente" | "madre" | "padre" | "diacono" | "ospite_chiesa" | "admin" | "superadmin" {
     if (type === "admin") {
       return admin?.ruolo === "superadmin" ? "superadmin" : "admin";
     }
@@ -91,6 +91,19 @@ export default function SidebarDock() {
   }, [isCompact]);
 
   const sections = useMemo(() => [primarySection, infoSection], []);
+  const guestAuthItems = useMemo(
+    () => utilitySection.items.filter(
+      (item) => item.actionId === "openLogin" || item.actionId === "openRegister"
+    ),
+    []
+  );
+  const utilityNavItems = useMemo(
+    () => utilitySection.items.filter(
+      (item) => item.actionId !== "openLogin" && item.actionId !== "openRegister"
+    ),
+    []
+  );
+  const mobileUtilityItems = useMemo(() => utilitySection.items, []);
 
   function closeMobile() {
     const sidebar = document.getElementById("mobile-sidebar");
@@ -210,7 +223,7 @@ export default function SidebarDock() {
             {subLabel && <span className="block text-[10px] text-white/40 truncate leading-tight">{subLabel}</span>}
           </div>
           <span className={`text-[10px] font-bold text-white/30 shrink-0 uppercase tracking-wider ${badgeClass}`}>
-            Soon
+            {tCommon("comingSoonTag")}
           </span>
         </div>
       );
@@ -269,6 +282,17 @@ export default function SidebarDock() {
         className="fixed left-0 z-40 bg-sidebar text-white border-r border-white/10 flex flex-col min-h-0 will-change-transform transform -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100 transition-transform duration-300 ease-in-out"
         data-compact={isCompact ? "true" : "false"}
       >
+        <div className="shrink-0 border-b border-white/10 px-2 py-2.5 lg:hidden">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-1.5 shadow-sm">
+            <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.28em] text-white/40">
+              {tSidebar("utility")}
+            </p>
+            <div className="space-y-1">
+              {mobileUtilityItems.map((item) => renderItem(item))}
+            </div>
+          </div>
+        </div>
+
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 py-3 pb-6 lg:pb-3">
           {sections.map((section) => {
             const sectionLabel = tSidebar(section.labelKey as Parameters<typeof tSidebar>[0]);
@@ -287,11 +311,14 @@ export default function SidebarDock() {
 
         <div className="border-t border-white/10 px-2 py-3 space-y-2">
           <nav aria-label={tSidebar(utilitySection.labelKey as Parameters<typeof tSidebar>[0])}>
-            <p className={`text-[10px] font-bold uppercase tracking-[0.28em] text-white/40 px-3 mb-2 ${isCompact ? "sr-only" : ""}`}>
+            <p className={`hidden text-[10px] font-bold uppercase tracking-[0.28em] text-white/40 px-3 mb-2 lg:block ${isCompact ? "sr-only" : ""}`}>
               {tSidebar(utilitySection.labelKey as Parameters<typeof tSidebar>[0])}
             </p>
-            <div className="space-y-1">
-              {utilitySection.items.map((item) => renderItem(item))}
+            <div className="hidden space-y-1 lg:block">
+              {utilityNavItems.map((item) => renderItem(item))}
+              <div className="hidden lg:block space-y-1">
+                {guestAuthItems.map((item) => renderItem(item))}
+              </div>
             </div>
           </nav>
           <div className={`flex items-center ${isCompact ? "justify-center" : "justify-start"} gap-2 pt-2`}>

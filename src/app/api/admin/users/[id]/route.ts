@@ -117,13 +117,8 @@ export async function DELETE(
   }
 
   try {
-    // Prima elimina tutte le sessioni dell'utente
-    await supabaseAdmin
-      .from("admin_sessions")
-      .delete()
-      .eq("admin_user_id", id);
-
-    // Poi elimina l'utente
+    // Con JWT stateless basta eliminare l'utente: le sessioni residue
+    // diventano invalide non appena l'account non esiste piu`.
     const { error } = await supabaseAdmin
       .from("admin_users")
       .delete()

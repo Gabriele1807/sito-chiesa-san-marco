@@ -3,13 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, UserX, UserPlus, LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
+import { LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { useTranslations } from "next-intl";
 
 export default function UserMenu() {
   const t = useTranslations("auth");
-  const { type, loading, user, admin, isExplicitGuest, setShowLoginModal, setShowRegisterModal, logout } = useAuth();
+  const { type, loading, user, admin, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -31,56 +31,8 @@ export default function UserMenu() {
     );
   }
 
-  // Ospite esplicito: mostra indicatore ospite con possibilità di accedere
-  if (type === "guest" && isExplicitGuest) {
-    return (
-      <div className="flex items-center gap-1.5 flex-nowrap justify-end">
-        <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-foreground/60 bg-surface border border-border rounded-lg">
-          <UserX className="w-3.5 h-3.5" />
-          <span>{t("userMenuGuest")}</span>
-        </div>
-        <button
-          onClick={() => setShowLoginModal(true)}
-          aria-label={t("userMenuLogin")}
-          className="btn-primary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
-        >
-          <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span className="hidden sm:inline">{t("userMenuLogin")}</span>
-        </button>
-        <button
-          onClick={() => setShowRegisterModal(true)}
-          aria-label={t("userMenuRegister")}
-          className="btn-secondary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
-        >
-          <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span className="hidden sm:inline">{t("userMenuRegister")}</span>
-        </button>
-      </div>
-    );
-  }
-
-  // Guest non esplicito: bottoni login + registrazione
   if (type === "guest") {
-    return (
-      <div className="flex items-center gap-1.5 flex-nowrap justify-end">
-        <button
-          onClick={() => setShowLoginModal(true)}
-          aria-label={t("userMenuLogin")}
-          className="btn-primary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
-        >
-          <User className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span className="hidden sm:inline">{t("userMenuLogin")}</span>
-        </button>
-        <button
-          onClick={() => setShowRegisterModal(true)}
-          aria-label={t("userMenuRegister")}
-          className="btn-secondary h-10 w-10 shrink-0 px-0 py-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2"
-        >
-          <UserPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          <span className="hidden sm:inline">{t("userMenuRegister")}</span>
-        </button>
-      </div>
-    );
+    return null;
   }
 
   // Utente autenticato (normale o admin)
@@ -131,6 +83,7 @@ export default function UserMenu() {
                 : user?.role === "credente" ? t("userMenuRoleCredente")
                 : user?.role === "madre" ? t("userMenuRoleMadre")
                 : user?.role === "padre" ? t("userMenuRolePadre")
+                : user?.role === "diacono" ? t("userMenuRoleDiacono")
                 : user?.role === "ospite_chiesa" ? t("userMenuRoleOspite")
                 : t("userMenuUser")}
             </p>

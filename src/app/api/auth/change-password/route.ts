@@ -5,6 +5,7 @@ import { findUserByIdFull, findUserByUsername, updateUserPassword } from "@/lib/
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types";
+import { validateSession } from "@/lib/auth/session";
 
 export async function POST(request: Request) {
   try {
@@ -51,14 +52,9 @@ export async function POST(request: Request) {
       mongoUser = await findUserByIdFull(session.userId);
       needsSupabaseSync = mongoUser?.adminRequest === "approved";
     } else if (adminToken) {
-      // Sessione admin (Supabase) — cerca l'utente MongoDB tramite username
-      const { data: sessionRow } = await supabaseAdmin
-        .from("admin_sessions")
-        .select("expires_at, admin_user_id")
-        .eq("session_token", adminToken)
-        .single();
-
-      if (!sessionRow || new Date(sessionRow.expires_at) < new Date()) {
+      // Sessione admin (JWT) — cerca l'utente MongoDB tramite username
+      const adminSession = await validateSession(adminToken);
+      if (!adminSession) {
         return NextResponse.json(
           { success: false, error: "Sessione admin scaduta" },
           { status: 401 }
@@ -68,7 +64,7 @@ export async function POST(request: Request) {
       const { data: adminUser } = await supabaseAdmin
         .from("admin_users")
         .select("username")
-        .eq("id", sessionRow.admin_user_id)
+        .eq("id", adminSession.id)
         .single();
 
       if (!adminUser?.username) {

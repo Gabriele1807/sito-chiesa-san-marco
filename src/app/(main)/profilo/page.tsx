@@ -119,6 +119,7 @@ export default function ProfiloPage() {
     credente: t("ruoloCredente"),
     madre: t("ruoloMadre"),
     padre: t("ruoloPadre"),
+    diacono: t("ruoloDiacono"),
     ospite_chiesa: t("ruoloOspite"),
     admin: t("ruoloAdmin"),
     superadmin: t("ruoloSuperAdmin"),
@@ -695,6 +696,7 @@ export default function ProfiloPage() {
                       <option value="credente">{t("ruoloCredente")}</option>
                       <option value="madre">{t("ruoloMadre")}</option>
                       <option value="padre">{t("ruoloPadre")}</option>
+                      <option value="diacono">{t("ruoloDiacono")}</option>
                       <option value="ospite_chiesa">{t("ruoloOspite")}</option>
                     </select>
                   </div>

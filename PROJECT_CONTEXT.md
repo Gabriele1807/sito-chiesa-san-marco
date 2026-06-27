@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 26 giugno 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 27 giugno 2026.
 
 ---
 
@@ -48,6 +48,10 @@ Fatti importanti da sapere subito:
 - la route di login admin (`/admin/login`) non deve ereditare sidebar o topbar admin
 - la vera shell admin è in `src/app/admin/(dashboard)/layout.tsx`
 - la shell pubblica usa `Sidebar` su desktop e una bottom dock mobile, con `Navbar` fissa sopra il contenuto
+- il mobile header è stato ottimizzato: il titolo della sezione è centrato e il language switcher è stato compattato per lasciare più spazio all'icona utente quando si è loggati
+- la pagina di iscrizioni pubblica (`src/app/(main)/iscrizioni/page.tsx`) fa fetch su `/api/auth/iscrizioni` per gli utenti autenticati; la lista eventi usa `/api/eventi/iscrizione` per inviare le registrazioni
+- il redesign grafico recente ha pienamente ridefinito spaziature, palette e componenti mobile-first; il sito ora punta a un layout più arioso e a una user experience coerente tra desktop e mobile
+- le iscrizioni eventi includono logica di duplicato/famiglia in `src/lib/mongo/registrations.ts`, con alert specifici per evento esaurito o già registrato
 
 ---
 
@@ -690,7 +694,7 @@ Questi punti sono gia implementati e non vanno persi in future modifiche:
 
 Tailwind v4 con token definiti in `src/app/globals.css` via `@theme`.
 
-**IMPORTANTE: A partire dal 1 maggio 2026, la palette è stata completamente ridisegnata per comunicare una forte identità spirituale e liturgica anziché corporate.**
+**IMPORTANTE: A partire dal 1 maggio 2026, la palette è stata completamente ridisegnata per comunicare una forte identità spirituale e liturgica anziché corporate. Questa revisione grafica include una spaziatura più ariosa, componenti carte più leggibili e una navbar mobile riorganizzata per un'esperienza utente più fluida.**
 
 Token principali (nuova palette):
 

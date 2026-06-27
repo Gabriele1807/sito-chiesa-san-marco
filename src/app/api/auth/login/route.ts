@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { verifyPassword } from "@/lib/auth/password";
-import { createSession, cleanExpiredSessions } from "@/lib/auth/session";
+import { createSession } from "@/lib/auth/session";
 import { findUserByEmail, findUserByUsername, updateUserLastAccess } from "@/lib/mongo/users";
-import { createUserSession, cleanExpiredUserSessions } from "@/lib/mongo/sessions";
+import { createUserSession } from "@/lib/mongo/sessions";
 import {
   isRateLimited,
   recordFailedAttempt,
@@ -45,7 +45,6 @@ export async function POST(request: Request) {
     const adminResult = await tryAdminLogin(id, pwd, request, rememberMe === true);
     if (adminResult) {
       resetAttempts(ip);
-      cleanExpiredSessions().catch(() => {});
       return adminResult;
     }
 
@@ -53,7 +52,6 @@ export async function POST(request: Request) {
     const userResult = await tryUserLogin(id, pwd, request, rememberMe === true);
     if (userResult) {
       resetAttempts(ip);
-      cleanExpiredUserSessions().catch(() => {});
       return userResult;
     }
 

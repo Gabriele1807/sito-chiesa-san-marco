@@ -6,6 +6,7 @@ import {
   Image as ImageIcon,
   Library,
   CalendarDays,
+  Youtube,
   Info,
   Phone,
   User,
@@ -59,7 +60,7 @@ export const primarySection: SidebarSection = {
       labelKey: "orari",
       subKey: "subOrari",
       icon: Clock,
-      href: "/orari",
+      href: "/#orari",
       sectionId: "orari",
     },
     {
@@ -70,6 +71,15 @@ export const primarySection: SidebarSection = {
       icon: BookOpen,
       href: "/preghiere",
       sectionId: "preghiere",
+    },
+    {
+      id: "video-corsi",
+      type: "primary-nav",
+      labelKey: "videoCorsi",
+      subKey: "subVideoCorsi",
+      icon: Youtube,
+      href: "/video-corsi",
+      sectionId: "video-corsi",
     },
     {
       id: "icone",
@@ -203,7 +213,7 @@ export const mobileDockItems: SidebarItem[] = [
     type: "primary-nav",
     labelKey: "orari",
     icon: Clock,
-    href: "/orari",
+    href: "/#orari",
   },
   {
     id: "preghiere",
@@ -211,6 +221,13 @@ export const mobileDockItems: SidebarItem[] = [
     labelKey: "preghiere",
     icon: BookOpen,
     href: "/preghiere",
+  },
+  {
+    id: "video-corsi",
+    type: "primary-nav",
+    labelKey: "videoCorsi",
+    icon: Youtube,
+    href: "/video-corsi",
   },
   {
     id: "contatti",

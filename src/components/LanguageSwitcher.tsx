@@ -15,30 +15,37 @@ export default function LanguageSwitcher({ currentLocale }: Props) {
   const t = useTranslations("common");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const options: { value: Locale; label: string }[] = [
+    { value: "it", label: t("italiano") },
+    { value: "ar", label: t("arabo") },
+  ];
 
-  const switchTo: Locale = currentLocale === "it" ? "ar" : "it";
-  const label = currentLocale === "it" ? t("arabo") : t("italiano");
-
-  function handleSwitch() {
+  function handleSwitch(nextLocale: string) {
+    if (nextLocale === currentLocale) return;
     startTransition(async () => {
-      await setLocale(switchTo);
+      await setLocale(nextLocale as Locale);
       router.refresh();
     });
   }
 
-  /* Short code shown on mobile (xs), full label on sm+ */
-  const shortCode = currentLocale === "it" ? "ع" : "IT";
-
   return (
-    <button
-      onClick={handleSwitch}
-      disabled={isPending}
-      className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-accent hover:text-white active:bg-accent active:text-white transition-all duration-200 border border-gray-200 hover:border-accent disabled:opacity-50 cursor-pointer"
-      aria-label={t("switchLanguageTo", { language: label })}
-    >
+    <label className="relative flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-1.5 text-[11px] font-semibold text-foreground shadow-sm">
       <Globe className="w-4 h-4" />
-      <span className="sm:hidden">{shortCode}</span>
-      <span className="hidden sm:inline">{label}</span>
-    </button>
+      <span className="sr-only">{t("switchLanguageTo", { language: currentLocale === "it" ? t("arabo") : t("italiano") })}</span>
+      <select
+        value={currentLocale}
+        onChange={(e) => handleSwitch(e.target.value)}
+        disabled={isPending}
+        className="min-w-[3.5rem] max-w-[5.5rem] appearance-none bg-transparent pr-5 text-[11px] font-semibold text-foreground outline-none disabled:opacity-50"
+        aria-label={t("switchLanguageTo", { language: currentLocale === "it" ? t("arabo") : t("italiano") })}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute right-2 text-[10px] text-foreground/50">▼</span>
+    </label>
   );
 }

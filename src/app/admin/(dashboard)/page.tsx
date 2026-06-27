@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
+  LayoutDashboard,
   Library,
   Image as ImageIcon,
   BookOpen,
@@ -10,7 +12,10 @@ import {
   Plus,
   MapPin,
   Users,
+  UsersRound,
   ChevronRight,
+  Eye,
+  Lock,
 } from "lucide-react";
 import {
   getLibri,
@@ -34,6 +39,10 @@ const giorniMap: Record<number, string> = {
 };
 
 export default async function AdminDashboardPage() {
+  const headerList = await headers();
+  const ruolo = headerList.get("x-admin-ruolo") ?? "";
+  const isSuperAdmin = ruolo === "superadmin";
+
   const [libri, icone, preghiere, videoCorsi, eventiAll, orari, filePriv] = await Promise.all([
     getLibri(),
     getIcone(),
@@ -68,6 +77,104 @@ export default async function AdminDashboardPage() {
     { label: "Nuova Icona", href: "/admin/icone", icon: ImageIcon, color: "text-gold bg-gold/5 border-gold/20 hover:bg-gold/10" },
   ];
 
+  const managementSections = [
+    {
+      label: "Dashboard",
+      description: "Panoramica operativa con statistiche, eventi in arrivo e accessi rapidi.",
+      href: "/admin",
+      icon: LayoutDashboard,
+      tone: "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100",
+    },
+    {
+      label: "Gestione Libreria",
+      description: "Libri, PDF e contenuti spirituali pubblici.",
+      href: "/admin/libreria",
+      icon: Library,
+      tone: "bg-gold/5 text-gold border-gold/20 hover:bg-gold/10",
+    },
+    {
+      label: "Gestione Icone",
+      description: "Schede icone, QR code e contenuti collegati.",
+      href: "/admin/icone",
+      icon: ImageIcon,
+      tone: "bg-gold/5 text-gold border-gold/20 hover:bg-gold/10",
+    },
+    {
+      label: "Gestione Orari",
+      description: "Celebrazioni e programmazione liturgica settimanale.",
+      href: "/admin/orari",
+      icon: Clock,
+      tone: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+    },
+    {
+      label: "Gestione Eventi",
+      description: "Eventi, date, capienza e pubblicazione.",
+      href: "/admin/eventi",
+      icon: CalendarDays,
+      tone: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+    },
+    {
+      label: "Iscrizioni Eventi",
+      description: "Partecipanti, export e controllo registrazioni.",
+      href: "/admin/iscrizioni",
+      icon: Users,
+      tone: "bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100",
+    },
+    {
+      label: "Gestione Preghiere",
+      description: "Testi, PDF e contenuti della sezione preghiere.",
+      href: "/admin/preghiere",
+      icon: BookOpen,
+      tone: "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100",
+    },
+    {
+      label: "Video e Corsi",
+      description: "Contenuti video separati dalla sezione preghiere.",
+      href: "/admin/video-corsi",
+      icon: Youtube,
+      tone: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
+    },
+    {
+      label: "Libreria Privata",
+      description: "Documenti riservati e materiali ad accesso protetto.",
+      href: "/admin/libreria-privata",
+      icon: FolderLock,
+      tone: "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100",
+    },
+    {
+      label: "Gestione Sezioni",
+      description: "Visibilita` e permessi delle sezioni del sito.",
+      href: "/admin/gestione-sezioni",
+      icon: Eye,
+      tone: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+    },
+    ...(isSuperAdmin
+      ? [
+          {
+            label: "Gestione Utenti",
+            description: "Anagrafica utenti, ruoli comunitari e stato account.",
+            href: "/admin/utenti",
+            icon: UsersRound,
+            tone: "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
+          },
+          {
+            label: "Gestione Admin",
+            description: "Amministratori attivi e ruoli del pannello.",
+            href: "/admin/gestione-admin",
+            icon: Users,
+            tone: "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
+          },
+          {
+            label: "Gestione Permessi",
+            description: "Permessi avanzati e configurazioni superadmin.",
+            href: "/admin/gestione-permessi",
+            icon: Lock,
+            tone: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+          },
+        ]
+      : []),
+  ];
+
   // Format event date nicely
   function formatEventDate(isoDate: string): string {
     const d = new Date(isoDate);
@@ -91,7 +198,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {stats.map((s) => {
           const Icon = s.icon;
           return (
@@ -110,6 +217,45 @@ export default async function AdminDashboardPage() {
             </Link>
           );
         })}
+      </div>
+
+      <div>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Sezioni di gestione</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Tutte le aree operative disponibili nel pannello admin sono accessibili da qui.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {managementSections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <Link
+                key={section.href}
+                href={section.href}
+                className={`group rounded-xl border p-5 transition-all hover:shadow-md ${section.tone}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold">{section.label}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-gray-600">
+                        {section.description}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="mt-1 h-4 w-4 flex-shrink-0 text-current transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {/* Two-column: Prossimi eventi + Celebrazioni di oggi */}

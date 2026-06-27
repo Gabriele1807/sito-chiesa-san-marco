@@ -40,6 +40,7 @@ export default function RegisterModal() {
     { value: "credente", label: t("registerRoleCredente"), description: t("registerRoleCredenteDesc") },
     { value: "madre", label: t("registerRoleMadre"), description: t("registerRoleMadreDesc") },
     { value: "padre", label: t("registerRolePadre"), description: t("registerRolePadreDesc") },
+    { value: "diacono", label: t("registerRoleDiacono"), description: t("registerRoleDiaconoDesc") },
     { value: "ospite_chiesa", label: t("registerRoleOspite"), description: t("registerRoleOspiteDesc") },
   ];
 

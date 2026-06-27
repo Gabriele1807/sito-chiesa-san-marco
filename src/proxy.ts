@@ -1,20 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { validateSession } from "@/lib/auth/session";
 
 const SESSION_COOKIE = "admin_session";
-
-/**
- * Client Supabase leggero per il middleware (Edge runtime).
- * Usa le stesse variabili d'ambiente del server client.
- */
-function getSupabaseAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -33,43 +21,7 @@ export async function proxy(request: NextRequest) {
     }
 
     try {
-      const supabase = getSupabaseAdmin();
-
-      // Valida sessione: join con admin_users
-      const { data: session, error } = await supabase
-        .from("admin_sessions")
-        .select(
-          `
-          id,
-          expires_at,
-          admin_user_id,
-          admin_users (
-            id,
-            username,
-            ruolo,
-            attivo
-          )
-        `
-        )
-        .eq("session_token", token)
-        .single();
-
-      if (error || !session) {
-        return redirectToLogin(request, true);
-      }
-
-      // Controlla scadenza
-      if (new Date(session.expires_at) < new Date()) {
-        // Pulizia sessione scaduta
-        await supabase
-          .from("admin_sessions")
-          .delete()
-          .eq("session_token", token);
-        return redirectToLogin(request, true);
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const user = session.admin_users as any;
+      const user = await validateSession(token);
       if (!user || !user.attivo) {
         return redirectToLogin(request, true);
       }

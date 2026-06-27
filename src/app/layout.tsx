@@ -40,7 +40,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
+    <html lang={locale} dir="ltr" data-locale={locale} suppressHydrationWarning>
       <body
         className={`${bodyFont.variable} ${displayFont.variable} ${arabicFont.variable} antialiased`}
         suppressHydrationWarning

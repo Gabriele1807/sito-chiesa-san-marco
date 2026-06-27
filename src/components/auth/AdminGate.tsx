@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useAuth } from "./AuthContext";
 import { Rocket, Lock } from "lucide-react";
 
@@ -17,8 +18,9 @@ interface AdminGateProps {
 export default function AdminGate({
   children,
   title,
-  description = "Questa sezione sarà disponibile a breve. Torna presto per scoprire tutte le novità!"
+  description,
 }: AdminGateProps) {
+  const t = useTranslations("common");
   const { type, loading } = useAuth();
   const isAdmin = type === "admin";
 
@@ -45,13 +47,13 @@ export default function AdminGate({
             {title}
           </h1>
           <p className="text-foreground/60 text-lg max-w-md mx-auto">
-            {description}
+            {description ?? t("comingSoonDescription")}
           </p>
         </div>
 
         <div className="flex items-center justify-center gap-2 text-sm text-foreground/50 pt-4">
           <Lock className="w-4 h-4" />
-          <span>Disponibile solo per gli amministratori</span>
+          <span>{t("adminOnly")}</span>
         </div>
 
         <div className="pt-4">
@@ -59,7 +61,7 @@ export default function AdminGate({
             href="/"
             className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-accent text-white font-semibold hover:bg-accent/90 transition-colors"
           >
-            Torna alla Home
+            {t("backHome")}
           </Link>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { verifyPassword } from "@/lib/auth/password";
-import { createSession, cleanExpiredSessions } from "@/lib/auth/session";
+import { createSession } from "@/lib/auth/session";
 import {
   isRateLimited,
   recordFailedAttempt,
@@ -84,9 +84,6 @@ export async function POST(request: Request) {
 
     // --- Login riuscito ---
     resetAttempts(ip);
-
-    // Pulizia sessioni scadute (non blocca il login se fallisce)
-    cleanExpiredSessions().catch(() => {});
 
     // Aggiorna ultimo_accesso
     await supabaseAdmin

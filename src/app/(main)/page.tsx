@@ -2,23 +2,23 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import {
   Clock,
-  BookOpen,
-  Image as ImageIcon,
-  Library,
   CalendarDays,
-  Phone,
+  BookOpen,
   MapPin,
 } from "lucide-react";
 import ScrollDownHint from "@/components/ScrollDownHint";
 import { getTestiSacri, getPreghiere, getEventi, getOrari } from "@/lib/db";
-import QuickAccessCard from "@/components/QuickAccessCard";
 import NextCelebrationCard from "@/components/NextCelebrationCard";
+import OrariTable from "@/components/OrariTable";
+import YouTubeLiveSection from "@/components/YouTubeLiveSection";
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [t, locale, testiSacri, preghiere, eventi, orari] = await Promise.all([
+  const [t, tOrari, tContatti, locale, testiSacri, preghiere, eventi, orari] = await Promise.all([
     getTranslations("home"),
+    getTranslations("orari"),
+    getTranslations("contatti"),
     getLocale(),
     getTestiSacri(),
     getPreghiere(),
@@ -40,13 +40,13 @@ export default async function HomePage() {
       {/* ZONA 1 - HERO */}
       <section className="relative animate-fade-in-up">
         <div className="relative lg:min-h-[560px]">
-          <div className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-border bg-surface shadow-sm sm:rounded-3xl">
             <div className="absolute -top-24 right-0 h-64 w-64 rounded-full bg-accent/15 blur-3xl" />
             <div className="absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
 
-            <div className="relative flex flex-col gap-4 px-5 pt-12 pb-7 sm:px-8 sm:pt-10 sm:pb-10 lg:min-h-[560px] lg:grid lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-10 lg:px-10 lg:pt-16 lg:pb-10">
-              <div className="flex flex-col space-y-3 lg:justify-center">
-                <div className="space-y-3">
+            <div className="relative flex flex-col gap-3 px-4 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-10 lg:min-h-[560px] lg:grid lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-10 lg:px-10 lg:pt-16 lg:pb-10">
+              <div className="flex flex-col space-y-2.5 lg:justify-center">
+                <div className="space-y-2.5 sm:space-y-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.4em] text-accent">
                     {t("heroEyebrow")}
                   </p>
@@ -61,18 +61,18 @@ export default async function HomePage() {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <Link href="/orari" className="btn-primary">
+                  <Link href="/#orari" className="btn-primary">
                     {t("heroCtaPrimary")}
                   </Link>
 
-                  <Link href="/contatti" className="btn-secondary">
+                  <Link href="/#live" className="btn-secondary">
                     {t("heroCtaSecondary")}
                   </Link>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 pt-1 sm:gap-4 lg:justify-end lg:pt-0">
-                <div className="mb-8 flex flex-wrap items-center gap-3 text-xs text-foreground/60">
+              <div className="flex flex-col gap-3 pt-1 sm:gap-4 lg:justify-end lg:pt-0">
+                <div className="mb-4 flex flex-wrap items-center gap-2.5 text-xs text-foreground/60 sm:mb-6 sm:gap-3">
                   <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/70 px-3 py-1.5">
                     <CalendarDays className="h-3.5 w-3.5 text-accent" />
                     {dateStr}
@@ -90,11 +90,11 @@ export default async function HomePage() {
                   emptyLabel={t("noCelebration")}
                 />
 
-                <div className="flex flex-col items-center gap-4 pt-4 text-foreground/70 lg:hidden">
+                <div className="flex flex-col items-center gap-3 pt-2 text-foreground/70 lg:hidden">
                   <span className="text-center text-[10px] font-semibold uppercase tracking-[0.4em]">
                     {t("scrollHint")}
                   </span>
-                  <ScrollDownHint targetId="quick-access" />
+                  <ScrollDownHint targetId="orari" />
                 </div>
               </div>
             </div>
@@ -102,24 +102,59 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ZONA 2 - QUICK ACCESS GRID */}
+      {/* ZONA 2 - ORARI + LIVE */}
       <section
-        id="quick-access"
-        className="mt-16 animate-fade-in-up animation-delay-[100ms] sm:mt-12"
+        id="orari"
+        className="mt-10 animate-fade-in-up animation-delay-[100ms] sm:mt-12"
       >
-        <h2 className="mb-4 text-lg font-bold uppercase tracking-wide text-foreground">
-          {t("quickAccessTitle")}
-        </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-          <QuickAccessCard href="/orari" icon={Clock} title={t("quickOrari")} description={t("quickOrariDesc")} delay={0} />
-          <QuickAccessCard href="/preghiere" icon={BookOpen} title={t("quickPreghiere")} description={t("quickPreghiereDesc")} delay={60} />
-          <QuickAccessCard href="/icone" icon={ImageIcon} title={t("quickIcone")} description={t("quickIconeDesc")} delay={120} />
-          <QuickAccessCard href="/libreria" icon={Library} title={t("quickLibreria")} description={t("quickLibreriaDesc")} delay={180} />
-          <QuickAccessCard href="/eventi" icon={CalendarDays} title={t("quickEventi")} description={t("quickEventiDesc")} delay={240} />
-          <QuickAccessCard href="/contatti" icon={Phone} title={t("quickContatti")} description={t("quickContattiDesc")} delay={300} />
+        <div className="mb-4 flex flex-col items-start gap-3 sm:mb-5 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+              {t("viviChiesa")}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold text-foreground">
+              {tOrari("titolo")}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/70">
+              {tOrari("sottotitolo")}
+            </p>
+          </div>
+          <Link href="/video-corsi" className="btn-secondary w-full justify-center sm:w-auto">
+            {tContatti("youtubeSezione")}
+          </Link>
+        </div>
+
+        <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
+            <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-alt/70 px-6 py-4">
+              <div>
+                <h3 className="text-base font-bold text-foreground">
+                  {tOrari("titolo")}
+                </h3>
+                <p className="text-sm text-foreground/55">
+                  {t("quickProssima")}
+                </p>
+              </div>
+              <div className="rounded-full bg-accent/10 p-2 text-accent">
+                <Clock className="h-4 w-4" />
+              </div>
+            </div>
+            <OrariTable
+              orari={orari}
+              labels={{
+                giorno: tOrari("giorno"),
+                celebrazione: tOrari("celebrazione"),
+                orario: tOrari("orario"),
+                note: tOrari("note"),
+              }}
+            />
+          </div>
+
+          <div id="live">
+            <YouTubeLiveSection />
+          </div>
         </div>
       </section>
-
 
       {/* ZONA 4 - FEATURED CONTENT */}
       <section className="mt-12 animate-fade-in-up animation-delay-[300ms] sm:mt-14">
@@ -127,14 +162,14 @@ export default async function HomePage() {
           {t("featuredTitle")}
         </h2>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-surface shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+          <Link href="/eventi" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
               <h3 className="text-base font-bold uppercase tracking-wide text-foreground">
                 {t("prossimiEventi")}
               </h3>
-              <Link href="/eventi" className="text-sm font-semibold text-accent transition hover:text-accent/80">
+              <span className="text-sm font-semibold text-accent transition hover:text-accent/80">
                 {t("vediTutti")} →
-              </Link>
+              </span>
             </div>
             <div className="divide-y divide-border/60 px-5 py-2 sm:px-6">
               {eventi.slice(0, 3).map((ev) => (
@@ -157,16 +192,16 @@ export default async function HomePage() {
                 </div>
               )}
             </div>
-          </div>
+          </Link>
 
-          <div className="rounded-2xl border border-border bg-surface shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+          <Link href="/preghiere" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
               <h3 className="text-base font-bold uppercase tracking-wide text-foreground">
                 {t("ultimePreghiere")}
               </h3>
-              <Link href="/preghiere" className="text-sm font-semibold text-accent transition hover:text-accent/80">
+              <span className="text-sm font-semibold text-accent transition hover:text-accent/80">
                 {t("vediTutte")} →
-              </Link>
+              </span>
             </div>
             <div className="divide-y divide-border/60 px-5 py-2 sm:px-6">
               {preghiere.slice(0, 3).map((p) => (
@@ -181,7 +216,7 @@ export default async function HomePage() {
                 </div>
               ))}
             </div>
-          </div>
+          </Link>
         </div>
       </section>
     </div>

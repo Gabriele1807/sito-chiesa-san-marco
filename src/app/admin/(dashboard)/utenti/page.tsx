@@ -36,6 +36,7 @@ const ROLE_LABELS: Record<string, string> = {
   credente: "Credente",
   madre: "Madre",
   padre: "Padre",
+  diacono: "Diacono",
   ospite_chiesa: "Ospite",
 };
 
@@ -466,6 +467,7 @@ export default function GestioneUtentiPage() {
                   <option value="credente">Credente</option>
                   <option value="madre">Madre</option>
                   <option value="padre">Padre</option>
+                  <option value="diacono">Diacono</option>
                   <option value="ospite_chiesa">Ospite da altra chiesa</option>
                 </select>
               </div>

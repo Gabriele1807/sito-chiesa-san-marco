@@ -7,7 +7,6 @@ import {
   Facebook,
   ExternalLink,
 } from "lucide-react";
-import YouTubeLiveSection from "@/components/YouTubeLiveSection";
 
 export const revalidate = 60;
 
@@ -30,11 +29,6 @@ export default async function ContattiPage() {
           {t("sottotitolo")}
         </p>
       </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          SEZIONE YOUTUBE — dinamica, dati dal canale reale
-          ══════════════════════════════════════════════════════════ */}
-      <YouTubeLiveSection />
 
       {/* ══════════════════════════════════════════════════════════
           GRIGLIA CONTATTI PRINCIPALI
