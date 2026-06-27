@@ -5,11 +5,14 @@ type JwtHeader = {
   typ: "JWT";
 };
 
-export type JwtPayload = {
+type JwtPayloadBase = {
   sub: string;
+  [key: string]: string | number | boolean | undefined;
+};
+
+export type JwtPayload = JwtPayloadBase & {
   iat: number;
   exp: number;
-  [key: string]: string | number | boolean | undefined;
 };
 
 function getJwtSecret(): string {
@@ -51,17 +54,19 @@ async function signValue(value: string): Promise<string> {
   return bytesToBase64Url(new Uint8Array(signature));
 }
 
+type SignJwtPayload = Omit<JwtPayload, "iat" | "exp">;
+
 export async function signJwt(
-  payload: Omit<JwtPayload, "iat" | "exp">,
+  payload: SignJwtPayload,
   expiresInSeconds: number
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header: JwtHeader = { alg: "HS256", typ: "JWT" };
-  const fullPayload: JwtPayload = {
+  const fullPayload = {
     ...payload,
     iat: now,
     exp: now + expiresInSeconds,
-  };
+  } as JwtPayload;
 
   const encodedHeader = stringToBase64Url(JSON.stringify(header));
   const encodedPayload = stringToBase64Url(JSON.stringify(fullPayload));
@@ -70,7 +75,9 @@ export async function signJwt(
   return `${encodedHeader}.${encodedPayload}.${signature}`;
 }
 
-export async function verifyJwt<T extends JwtPayload>(token: string): Promise<T | null> {
+export async function verifyJwt<T extends JwtPayloadBase = JwtPayloadBase>(
+  token: string
+): Promise<(T & Pick<JwtPayload, "iat" | "exp">) | null> {
   if (!token) return null;
 
   const [encodedHeader, encodedPayload, encodedSignature] = token.split(".");
@@ -93,7 +100,7 @@ export async function verifyJwt<T extends JwtPayload>(token: string): Promise<T 
     const header = JSON.parse(base64UrlToString(encodedHeader)) as JwtHeader;
     if (header.alg !== "HS256" || header.typ !== "JWT") return null;
 
-    const payload = JSON.parse(base64UrlToString(encodedPayload)) as T;
+    const payload = JSON.parse(base64UrlToString(encodedPayload)) as T & Pick<JwtPayload, "iat" | "exp">;
     if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) {
       return null;
     }
