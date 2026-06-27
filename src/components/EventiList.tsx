@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo } from "lucide-react";
+import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo, UserPlus } from "lucide-react";
 import type { Evento } from "@/types";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -25,7 +25,8 @@ const emptyForm = {
 
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const t = useTranslations("eventi");
-  const { type, user, admin } = useAuth();
+  const tAuth = useTranslations("auth");
+  const { type, loading, user, admin, setShowLoginModal, setShowRegisterModal } = useAuth();
   const isAuthenticated = type === "user" || type === "admin";
   const [formOpen, setFormOpen] = useState<string | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
@@ -175,6 +176,51 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
       month: "long",
       year: "numeric",
     });
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16 animate-fade-in">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-foreground/50">{t("caricamentoAccesso")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="animate-fade-in-up rounded-2xl border border-border bg-white px-6 py-10 text-center shadow-sm sm:px-10">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+          <Lock className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="mt-5 text-2xl font-bold text-foreground">
+          {t("guestTitle")}
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-foreground/60 sm:text-base">
+          {t("guestDescription")}
+        </p>
+        <div className="mx-auto mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setShowLoginModal(true)}
+            className="btn-primary inline-flex items-center justify-center gap-2"
+          >
+            <Lock className="h-4 w-4" />
+            {tAuth("userMenuLogin")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowRegisterModal(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <UserPlus className="h-4 w-4" />
+            {tAuth("registerButton")}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

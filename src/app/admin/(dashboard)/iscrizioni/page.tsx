@@ -53,6 +53,29 @@ interface DettaglioEvento {
   postiDisponibili?: number;
 }
 
+type PdfExportColumnKey =
+  | "index"
+  | "nome"
+  | "cognome"
+  | "padreNome"
+  | "padreCognome"
+  | "telefono"
+  | "email"
+  | "note"
+  | "createdAt";
+
+const PDF_EXPORT_COLUMNS: Array<{ key: PdfExportColumnKey; label: string }> = [
+  { key: "index", label: "#" },
+  { key: "nome", label: "Nome" },
+  { key: "cognome", label: "Cognome" },
+  { key: "padreNome", label: "Nome padre" },
+  { key: "padreCognome", label: "Cognome padre" },
+  { key: "telefono", label: "Telefono" },
+  { key: "email", label: "Email" },
+  { key: "note", label: "Note" },
+  { key: "createdAt", label: "Data iscrizione" },
+];
+
 function normalize(s: string): string {
   return (s || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -78,6 +101,11 @@ export default function AdminIscrizioniPage() {
   const [editTarget, setEditTarget] = useState<Iscrizione | null>(null);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Iscrizione>>({});
+  const [exporting, setExporting] = useState<"excel" | "pdf" | null>(null);
+  const [showPdfExportModal, setShowPdfExportModal] = useState(false);
+  const [selectedPdfColumns, setSelectedPdfColumns] = useState<PdfExportColumnKey[]>(
+    PDF_EXPORT_COLUMNS.map((column) => column.key)
+  );
 
   async function fetchEventi() {
     setLoadingEventi(true);
@@ -172,10 +200,63 @@ export default function AdminIscrizioniPage() {
     }
   }
 
-  function exportFile(format: "excel" | "pdf") {
+  async function downloadExportFile(url: string, format: "excel" | "pdf") {
+    setExporting(format);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || "Errore nell'esportazione");
+      }
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      const disposition = res.headers.get("Content-Disposition");
+      const fileNameMatch = disposition?.match(/filename="([^"]+)"/i);
+      anchor.href = objectUrl;
+      anchor.download = fileNameMatch?.[1] || `iscrizioni.${format === "excel" ? "xls" : "pdf"}`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Errore nell'esportazione", "error");
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  async function exportFile(format: "excel" | "pdf") {
     if (!selectedId) return;
     const url = `/api/admin/iscrizioni/export?eventoId=${encodeURIComponent(selectedId)}&format=${format}`;
-    window.open(url, "_blank");
+    // #region debug-point B:admin-export-click
+    fetch("http://127.0.0.1:7777/event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: "export-iscrizioni-vercel", runId: "post-fix", hypothesisId: "B", location: "src/app/admin/(dashboard)/iscrizioni/page.tsx:exportFile", msg: "[DEBUG] export button clicked from admin UI", data: { selectedId, format, url, iscrizioniCount: iscrizioni.length }, ts: Date.now() }) }).catch(() => {});
+    // #endregion
+    if (format === "pdf") {
+      setShowPdfExportModal(true);
+      return;
+    }
+    await downloadExportFile(url, format);
+  }
+
+  function togglePdfColumn(columnKey: PdfExportColumnKey) {
+    setSelectedPdfColumns((current) =>
+      current.includes(columnKey)
+        ? current.filter((key) => key !== columnKey)
+        : [...current, columnKey]
+    );
+  }
+
+  async function confirmPdfExport() {
+    if (!selectedId || selectedPdfColumns.length === 0) return;
+    const params = new URLSearchParams({
+      eventoId: selectedId,
+      format: "pdf",
+      columns: selectedPdfColumns.join(","),
+    });
+    await downloadExportFile(`/api/admin/iscrizioni/export?${params.toString()}`, "pdf");
+    setShowPdfExportModal(false);
   }
 
   // Raggruppamento per famiglia (stesso nome+cognome del padre)
@@ -329,17 +410,17 @@ export default function AdminIscrizioniPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => exportFile("excel")}
-                disabled={iscrizioni.length === 0}
+                disabled={iscrizioni.length === 0 || exporting !== null}
                 className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
-                <FileSpreadsheet className="w-4 h-4" /> Excel
+                {exporting === "excel" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />} Excel
               </button>
               <button
                 onClick={() => exportFile("pdf")}
-                disabled={iscrizioni.length === 0}
+                disabled={iscrizioni.length === 0 || exporting !== null}
                 className="inline-flex items-center gap-2 px-3 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
               >
-                <FileText className="w-4 h-4" /> PDF
+                {exporting === "pdf" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} PDF
               </button>
             </div>
           </div>
@@ -574,6 +655,87 @@ export default function AdminIscrizioniPage() {
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Salva Modifiche
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPdfExportModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Esporta PDF</h3>
+                <p className="text-sm text-gray-500 mt-1">Scegli quali colonne includere nel PDF prima di scaricarlo.</p>
+              </div>
+              <button
+                onClick={() => setShowPdfExportModal(false)}
+                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {PDF_EXPORT_COLUMNS.map((column) => {
+                  const checked = selectedPdfColumns.includes(column.key);
+                  return (
+                    <label
+                      key={column.key}
+                      className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
+                        checked ? "border-gold bg-gold/5" : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => togglePdfColumn(column.key)}
+                        className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                      />
+                      <span className="text-sm font-medium text-gray-800">{column.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                <p className="text-sm text-gray-600">
+                  Colonne selezionate: <span className="font-semibold text-gray-900">{selectedPdfColumns.length}</span>
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPdfColumns(PDF_EXPORT_COLUMNS.map((column) => column.key))}
+                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                  >
+                    Seleziona tutto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPdfColumns([])}
+                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                  >
+                    Deseleziona tutto
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPdfExportModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Annulla
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmPdfExport}
+                  disabled={selectedPdfColumns.length === 0 || exporting !== null}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                >
+                  {exporting === "pdf" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                  Scarica PDF
                 </button>
               </div>
             </div>
