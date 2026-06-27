@@ -92,7 +92,7 @@ export default function Navbar({ locale }: Props) {
         </div>
 
         {/* Right: user menu + language switch */}
-        <div className="flex items-center justify-end gap-2 shrink-0">
+        <div className="flex min-w-0 items-center justify-end gap-2">
           <UserMenu />
           <LanguageSwitcher currentLocale={locale} />
         </div>

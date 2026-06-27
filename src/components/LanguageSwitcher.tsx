@@ -29,14 +29,14 @@ export default function LanguageSwitcher({ currentLocale }: Props) {
   }
 
   return (
-    <label className="relative flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-1.5 text-[11px] font-semibold text-foreground shadow-sm">
+    <label className="relative flex min-w-0 items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-1.5 text-[11px] font-semibold text-foreground shadow-sm">
       <Globe className="w-4 h-4" />
       <span className="sr-only">{t("switchLanguageTo", { language: currentLocale === "it" ? t("arabo") : t("italiano") })}</span>
       <select
         value={currentLocale}
         onChange={(e) => handleSwitch(e.target.value)}
         disabled={isPending}
-        className="min-w-[3.5rem] max-w-[5.5rem] appearance-none bg-transparent pr-5 text-[11px] font-semibold text-foreground outline-none disabled:opacity-50"
+        className="min-w-[3.5rem] max-w-[5.5rem] w-full appearance-none bg-transparent pr-5 text-[11px] font-semibold text-foreground outline-none disabled:opacity-50"
         aria-label={t("switchLanguageTo", { language: currentLocale === "it" ? t("arabo") : t("italiano") })}
       >
         {options.map((option) => (

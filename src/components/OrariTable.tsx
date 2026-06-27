@@ -31,8 +31,8 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
 
   return (
     <>
-      <div className="hidden sm:block overflow-hidden">
-        <table className="w-full">
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full min-w-full table-auto">
           <thead>
             <tr className="bg-surface border-b border-border">
               <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.giorno}</th>
