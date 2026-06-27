@@ -31,14 +31,14 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
 
   return (
     <>
-      <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full min-w-full table-auto">
+      <div className="hidden sm:block min-w-0 overflow-x-auto">
+        <table className="w-full min-w-full table-auto max-w-full">
           <thead>
             <tr className="bg-surface border-b border-border">
-              <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.giorno}</th>
-              <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.celebrazione}</th>
-              <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.orario}</th>
-              <th className="hidden md:table-cell text-left px-6 py-4 text-sm font-semibold text-foreground">{labels.note}</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.giorno}</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.celebrazione}</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.orario}</th>
+              <th className="hidden md:table-cell text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.note}</th>
             </tr>
           </thead>
           <tbody>
@@ -59,7 +59,7 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
                     key={`${gi}-${ci}`}
                     className={`border-b ${rowBorder} ${rowBg} hover:bg-accent/10 transition-colors`}
                   >
-                    <td className={`px-6 py-3 align-top ${dayClasses}`}>
+                    <td className={`px-4 py-3 align-top ${dayClasses}`}>
                       <div className="flex items-center gap-2">
                         {isFirstInDay ? (
                           <Clock className="w-4 h-4 text-accent" />
@@ -69,13 +69,13 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
                         <span className="truncate">{giorno.giorno}</span>
                       </div>
                     </td>
-                    <td className={`px-6 py-3 text-sm ${isNext ? "font-semibold text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground/70"}`}>
+                    <td className={`px-4 py-3 text-sm ${isNext ? "font-semibold text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground/70"}`}>
                       {cel.tipo}
                     </td>
-                    <td className={`px-6 py-3 text-sm font-medium ${isNext ? "text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground"}`}>
+                    <td className={`px-4 py-3 text-sm font-medium ${isNext ? "text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground"}`}>
                       {cel.orario}
                     </td>
-                    <td className={`hidden md:table-cell px-6 py-3 text-sm ${isNext ? "text-accent" : "text-foreground/50"}`}>
+                    <td className={`hidden md:table-cell px-4 py-3 text-sm ${isNext ? "text-accent" : "text-foreground/50"}`}>
                       {cel.note || "–"}
                     </td>
                   </tr>
@@ -86,14 +86,14 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
         </table>
       </div>
 
-      <div className="sm:hidden space-y-4 px-4 pb-4">
+      <div className="sm:hidden min-w-0 space-y-4 px-4 pb-4">
         {orari.map((giorno, gi) => {
           const hasNextInDay = giorno.celebrazioni.some(
             (cel) => nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`
           );
           const headerClass = hasNextInDay ? "bg-accent text-white" : "bg-surface-alt text-foreground";
           return (
-            <div key={gi} className="animate-fade-in-up bg-surface rounded-2xl shadow-sm border border-border overflow-hidden" style={{ animationDelay: `${gi * 80}ms` }}>
+            <div key={gi} className="animate-fade-in-up min-w-0 bg-surface rounded-2xl shadow-sm border border-border overflow-hidden" style={{ animationDelay: `${gi * 80}ms` }}>
               <div className={`px-4 py-3 flex items-center gap-2 ${headerClass}`}>
                 <Clock className={`w-4 h-4 ${hasNextInDay ? "text-white" : "text-accent"}`} />
                 <h3 className={`font-semibold text-sm ${hasNextInDay ? "text-white" : "text-foreground"}`}>
@@ -105,7 +105,7 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
                   const isNext = nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`;
                   return (
                     <div key={ci} className={`px-4 py-3 transition-colors ${isNext ? "bg-gold/15" : "bg-surface"}`}>
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-3 min-w-0">
                         <div className="min-w-0">
                           <p className={`text-sm ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "font-medium text-foreground"}`}>
                             {cel.tipo}

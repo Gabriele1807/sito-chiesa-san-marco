@@ -82,12 +82,12 @@ export default function YouTubeLiveSection() {
 
   return (
     <section>
-      <div className="overflow-hidden rounded-[1.5rem] bg-primary shadow-2xl sm:rounded-2xl">
+      <div className="min-w-0 max-w-full overflow-hidden rounded-[1.5rem] bg-primary shadow-2xl sm:rounded-2xl">
         {/* Top bar decorativo */}
         <div className="h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
 
-        <div className="p-5 sm:p-8 lg:p-12">
-          <div className="flex flex-col items-start gap-6 sm:gap-8 lg:flex-row lg:gap-14">
+        <div className="min-w-0 max-w-full p-5 sm:p-8 lg:p-10">
+          <div className="min-w-0 flex flex-col items-start gap-5 sm:gap-7 lg:flex-row lg:gap-12">
             {/* ── Colonna sinistra: brand + testo + CTA ── */}
             <div className="flex-1 min-w-0">
               {/* YouTube badge + live indicator */}
@@ -186,7 +186,7 @@ export default function YouTubeLiveSection() {
             </div>
 
             {/* ── Colonna destra: video featured + info canale ── */}
-            <div className="w-full shrink-0 space-y-3 sm:space-y-4 lg:w-80">
+            <div className="min-w-0 w-full shrink-0 space-y-3 sm:space-y-4 lg:max-w-[24rem]">
               <div className="overflow-hidden rounded-xl border border-white/10 bg-black shadow-2xl">
                 <div className="aspect-video">
                   <iframe
@@ -227,7 +227,7 @@ export default function YouTubeLiveSection() {
               </div>
 
               {/* Channel info strip */}
-              <div className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/10">
+              <div className="min-w-0 w-full flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/10">
                 {data?.channel.thumbnail ? (
                   <img
                     src={data.channel.thumbnail}

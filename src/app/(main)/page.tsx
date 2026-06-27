@@ -44,8 +44,8 @@ export default async function HomePage() {
             <div className="absolute -top-24 right-0 h-64 w-64 rounded-full bg-accent/15 blur-3xl" />
             <div className="absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
 
-            <div className="relative flex flex-col gap-3 px-4 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-10 lg:min-h-[560px] lg:grid lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-10 lg:px-10 lg:pt-16 lg:pb-10">
-              <div className="flex flex-col space-y-2.5 lg:justify-center">
+            <div className="relative flex min-w-0 flex-col gap-3 px-4 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-10 lg:min-h-[560px] lg:grid lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-10 lg:px-10 lg:pt-16 lg:pb-10">
+              <div className="flex min-w-0 flex-col space-y-2.5 lg:justify-center">
                 <div className="space-y-2.5 sm:space-y-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.4em] text-accent">
                     {t("heroEyebrow")}
@@ -71,7 +71,7 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 pt-1 sm:gap-4 lg:justify-end lg:pt-0">
+              <div className="flex min-w-0 flex-col gap-3 pt-1 sm:gap-4 lg:justify-end lg:pt-0">
                 <div className="mb-4 flex flex-wrap items-center gap-2.5 text-xs text-foreground/60 sm:mb-6 sm:gap-3">
                   <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/70 px-3 py-1.5">
                     <CalendarDays className="h-3.5 w-3.5 text-accent" />
@@ -124,8 +124,8 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
+        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="min-w-0 overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
             <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-alt/70 px-6 py-4">
               <div>
                 <h3 className="text-base font-bold text-foreground">
@@ -150,7 +150,7 @@ export default async function HomePage() {
             />
           </div>
 
-          <div id="live">
+          <div id="live" className="min-w-0">
             <YouTubeLiveSection />
           </div>
         </div>
