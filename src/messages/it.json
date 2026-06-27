@@ -166,6 +166,7 @@
     "email": "Email",
     "emailOpzionale": "(opzionale)",
     "telefono": "Telefono",
+    "telefonoOpzionale": "(opzionale)",
     "note": "Note aggiuntive",
     "invia": "Invia iscrizione",
     "invioInCorso": "Invio in corso...",
@@ -185,7 +186,17 @@
     "erroreDuplicato": "Questa persona risulta già iscritta a questo evento.",
     "erroreEsaurito": "Posti esauriti per questo evento.",
     "erroreGenerico": "Si è verificato un errore. Riprova.",
-    "telefonoOpzionale": "(opzionale)"
+    "datiDalProfilo": "dal tuo profilo",
+    "perChiIscrizione": "Per chi ti iscrivi?",
+    "perChiIscrizioneDesc": "Scegli se iscrivere te stesso o un'altra persona.",
+    "stepIndicator": "Step {current} di {total}",
+    "perMe": "Per me",
+    "perMeDesc": "Compila automaticamente con i dati del profilo.",
+    "perAltro": "Per un'altra persona",
+    "perAltroDesc": "Inserisci manualmente i dati del partecipante.",
+    "tornaSceltaIscrizione": "Torna alla scelta iniziale",
+    "referenteLabel": "Referente dell'evento",
+    "referentePagamentoInfo": "I pagamenti relativi a questo evento devono essere consegnati esclusivamente a {referente}."
   },
   "contatti": {
     "titolo": "Contatti",
@@ -240,6 +251,8 @@
     "subEventi": "Calendario",
     "subContatti": "Email, telefono, posizione",
     "subProfilo": "Account e password",
+    "iscrizioni": "Le mie iscrizioni",
+    "subIscrizioni": "Evento a cui sei iscritto",
     "pannelloAdmin": "Pannello Admin",
     "subPannelloAdmin": "Accesso rapido gestione",
     "seiInChiesa": "Sei in chiesa?",
@@ -256,7 +269,8 @@
     "eventi": "Eventi",
     "chiSiamo": "Chi Siamo",
     "contatti": "Contatti",
-    "profilo": "Profilo"
+    "profilo": "Profilo",
+    "iscrizioni": "Le mie iscrizioni"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -448,6 +462,10 @@
     "nessunaRichiestaSuperAdmin": "Nessuna richiesta super admin inviata.",
     "azioniRapide": "Azioni rapide",
     "azioniSitoTitle": "Sito principale",
+    "leTueIscrizioni": "Le tue iscrizioni agli eventi",
+    "nessunaIscrizione": "Non hai ancora effettuato alcuna iscrizione agli eventi.",
+    "erroreIscrizioni": "Si è verificato un errore nel caricamento delle tue iscrizioni.",
+    "loadingIscrizioni": "Caricamento iscrizioni...",
     "azioniAdminTitle": "Azioni pannello admin",
     "azioniSuperAdminTitle": "Priorita super admin",
     "azioneSitoEventi": "Iscriviti e consulta gli eventi",
@@ -461,5 +479,23 @@
     "azioneSuperAdminGestioneAdmin": "Gestione amministratori",
     "azioneSuperAdminUtenti": "Gestione utenti",
     "suggerimentoSicurezza": "Suggerimento: aggiorna la password periodicamente e verifica i tuoi dati account."
+  },
+  "iscrizioni": {
+    "titolo": "Le mie iscrizioni",
+    "sottotitolo": "Qui trovi tutti gli eventi a cui ti sei iscritto.",
+    "caricamento": "Caricamento iscrizioni...",
+    "erroreCaricamento": "Si è verificato un errore nel caricamento delle iscrizioni.",
+    "nessunaIscrizione": "Nessuna iscrizione trovata",
+    "nessunaIscrizioneDesc": "Non hai ancora effettuato alcuna iscrizione. Esplora gli eventi e iscriviti!",
+    "scopriEventi": "Scopri gli eventi",
+    "accessoNecessario": "Accedi per vedere le iscrizioni",
+    "messaggioAccesso": "Effettua l'accesso per visualizzare le iscrizioni agli eventi effettuate con il tuo account.",
+    "iscrittoIl": "Iscritto il",
+    "partecipante": "Partecipante",
+    "padre": "Padre",
+    "telefono": "Telefono",
+    "email": "Email",
+    "referenteLabel": "Referente dell'evento",
+    "referentePagamentoInfo": "I pagamenti di questo evento devono essere consegnati esclusivamente a {referente}."
   }
 }

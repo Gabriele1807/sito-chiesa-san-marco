@@ -59,9 +59,31 @@ export default function ProfiloPage() {
   const [adminEditLoading, setAdminEditLoading] = useState(false);
   const [adminEditMessage, setAdminEditMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  /* â”€â”€ Admin request state â”€â”€ */
+  /* ── Admin request state ── */
   const [requestingAdmin, setRequestingAdmin] = useState(false);
   const [adminReqMessage, setAdminReqMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  /* ── Iscrizioni state ── */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [iscrizioni, setIscrizioni] = useState<any[]>([]);
+  const [iscrizioniLoading, setIscrizioniLoading] = useState(true);
+  const [iscrizioniError, setIscrizioniError] = useState(false);
+
+  useEffect(() => {
+    if (type !== "guest") {
+      fetch("/api/auth/iscrizioni")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setIscrizioni(data.iscrizioni);
+          } else {
+            setIscrizioniError(true);
+          }
+        })
+        .catch(() => setIscrizioniError(true))
+        .finally(() => setIscrizioniLoading(false));
+    }
+  }, [type]);
 
   /* â”€â”€ Guest â”€â”€ */
   if (type === "guest") {
@@ -907,6 +929,41 @@ export default function ProfiloPage() {
           </div>
         )}
       </div>
+
+      {/* ── Iscrizioni section ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex items-center gap-4 px-5 py-4 border-b border-gray-100">
+          <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+            <CalendarDays className="w-4 h-4 text-teal-500" />
+            </div>
+            <div className="text-left">
+              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("azioniSitoTitle")}</p>
+              <p className="text-sm font-medium text-gray-900">{t("leTueIscrizioni")}</p>
+            </div>
+          </div>
+          <div className="px-5 py-5">
+            {iscrizioniLoading ? (
+              <p className="text-sm text-gray-500">{t("loadingIscrizioni")}</p>
+            ) : iscrizioniError ? (
+              <p className="text-sm text-red-500">{t("erroreIscrizioni")}</p>
+            ) : iscrizioni.length === 0 ? (
+              <p className="text-sm text-gray-500">{t("nessunaIscrizione")}</p>
+            ) : (
+              <ul className="space-y-3">
+                {iscrizioni.map((isc, idx) => (
+                  <li key={idx} className="p-3 border border-gray-100 rounded-xl bg-gray-50/50">
+                    <p className="text-sm font-semibold text-gray-900">{isc.eventoTitolo}</p>
+                    <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
+                      <span>{isc.eventoData ? new Date(isc.eventoData).toLocaleDateString() : ""}</span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                      <span>Partecipante: {isc.nome} {isc.cognome}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
 
       <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
         <button

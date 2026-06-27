@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 12 maggio 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 26 giugno 2026.
 
 ---
 
@@ -10,9 +10,9 @@ Sito web bilingue italiano/arabo per la Chiesa Copta Ortodossa di San Marco a Mi
 Il progetto ha due aree principali:
 
 - area pubblica per fedeli e visitatori
-- area admin protetta per gestione contenuti e utenti amministratori
+- area admin protetta per gestione contenuti e amministratori
 
-Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto il contesto necessario per lavorare sul progetto senza dover ricostruire da zero architettura, stack, convenzioni, limiti e comportamenti già implementati.
+Obiettivo pratico del file: fornire a un'altra AI o a un altro sviluppatore il contesto attuale del progetto, incluse architettura, stack, convenzioni, limiti e comportamenti implementati.
 
 ---
 
@@ -25,31 +25,35 @@ Obiettivo pratico del file: dare a un'altra AI o a un altro sviluppatore tutto i
 | Framework | Next.js 16 App Router |
 | Lingue | italiano, arabo |
 | Frontend pubblico | next-intl + TailwindCSS v4 |
-| Admin auth | Supabase + sessioni DB + cookie httpOnly |
-| Persistenza contenuti | SI, MongoDB Atlas (icone, preghiere, eventi, orari, libreria) |
+| Root layout | `NextIntlClientProvider`, `AuthProvider`, `LoginModal`, `RegisterModal` |
+| Persistenza contenuti | SI, MongoDB Atlas (icone, testi sacri, preghiere, video corsi, eventi, orari, file privati) |
 | Persistenza autenticazione | SI, Supabase (admin) + MongoDB (utenti normali) |
-| Autenticazione utenti normali | MongoDB + cookie httpOnly `user_session` |
-| Registrazione utenti | SI, con quiz (ruolo, eta, chiesa) |
-| Accesso ospiti | Sezioni limitate con GuestGate |
+| Autenticazione admin | Supabase + `admin_sessions` + cookie `admin_session` |
+| Autenticazione utenti normali | MongoDB + cookie `user_session` |
+| Registrazione utenti | SI, utenti normali possono registrarsi |
+| Iscrizioni eventi | SI, form pubblico + gestione admin (MongoDB `event_registrations`) |
+| Accesso ospiti | Sezioni limitate con `GuestGate` |
 | Area admin tradotta | No, solo italiano |
+| Layer dati attivo | `src/lib/db.ts` → `src/lib/mongo/content.ts` + cache |
+| Residui non usati | `src/lib/supabase/content.ts` non referenziato, `src/lib/data/store.ts` fallback locale |
 
 Fatti importanti da sapere subito:
 
 - il sito pubblico e l'area admin condividono lo stesso progetto Next.js
 - i contenuti del sito sono persistiti su MongoDB Atlas tramite `src/lib/mongo/content.ts`
-- al primo avvio le collezioni vuote vengono popolate dai dati mock automaticamente
-- lo store in memoria `src/lib/data/store.ts` rimane come fallback di emergenza
-- l'autenticazione admin invece e persistita su Supabase
-- la route di login admin non deve mostrare sidebar o topbar admin
-- la dashboard admin e gia stata ripulita dalle ridondanze: non deve tornare a contenere link duplicati della sidebar
-- la shell pubblica usa un dock laterale fisso su desktop e una bottom dock su mobile
-- la navbar pubblica resta fissa e si nasconde/riappare in base allo scroll, comunicando il proprio stato alla sidebar tramite una variabile CSS globale
+- le collezioni MongoDB vuote vengono popolate automaticamente dai mock del primo avvio
+- `src/lib/data/store.ts` è un fallback in memoria e non è l'implementazione principale
+- l'autenticazione admin è gestita tramite Supabase + tabella `admin_sessions`
+- il login unificato in `/api/auth/login` prova prima l'admin Supabase e poi l'utente normale MongoDB
+- la route di login admin (`/admin/login`) non deve ereditare sidebar o topbar admin
+- la vera shell admin è in `src/app/admin/(dashboard)/layout.tsx`
+- la shell pubblica usa `Sidebar` su desktop e una bottom dock mobile, con `Navbar` fissa sopra il contenuto
 
 ---
 
 ## 3. Stack tecnologico reale
 
-Versioni lette da package.json:
+Versioni lette da `package.json`:
 
 | Tecnologia | Versione | Uso |
 |------------|----------|-----|
@@ -60,14 +64,18 @@ Versioni lette da package.json:
 | tailwindcss | ^4 | styling |
 | @tailwindcss/postcss | ^4 | integrazione Tailwind |
 | next-intl | ^4.8.3 | i18n IT/AR |
-| @supabase/supabase-js | ^2.98.0 | DB auth/sessioni admin |
-| mongodb | ^6 | persistence utenti normali + sessioni |
+| @supabase/supabase-js | ^2.98.0 | auth e accesso admin |
+| mongodb | ^7.1.1 | persistenza contenuti e utenti normali |
 | bcryptjs | ^3.0.3 | verifica hash password |
 | lucide-react | ^0.575.0 | icone |
 | react-qr-code | ^2.0.18 | generazione QR |
 | babel-plugin-react-compiler | 1.0.0 | React Compiler |
 | dotenv | ^17.3.1 | variabili ambiente negli script |
 | eslint | ^9 | lint |
+| eslint-config-next | 16.1.6 | configurazione ESLint per Next.js |
+| @types/node | ^20 | tipizzazione Node.js |
+| @types/react | ^19 | tipizzazione React |
+| @types/react-dom | ^19 | tipizzazione React DOM |
 
 Script disponibili:
 
@@ -81,7 +89,7 @@ npm run generate-hash -- "password"
 
 Nota pratica:
 
-- nel parent folder esiste un altro package-lock.json che puo generare warning di tooling; il progetto corretto e solo chiesa-san-marco
+- nel parent folder esiste un altro `package-lock.json` che può generare warning di tooling; il progetto corretto è solo `sito-chiesa-san-marco`
 
 ---
 
@@ -96,20 +104,18 @@ Il progetto usa App Router con due route groups principali:
 
 ### 4.2 Layout reali attuali
 
-Attenzione: questo punto era obsoleto in versioni precedenti del file.
-
 - `src/app/layout.tsx`
   - root layout globale
-  - usa font Inter via `next/font/google`
+  - carica i font `Source Sans 3`, `Cormorant Garamond`, `Noto Naskh Arabic`
   - avvolge l'app con `NextIntlClientProvider`
+  - include `AuthProvider`, `LoginModal` e `RegisterModal`
   - imposta `lang`, `dir` e `suppressHydrationWarning`
 
 - `src/app/(main)/layout.tsx`
   - layout pubblico
-  - struttura: `Navbar + SidebarDock + MobileDock + main content + Footer`
-  - la shell pubblica usa `.main-shell` per riservare spazio al dock desktop e al dock mobile
-  - la sidebar pubblica e un dock fisso laterale su desktop, non una colonna statica nel flow
-  - su mobile la navigazione principale e le utility si appoggiano a una bottom dock coerente con la sidebar desktop
+  - struttura: `Navbar + Sidebar + main content + Footer`
+  - `main-shell` riserva spazio per la sidebar desktop e la bottom dock mobile
+  - la sidebar pubblica è un dock fisso laterale su desktop
 
 - `src/app/admin/layout.tsx`
   - layout admin base minimale
@@ -118,14 +124,13 @@ Attenzione: questo punto era obsoleto in versioni precedenti del file.
 
 - `src/app/admin/login/layout.tsx`
   - layout centrato per la login admin
-  - sfondo navy `#0F1A2E`
   - contenuto centrato con flex e `min-h-screen`
 
 - `src/app/admin/(dashboard)/layout.tsx`
   - vero layout delle pagine admin protette
   - include `AdminSidebar`, topbar fissa, `AdminMobileMenuButton`, `AdminTopbarTitle`, `AdminToast`
   - content area con `lg:ml-[260px]` e `pt-14`
-  - header topbar fisso `h-14` con border-b
+  - header topbar fisso `h-14` con `border-b`
 
 Implicazione importante:
 
@@ -133,7 +138,20 @@ Implicazione importante:
 
 ---
 
-## 5. Struttura directory essenziale
+## 5. Layer dati e persistenza
+
+- `src/lib/db.ts` è la porta principale per i contenuti usati nel sito pubblico e in alcune pagine admin.
+- `src/lib/db.ts` chiama `src/lib/mongo/content.ts` e usa `unstable_cache` per caching lato server.
+- `src/lib/mongo/content.ts` persiste i contenuti su MongoDB Atlas e popola automaticamente le collezioni vuote dai mock.
+- `src/lib/mongo/sessions.ts` gestisce le sessioni utente normali con cookie `user_session`.
+- `src/lib/auth/session.ts` gestisce le sessioni admin con cookie `admin_session` e le tabelle Supabase `admin_sessions` / `admin_users`.
+- `/api/auth/login` prova prima l'autenticazione admin Supabase e poi l'autenticazione utente normale MongoDB.
+- `src/lib/data/store.ts` esiste come fallback in memoria ma non è l'implementazione principale corrente.
+- `src/lib/supabase/content.ts` è presente ma non referenziato dalle route attuali; sembra un residuo di un layer dati alternativo.
+
+---
+
+## 6. Struttura directory essenziale
 
 ```text
 chiesa-san-marco/
@@ -165,12 +183,14 @@ chiesa-san-marco/
 |  |  |  \- session.ts
 |  |  |- mongo/
 |  |  |  |- client.ts
+|  |  |  |- content.ts
 |  |  |  |- users.ts
-|  |  |  \- sessions.ts
+|  |  |  |- sessions.ts
 |  |  \- supabase/
 |  |     |- client.ts
 |  |     |- server.ts
-|  |     \- schema.sql
+|  |     |- schema.sql
+|  |     \- content.ts
 |  |- components/
 |  |  |- Navbar.tsx
 |  |  |- Sidebar.tsx
@@ -188,7 +208,7 @@ chiesa-san-marco/
 |  |  |- sidebar/
 |  |  |  |- SidebarDock.tsx
 |  |  |  |- MobileDock.tsx
-|  |  |  |- nav-config.ts
+|  |  |  \- nav-config.ts
 |  |  |- auth/
 |  |  |  |- AuthContext.tsx
 |  |  |  |- LoginModal.tsx

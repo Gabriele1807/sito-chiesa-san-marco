@@ -506,6 +506,7 @@ export const eventi: Evento[] = [
     descrizione:
       "Una giornata dedicata alla visita del Monastero di San Macario nel deserto di Scete, luogo di profonda spiritualità monastica. Partenza in pullman dalla chiesa alle ore 8:00.",
     luogo: "Partenza dalla Chiesa, Milano",
+    referente: "Padre Mina Kolta",
     postiDisponibili: 45,
     immagine: "/images/eventi/monastero.jpg",
   },
@@ -517,6 +518,7 @@ export const eventi: Evento[] = [
     descrizione:
       "Celebrazione solenne della festa del nostro patrono San Marco Evangelista con Divina Liturgia, processione e pranzo comunitario.",
     luogo: "Chiesa di San Marco, Milano",
+    referente: "Michele Wasef",
     postiDisponibili: 200,
     immagine: "/images/eventi/festa-san-marco.jpg",
   },
@@ -529,6 +531,7 @@ export const eventi: Evento[] = [
     descrizione:
       "Tre giorni di ritiro spirituale per i giovani della comunità con meditazioni, attività e momenti di preghiera immersi nella natura.",
     luogo: "Casa di ritiro, Lago di Como",
+    referente: "George Mina",
     postiDisponibili: 30,
     immagine: "/images/eventi/ritiro-giovani.jpg",
   },
@@ -540,6 +543,7 @@ export const eventi: Evento[] = [
     descrizione:
       "Corso settimanale di lingua copta per principianti. Impara l'alfabeto e le basi della lingua liturgica della Chiesa Copta.",
     luogo: "Sala parrocchiale, Milano",
+    referente: "Michele Wasef",
     postiDisponibili: 20,
     immagine: "/images/eventi/corso-copto.jpg",
   },

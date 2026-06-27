@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarDays, MapPin, Users, X, AlertTriangle } from "lucide-react";
+import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo } from "lucide-react";
 import type { Evento } from "@/types";
 import { toGDriveImageUrl } from "@/lib/gdrive";
+import { useAuth } from "@/components/auth/AuthContext";
 
 interface Props {
   eventi: Evento[];
@@ -24,6 +25,8 @@ const emptyForm = {
 
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const t = useTranslations("eventi");
+  const { type, user, admin } = useAuth();
+  const isAuthenticated = type === "user" || type === "admin";
   const [formOpen, setFormOpen] = useState<string | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
   const [submitted, setSubmitted] = useState(false);
@@ -31,6 +34,11 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Step preliminare: per chi si iscrive?
+  const [enrollmentFor, setEnrollmentFor] = useState<"me" | "other" | null>(null);
+
+  const selectedEvento = eventi.find((evento) => evento.id === formOpen) ?? null;
+  const currentIdentity = type === "user" ? user : type === "admin" ? admin : null;
 
   /** Calcola i posti rimasti per un evento; null se illimitati */
   function postiRimasti(evento: Evento): number | null {
@@ -43,6 +51,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
 
   function openForm(eventoId: string) {
     setFormOpen(eventoId);
+    setEnrollmentFor(null); // Reset step preliminare
     setFormData({ ...emptyForm });
     setSubmitted(false);
     setSuccessFamily(false);
@@ -50,18 +59,42 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     setServerError(null);
   }
 
+  function selectEnrollmentType(type: "me" | "other") {
+    setEnrollmentFor(type);
+    if (type === "me" && currentIdentity) {
+      // Pre-compila con i dati dell'utente
+      setFormData(prev => ({
+        ...prev,
+        nome: currentIdentity.nome ?? "",
+        cognome: currentIdentity.cognome ?? "",
+      }));
+    } else if (type === "other") {
+      // Resetta i campi per compilazione manuale
+      setFormData(prev => ({
+        ...prev,
+        nome: "",
+        cognome: "",
+      }));
+    }
+  }
+
+  function closeForm() {
+    setFormOpen(null);
+    setEnrollmentFor(null);
+    setFormData({ ...emptyForm });
+  }
+
   function handlePhoneChange(val: string) {
     setFormData({ ...formData, telefono: val });
     
-    // Validazione immediata
     if (!val.trim()) {
       setErrors(prev => ({ ...prev, telefono: t("erroreTelefono") }));
     } else if (!/^\+?[0-9]*$/.test(val.trim().replace(/\s/g, ""))) {
-      // Usiamo * invece di + per permettere di cancellare tutto senza errore di formato se vuoto
       setErrors(prev => ({ ...prev, telefono: t("erroreTelefonoFormato") }));
     } else {
       setErrors(prev => {
-        const { telefono, ...rest } = prev;
+        const rest = { ...prev };
+        delete rest.telefono;
         return rest;
       });
     }
@@ -78,7 +111,6 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     } else if (!/^\+?[0-9]+$/.test(formData.telefono.trim().replace(/\s/g, ""))) {
       newErrors.telefono = t("erroreTelefonoFormato");
     }
-    // Email opzionale: validata solo se presente
     if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = t("erroreEmailFormato");
     }
@@ -158,7 +190,6 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
               style={{ animationDelay: `${index * 80}ms` }}
             >
               <div className="flex flex-col sm:flex-row">
-                {/* Image or date badge */}
                 {evento.immagine ? (
                   <div className="sm:w-48 h-40 sm:h-auto bg-gray-100 shrink-0 overflow-hidden">
                     <img
@@ -176,7 +207,6 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   </div>
                 )}
 
-                {/* Content */}
                 <div className="flex-1 p-6">
                   <h3 className="text-xl font-bold text-gray-900">{evento.titolo}</h3>
                   <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-500">
@@ -188,7 +218,6 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                       <MapPin className="w-3.5 h-3.5" />
                       {evento.luogo}
                     </span>
-                    {/* Indicatore posti: mostrato solo se l'evento ha un limite */}
                     {rimasti !== null && (
                       <span className={`flex items-center gap-1 font-medium ${esaurito ? "text-danger" : "text-gray-600"}`}>
                         <Users className="w-3.5 h-3.5" />
@@ -217,43 +246,131 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-in">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-              <h3 className="text-lg font-bold text-gray-900">{t("formTitolo")}</h3>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+              <h3 className="text-base font-semibold text-gray-900">
+                {enrollmentFor === null ? t("perChiIscrizione") : t("formTitolo")}
+              </h3>
               <button
-                onClick={() => setFormOpen(null)}
+                onClick={closeForm}
                 className="p-1 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
-            {submitted ? (
-              <div className="p-8 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">✓</span>
+            {/* Step 1: Scelta per chi iscriversi (solo se loggato e non selezionato) */}
+            {/* Step 1: Scelta per chi iscriversi (solo se loggato e non selezionato) */}
+            {isAuthenticated && enrollmentFor === null && (
+              <div className="p-6 space-y-5 bg-white">
+                <div className="rounded-xl border border-primary/10 bg-primary/5 px-4 py-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/60">
+                        {t("stepIndicator", { current: 1, total: 2 })}
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-gray-800">
+                        {selectedEvento?.titolo}
+                      </p>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-white sm:max-w-[180px]">
+                      <div className="h-full w-1/2 rounded-full bg-primary" />
+                    </div>
+                  </div>
                 </div>
-                <p className="text-lg font-semibold text-gray-900">
-                  {t("successMessage")}
-                </p>
-                {successFamily && (
-                  <p className="text-sm text-gray-500 mt-2">{t("successFamiglia")}</p>
-                )}
-                <button
-                  onClick={() => setFormOpen(null)}
-                  className="mt-4 btn-secondary"
-                >
-                  {t("chiudi")}
-                </button>
+
+                {/* Titolo + descrizione */}
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold text-gray-900">{t("perChiIscrizione")}</h2>
+                  <p className="text-sm text-gray-500 mt-1">{t("perChiIscrizioneDesc")}</p>
+                </div>
+
+                {/* Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                  {/* Card "Per me" */}
+                  {/* Card "Per me" */}
+                  <button
+                    type="button"
+                    onClick={() => selectEnrollmentType("me")}
+                    className="card-hover rounded-lg border border-gray-200 bg-white px-4 py-4 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-semibold text-gray-900">
+                        {t("perMe")}
+                      </span>
+                      <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                        Profilo
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">{t("perMeDesc")}</p>
+                  </button>
+
+                  {/* Card "Per un'altra persona" */}
+                  <button
+                    type="button"
+                    onClick={() => selectEnrollmentType("other")}
+                    className="card-hover rounded-lg border border-gray-200 bg-white px-4 py-4 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-semibold text-gray-900">
+                        {t("perAltro")}
+                      </span>
+                      <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                        Nuovo
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">{t("perAltroDesc")}</p>
+                  </button>
+
+                </div>
               </div>
-            ) : (
+            )}
+
+            {/* Form di iscrizione */}
+            {enrollmentFor !== null && !submitted && (
               <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                {/* Avviso documento d'identità */}
+                {isAuthenticated && (
+                  <div className="rounded-xl border border-primary/10 bg-primary/5 px-4 py-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/60">
+                          {t("stepIndicator", { current: 2, total: 2 })}
+                        </p>
+                        <p className="mt-1 text-sm font-medium text-gray-800">
+                          {selectedEvento?.titolo}
+                        </p>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-white sm:max-w-[180px]">
+                        <div className="h-full w-full rounded-full bg-primary" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-2 items-start bg-amber-50 border border-amber-200 rounded-lg p-3">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-800 leading-relaxed">{t("formAvviso")}</p>
                 </div>
 
-                {/* Errore dal server */}
+                {selectedEvento?.referente && (
+                  <div className="flex gap-2.5 items-start rounded-lg border border-primary/15 bg-primary/5 p-3">
+                    <BadgeInfo className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-primary/70">
+                        {t("referenteLabel")}
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {selectedEvento.referente}
+                      </p>
+                      <p className="text-xs leading-relaxed text-gray-600">
+                        {t("referentePagamentoInfo", { referente: selectedEvento.referente })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {serverError && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                     <p className="text-sm text-danger">{serverError}</p>
@@ -262,29 +379,53 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
 
                 {/* Sezione partecipante */}
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("sezionePartecipante")}</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("sezionePartecipante")}</h4>
+                    {enrollmentFor === "me" && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-full">
+                        <Lock className="w-2.5 h-2.5" />
+                        {t("datiDalProfilo")}
+                      </span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t("nome")} <span className="text-red-500 ml-0.5">*</span></label>
-                      <input
-                        type="text"
-                        value={formData.nome}
-                        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                        placeholder="Mario"
-                      />
-                      {errors.nome && <p className="text-xs text-danger mt-1">{errors.nome}</p>}
+                      {enrollmentFor === "me" ? (
+                        <div className="w-full px-3 py-2 border border-primary/20 bg-primary/5 rounded-lg text-sm text-gray-800 font-medium">
+                          {formData.nome}
+                        </div>
+                      ) : (
+                        <>
+                          <input
+                            type="text"
+                            value={formData.nome}
+                            onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            placeholder="Mario"
+                          />
+                          {errors.nome && <p className="text-xs text-danger mt-1">{errors.nome}</p>}
+                        </>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t("cognome")} <span className="text-red-500 ml-0.5">*</span></label>
-                      <input
-                        type="text"
-                        value={formData.cognome}
-                        onChange={(e) => setFormData({ ...formData, cognome: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                        placeholder="Rossi"
-                      />
-                      {errors.cognome && <p className="text-xs text-danger mt-1">{errors.cognome}</p>}
+                      {enrollmentFor === "me" ? (
+                        <div className="w-full px-3 py-2 border border-primary/20 bg-primary/5 rounded-lg text-sm text-gray-800 font-medium">
+                          {formData.cognome}
+                        </div>
+                      ) : (
+                        <>
+                          <input
+                            type="text"
+                            value={formData.cognome}
+                            onChange={(e) => setFormData({ ...formData, cognome: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            placeholder="Rossi"
+                          />
+                          {errors.cognome && <p className="text-xs text-danger mt-1">{errors.cognome}</p>}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -367,7 +508,38 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 >
                   {submitting ? t("invioInCorso") : t("invia")}
                 </button>
+
+                {isAuthenticated && (
+                  <button
+                    type="button"
+                    onClick={() => setEnrollmentFor(null)}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    {t("tornaSceltaIscrizione")}
+                  </button>
+                )}
               </form>
+            )}
+
+            {/* Success message */}
+            {submitted && (
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">✓</span>
+                </div>
+                <p className="text-lg font-semibold text-gray-900">
+                  {t("successMessage")}
+                </p>
+                {successFamily && (
+                  <p className="text-sm text-gray-500 mt-2">{t("successFamiglia")}</p>
+                )}
+                <button
+                  onClick={closeForm}
+                  className="mt-4 btn-secondary"
+                >
+                  {t("chiudi")}
+                </button>
+              </div>
             )}
           </div>
         </div>

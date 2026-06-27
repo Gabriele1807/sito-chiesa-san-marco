@@ -19,6 +19,7 @@ import {
 import {
   createIscrizione as regCreateIscrizione,
   getIscrizioniByEvento as regGetIscrizioniByEvento,
+  getIscrizioniByUser as regGetIscrizioniByUser,
   countIscrizioniByEvento as regCountIscrizioniByEvento,
   countIscrizioniPerEvento as regCountIscrizioniPerEvento,
   deleteIscrizione as regDeleteIscrizione,
@@ -143,6 +144,10 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
 
 export async function getIscrizioniByEvento(eventoId: string): Promise<IscrizioneEvento[]> {
   return regGetIscrizioniByEvento(eventoId);
+}
+
+export async function getIscrizioniByUser(nome: string, cognome: string, email?: string): Promise<IscrizioneEvento[]> {
+  return regGetIscrizioniByUser(nome, cognome, email);
 }
 
 export async function countIscrizioniByEvento(eventoId: string): Promise<number> {

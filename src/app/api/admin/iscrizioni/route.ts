@@ -33,6 +33,7 @@ export async function GET(request: Request) {
         titolo: ev.titolo,
         data: ev.data,
         luogo: ev.luogo,
+        referente: ev.referente,
         postiDisponibili: ev.postiDisponibili,
         iscritti: counts[ev.id] ?? 0,
       }));
@@ -58,6 +59,7 @@ export async function GET(request: Request) {
         titolo: evento.titolo,
         data: evento.data,
         luogo: evento.luogo,
+        referente: evento.referente,
         postiDisponibili: evento.postiDisponibili,
       },
       iscrizioni,

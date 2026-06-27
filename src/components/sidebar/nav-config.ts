@@ -12,6 +12,7 @@ import {
   Shield,
   Menu,
   PanelLeft,
+  ClipboardList,
 } from "lucide-react";
 
 export type SidebarItemType = "primary-nav" | "utility" | "mode-toggle";
@@ -126,6 +127,16 @@ export const utilitySection: SidebarSection = {
   id: "utility",
   labelKey: "utility",
   items: [
+    {
+      id: "iscrizioni",
+      type: "utility",
+      labelKey: "iscrizioni",
+      labelNamespace: "sidebar",
+      subKey: "subIscrizioni",
+      icon: ClipboardList,
+      href: "/iscrizioni",
+      requiresAuth: true,
+    },
     {
       id: "profilo",
       type: "utility",

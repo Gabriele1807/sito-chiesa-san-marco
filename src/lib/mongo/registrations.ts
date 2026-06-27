@@ -80,6 +80,21 @@ export async function getIscrizioniByEvento(eventoId: string): Promise<Iscrizion
   return docs.map(toIscrizione);
 }
 
+/** Lista iscrizioni di un utente, cercate per email o (nome + cognome), ordinate per data di iscrizione (più recenti prima) */
+export async function getIscrizioniByUser(nome: string, cognome: string, email?: string): Promise<IscrizioneEvento[]> {
+  await ensureIndexes();
+  const c = await col();
+  const pKey = personKey(nome, cognome);
+
+  // Costruiamo la query in modo sicuro
+  const query = email
+    ? { $or: [{ email }, { _personKey: pKey }] }
+    : { _personKey: pKey };
+
+  const docs = await c.find(query).sort({ createdAt: -1 }).toArray();
+  return docs.map(toIscrizione);
+}
+
 /** Conteggio iscrizioni per tutti gli eventi: { [eventoId]: count } */
 export async function countIscrizioniPerEvento(): Promise<Record<string, number>> {
   const c = await col();
@@ -219,7 +234,7 @@ export async function updateIscrizione(
   // per evitare di rompere la logica anti-duplicato senza ricalcolare i tasti.
   // Ma in questo caso l'admin ha il permesso di correggere errori.
   const updateDoc: any = { ...data };
-  
+
   // Se cambiano i nomi, ricalcoliamo le chiavi di indicizzazione
   if (data.nome || data.cognome || data.padreNome || data.padreCognome) {
     // Nota: in una implementazione reale dovremmo recuperare il documento esistente per i campi mancanti,

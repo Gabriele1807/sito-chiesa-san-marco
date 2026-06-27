@@ -13,13 +13,14 @@ interface Evento {
   dataFine?: string;
   descrizione: string;
   luogo: string;
+  referente?: string;
   postiDisponibili?: number;
   immagine?: string;
 }
 
 const emptyForm: Omit<Evento, "id"> = {
   slug: "", titolo: "", data: "", dataFine: "", descrizione: "",
-  luogo: "", postiDisponibili: undefined, immagine: "",
+  luogo: "", referente: "", postiDisponibili: undefined, immagine: "",
 };
 
 export default function AdminEventiPage() {
@@ -55,7 +56,7 @@ export default function AdminEventiPage() {
     setForm({
       slug: ev.slug, titolo: ev.titolo, data: ev.data.slice(0, 16),
       dataFine: ev.dataFine?.slice(0, 16) || "", descrizione: ev.descrizione,
-      luogo: ev.luogo, postiDisponibili: ev.postiDisponibili, immagine: ev.immagine || "",
+      luogo: ev.luogo, referente: ev.referente || "", postiDisponibili: ev.postiDisponibili, immagine: ev.immagine || "",
     });
     setShowForm(true);
   }
@@ -65,7 +66,12 @@ export default function AdminEventiPage() {
     setSaving(true);
     try {
       const slug = form.slug || slugify(form.titolo);
-      const payload = { ...form, slug, postiDisponibili: form.postiDisponibili ? Number(form.postiDisponibili) : undefined };
+      const payload = {
+        ...form,
+        slug,
+        referente: form.referente?.trim() || undefined,
+        postiDisponibili: form.postiDisponibili ? Number(form.postiDisponibili) : undefined,
+      };
 
       if (editId) {
         const res = await fetch("/api/admin/eventi", {
@@ -134,6 +140,11 @@ export default function AdminEventiPage() {
               <input type="text" value={form.luogo} onChange={(e) => setForm({ ...form, luogo: e.target.value })} required placeholder="Chiesa di San Marco, Milano" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Referente pagamenti</label>
+              <input type="text" value={form.referente ?? ""} onChange={(e) => setForm({ ...form, referente: e.target.value })} placeholder="Nome e cognome del referente" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <p className="text-xs text-gray-400 mt-1">Nome e cognome della persona a cui consegnare i pagamenti dell&apos;evento</p>
+            </div>
+            <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Data inizio</label>
               <input type="datetime-local" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
             </div>
@@ -171,6 +182,7 @@ export default function AdminEventiPage() {
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Titolo</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Data</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Luogo</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600">Referente</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Posti</th>
               <th className="text-right px-4 py-3 font-semibold text-gray-600">Azioni</th>
             </tr>
@@ -181,6 +193,7 @@ export default function AdminEventiPage() {
                 <td className="px-4 py-3 font-medium text-gray-900">{ev.titolo}</td>
                 <td className="px-4 py-3 text-gray-600">{new Date(ev.data).toLocaleDateString("it-IT")}</td>
                 <td className="px-4 py-3 text-gray-600">{ev.luogo}</td>
+                <td className="px-4 py-3 text-gray-600">{ev.referente || "—"}</td>
                 <td className="px-4 py-3 text-gray-600">{ev.postiDisponibili ?? "—"}</td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => openEdit(ev)} className="p-1.5 text-gray-400 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>

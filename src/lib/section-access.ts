@@ -4,7 +4,8 @@
  */
 
 import { cookies } from "next/headers";
-import type { RoleAccessType } from "@/types";
+import type { RoleAccessType, SystemRole } from "@/types";
+import { validateSession } from "@/lib/auth/session";
 import { getUserFromSessionToken } from "@/lib/mongo/sessions";
 import { getSectionVisibility } from "@/lib/mongo/visibility";
 
@@ -18,6 +19,14 @@ export async function getUserRoleServer(): Promise<
   try {
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get("user_session")?.value;
+    const adminSessionToken = cookieStore.get("admin_session")?.value;
+
+    if (adminSessionToken) {
+      const adminUser = await validateSession(adminSessionToken);
+      if (adminUser?.attivo) {
+        return adminUser.ruolo;
+      }
+    }
 
     if (!sessionToken) {
       return "guest";
@@ -30,7 +39,8 @@ export async function getUserRoleServer(): Promise<
       return "guest";
     }
 
-    return user.role as any || "guest";
+    const validRoles: SystemRole[] = ["guest", "credente", "madre", "padre", "ospite_chiesa", "admin", "superadmin"];
+    return validRoles.includes(user.role as SystemRole) ? (user.role as SystemRole) : "guest";
   } catch (error) {
     console.error("[getUserRoleServer] Errore:", error);
     return "guest";

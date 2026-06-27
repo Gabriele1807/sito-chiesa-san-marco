@@ -185,7 +185,18 @@
     "erroreDuplicato": "هذا الشخص مسجّل بالفعل في هذه الفعالية.",
     "erroreEsaurito": "نفدت الأماكن لهذه الفعالية.",
     "erroreGenerico": "حدث خطأ. حاول مرة أخرى.",
-    "telefonoOpzionale": "(اختياري)"
+    "telefonoOpzionale": "(اختياري)",
+    "datiDalProfilo": "من ملفك الشخصي",
+    "perChiIscrizione": "لمن تريد التسجيل؟",
+    "perChiIscrizioneDesc": "اختر ما إذا كنت تريد تسجيل نفسك أو شخص آخر.",
+    "stepIndicator": "الخطوة {current} من {total}",
+    "perMe": "لي أنا",
+    "perMeDesc": "املأ البيانات تلقائياً من الملف الشخصي.",
+    "perAltro": "لشخص آخر",
+    "perAltroDesc": "أدخل بيانات المشارك يدوياً.",
+    "tornaSceltaIscrizione": "العودة إلى الاختيار الأول",
+    "referenteLabel": "مسؤول الفعالية",
+    "referentePagamentoInfo": "يجب تسليم مدفوعات هذه الفعالية حصرياً إلى {referente}."
   },
   "contatti": {
     "titolo": "اتصل بنا",
@@ -240,6 +251,8 @@
     "subEventi": "التقويم الكنسي والأنشطة",
     "subContatti": "البريد والهاتف والموقع",
     "subProfilo": "الحساب وكلمة المرور",
+    "iscrizioni": "تسجيلاتي",
+    "subIscrizioni": "الفعاليات المسجّل فيها",
     "pannelloAdmin": "لوحة الإدارة",
     "subPannelloAdmin": "وصول سريع للإدارة",
     "seiInChiesa": "هل أنت في الكنيسة؟",
@@ -256,7 +269,8 @@
     "eventi": "الفعاليات",
     "chiSiamo": "من نحن",
     "contatti": "اتصل بنا",
-    "profilo": "الملف الشخصي"
+    "profilo": "الملف الشخصي",
+    "iscrizioni": "تسجيلاتي"
   },
   "auth": {
     "loginTitle": "تسجيل الدخول",
@@ -448,6 +462,10 @@
     "nessunaRichiestaSuperAdmin": "لم يتم إرسال أي طلب صلاحية مسؤول أعلى.",
     "azioniRapide": "إجراءات سريعة",
     "azioniSitoTitle": "الموقع الرئيسي",
+    "leTueIscrizioni": "تسجيلاتك في الفعاليات",
+    "nessunaIscrizione": "لم تقم بأي تسجيل في الفعاليات بعد.",
+    "erroreIscrizioni": "حدث خطأ أثناء تحميل تسجيلاتك.",
+    "loadingIscrizioni": "جارٍ تحميل التسجيلات...",
     "azioniAdminTitle": "إجراءات لوحة الإدارة",
     "azioniSuperAdminTitle": "أولويات المسؤول الأعلى",
     "azioneSitoEventi": "سجّل واطّلع على الفعاليات",
@@ -461,5 +479,23 @@
     "azioneSuperAdminGestioneAdmin": "إدارة المشرفين",
     "azioneSuperAdminUtenti": "إدارة المستخدمين",
     "suggerimentoSicurezza": "نصيحة أمان: حدّث كلمة المرور دورياً وتأكد من بيانات الحساب."
+  },
+  "iscrizioni": {
+    "titolo": "تسجيلاتي",
+    "sottotitolo": "هنا تجد جميع الفعاليات التي سجّلت فيها.",
+    "caricamento": "جارٍ تحميل التسجيلات...",
+    "erroreCaricamento": "حدث خطأ أثناء تحميل التسجيلات.",
+    "nessunaIscrizione": "لا توجد تسجيلات",
+    "nessunaIscrizioneDesc": "لم تسجّل في أي فعالية بعد. استكشف الفعاليات وسجّل!",
+    "scopriEventi": "اكتشف الفعاليات",
+    "accessoNecessario": "سجّل الدخول لعرض تسجيلاتك",
+    "messaggioAccesso": "سجّل دخولك لعرض التسجيلات في الفعاليات التي أجريتها بحسابك.",
+    "iscrittoIl": "سجّلت في",
+    "partecipante": "المشارك",
+    "padre": "الأب",
+    "telefono": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "referenteLabel": "مسؤول الفعالية",
+    "referentePagamentoInfo": "يجب تسليم مدفوعات هذه الفعالية حصرياً إلى {referente}."
   }
 }

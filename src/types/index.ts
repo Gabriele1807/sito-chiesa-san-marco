@@ -58,6 +58,7 @@ export interface Evento {
   dataFine?: string;
   descrizione: string;
   luogo: string;
+  referente?: string;
   postiDisponibili?: number;
   immagine?: string;
 }

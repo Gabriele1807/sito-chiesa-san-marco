@@ -12,6 +12,7 @@ import {
   Info,
   Phone,
   User,
+  ClipboardList,
 } from "lucide-react";
 
 // FIX [3] — Changed DASHBOARD to HOME, changed icon from LayoutDashboard to Home, added i18n
@@ -25,6 +26,7 @@ const titlesConfig: Record<string, { icon: React.ElementType; key: string }> = {
   "/chi-siamo": { icon: Info, key: "chiSiamo" },
   "/contatti": { icon: Phone, key: "contatti" },
   "/profilo": { icon: User, key: "profilo" },
+  "/iscrizioni": { icon: ClipboardList, key: "iscrizioni" },
 };
 
 interface TopbarTitleProps {
