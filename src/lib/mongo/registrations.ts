@@ -44,7 +44,11 @@ function col() {
 
 function toIscrizione(doc: WithId<Document>): IscrizioneEvento {
   const { _id, ...rest } = doc as unknown as IscrizioneEvento & { _id: ObjectId };
-  return { ...rest, _id: _id.toString() } as IscrizioneEvento;
+  return {
+    ...rest,
+    ha_pagato: typeof rest.ha_pagato === "boolean" ? rest.ha_pagato : false,
+    _id: _id.toString(),
+  } as IscrizioneEvento;
 }
 
 // --------------- Indexes (idempotent) ---------------
@@ -181,6 +185,7 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     telefono: data.telefono.trim(),
     email: data.email?.trim() || undefined,
     note: data.note?.trim() || undefined,
+    ha_pagato: false,
     createdAt: now,
     // campi tecnici per indici/lookup (non esposti al client)
     _familyKey: fKey,
@@ -230,6 +235,10 @@ export async function updateIscrizione(
   const c = await col();
   if (!ObjectId.isValid(id)) return false;
 
+  if ("ha_pagato" in data && typeof data.ha_pagato !== "boolean") {
+    return false;
+  }
+
   // Non permettiamo di cambiare le chiavi univoche (nome, cognome, padre) tramite update semplice
   // per evitare di rompere la logica anti-duplicato senza ricalcolare i tasti.
   // Ma in questo caso l'admin ha il permesso di correggere errori.
@@ -246,5 +255,23 @@ export async function updateIscrizione(
     { _id: new ObjectId(id) },
     { $set: { ...updateDoc, updatedAt: new Date().toISOString() } }
   );
+  return result.matchedCount > 0;
+}
+
+/** Aggiornamento atomico dello stato di pagamento di un'iscrizione */
+export async function updateIscrizionePagamento(id: string, ha_pagato: boolean): Promise<boolean> {
+  const c = await col();
+  if (!ObjectId.isValid(id) || typeof ha_pagato !== "boolean") return false;
+
+  const result = await c.updateOne(
+    { _id: new ObjectId(id) },
+    {
+      $set: {
+        ha_pagato,
+        updatedAt: new Date().toISOString(),
+      },
+    }
+  );
+
   return result.matchedCount > 0;
 }

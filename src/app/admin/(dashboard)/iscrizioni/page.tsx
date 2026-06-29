@@ -17,6 +17,7 @@ import {
   Inbox,
   X,
   Save,
+  CheckCircle2,
 } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -41,6 +42,7 @@ interface Iscrizione {
   telefono: string;
   email?: string;
   note?: string;
+  ha_pagato: boolean;
   createdAt?: string;
 }
 
@@ -59,6 +61,7 @@ type PdfExportColumnKey =
   | "cognome"
   | "padreNome"
   | "padreCognome"
+  | "ha_pagato"
   | "telefono"
   | "email"
   | "note"
@@ -70,6 +73,7 @@ const PDF_EXPORT_COLUMNS: Array<{ key: PdfExportColumnKey; label: string }> = [
   { key: "cognome", label: "Cognome" },
   { key: "padreNome", label: "Nome padre" },
   { key: "padreCognome", label: "Cognome padre" },
+  { key: "ha_pagato", label: "Pagato" },
   { key: "telefono", label: "Telefono" },
   { key: "email", label: "Email" },
   { key: "note", label: "Note" },
@@ -103,6 +107,8 @@ export default function AdminIscrizioniPage() {
   const [editTarget, setEditTarget] = useState<Iscrizione | null>(null);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Iscrizione>>({});
+  const [paymentSavingId, setPaymentSavingId] = useState<string | null>(null);
+  const [paymentSavedId, setPaymentSavedId] = useState<string | null>(null);
   const [exporting, setExporting] = useState<"excel" | "pdf" | null>(null);
   const [showPdfExportModal, setShowPdfExportModal] = useState(false);
   const [selectedPdfColumns, setSelectedPdfColumns] = useState<PdfExportColumnKey[]>(
@@ -199,6 +205,47 @@ export default function AdminIscrizioniPage() {
       showToast("Errore nell'aggiornamento", "error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handlePaymentToggle(iscrizione: Iscrizione) {
+    setPaymentSavingId(iscrizione._id);
+    setPaymentSavedId(null);
+    const nextValue = !iscrizione.ha_pagato;
+
+    try {
+      const res = await fetch(`/api/admin/iscrizioni?id=${iscrizione._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ha_pagato: nextValue }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Errore nel salvataggio del pagamento");
+      }
+
+      setIscrizioni((current) =>
+        current.map((row) =>
+          row._id === iscrizione._id ? { ...row, ha_pagato: nextValue } : row
+        )
+      );
+      setEditTarget((current) =>
+        current && current._id === iscrizione._id
+          ? { ...current, ha_pagato: nextValue }
+          : current
+      );
+      setEditForm((current) =>
+        editTarget?._id === iscrizione._id ? { ...current, ha_pagato: nextValue } : current
+      );
+      setPaymentSavedId(iscrizione._id);
+      window.setTimeout(() => {
+        setPaymentSavedId((current) => (current === iscrizione._id ? null : current));
+      }, 1800);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Errore nel salvataggio del pagamento", "error");
+    } finally {
+      setPaymentSavingId(null);
     }
   }
 
@@ -514,6 +561,7 @@ export default function AdminIscrizioniPage() {
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Padre</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Contatti</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Note</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Pagamento</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Iscritto il</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-600">Azioni</th>
                 </tr>
@@ -559,6 +607,36 @@ export default function AdminIscrizioniPage() {
                       </td>
                       <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate" title={i.note}>
                         {i.note || "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex min-w-[150px] flex-col gap-1">
+                          <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={!!i.ha_pagato}
+                              onChange={() => handlePaymentToggle(i)}
+                              disabled={paymentSavingId === i._id}
+                              aria-label={`Segna pagamento per ${i.nome} ${i.cognome}`}
+                              className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            />
+                            <span className={i.ha_pagato ? "text-green-700" : "text-amber-700"}>
+                              {i.ha_pagato ? "Pagato" : "Da saldare"}
+                            </span>
+                          </label>
+                          <div className="min-h-[16px] text-[11px]">
+                            {paymentSavingId === i._id ? (
+                              <span className="inline-flex items-center gap-1 text-gray-500">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                Salvataggio...
+                              </span>
+                            ) : paymentSavedId === i._id ? (
+                              <span className="inline-flex items-center gap-1 text-green-600">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Salvato
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(i.createdAt)}</td>
                       <td className="px-4 py-3 text-right">
@@ -674,6 +752,18 @@ export default function AdminIscrizioniPage() {
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none resize-none"
                 />
               </div>
+              <label className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3">
+                <input
+                  type="checkbox"
+                  checked={!!editForm.ha_pagato}
+                  onChange={(e) => setEditForm({ ...editForm, ha_pagato: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Pagamento ricevuto</p>
+                  <p className="text-xs text-gray-500">Aggiorna lo stato economico dell'iscrizione.</p>
+                </div>
+              </label>
               <div className="pt-4 flex gap-3">
                 <button
                   onClick={() => setEditTarget(null)}

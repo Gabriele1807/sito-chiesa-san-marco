@@ -52,6 +52,7 @@ type ExportColumnKey =
   | "cognome"
   | "padreNome"
   | "padreCognome"
+  | "ha_pagato"
   | "telefono"
   | "email"
   | "note"
@@ -70,6 +71,7 @@ const EXPORT_COLUMNS: ExportColumn[] = [
   { key: "cognome", label: "Cognome", width: 1.1, value: (row) => row.cognome || "" },
   { key: "padreNome", label: "Nome padre", width: 1.1, value: (row) => row.padreNome || "" },
   { key: "padreCognome", label: "Cognome padre", width: 1.1, value: (row) => row.padreCognome || "" },
+  { key: "ha_pagato", label: "Pagato", width: 0.9, value: (row) => (row.ha_pagato ? "Si" : "No") },
   { key: "telefono", label: "Telefono", width: 1.15, value: (row) => row.telefono || "" },
   { key: "email", label: "Email", width: 1.6, value: (row) => row.email || "" },
   { key: "note", label: "Note", width: 1.8, value: (row) => row.note || "" },
@@ -82,6 +84,7 @@ const HEADERS = [
   "Cognome",
   "Nome padre",
   "Cognome padre",
+  "Pagato",
   "Telefono",
   "Email",
   "Note",
@@ -95,6 +98,7 @@ function rowsFrom(iscrizioni: IscrizioneEvento[]): string[][] {
     r.cognome || "",
     r.padreNome || "",
     r.padreCognome || "",
+    r.ha_pagato ? "Si" : "No",
     r.telefono || "",
     r.email || "",
     r.note || "",

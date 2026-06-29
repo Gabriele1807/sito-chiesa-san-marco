@@ -87,12 +87,13 @@ export interface IscrizioneEvento {
   telefono: string;
   email?: string;          // opzionale
   note?: string;
+  ha_pagato: boolean;
   // Metadati
   createdAt?: string;      // ISO date
 }
 
 /** Dati inviati dal form pubblico per creare una nuova iscrizione */
-export type CreateIscrizioneData = Omit<IscrizioneEvento, "_id" | "id" | "createdAt">;
+export type CreateIscrizioneData = Omit<IscrizioneEvento, "_id" | "id" | "createdAt" | "ha_pagato">;
 
 /** Esito della creazione di un'iscrizione */
 export interface CreateIscrizioneResult {

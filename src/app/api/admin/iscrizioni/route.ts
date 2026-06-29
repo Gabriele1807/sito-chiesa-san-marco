@@ -7,6 +7,7 @@ import {
   countIscrizioniPerEvento,
   deleteIscrizione,
   updateIscrizione,
+  updateIscrizionePagamento,
 } from "@/lib/mongo/registrations";
 
 /**
@@ -118,8 +119,27 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
+    const definedKeys = Object.entries(body).filter(([, value]) => value !== undefined);
+
+    if (definedKeys.length === 1 && definedKeys[0]?.[0] === "ha_pagato") {
+      if (typeof body.ha_pagato !== "boolean") {
+        return NextResponse.json({ success: false, error: "Valore ha_pagato non valido" }, { status: 400 });
+      }
+
+      const updatedPagamento = await updateIscrizionePagamento(id, body.ha_pagato);
+      if (!updatedPagamento) {
+        return NextResponse.json({ success: false, error: "Iscrizione non trovata" }, { status: 404 });
+      }
+
+      return NextResponse.json({ success: true, ha_pagato: body.ha_pagato });
+    }
+
     // Campi permessi per l'update (escludiamo quelli strutturali)
-    const { nome, cognome, padreNome, padreCognome, telefono, email, note } = body;
+    const { nome, cognome, padreNome, padreCognome, telefono, email, note, ha_pagato } = body;
+
+    if (ha_pagato !== undefined && typeof ha_pagato !== "boolean") {
+      return NextResponse.json({ success: false, error: "Valore ha_pagato non valido" }, { status: 400 });
+    }
 
     const updated = await updateIscrizione(id, {
       nome,
@@ -129,6 +149,7 @@ export async function PATCH(request: Request) {
       telefono,
       email,
       note,
+      ha_pagato,
     });
 
     if (!updated) {

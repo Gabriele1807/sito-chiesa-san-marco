@@ -23,6 +23,7 @@ import {
   countIscrizioniByEvento as regCountIscrizioniByEvento,
   countIscrizioniPerEvento as regCountIscrizioniPerEvento,
   deleteIscrizione as regDeleteIscrizione,
+  updateIscrizionePagamento as regUpdateIscrizionePagamento,
 } from "@/lib/mongo/registrations";
 import type {
   Icona,
@@ -160,4 +161,8 @@ export async function countIscrizioniPerEvento(): Promise<Record<string, number>
 
 export async function deleteIscrizione(id: string): Promise<boolean> {
   return regDeleteIscrizione(id);
+}
+
+export async function updateIscrizionePagamento(id: string, ha_pagato: boolean): Promise<boolean> {
+  return regUpdateIscrizionePagamento(id, ha_pagato);
 }
