@@ -10,6 +10,7 @@ import {
   Trash2,
   Pencil,
   ChevronLeft,
+  ChevronRight,
   CalendarDays,
   MapPin,
   Phone,
@@ -97,7 +98,7 @@ export default function AdminIscrizioniPage() {
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(10);
   
   // Stati per Eliminazione
   const [deleteTarget, setDeleteTarget] = useState<Iscrizione | null>(null);
@@ -522,33 +523,15 @@ export default function AdminIscrizioniPage() {
           </div>
 
           {/* Ricerca */}
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto] items-end">
-            <div className="relative max-w-sm">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cerca per nome, padre, telefono..."
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
-              />
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>Mostra</span>
-              <select
-                value={limit}
-                onChange={(e) => {
-                  setLimit(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
-              >
-                {[10, 20, 50, 100].map((size) => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
-              <span>di {filtered.length}</span>
-            </div>
+          <div className="relative max-w-sm">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cerca per nome, padre, telefono..."
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+            />
           </div>
 
           {/* Tabella iscritti */}
@@ -566,106 +549,149 @@ export default function AdminIscrizioniPage() {
                   <th className="text-right px-4 py-3 font-semibold text-gray-600">Azioni</th>
                 </tr>
               </thead>
-              <tbody>
-                {paginatedIscrizioni.map((i, idx) => {
-                  const fk = familyKeyOf(i);
-                  const isFamily = familyCounts[fk] > 1;
-                  return (
-                    <tr key={i._id} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                      <td className="px-4 py-3 text-gray-400">{(page - 1) * limit + idx + 1}</td>
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {i.nome} {i.cognome}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <span>
-                            {i.padreNome} {i.padreCognome}
-                          </span>
-                          {isFamily && (
-                            <span
-                              title="Stessa famiglia di altre iscrizioni"
-                              className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold"
-                            >
-                              famiglia ×{familyCounts[fk]}
+              <tbody className="divide-y divide-gray-100">
+                {paginatedIscrizioni.length > 0 ? (
+                  paginatedIscrizioni.map((i, idx) => {
+                    const fk = familyKeyOf(i);
+                    const isFamily = familyCounts[fk] > 1;
+                    return (
+                      <tr key={i._id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-400">{(page - 1) * limit + idx + 1}</td>
+                        <td className="px-4 py-3 font-medium text-gray-900">
+                          {i.nome} {i.cognome}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {i.padreNome} {i.padreCognome}
                             </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="flex items-center gap-1.5">
-                            <Phone className="w-3 h-3 text-gray-400" />
-                            {i.telefono}
-                          </span>
-                          {i.email && (
-                            <span className="flex items-center gap-1.5 text-gray-500">
-                              <Mail className="w-3 h-3 text-gray-400" />
-                              {i.email}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate" title={i.note}>
-                        {i.note || "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex min-w-[150px] flex-col gap-1">
-                          <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                            <input
-                              type="checkbox"
-                              checked={!!i.ha_pagato}
-                              onChange={() => handlePaymentToggle(i)}
-                              disabled={paymentSavingId === i._id}
-                              aria-label={`Segna pagamento per ${i.nome} ${i.cognome}`}
-                              className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-60"
-                            />
-                            <span className={i.ha_pagato ? "text-green-700" : "text-amber-700"}>
-                              {i.ha_pagato ? "Pagato" : "Da saldare"}
-                            </span>
-                          </label>
-                          <div className="min-h-[16px] text-[11px]">
-                            {paymentSavingId === i._id ? (
-                              <span className="inline-flex items-center gap-1 text-gray-500">
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                                Salvataggio...
+                            {isFamily && (
+                              <span
+                                title="Stessa famiglia di altre iscrizioni"
+                                className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold"
+                              >
+                                famiglia ×{familyCounts[fk]}
                               </span>
-                            ) : paymentSavedId === i._id ? (
-                              <span className="inline-flex items-center gap-1 text-green-600">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Salvato
-                              </span>
-                            ) : null}
+                            )}
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(i.createdAt)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-1">
-                          <button
-                            onClick={() => openEdit(i)}
-                            className="p-1.5 text-gray-400 hover:text-gold transition-colors"
-                            title="Modifica iscrizione"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(i)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
-                            title="Elimina iscrizione"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="flex items-center gap-1.5">
+                              <Phone className="w-3 h-3 text-gray-400" />
+                              {i.telefono}
+                            </span>
+                            {i.email && (
+                              <span className="flex items-center gap-1.5 text-gray-500">
+                                <Mail className="w-3 h-3 text-gray-400" />
+                                {i.email}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate" title={i.note}>
+                          {i.note || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex min-w-[150px] flex-col gap-1">
+                            <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                              <input
+                                type="checkbox"
+                                checked={!!i.ha_pagato}
+                                onChange={() => handlePaymentToggle(i)}
+                                disabled={paymentSavingId === i._id}
+                                aria-label={`Segna pagamento per ${i.nome} ${i.cognome}`}
+                                className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-60"
+                              />
+                              <span className={i.ha_pagato ? "text-green-700" : "text-amber-700"}>
+                                {i.ha_pagato ? "Pagato" : "Da saldare"}
+                              </span>
+                            </label>
+                            <div className="min-h-[16px] text-[11px]">
+                              {paymentSavingId === i._id ? (
+                                <span className="inline-flex items-center gap-1 text-gray-500">
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                  Salvataggio...
+                                </span>
+                              ) : paymentSavedId === i._id ? (
+                                <span className="inline-flex items-center gap-1 text-green-600">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  Salvato
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(i.createdAt)}</td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-1">
+                            <button
+                              onClick={() => openEdit(i)}
+                              className="p-1.5 text-gray-400 hover:text-gold transition-colors"
+                              title="Modifica iscrizione"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(i)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                              title="Elimina iscrizione"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-10 text-center text-gray-500">
+                      {iscrizioni.length === 0
+                        ? "Nessuna iscrizione per questo evento"
+                        : "Nessun risultato per la ricerca"}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
-            {filtered.length === 0 && (
-              <p className="text-center py-10 text-gray-400 text-sm">
-                {iscrizioni.length === 0 ? "Nessuna iscrizione per questo evento" : "Nessun risultato per la ricerca"}
-              </p>
+
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 gap-3 border-t border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <span>Mostra</span>
+                  <select
+                    value={limit}
+                    onChange={(e) => {
+                      setLimit(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+                  >
+                    {[10, 20, 50, 100].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                  <span>di {filtered.length}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm text-gray-500">Pagina {page} di {totalPages}</span>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </>
