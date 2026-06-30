@@ -8,14 +8,26 @@ export default function MobileMenuButton() {
   function handleClick() {
     const sidebar = document.getElementById("mobile-sidebar");
     const overlay = document.getElementById("sidebar-overlay");
-    if (sidebar && overlay) {
-      sidebar.classList.toggle("-translate-x-full");
-      sidebar.classList.toggle("translate-x-0");
-      sidebar.classList.toggle("opacity-0");
-      sidebar.classList.toggle("opacity-100");
-      overlay.classList.toggle("pointer-events-none");
-      overlay.classList.toggle("opacity-0");
+    if (!sidebar || !overlay) return;
+
+    const isOpen = !sidebar.classList.contains("-translate-x-full");
+
+    if (isOpen) {
+      sidebar.classList.add("-translate-x-full");
+      sidebar.classList.remove("translate-x-0");
+      sidebar.classList.add("opacity-0");
+      sidebar.classList.remove("opacity-100");
+      overlay.classList.add("pointer-events-none");
+      overlay.classList.add("opacity-0");
+      return;
     }
+
+    overlay.classList.remove("pointer-events-none");
+    overlay.classList.remove("opacity-0");
+    sidebar.classList.remove("-translate-x-full");
+    sidebar.classList.add("translate-x-0");
+    sidebar.classList.remove("opacity-0");
+    sidebar.classList.add("opacity-100");
   }
 
   return (

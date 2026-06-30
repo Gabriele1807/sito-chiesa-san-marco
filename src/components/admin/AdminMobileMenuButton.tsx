@@ -6,11 +6,20 @@ export default function AdminMobileMenuButton() {
   function handleClick() {
     const sidebar = document.getElementById("admin-mobile-sidebar");
     const overlay = document.getElementById("admin-sidebar-overlay");
-    if (sidebar && overlay) {
-      sidebar.classList.toggle("-translate-x-full");
-      sidebar.classList.toggle("translate-x-0");
-      overlay.classList.toggle("hidden");
+    if (!sidebar || !overlay) return;
+
+    const isOpen = !sidebar.classList.contains("-translate-x-full");
+
+    if (isOpen) {
+      sidebar.classList.add("-translate-x-full");
+      sidebar.classList.remove("translate-x-0");
+      overlay.classList.add("hidden");
+      return;
     }
+
+    sidebar.classList.remove("-translate-x-full");
+    sidebar.classList.add("translate-x-0");
+    overlay.classList.remove("hidden");
   }
 
   return (

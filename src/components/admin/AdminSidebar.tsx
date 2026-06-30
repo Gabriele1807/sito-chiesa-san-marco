@@ -87,7 +87,7 @@ export default function AdminSidebar() {
 
       <aside
         id="admin-mobile-sidebar"
-        className="fixed top-0 left-0 bottom-0 w-[260px] bg-[#0F1A2E] text-white flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
+        className="fixed top-0 left-0 bottom-0 w-[260px] bg-[#0F1A2E] text-white flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out"
       >
       {/* Header */}
       <div className="px-5 py-5 border-b border-white/10">
