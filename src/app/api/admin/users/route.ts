@@ -6,15 +6,14 @@
  */
 
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { hashPassword } from "@/lib/auth/password";
+import { requireSuperAdminSession } from "@/lib/auth/session";
 
-/** Verifica che chi chiama sia superadmin (dal header impostato dal middleware). */
+/** Verifica che chi chiama sia superadmin. */
 async function requireSuperAdmin() {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  return ruolo === "superadmin";
+  const adminUser = await requireSuperAdminSession();
+  return adminUser !== null;
 }
 
 // ---------- GET: lista admin ----------

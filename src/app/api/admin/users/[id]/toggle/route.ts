@@ -5,14 +5,15 @@
  */
 
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { requireSuperAdminSession } from "@/lib/auth/session";
 
 async function requireSuperAdmin() {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  const userId = h.get("x-admin-user-id");
-  return { isSuperAdmin: ruolo === "superadmin", currentUserId: userId };
+  const adminUser = await requireSuperAdminSession();
+  return {
+    isSuperAdmin: adminUser?.ruolo === "superadmin",
+    currentUserId: adminUser?.id ?? null,
+  };
 }
 
 export async function PATCH(

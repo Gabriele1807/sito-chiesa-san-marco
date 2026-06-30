@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import {
@@ -7,15 +6,15 @@ import {
   updateSuperAdminRequest,
   findUserById,
 } from "@/lib/mongo/users";
+import { requireSuperAdminSession } from "@/lib/auth/session";
 
 /**
  * GET /api/admin/richieste-superadmin
  * Lista richieste superadmin pendenti (solo superadmin)
  */
 export async function GET() {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !isSuperAdmin(ruolo)) {
+  const adminUser = await requireSuperAdminSession();
+  if (!adminUser || !isSuperAdmin(adminUser.ruolo)) {
     return NextResponse.json({ success: false, error: "Solo superadmin" }, { status: 403 });
   }
 
@@ -33,9 +32,8 @@ export async function GET() {
  * Body: { userId, action: "approve" | "reject" }
  */
 export async function POST(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !isSuperAdmin(ruolo)) {
+  const adminUser = await requireSuperAdminSession();
+  if (!adminUser || !isSuperAdmin(adminUser.ruolo)) {
     return NextResponse.json({ success: false, error: "Solo superadmin" }, { status: 403 });
   }
 

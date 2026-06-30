@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { listUsers, updateUser, deleteUser, updateUserPassword, findUserByIdFull } from "@/lib/mongo/users";
 import { hasPermission, isSuperAdmin } from "@/lib/auth/permissions";
 import { hashPassword } from "@/lib/auth/password";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { requireAdminSession, requireSuperAdminSession } from "@/lib/auth/session";
 
 /**
  * GET /api/admin/utenti — Lista utenti normali (MongoDB)
  * Query params: page, limit, adminRequest
  */
 export async function GET(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !hasPermission(ruolo, "admin.read")) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser || !hasPermission(adminUser.ruolo, "admin.read")) {
     return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
   }
 
@@ -41,9 +40,8 @@ export async function GET(request: Request) {
  * Body: { id, nome?, cognome?, role?, ageGroup?, chiesa?, attivo? }
  */
 export async function PUT(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !hasPermission(ruolo, "admin.write")) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser || !hasPermission(adminUser.ruolo, "admin.write")) {
     return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
   }
 
@@ -91,9 +89,8 @@ export async function PUT(request: Request) {
  * Body: { id }
  */
 export async function DELETE(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !hasPermission(ruolo, "admin.write")) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser || !hasPermission(adminUser.ruolo, "admin.write")) {
     return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
   }
 
@@ -122,9 +119,8 @@ export async function DELETE(request: Request) {
  * Body: { id, newPassword }
  */
 export async function PATCH(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !isSuperAdmin(ruolo)) {
+  const adminUser = await requireSuperAdminSession();
+  if (!adminUser || !isSuperAdmin(adminUser.ruolo)) {
     return NextResponse.json({ success: false, error: "Solo superadmin" }, { status: 403 });
   }
 

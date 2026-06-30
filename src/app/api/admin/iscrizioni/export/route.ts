@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { hasPermission } from "@/lib/auth/permissions";
 import { getEventoById } from "@/lib/mongo/content";
 import { getIscrizioniByEvento } from "@/lib/mongo/registrations";
+import { requireAdminSession } from "@/lib/auth/session";
 import type { IscrizioneEvento } from "@/types";
 
 /**
@@ -281,15 +281,15 @@ async function buildPdfBuffer(
 }
 
 export async function GET(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
+  const adminUser = await requireAdminSession();
+  if (!adminUser || !hasPermission(adminUser.ruolo, "iscrizioni.read")) {
+    return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
+  }
+
   const url = new URL(request.url);
   const eventoId = url.searchParams.get("eventoId");
   const format = (url.searchParams.get("format") || "excel").toLowerCase();
   const selectedColumns = parseSelectedColumns(url.searchParams.get("columns"));
-  if (!ruolo || !hasPermission(ruolo, "iscrizioni.read")) {
-    return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
-  }
 
   if (!eventoId) {
     return NextResponse.json({ success: false, error: "eventoId mancante" }, { status: 400 });

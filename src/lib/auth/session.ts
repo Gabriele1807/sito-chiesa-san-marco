@@ -2,6 +2,7 @@
  * Gestione sessioni admin tramite JWT firmati.
  */
 
+import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
 
@@ -90,6 +91,31 @@ export async function validateSession(
     attivo: payload.attivo ?? true,
     ultimo_accesso: payload.ultimo_accesso ?? null,
   };
+}
+
+export async function getAdminSession(): Promise<AdminUser | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_session")?.value;
+    if (!token) return null;
+
+    const adminUser = await validateSession(token);
+    if (!adminUser || !adminUser.attivo) return null;
+
+    return adminUser;
+  } catch {
+    return null;
+  }
+}
+
+export async function requireAdminSession(): Promise<AdminUser | null> {
+  return getAdminSession();
+}
+
+export async function requireSuperAdminSession(): Promise<AdminUser | null> {
+  const adminUser = await getAdminSession();
+  if (!adminUser || adminUser.ruolo !== "superadmin") return null;
+  return adminUser;
 }
 
 /**

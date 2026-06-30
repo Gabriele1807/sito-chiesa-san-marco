@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { headers } from "next/headers";
+import { getAdminSession } from "@/lib/auth/session";
 import {
   LayoutDashboard,
   Library,
@@ -30,9 +30,8 @@ const giorniMap: Record<number, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  const headerList = await headers();
-  const ruolo = headerList.get("x-admin-ruolo") ?? "";
-  const isSuperAdmin = ruolo === "superadmin";
+  const adminUser = await getAdminSession();
+  const isSuperAdmin = adminUser?.ruolo === "superadmin";
 
   const [eventiAll, orari] = await Promise.all([
     getEventi(),

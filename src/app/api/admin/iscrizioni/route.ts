@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { hasPermission } from "@/lib/auth/permissions";
 import { getEventi, getEventoById } from "@/lib/mongo/content";
 import {
@@ -9,6 +8,7 @@ import {
   updateIscrizione,
   updateIscrizionePagamento,
 } from "@/lib/mongo/registrations";
+import { requireAdminSession } from "@/lib/auth/session";
 
 /**
  * GET /api/admin/iscrizioni
@@ -16,9 +16,8 @@ import {
  *  - ?eventoId=XXX: ritorna l'evento, i suoi iscritti e info posti
  */
 export async function GET(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !hasPermission(ruolo, "iscrizioni.read")) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser || !hasPermission(adminUser.ruolo, "iscrizioni.read")) {
     return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
   }
 
@@ -78,9 +77,8 @@ export async function GET(request: Request) {
  * DELETE /api/admin/iscrizioni?id=XXX — Elimina una singola iscrizione
  */
 export async function DELETE(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !hasPermission(ruolo, "iscrizioni.write")) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser || !hasPermission(adminUser.ruolo, "iscrizioni.write")) {
     return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
   }
 
@@ -105,9 +103,8 @@ export async function DELETE(request: Request) {
  * PATCH /api/admin/iscrizioni?id=XXX — Aggiorna dati iscrizione
  */
 export async function PATCH(request: Request) {
-  const h = await headers();
-  const ruolo = h.get("x-admin-ruolo");
-  if (!ruolo || !hasPermission(ruolo, "iscrizioni.write")) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser || !hasPermission(adminUser.ruolo, "iscrizioni.write")) {
     return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
   }
 
