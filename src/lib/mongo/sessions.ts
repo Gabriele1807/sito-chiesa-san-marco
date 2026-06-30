@@ -5,6 +5,8 @@
 
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
 
+const revokedUserTokens = new Set<string>();
+
 // Durate sessione
 const SESSION_DURATION_DEFAULT = 24 * 60 * 60 * 1000; // 24 ore
 const SESSION_DURATION_REMEMBER = 7 * 24 * 60 * 60 * 1000; // 7 giorni
@@ -34,7 +36,7 @@ export async function createUserSession(
 export async function validateUserSession(
   token: string
 ): Promise<{ userId: string } | null> {
-  if (!token) return null;
+  if (!token || revokedUserTokens.has(token)) return null;
   const payload = await verifyJwt<{ sub: string; sessionType?: string }>(token);
   if (!payload || payload.sessionType !== "user" || !payload.sub) return null;
 
@@ -44,7 +46,9 @@ export async function validateUserSession(
 // --------------- Delete ---------------
 
 export async function deleteUserSession(token: string): Promise<void> {
-  void token;
+  if (token) {
+    revokedUserTokens.add(token);
+  }
 }
 
 export async function deleteAllUserSessions(userId: string): Promise<void> {

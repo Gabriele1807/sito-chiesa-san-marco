@@ -57,8 +57,7 @@ export async function getSectionAccess(sectionId: string): Promise<RoleAccessTyp
     const visibility = await getSectionVisibility(sectionId);
 
     if (!visibility) {
-      // Se non trovata, assume accesso completo (fallback)
-      return "full";
+      return "hidden";
     }
 
     // Se la sezione è globalmente disattivata, nega accesso
@@ -76,7 +75,6 @@ export async function getSectionAccess(sectionId: string): Promise<RoleAccessTyp
     return roleAccess || "hidden";
   } catch (error) {
     console.error("[getSectionAccess] Errore:", error);
-    // In caso di errore, consenti l'accesso completo (fallback safe)
-    return "full";
+    return "hidden";
   }
 }

@@ -5,6 +5,8 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
 
+const revokedAdminTokens = new Set<string>();
+
 export interface AdminUser {
   id: string;
   username: string;
@@ -60,7 +62,7 @@ export async function createSession(
 export async function validateSession(
   token: string
 ): Promise<AdminUser | null> {
-  if (!token) return null;
+  if (!token || revokedAdminTokens.has(token)) return null;
 
   const payload = await verifyJwt<{
     sub: string;
@@ -94,7 +96,9 @@ export async function validateSession(
  * Elimina una sessione dal DB (logout).
  */
 export async function deleteSession(token: string): Promise<void> {
-  void token;
+  if (token) {
+    revokedAdminTokens.add(token);
+  }
 }
 
 /**

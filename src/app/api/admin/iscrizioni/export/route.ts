@@ -287,13 +287,7 @@ export async function GET(request: Request) {
   const eventoId = url.searchParams.get("eventoId");
   const format = (url.searchParams.get("format") || "excel").toLowerCase();
   const selectedColumns = parseSelectedColumns(url.searchParams.get("columns"));
-  // #region debug-point C:export-route-entry
-  fetch("http://127.0.0.1:7777/event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: "export-iscrizioni-vercel", runId: "post-fix", hypothesisId: "C", location: "src/app/api/admin/iscrizioni/export/route.ts:GET", msg: "[DEBUG] export route invoked", data: { eventoId, format, ruolo, selectedColumns }, ts: Date.now() }) }).catch(() => {});
-  // #endregion
   if (!ruolo || !hasPermission(ruolo, "iscrizioni.read")) {
-    // #region debug-point C:export-route-forbidden
-    fetch("http://127.0.0.1:7777/event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: "export-iscrizioni-vercel", runId: "post-fix", hypothesisId: "C", location: "src/app/api/admin/iscrizioni/export/route.ts:GET", msg: "[DEBUG] export route denied by permission check", data: { ruolo }, ts: Date.now() }) }).catch(() => {});
-    // #endregion
     return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
   }
 
@@ -309,9 +303,6 @@ export async function GET(request: Request) {
   const iscrizioni = await getIscrizioniByEvento(eventoId);
   const rows = rowsFrom(iscrizioni);
   const baseName = `iscritti_${sanitizeFilename(evento.titolo)}`;
-  // #region debug-point A:export-data-loaded
-  fetch("http://127.0.0.1:7777/event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: "export-iscrizioni-vercel", runId: "post-fix", hypothesisId: "A", location: "src/app/api/admin/iscrizioni/export/route.ts:GET", msg: "[DEBUG] export data loaded successfully", data: { eventoId, format, rowsCount: rows.length, titolo: evento.titolo, selectedColumns }, ts: Date.now() }) }).catch(() => {});
-  // #endregion
 
   // ---------------- EXCEL (.xls come tabella HTML) ----------------
   if (format === "excel" || format === "xls") {
@@ -356,8 +347,5 @@ ${bodyRows}
     });
   }
 
-  // #region debug-point A:export-unsupported-format
-  fetch("http://127.0.0.1:7777/event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: "export-iscrizioni-vercel", runId: "post-fix", hypothesisId: "A", location: "src/app/api/admin/iscrizioni/export/route.ts:GET", msg: "[DEBUG] export route received unsupported format", data: { format }, ts: Date.now() }) }).catch(() => {});
-  // #endregion
   return NextResponse.json({ success: false, error: "Formato non supportato" }, { status: 400 });
 }
