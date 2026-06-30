@@ -761,7 +761,7 @@ export default function AdminIscrizioniPage() {
                 />
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Pagamento ricevuto</p>
-                  <p className="text-xs text-gray-500">Aggiorna lo stato economico dell'iscrizione.</p>
+                  <p className="text-xs text-gray-500">Aggiorna lo stato economico dell&apos;iscrizione.</p>
                 </div>
               </label>
               <div className="pt-4 flex gap-3">

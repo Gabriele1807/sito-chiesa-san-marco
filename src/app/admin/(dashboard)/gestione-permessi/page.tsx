@@ -23,7 +23,7 @@ export default async function SuperAdminPermissionsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Gestione Permessi Sezioni</h1>
         <p className="text-gray-600 mt-2">
-          Configura i permessi di accesso per ogni sezione e ruolo. Puoi decidere quale ruolo avrà accesso completo, visualizzerà "Coming Soon" o non avrà accesso.
+          Configura i permessi di accesso per ogni sezione e ruolo. Puoi decidere quale ruolo avrà accesso completo, visualizzerà &quot;Coming Soon&quot; o non avrà accesso.
         </p>
       </div>
 

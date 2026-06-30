@@ -1,5 +1,3 @@
-const { MongoClient } = require('mongodb');
-
 const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://admin:GabriWasef@cluster0.mv32tie.mongodb.net/?appName=Cluster0';
 const dbName = process.env.MONGODB_DB || 'chiesa-san-marco';
 
@@ -9,6 +7,7 @@ console.log('DB:', dbName);
 console.log('');
 
 async function testConnection() {
+  const { MongoClient } = await import('mongodb');
   const client = new MongoClient(mongoUri, {
     serverSelectionTimeoutMS: 5000,
     connectTimeoutMS: 5000,
