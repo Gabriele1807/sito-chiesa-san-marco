@@ -242,7 +242,7 @@ export async function updateIscrizione(
   // Non permettiamo di cambiare le chiavi univoche (nome, cognome, padre) tramite update semplice
   // per evitare di rompere la logica anti-duplicato senza ricalcolare i tasti.
   // Ma in questo caso l'admin ha il permesso di correggere errori.
-  const updateDoc: Record<string, unknown> = { ...data };
+  const updateDoc: any = { ...data };
 
   // Se cambiano i nomi, ricalcoliamo le chiavi di indicizzazione
   if (data.nome || data.cognome || data.padreNome || data.padreCognome) {

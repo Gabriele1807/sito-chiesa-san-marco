@@ -46,6 +46,11 @@ export async function GET(request: Request) {
     }
 
     const iscrizioni = await getIscrizioniByEvento(eventoId);
+    const summary = {
+      totali: iscrizioni.length,
+      pagati: iscrizioni.filter((iscrizione) => iscrizione.ha_pagato).length,
+      nonPagati: iscrizioni.filter((iscrizione) => !iscrizione.ha_pagato).length,
+    };
     const postiTotali =
       typeof evento.postiDisponibili === "number" && evento.postiDisponibili > 0
         ? evento.postiDisponibili
@@ -63,6 +68,7 @@ export async function GET(request: Request) {
         postiDisponibili: evento.postiDisponibili,
       },
       iscrizioni,
+      summary,
       totali: iscrizioni.length,
       postiTotali,
       postiRimasti,

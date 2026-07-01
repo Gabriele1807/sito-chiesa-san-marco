@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   ShieldOff,
   KeyRound,
+  SlidersHorizontal,
 } from "lucide-react";
 import { CHIESE_LIST } from "@/lib/churches";
 
@@ -28,6 +29,7 @@ interface UserPublic {
   attivo: boolean;
   emailVerificata: boolean;
   adminRequest: string;
+  adminRequestReason?: string;
   createdAt: string;
   ultimoAccesso?: string;
 }
@@ -49,6 +51,21 @@ const AGE_LABELS: Record<string, string> = {
   "65+": "65+",
 };
 
+const AGE_GROUP_OPTIONS = ["all", "0-11", "12-18", "19-29", "30-45", "46-65", "65+"] as const;
+const ROLE_FILTER_OPTIONS = [
+  { value: "all", label: "Tutti i ruoli" },
+  { value: "credente", label: "Credenti" },
+  { value: "madre", label: "Madri" },
+  { value: "padre", label: "Padri" },
+  { value: "ospite_chiesa", label: "Ospiti" },
+  { value: "prete", label: "Preti" },
+];
+const ADMIN_REQUEST_FILTER_OPTIONS = [
+  { value: "all", label: "Tutti" },
+  { value: "pending", label: "In attesa" },
+  { value: "rejected", label: "Rifiutate" },
+];
+
 function getCallerRuolo(): string {
   if (typeof window === "undefined") return "";
   try {
@@ -67,6 +84,10 @@ export default function GestioneUtentiPage() {
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(10);
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [adminRequestFilter, setAdminRequestFilter] = useState<"all" | "pending" | "rejected">("all");
+  const [ageMin, setAgeMin] = useState<(typeof AGE_GROUP_OPTIONS)[number]>("all");
+  const [ageMax, setAgeMax] = useState<(typeof AGE_GROUP_OPTIONS)[number]>("all");
   const [editingUser, setEditingUser] = useState<UserPublic | null>(null);
   const [editForm, setEditForm] = useState({ nome: "", cognome: "", role: "", ageGroup: "", chiesa: "", attivo: true });
   const [saving, setSaving] = useState(false);
@@ -79,6 +100,11 @@ export default function GestioneUtentiPage() {
   const [promoteRuolo, setPromoteRuolo] = useState<"admin" | "superadmin">("admin");
   const [promoting, setPromoting] = useState(false);
   const [promoteMsg, setPromoteMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [requestModalUser, setRequestModalUser] = useState<UserPublic | null>(null);
+  const [requestRole, setRequestRole] = useState<"admin" | "superadmin">("admin");
+  const [requestReason, setRequestReason] = useState("");
+  const [requestSaving, setRequestSaving] = useState(false);
+  const [requestMessage, setRequestMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   const callerRuolo = getCallerRuolo();
   const isSuperAdmin = callerRuolo === "superadmin";
@@ -92,6 +118,10 @@ export default function GestioneUtentiPage() {
         limit: String(limit),
       });
       if (query) params.set("q", query);
+      if (roleFilter !== "all") params.set("role", roleFilter);
+      if (adminRequestFilter !== "all") params.set("adminRequest", adminRequestFilter);
+      if (ageMin !== "all") params.set("ageMin", ageMin);
+      if (ageMax !== "all") params.set("ageMax", ageMax);
       const res = await fetch(`/api/admin/utenti?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
@@ -105,7 +135,7 @@ export default function GestioneUtentiPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, query]);
+  }, [page, limit, query, roleFilter, adminRequestFilter, ageMin, ageMax]);
 
   useEffect(() => {
     fetchUsers();
@@ -119,7 +149,21 @@ export default function GestioneUtentiPage() {
     return () => window.clearTimeout(timer);
   }, [search]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [roleFilter, adminRequestFilter, ageMin, ageMax]);
+
   const filteredUsers = users;
+
+  function resetFilters() {
+    setSearch("");
+    setQuery("");
+    setPage(1);
+    setRoleFilter("all");
+    setAdminRequestFilter("all");
+    setAgeMin("all");
+    setAgeMax("all");
+  }
 
   function openEdit(user: UserPublic) {
     setEditingUser(user);
@@ -257,6 +301,55 @@ export default function GestioneUtentiPage() {
     }
   }
 
+  function openAdminRequestModal(user: UserPublic) {
+    setRequestModalUser(user);
+    setRequestRole("admin");
+    setRequestReason("");
+    setRequestMessage(null);
+  }
+
+  async function handleAdminRequest(action: "approve" | "reject" | "revoke") {
+    if (!requestModalUser) return;
+    setRequestSaving(true);
+    setRequestMessage(null);
+    try {
+      const res = await fetch("/api/admin/richieste-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: requestModalUser._id,
+          action,
+          ruolo: action === "approve" ? requestRole : undefined,
+          motivation: requestReason.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUsers((prev) =>
+          prev.map((u) => {
+            if (u._id !== requestModalUser._id) return u;
+            if (action === "approve") {
+              return { ...u, adminRequest: "approved", adminRequestReason: undefined };
+            }
+            if (action === "reject") {
+              return { ...u, adminRequest: "rejected", adminRequestReason: requestReason.trim() || undefined };
+            }
+            return { ...u, adminRequest: "none", adminRequestReason: undefined };
+          })
+        );
+        setRequestModalUser(null);
+        setRequestReason("");
+        await fetchUsers();
+      } else {
+        setRequestMessage({ ok: false, text: data.error || "Errore" });
+      }
+    } catch {
+      setRequestMessage({ ok: false, text: "Errore di connessione" });
+    } finally {
+      setRequestSaving(false);
+    }
+  }
+
   async function handleDelete(id: string) {
     try {
       const res = await fetch("/api/admin/utenti", {
@@ -297,7 +390,7 @@ export default function GestioneUtentiPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <Users className="w-7 h-7 text-amber-600" />
@@ -305,23 +398,115 @@ export default function GestioneUtentiPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1">{total} utenti registrati</p>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cerca utente..."
-            autoComplete="off"
-            aria-label="Cerca utente"
-            className="pl-9 pr-4 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold w-full sm:w-64"
-          />
-        </div>
       </div>
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">{error}</div>
       )}
+
+      {/* Filtri */}
+      {/* Filtri */}
+      <div className="rounded-xl p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:gap-4">
+          <div className="relative lg:max-w-xl flex-1">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cerca per nome, cognome, email..."
+              autoComplete="off"
+              className="w-full pl-9 pr-2 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:border-gold"
+            />
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 flex-1">
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                Ruolo
+              </span>
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+              >
+                {ROLE_FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                Richiesta admin
+              </span>
+              <select
+                value={adminRequestFilter}
+                onChange={(e) =>
+                  setAdminRequestFilter(e.target.value as "all" | "pending" | "rejected")
+                }
+                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+              >
+                {ADMIN_REQUEST_FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                Età da
+              </span>
+              <select
+                value={ageMin}
+                onChange={(e) =>
+                  setAgeMin(e.target.value as (typeof AGE_GROUP_OPTIONS)[number])
+                }
+                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+              >
+                {AGE_GROUP_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "all" ? "Tutte" : AGE_LABELS[option] || option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                Età a
+              </span>
+              <select
+                value={ageMax}
+                onChange={(e) =>
+                  setAgeMax(e.target.value as (typeof AGE_GROUP_OPTIONS)[number])
+                }
+                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+              >
+                {AGE_GROUP_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "all" ? "Tutte" : AGE_LABELS[option] || option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="flex items-center lg:items-start">
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Tabella */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -361,17 +546,27 @@ export default function GestioneUtentiPage() {
                     />
                   </td>
                   <td className="px-4 py-3 text-center">
-                    {user.adminRequest === "approved" && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs font-medium">
-                        <ShieldCheck className="w-3 h-3" /> Admin
-                      </span>
-                    )}
-                    {user.adminRequest === "pending" && (
-                      <span className="inline-block px-2 py-0.5 bg-accent/10 text-accent rounded text-xs font-medium">Pendente</span>
-                    )}
-                    {user.adminRequest === "rejected" && (
-                      <span className="inline-block px-2 py-0.5 bg-red-50 text-red-700 rounded text-xs font-medium">Rifiutato</span>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => openAdminRequestModal(user)}
+                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:bg-gray-100"
+                    >
+                      {user.adminRequest === "approved" && (
+                        <>
+                          <ShieldCheck className="w-3 h-3 text-green-700" />
+                          <span className="text-green-700">Approvata</span>
+                        </>
+                      )}
+                      {user.adminRequest === "pending" && (
+                        <span className="text-amber-700">In attesa</span>
+                      )}
+                      {user.adminRequest === "rejected" && (
+                        <span className="text-red-700">Rifiutata</span>
+                      )}
+                      {!user.adminRequest || user.adminRequest === "none" ? (
+                        <span className="text-gray-600">Nessuna</span>
+                      ) : null}
+                    </button>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
@@ -653,6 +848,116 @@ export default function GestioneUtentiPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal gestione richiesta admin */}
+      {requestModalUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setRequestModalUser(null)} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 overflow-y-auto max-h-[90vh]">
+            <button onClick={() => setRequestModalUser(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Gestione richiesta admin</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Valuta la richiesta di <span className="font-semibold text-gray-800">{requestModalUser.nome} {requestModalUser.cognome}</span>
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Utente</p>
+                  <p className="mt-1 font-semibold text-gray-900">{requestModalUser.nome} {requestModalUser.cognome}</p>
+                  <p className="text-sm text-gray-600">@{requestModalUser.username}</p>
+                </div>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Contatti</p>
+                  <p className="mt-1 font-semibold text-gray-900">{requestModalUser.email}</p>
+                  <p className="text-sm text-gray-600">{ROLE_LABELS[requestModalUser.role] || requestModalUser.role}</p>
+                </div>
+              </div>
+              <div className="rounded-lg border border-gray-200 bg-amber-50 p-4 text-sm text-amber-900">
+                <p className="font-semibold">Stato attuale</p>
+                <p className="mt-1">
+                  {requestModalUser.adminRequest === "approved"
+                    ? "Richiesta già approvata"
+                    : requestModalUser.adminRequest === "pending"
+                      ? "Richiesta in attesa di valutazione"
+                      : requestModalUser.adminRequest === "rejected"
+                        ? "Richiesta rifiutata"
+                        : "Nessuna richiesta attiva"}
+                </p>
+                {requestModalUser.adminRequestReason && (
+                  <p className="mt-2 text-xs text-amber-800">Motivazione precedente: {requestModalUser.adminRequestReason}</p>
+                )}
+              </div>
+              {requestModalUser.adminRequest === "approved" ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600">L’utente ha già accesso admin. Puoi revocarlo se necessario.</p>
+                  <button
+                    type="button"
+                    onClick={() => handleAdminRequest("revoke")}
+                    disabled={requestSaving}
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"
+                  >
+                    <ShieldOff className="w-4 h-4" />
+                    {requestSaving ? "Operazione in corso..." : "Revoca accesso admin"}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Ruolo da assegnare</label>
+                    <select
+                      value={requestRole}
+                      onChange={(e) => setRequestRole(e.target.value as "admin" | "superadmin")}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700"
+                    >
+                      <option value="admin">Admin</option>
+                      <option value="superadmin">Superadmin</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => handleAdminRequest("approve")}
+                      disabled={requestSaving}
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      {requestSaving ? "Salvataggio..." : "Accetta richiesta"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAdminRequest("reject")}
+                      disabled={requestSaving}
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      <ShieldOff className="w-4 h-4" />
+                      {requestSaving ? "Salvataggio..." : "Rifiuta richiesta"}
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Motivazione del rifiuto (opzionale)</label>
+                    <textarea
+                      value={requestReason}
+                      onChange={(e) => setRequestReason(e.target.value)}
+                      rows={3}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-gold focus:outline-none"
+                      placeholder="Inserisci una motivazione da conservare per la richiesta"
+                    />
+                  </div>
+                </div>
+              )}
+              {requestMessage && (
+                <p className={`text-sm font-medium ${requestMessage.ok ? "text-green-700" : "text-red-600"}`}>
+                  {requestMessage.text}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

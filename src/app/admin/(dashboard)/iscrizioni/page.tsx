@@ -22,6 +22,12 @@ import {
 } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
+import {
+  buildRegistrationSummary,
+  filterAndSortRegistrations,
+  type RegistrationPaymentFilter,
+  type RegistrationSortOption,
+} from "./registrations-utils";
 
 interface EventoRiepilogo {
   id: string;
@@ -92,11 +98,14 @@ export default function AdminIscrizioniPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [evento, setEvento] = useState<DettaglioEvento | null>(null);
   const [iscrizioni, setIscrizioni] = useState<Iscrizione[]>([]);
+  const [summary, setSummary] = useState({ totali: 0, pagati: 0, nonPagati: 0 });
   const [postiTotali, setPostiTotali] = useState<number | null>(null);
   const [postiRimasti, setPostiRimasti] = useState<number | null>(null);
   const [loadingDettaglio, setLoadingDettaglio] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState<RegistrationPaymentFilter>("all");
+  const [sortBy, setSortBy] = useState<RegistrationSortOption>("createdAtDesc");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   
@@ -137,6 +146,7 @@ export default function AdminIscrizioniPage() {
       if (data.success) {
         setEvento(data.evento);
         setIscrizioni(data.iscrizioni);
+        setSummary(data.summary ?? buildRegistrationSummary(data.iscrizioni));
         setPostiTotali(data.postiTotali);
         setPostiRimasti(data.postiRimasti);
       } else {
@@ -156,6 +166,9 @@ export default function AdminIscrizioniPage() {
   function openEvento(id: string) {
     setSelectedId(id);
     setSearch("");
+    setPaymentFilter("all");
+    setSortBy("createdAtDesc");
+    setPage(1);
     fetchDettaglio(id);
   }
 
@@ -163,6 +176,11 @@ export default function AdminIscrizioniPage() {
     setSelectedId(null);
     setEvento(null);
     setIscrizioni([]);
+    setSummary({ totali: 0, pagati: 0, nonPagati: 0 });
+    setSearch("");
+    setPaymentFilter("all");
+    setSortBy("createdAtDesc");
+    setPage(1);
     fetchEventi();
   }
 
@@ -239,6 +257,11 @@ export default function AdminIscrizioniPage() {
       setEditForm((current) =>
         editTarget?._id === iscrizione._id ? { ...current, ha_pagato: nextValue } : current
       );
+      setSummary((current) => ({
+        ...current,
+        pagati: current.pagati + (nextValue ? 1 : -1),
+        nonPagati: current.nonPagati + (nextValue ? -1 : 1),
+      }));
       setPaymentSavedId(iscrizione._id);
       window.setTimeout(() => {
         setPaymentSavedId((current) => (current === iscrizione._id ? null : current));
@@ -280,9 +303,6 @@ export default function AdminIscrizioniPage() {
   async function exportFile(format: "excel" | "pdf") {
     if (!selectedId) return;
     const url = `/api/admin/iscrizioni/export?eventoId=${encodeURIComponent(selectedId)}&format=${format}`;
-    // #region debug-point B:admin-export-click
-    fetch("http://127.0.0.1:7777/event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: "export-iscrizioni-vercel", runId: "post-fix", hypothesisId: "B", location: "src/app/admin/(dashboard)/iscrizioni/page.tsx:exportFile", msg: "[DEBUG] export button clicked from admin UI", data: { selectedId, format, url, iscrizioniCount: iscrizioni.length }, ts: Date.now() }) }).catch(() => {});
-    // #endregion
     if (format === "pdf") {
       setShowPdfExportModal(true);
       return;
@@ -332,16 +352,15 @@ export default function AdminIscrizioniPage() {
     return counts;
   }, [iscrizioni]);
 
-  const filtered = useMemo(() => {
-    const q = normalize(search);
-    if (!q) return iscrizioni;
-    return iscrizioni.filter((i) => {
-      const haystack = normalize(
-        `${i.nome} ${i.cognome} ${i.padreNome} ${i.padreCognome} ${i.telefono} ${i.email ?? ""}`
-      );
-      return haystack.includes(q);
-    });
-  }, [iscrizioni, search]);
+  const filtered = useMemo(
+    () =>
+      filterAndSortRegistrations(iscrizioni, {
+        search,
+        paymentFilter,
+        sortBy,
+      }),
+    [iscrizioni, paymentFilter, search, sortBy]
+  );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
   const paginatedIscrizioni = filtered.slice((page - 1) * limit, page * limit);
@@ -354,7 +373,7 @@ export default function AdminIscrizioniPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, selectedId]);
+  }, [search, paymentFilter, sortBy, selectedId]);
 
   function formatDate(dateStr?: string) {
     if (!dateStr) return "—";
@@ -492,7 +511,7 @@ export default function AdminIscrizioniPage() {
           <div className="flex flex-wrap gap-3">
             <div className="bg-white rounded-xl border border-gray-200 px-5 py-3">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Iscritti</p>
-              <p className="text-2xl font-bold text-gray-900">{iscrizioni.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.totali}</p>
             </div>
             {postiTotali !== null && (
               <>
@@ -516,22 +535,82 @@ export default function AdminIscrizioniPage() {
                 </div>
               </>
             )}
-            <div className="bg-white rounded-xl border border-gray-200 px-5 py-3">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Famiglie</p>
-              <p className="text-2xl font-bold text-gray-900">{famiglie.size}</p>
-            </div>
+            <button
+              type="button"
+              onClick={() => setPaymentFilter((current) => (current === "pagato" ? "all" : "pagato"))}
+              className={`rounded-xl border px-5 py-3 text-left transition-colors ${
+                paymentFilter === "pagato"
+                  ? "border-green-300 bg-green-50"
+                  : "border-gray-200 bg-white hover:border-green-300"
+              }`}
+            >
+              <p className="text-xs uppercase tracking-wide text-gray-500">Pagati</p>
+              <p className="text-2xl font-bold text-green-700">{summary.pagati}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentFilter((current) => (current === "non-pagato" ? "all" : "non-pagato"))}
+              className={`rounded-xl border px-5 py-3 text-left transition-colors ${
+                paymentFilter === "non-pagato"
+                  ? "border-amber-300 bg-amber-50"
+                  : "border-gray-200 bg-white hover:border-amber-300"
+              }`}
+            >
+              <p className="text-xs uppercase tracking-wide text-gray-500">Da saldare</p>
+              <p className="text-2xl font-bold text-amber-700">{summary.nonPagati}</p>
+            </button>
           </div>
 
-          {/* Ricerca */}
-          <div className="relative max-w-sm">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cerca per nome, padre, telefono..."
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
-            />
+          {/* Ricerca e filtri */}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div className="relative max-w-sm flex-1">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cerca per nome, padre, telefono..."
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+              />
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+              <label className="flex flex-col text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <span className="mb-1">Stato pagamento</span>
+                <select
+                  value={paymentFilter}
+                  onChange={(e) => setPaymentFilter(e.target.value as RegistrationPaymentFilter)}
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700"
+                >
+                  <option value="all">Tutti</option>
+                  <option value="pagato">Pagati</option>
+                  <option value="non-pagato">Da saldare</option>
+                </select>
+              </label>
+              <label className="flex flex-col text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <span className="mb-1">Ordina per</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as RegistrationSortOption)}
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700"
+                >
+                  <option value="createdAtDesc">Più recenti</option>
+                  <option value="createdAtAsc">Meno recenti</option>
+                  <option value="nomeAsc">Nome A-Z</option>
+                  <option value="nomeDesc">Nome Z-A</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setPaymentFilter("all");
+                  setSortBy("createdAtDesc");
+                }}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Reset
+              </button>
+            </div>
           </div>
 
           {/* Tabella iscritti */}
@@ -649,7 +728,7 @@ export default function AdminIscrizioniPage() {
                     <td colSpan={8} className="px-4 py-10 text-center text-gray-500">
                       {iscrizioni.length === 0
                         ? "Nessuna iscrizione per questo evento"
-                        : "Nessun risultato per la ricerca"}
+                        : "Nessun risultato per i filtri selezionati"}
                     </td>
                   </tr>
                 )}

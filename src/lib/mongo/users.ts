@@ -112,6 +112,9 @@ export async function listUsers(opts?: {
   page?: number;
   limit?: number;
   adminRequestFilter?: AdminRequestStatus;
+  roleFilter?: string;
+  ageMin?: string;
+  ageMax?: string;
   query?: string;
 }): Promise<{ users: UserPublic[]; total: number }> {
   const c = await col();
@@ -122,6 +125,20 @@ export async function listUsers(opts?: {
   const filter: Record<string, unknown> = {};
   if (opts?.adminRequestFilter) {
     filter.adminRequest = opts.adminRequestFilter;
+  }
+  if (opts?.roleFilter && opts.roleFilter !== "all") {
+    filter.role = opts.roleFilter;
+  }
+  if (opts?.ageMin && opts.ageMin !== "all") {
+    filter.ageGroup = { $in: [] as string[] };
+  }
+  if (opts?.ageMin && opts.ageMin !== "all") {
+    const ageGroups = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
+    const startIndex = ageGroups.indexOf(opts.ageMin);
+    const endIndex = opts.ageMax && opts.ageMax !== "all" ? ageGroups.indexOf(opts.ageMax) : ageGroups.length - 1;
+    if (startIndex >= 0 && endIndex >= 0) {
+      filter.ageGroup = { $in: ageGroups.slice(startIndex, endIndex + 1) };
+    }
   }
 
   if (opts?.query?.trim()) {

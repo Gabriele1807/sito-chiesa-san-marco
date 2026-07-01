@@ -1,6 +1,6 @@
 ﻿# PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 29 giugno 2026.
+> Documento di contesto operativo del progetto. Ultimo aggiornamento: 1 luglio 2026.
 
 ---
 
@@ -277,7 +277,8 @@ npm run generate-hash -- "password"
 - `src/app/admin/(dashboard)/orari/page.tsx`
 - `src/app/admin/(dashboard)/preghiere/page.tsx`
 - `src/app/admin/(dashboard)/video-corsi/page.tsx`
-- `src/app/admin/(dashboard)/utenti/page.tsx`
+- `src/app/admin/(dashboard)/iscrizioni/page.tsx` — gestione iscrizioni eventi con filtri, riepiloghi pagati/da saldare, ordinamento e export
+- `src/app/admin/(dashboard)/utenti/page.tsx` — gestione utenti con filtri per ruolo, fascia d’età e richiesta admin, oltre a review della richiesta tramite modal
 - `src/app/admin/(dashboard)/gestione-admin/page.tsx`
 - `src/app/admin/(dashboard)/gestione-sezioni/page.tsx`
 - `src/app/admin/(dashboard)/gestione-permessi/page.tsx`
@@ -303,7 +304,9 @@ npm run generate-hash -- "password"
 - `src/app/api/admin/orari/route.ts`
 - `src/app/api/admin/preghiere/route.ts`
 - `src/app/api/admin/video-corsi/route.ts`
-- `src/app/api/admin/utenti/route.ts`
+- `src/app/api/admin/iscrizioni/route.ts` — lista iscrizioni, aggiornamenti stato pagamento e riepiloghi aggregati
+- `src/app/api/admin/iscrizioni/export/route.ts` — export CSV delle iscrizioni
+- `src/app/api/admin/utenti/route.ts` — lista utenti con filtri ruolo/età/richiesta admin
 - `src/app/api/admin/users/route.ts`
 - `src/app/api/admin/users/[id]/toggle/route.ts`
 - `src/app/api/admin/richieste-admin/route.ts`

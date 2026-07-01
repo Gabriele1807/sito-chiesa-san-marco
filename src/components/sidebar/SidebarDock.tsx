@@ -113,13 +113,22 @@ export default function SidebarDock() {
     const sidebarEl = sidebar as HTMLElement;
     const overlayEl = overlay as HTMLElement;
 
+    function onOverlayTransition(e: Event) {
+      const transitionEvent = e as TransitionEvent;
+      if (transitionEvent.propertyName !== "opacity") return;
+      if (getComputedStyle(overlayEl).opacity === "0") {
+        overlayEl.classList.add("pointer-events-none");
+      }
+      overlayEl.removeEventListener("transitionend", onOverlayTransition);
+    }
+
+    overlayEl.addEventListener("transitionend", onOverlayTransition);
+
     sidebarEl.classList.add("-translate-x-full");
     sidebarEl.classList.remove("translate-x-0");
     sidebarEl.classList.add("opacity-0");
     sidebarEl.classList.remove("opacity-100");
-
-    overlayEl.classList.add("opacity-0");
-    overlayEl.classList.add("pointer-events-none");
+    setTimeout(() => overlayEl.classList.add("opacity-0"), 260);
   }
 
   function isActive(item: SidebarItem) {
@@ -259,7 +268,7 @@ export default function SidebarDock() {
     <>
       <div
         id="sidebar-overlay"
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200 ease-out lg:hidden"
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out lg:hidden"
         onClick={closeMobile}
       />
 
@@ -270,7 +279,7 @@ export default function SidebarDock() {
           top: "var(--topbar-offset)",
           height: "calc(100vh - var(--topbar-offset))",
         }}
-        className="fixed left-0 z-40 bg-sidebar text-white border-r border-white/10 flex flex-col min-h-0 will-change-transform transform -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100 transition-transform duration-200 ease-out"
+        className="fixed left-0 z-40 bg-sidebar text-white border-r border-white/10 flex flex-col min-h-0 will-change-transform transform -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100 transition-transform duration-300 ease-in-out"
         data-compact={isCompact ? "true" : "false"}
       >
         <div className="shrink-0 border-b border-white/10 px-2 py-2.5 lg:hidden">

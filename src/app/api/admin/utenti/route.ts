@@ -19,6 +19,9 @@ export async function GET(request: Request) {
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "50");
   const query = url.searchParams.get("q") || undefined;
+  const roleFilter = url.searchParams.get("role") || undefined;
+  const ageMin = url.searchParams.get("ageMin") || undefined;
+  const ageMax = url.searchParams.get("ageMax") || undefined;
   const adminRequestFilter = url.searchParams.get("adminRequest") as "none" | "pending" | "approved" | "rejected" | null;
 
   try {
@@ -26,6 +29,9 @@ export async function GET(request: Request) {
       page,
       limit,
       query,
+      roleFilter,
+      ageMin,
+      ageMax,
       adminRequestFilter: adminRequestFilter || undefined,
     });
     return NextResponse.json({ success: true, ...result });
