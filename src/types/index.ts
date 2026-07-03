@@ -61,6 +61,8 @@ export interface Evento {
   referente?: string;
   postiDisponibili?: number;
   immagine?: string;
+  showRaccoglimento?: boolean;
+  paymentDeadline?: string;
 }
 
 /**
@@ -88,6 +90,9 @@ export interface IscrizioneEvento {
   email?: string;          // opzionale
   note?: string;
   ha_pagato: boolean;
+  registrationType?: "self" | "other" | "family";
+  familyMembers?: Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>;
+  raccoglimento?: "chiesa" | "luogo";
   // Metadati
   createdAt?: string;      // ISO date
 }

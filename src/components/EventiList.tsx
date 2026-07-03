@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
-import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo } from "lucide-react";
+import { format } from "date-fns";
+import { it, ar } from "date-fns/locale";
+import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo, Info, Plus, Trash2 } from "lucide-react";
 import type { Evento } from "@/types";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -22,6 +24,9 @@ const emptyForm = {
   telefono: "",
   email: "",
   note: "",
+  registrationType: "self" as "self" | "other" | "family",
+  familyMembers: [] as Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>,
+  raccoglimento: undefined as "chiesa" | "luogo" | undefined,
 };
 
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
@@ -37,7 +42,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   // Step preliminare: per chi si iscrive?
-  const [enrollmentFor, setEnrollmentFor] = useState<"me" | "other" | null>(null);
+  const [enrollmentFor, setEnrollmentFor] = useState<"me" | "other" | "family" | null>(null);
 
   const selectedEvento = eventi.find((evento) => evento.id === formOpen) ?? null;
   const currentIdentity = type === "user" ? user : type === "admin" ? admin : null;
@@ -61,7 +66,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     setServerError(null);
   }
 
-  function selectEnrollmentType(type: "me" | "other") {
+  function selectEnrollmentType(type: "me" | "other" | "family") {
     setEnrollmentFor(type);
     if (type === "me" && currentIdentity) {
       // Pre-compila con i dati dell'utente
@@ -76,6 +81,13 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
         ...prev,
         nome: "",
         cognome: "",
+        registrationType: "other",
+      }));
+    } else if (type === "family") {
+      setFormData(prev => ({
+        ...prev,
+        registrationType: "family",
+        familyMembers: [{ role: "madre", fullName: "" }],
       }));
     }
   }
@@ -116,6 +128,12 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = t("erroreEmailFormato");
     }
+    if (formData.registrationType === "family") {
+      const members = formData.familyMembers.filter((member) => member.fullName.trim());
+      if (members.length === 0) {
+        newErrors.familyMembers = t("erroreMembriFamiglia");
+      }
+    }
     return newErrors;
   }
 
@@ -143,6 +161,9 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
           telefono: formData.telefono.trim().replace(/\s/g, ""),
           email: formData.email || undefined,
           note: formData.note || undefined,
+          registrationType: formData.registrationType,
+          familyMembers: formData.registrationType === "family" ? formData.familyMembers.filter((member) => member.fullName.trim()) : undefined,
+          raccoglimento: formData.raccoglimento,
         }),
       });
 
@@ -177,6 +198,38 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
       month: "long",
       year: "numeric",
     });
+  }
+
+  function formatPaymentDeadline(value?: string): string {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return format(parsed, locale === "ar" ? "EEEE d MMMM yyyy" : "EEEE d MMMM yyyy", {
+      locale: locale === "ar" ? ar : it,
+    });
+  }
+
+  function updateFamilyMember(index: number, field: "role" | "fullName", value: string) {
+    setFormData((prev) => ({
+      ...prev,
+      familyMembers: prev.familyMembers.map((member, memberIndex) =>
+        memberIndex === index ? { ...member, [field]: value } : member
+      ),
+    }));
+  }
+
+  function addFamilyMember() {
+    setFormData((prev) => ({
+      ...prev,
+      familyMembers: [...prev.familyMembers, { role: "figlio", fullName: "" }],
+    }));
+  }
+
+  function removeFamilyMember(index: number) {
+    setFormData((prev) => ({
+      ...prev,
+      familyMembers: prev.familyMembers.filter((_, memberIndex) => memberIndex !== index),
+    }));
   }
 
   if (loading) {
@@ -357,6 +410,20 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                     <p className="text-xs text-gray-500 leading-relaxed">{t("perAltroDesc")}</p>
                   </button>
 
+                  <button
+                    type="button"
+                    onClick={() => selectEnrollmentType("family")}
+                    className="card-hover rounded-lg border border-gray-200 bg-white px-4 py-4 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:col-span-2"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-semibold text-gray-900">{t("perFamiglia")}</span>
+                      <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                        {t("famiglia")}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">{t("perFamigliaDesc")}</p>
+                  </button>
+
                 </div>
               </div>
             )}
@@ -407,6 +474,17 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 {serverError && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                     <p className="text-sm text-danger">{serverError}</p>
+                  </div>
+                )}
+
+                {selectedEvento?.paymentDeadline && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                      <p className="text-sm font-medium text-amber-900">
+                        {t("paymentDeadlineBanner", { date: formatPaymentDeadline(selectedEvento.paymentDeadline) })}
+                      </p>
+                    </div>
                   </div>
                 )}
 
@@ -492,6 +570,92 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   </div>
                   <p className="text-xs text-gray-400 mt-1.5">{t("padreHelper")}</p>
                 </div>
+
+                {selectedEvento?.showRaccoglimento && (
+                  <div>
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("sezioneRaccoglimento")}</h4>
+                    <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                          <input
+                            type="radio"
+                            name="raccoglimento"
+                            checked={formData.raccoglimento === "chiesa"}
+                            onChange={() => setFormData((prev) => ({ ...prev, raccoglimento: "chiesa" }))}
+                            className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                          />
+                          {t("raccoglimentoChiesa")}
+                        </label>
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                          <input
+                            type="radio"
+                            name="raccoglimento"
+                            checked={formData.raccoglimento === "luogo"}
+                            onChange={() => setFormData((prev) => ({ ...prev, raccoglimento: "luogo" }))}
+                            className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                          />
+                          {t("raccoglimentoLuogo")}
+                        </label>
+                      </div>
+                      <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3">
+                        <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                        <p className="text-xs leading-relaxed text-amber-800">
+                          {t("raccoglimentoNote", { referente: selectedEvento.referente || t("referenteSconosciuto") })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {enrollmentFor === "family" && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("sezioneFamiglia")}</h4>
+                      <button type="button" onClick={addFamilyMember} className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+                        <Plus className="h-3.5 w-3.5" /> {t("aggiungiMembro")}
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {formData.familyMembers.map((member, index) => (
+                        <div key={index} className="rounded-lg border border-gray-200 p-3">
+                          <div className="flex items-center justify-between gap-3 mb-2">
+                            <span className="text-sm font-medium text-gray-700">{t("membro")} {index + 1}</span>
+                            {index > 0 && (
+                              <button type="button" onClick={() => removeFamilyMember(index)} className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                                <Trash2 className="h-3.5 w-3.5" /> {t("rimuovi")}
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">{t("ruolo")}</label>
+                              <select
+                                value={member.role}
+                                onChange={(e) => updateFamilyMember(index, "role", e.target.value)}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                              >
+                                <option value="madre">{t("ruoloMadre")}</option>
+                                <option value="padre">{t("ruoloPadre")}</option>
+                                <option value="figlio">{t("ruoloFiglio")}</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">{t("nomeCognome")}</label>
+                              <input
+                                type="text"
+                                value={member.fullName}
+                                onChange={(e) => updateFamilyMember(index, "fullName", e.target.value)}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                                placeholder={t("nomeCognomePlaceholder")}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.familyMembers && <p className="text-xs text-danger mt-2">{errors.familyMembers}</p>}
+                  </div>
+                )}
 
                 {/* Sezione contatti */}
                 <div>

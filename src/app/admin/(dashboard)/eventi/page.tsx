@@ -16,11 +16,13 @@ interface Evento {
   referente?: string;
   postiDisponibili?: number;
   immagine?: string;
+  showRaccoglimento?: boolean;
+  paymentDeadline?: string;
 }
 
 const emptyForm: Omit<Evento, "id"> = {
   slug: "", titolo: "", data: "", dataFine: "", descrizione: "",
-  luogo: "", referente: "", postiDisponibili: undefined, immagine: "",
+  luogo: "", referente: "", postiDisponibili: undefined, immagine: "", showRaccoglimento: false, paymentDeadline: "",
 };
 
 export default function AdminEventiPage() {
@@ -57,6 +59,7 @@ export default function AdminEventiPage() {
       slug: ev.slug, titolo: ev.titolo, data: ev.data.slice(0, 16),
       dataFine: ev.dataFine?.slice(0, 16) || "", descrizione: ev.descrizione,
       luogo: ev.luogo, referente: ev.referente || "", postiDisponibili: ev.postiDisponibili, immagine: ev.immagine || "",
+      showRaccoglimento: Boolean(ev.showRaccoglimento), paymentDeadline: ev.paymentDeadline?.slice(0, 16) || "",
     });
     setShowForm(true);
   }
@@ -71,6 +74,8 @@ export default function AdminEventiPage() {
         slug,
         referente: form.referente?.trim() || undefined,
         postiDisponibili: form.postiDisponibili ? Number(form.postiDisponibili) : undefined,
+        showRaccoglimento: Boolean(form.showRaccoglimento),
+        paymentDeadline: form.paymentDeadline?.trim() || undefined,
       };
 
       if (editId) {
@@ -161,6 +166,18 @@ export default function AdminEventiPage() {
               <input type="text" value={form.immagine} onChange={(e) => setForm({ ...form, immagine: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
               <p className="text-xs text-gray-400 mt-1">Link Google Drive dell&apos;immagine</p>
             </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Scadenza pagamento</label>
+              <input type="datetime-local" value={form.paymentDeadline ?? ""} onChange={(e) => setForm({ ...form, paymentDeadline: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <p className="text-xs text-gray-400 mt-1">Mostra un banner pubblico con la scadenza del pagamento.</p>
+            </div>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+              <input type="checkbox" checked={Boolean(form.showRaccoglimento)} onChange={(e) => setForm({ ...form, showRaccoglimento: e.target.checked })} className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold" />
+              Mostra opzione raccoglimento nel form pubblico
+            </label>
+            <p className="text-xs text-gray-500 mt-1">Se disattivato, la sezione non appare nell&apos;iscrizione pubblica.</p>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione</label>

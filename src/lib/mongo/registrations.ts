@@ -147,6 +147,24 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     return { success: false, errorCode: "validation" };
   }
 
+  const registrationType = data.registrationType === "family" ? "family" : data.registrationType === "other" ? "other" : "self";
+  const rawFamilyMembers = Array.isArray(data.familyMembers) ? data.familyMembers : [];
+  const normalizedFamilyMembers = (registrationType === "family"
+    ? rawFamilyMembers.filter((member) => Boolean(member?.fullName?.trim()) && (member?.role === "madre" || member?.role === "padre" || member?.role === "figlio"))
+    : []
+  ).map((member) => ({
+    role: member.role,
+    fullName: member.fullName.trim(),
+  }));
+
+  if (registrationType === "family" && normalizedFamilyMembers.length === 0) {
+    return { success: false, errorCode: "validation" };
+  }
+
+  const raccoglimento = data.raccoglimento === "chiesa" || data.raccoglimento === "luogo"
+    ? data.raccoglimento
+    : undefined;
+
   // L'evento deve esistere
   const evento = await getEventoById(data.eventoId);
   if (!evento) {
@@ -186,6 +204,9 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     email: data.email?.trim() || undefined,
     note: data.note?.trim() || undefined,
     ha_pagato: false,
+    registrationType,
+    familyMembers: normalizedFamilyMembers,
+    raccoglimento,
     createdAt: now,
     // campi tecnici per indici/lookup (non esposti al client)
     _familyKey: fKey,
