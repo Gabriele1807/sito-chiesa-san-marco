@@ -27,9 +27,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (typeof username !== "string" || username.length < 3 || username.length > 30 || !/^[a-zA-Z0-9_.-]+$/.test(username)) {
+    if (typeof username !== "string" || username.trim().length < 3 || username.trim().length > 20 || !/^[a-zA-Z0-9_-]+$/.test(username.trim())) {
       return NextResponse.json(
-        { success: false, error: "Username non valido (3-30 caratteri, solo lettere, numeri, . _ -)" },
+        { success: false, error: "Username non valido (3-20 caratteri, solo lettere, numeri, _ -)" },
         { status: 400 }
       );
     }

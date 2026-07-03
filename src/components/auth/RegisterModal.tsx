@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "./AuthContext";
 import type { UserRole, AgeGroup } from "@/types";
@@ -27,6 +27,25 @@ export default function RegisterModal() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const passwordRules = validatePasswordRules(password);
+  const trimmedUsername = username.trim();
+  const usernameRules = {
+    noSpaces: trimmedUsername.length > 0 && !/\s/.test(trimmedUsername),
+    notEmail: trimmedUsername.length > 0 && trimmedUsername.toLowerCase() !== email.trim().toLowerCase(),
+    length: trimmedUsername.length >= 3 && trimmedUsername.length <= 20,
+    characters: trimmedUsername.length > 0 && /^[a-zA-Z0-9_-]+$/.test(trimmedUsername),
+  };
+  const passwordRequirementItems = [
+    { key: "length", label: t("registerPasswordRuleLength"), ok: passwordRules.length },
+    { key: "uppercase", label: t("registerPasswordRuleUppercase"), ok: passwordRules.uppercase },
+    { key: "number", label: t("registerPasswordRuleNumber"), ok: passwordRules.number },
+    { key: "special", label: t("registerPasswordRuleSpecial"), ok: passwordRules.special },
+  ] as const;
+  const usernameRequirementItems = [
+    { key: "noSpaces", label: t("registerUsernameRuleNoSpaces"), ok: usernameRules.noSpaces },
+    { key: "notEmail", label: t("registerUsernameRuleNotEmail"), ok: usernameRules.notEmail },
+    { key: "length", label: t("registerUsernameRuleLength"), ok: usernameRules.length },
+    { key: "characters", label: t("registerUsernameRuleCharacters"), ok: usernameRules.characters },
+  ] as const;
 
   // Step 2: quiz
   const [role, setRole] = useState<UserRole | "">("");
@@ -57,7 +76,7 @@ export default function RegisterModal() {
   const errorMap: Record<string, string> = {
     "Tutti i campi obbligatori devono essere compilati": t("registerErrorFillAll"),
     "Email non valida": t("registerErrorEmailInvalid"),
-    "Username non valido (3-30 caratteri, solo lettere, numeri, . _ -)": t("registerErrorUsernameInvalid"),
+    "Username non valido (3-20 caratteri, solo lettere, numeri, _ -)": t("registerErrorUsernameInvalid"),
     "La password deve essere tra 8 e 128 caratteri": t("registerErrorPasswordRange"),
     "La password deve contenere almeno una lettera maiuscola, una lettera minuscola, un numero e un carattere speciale": t("registerErrorPasswordRules"),
     "Ruolo non valido": t("registerErrorRoleInvalid"),
@@ -119,7 +138,8 @@ export default function RegisterModal() {
       setError(t("registerErrorEmailInvalid"));
       return;
     }
-    if (username.length < 3 || !/^[a-zA-Z0-9_.-]+$/.test(username)) {
+    const trimmedUsername = username.trim();
+    if (trimmedUsername.length < 3 || trimmedUsername.length > 20 || !/^[a-zA-Z0-9_-]+$/.test(trimmedUsername)) {
       setError(t("registerErrorUsernameInvalid"));
       return;
     }
@@ -321,17 +341,37 @@ export default function RegisterModal() {
                   autoComplete="username"
                   className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
+                <div className="mt-2 rounded-2xl border border-amber-300/50 bg-amber-50/80 p-3 shadow-sm">
+                  <div className="flex items-center gap-2 text-amber-700 mb-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <p className="text-sm font-semibold">{t("registerUsernameHintTitle")}</p>
+                  </div>
+                  <p className="text-xs text-amber-800/90 mb-2">{t("registerUsernameHintText")}</p>
+                  <div className="grid gap-1.5 text-sm">
+                    {usernameRequirementItems.map((rule) => {
+                      const Icon = rule.ok ? CheckCircle : XCircle;
+                      return (
+                        <div key={rule.key} className="flex items-center gap-2" style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                          <Icon
+                            className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-green-500 scale-100 opacity-100" : "text-red-500 scale-95 opacity-80"}`}
+                          />
+                          <span className={`text-xs ${rule.ok ? "text-green-700" : "text-red-600"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                            {rule.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
-                {/* <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                <div className="flex items-center justify-between gap-2 mb-3">
                   <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                     {t("registerFieldPassword")}
                   </label>
-                  <p className="text-xs text-gray-500 sm:text-right">
-                    Esempi: <span className="font-semibold text-gray-700">!@#$%^&*()</span>
-                  </p>
-                </div> */}
+                  <span className="text-[11px] text-gray-500">{t("registerPasswordRequirementsTitle")}</span>
+                </div>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -355,23 +395,22 @@ export default function RegisterModal() {
                   </button>
                 </div>
                 <div className="mt-3 text-xs text-gray-500">
-                  Esempi di caratteri speciali: <span className="font-medium text-gray-700">!@#$%^&*()</span>
+                  {t("registerPasswordHintSpecial")}
                 </div>
                 <div className="mt-3 grid gap-2 text-sm text-gray-500">
-                  {([
-                    { key: "length", label: t("registerPasswordRuleLength"), ok: passwordRules.length },
-                    { key: "lowercase", label: t("registerPasswordRuleLowercase"), ok: passwordRules.lowercase },
-                    { key: "uppercase", label: t("registerPasswordRuleUppercase"), ok: passwordRules.uppercase },
-                    { key: "number", label: t("registerPasswordRuleNumber"), ok: passwordRules.number },
-                    { key: "special", label: t("registerPasswordRuleSpecial"), ok: passwordRules.special },
-                  ] as const).map((rule) => (
-                    <div key={rule.key} className="flex items-center gap-2">
-                      <span className={rule.ok ? "text-emerald-600" : "text-gray-400"}>
-                        <Check className="w-4 h-4" />
-                      </span>
-                      <span className={rule.ok ? "text-gray-900" : "text-gray-500"}>{rule.label}</span>
-                    </div>
-                  ))}
+                  {passwordRequirementItems.map((rule) => {
+                    const Icon = rule.ok ? CheckCircle : XCircle;
+                    return (
+                      <div key={rule.key} className="flex items-center gap-2" style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                        <Icon
+                          className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-green-500 scale-100 opacity-100" : "text-red-500 scale-95 opacity-80"}`}
+                        />
+                        <span className={`text-xs ${rule.ok ? "text-green-700" : "text-red-600"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                          {rule.label}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
