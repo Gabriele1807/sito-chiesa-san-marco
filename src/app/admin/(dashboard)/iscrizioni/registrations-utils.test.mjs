@@ -49,7 +49,7 @@ test('buildRegistrationSummary returns payment counts', () => {
 test('filterAndSortRegistrations applies payment filter and sorting', () => {
   const result = filterAndSortRegistrations(registrations, {
     search: 'marco',
-    paymentFilter: 'pagato',
+    activeFilters: new Set(['paid']),
     sortBy: 'nomeAsc',
   });
 
@@ -59,9 +59,26 @@ test('filterAndSortRegistrations applies payment filter and sorting', () => {
 test('filterAndSortRegistrations sorts by creation date descending by default', () => {
   const result = filterAndSortRegistrations(registrations, {
     search: '',
-    paymentFilter: 'all',
+    activeFilters: new Set(),
     sortBy: 'createdAtDesc',
   });
 
   assert.deepEqual(result.map((item) => item._id), ['1', '3', '2']);
+});
+
+test('filterAndSortRegistrations combines payment and raccoglimento filters with AND', () => {
+  const result = filterAndSortRegistrations(
+    [
+      { ...registrations[0], raccoglimento: 'chiesa' },
+      { ...registrations[1], raccoglimento: 'chiesa' },
+      { ...registrations[2], raccoglimento: 'luogo' },
+    ],
+    {
+      search: '',
+      activeFilters: new Set(['paid', 'chiesa']),
+      sortBy: 'createdAtDesc',
+    }
+  );
+
+  assert.deepEqual(result.map((item) => item._id), ['1']);
 });

@@ -1,9 +1,9 @@
-export type RegistrationPaymentFilter = "all" | "pagato" | "non-pagato";
+export type RegistrationFilterKey = "paid" | "unpaid" | "chiesa" | "luogo";
 export type RegistrationSortOption = "createdAtDesc" | "createdAtAsc" | "nomeAsc" | "nomeDesc";
 
 export interface RegistrationListFilters {
   search: string;
-  paymentFilter: RegistrationPaymentFilter;
+  activeFilters: Set<string>;
   sortBy: RegistrationSortOption;
 }
 
@@ -22,6 +22,7 @@ export interface RegistrationLike {
   telefono: string;
   email?: string;
   ha_pagato: boolean;
+  raccoglimento?: "chiesa" | "luogo";
   createdAt?: string;
 }
 
@@ -44,8 +45,10 @@ export function filterAndSortRegistrations<T extends RegistrationLike>(
   const q = normalize(filters.search);
 
   const filtered = registrations.filter((item) => {
-    if (filters.paymentFilter === "pagato" && !item.ha_pagato) return false;
-    if (filters.paymentFilter === "non-pagato" && item.ha_pagato) return false;
+    if (filters.activeFilters.has("paid") && !item.ha_pagato) return false;
+    if (filters.activeFilters.has("unpaid") && item.ha_pagato) return false;
+    if (filters.activeFilters.has("chiesa") && item.raccoglimento !== "chiesa") return false;
+    if (filters.activeFilters.has("luogo") && item.raccoglimento !== "luogo") return false;
 
     if (!q) return true;
 

@@ -17,12 +17,23 @@ interface Evento {
   postiDisponibili?: number;
   immagine?: string;
   showRaccoglimento?: boolean;
+  raccoglimento?: Array<{ label: string; orario: string }>;
   paymentDeadline?: string;
 }
 
 const emptyForm: Omit<Evento, "id"> = {
-  slug: "", titolo: "", data: "", dataFine: "", descrizione: "",
-  luogo: "", referente: "", postiDisponibili: undefined, immagine: "", showRaccoglimento: false, paymentDeadline: "",
+  slug: "",
+  titolo: "",
+  data: "",
+  dataFine: "",
+  descrizione: "",
+  luogo: "",
+  referente: "",
+  postiDisponibili: undefined,
+  immagine: "",
+  showRaccoglimento: false,
+  raccoglimento: [{ label: "", orario: "" }],
+  paymentDeadline: "",
 };
 
 export default function AdminEventiPage() {
@@ -32,6 +43,7 @@ export default function AdminEventiPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Evento | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -50,31 +62,88 @@ export default function AdminEventiPage() {
   function openAdd() {
     setEditId(null);
     setForm(emptyForm);
+    setFormError(null);
     setShowForm(true);
   }
 
   function openEdit(ev: Evento) {
     setEditId(ev.id);
     setForm({
-      slug: ev.slug, titolo: ev.titolo, data: ev.data.slice(0, 16),
-      dataFine: ev.dataFine?.slice(0, 16) || "", descrizione: ev.descrizione,
-      luogo: ev.luogo, referente: ev.referente || "", postiDisponibili: ev.postiDisponibili, immagine: ev.immagine || "",
-      showRaccoglimento: Boolean(ev.showRaccoglimento), paymentDeadline: ev.paymentDeadline?.slice(0, 16) || "",
+      slug: ev.slug,
+      titolo: ev.titolo,
+      data: ev.data.slice(0, 16),
+      dataFine: ev.dataFine?.slice(0, 16) || "",
+      descrizione: ev.descrizione,
+      luogo: ev.luogo,
+      referente: ev.referente || "",
+      postiDisponibili: ev.postiDisponibili,
+      immagine: ev.immagine || "",
+      showRaccoglimento: Boolean(ev.showRaccoglimento),
+      raccoglimento: (ev.raccoglimento && ev.raccoglimento.length > 0 ? ev.raccoglimento : [{ label: "", orario: "" }]).map((point) => ({
+        label: point.label || "",
+        orario: point.orario || "",
+      })),
+      paymentDeadline: ev.paymentDeadline?.slice(0, 16) || "",
     });
+    setFormError(null);
     setShowForm(true);
+  }
+
+  function updateRaccoglimentoPoint(index: number, field: "label" | "orario", value: string) {
+    setForm((current) => ({
+      ...current,
+      raccoglimento: (current.raccoglimento ?? []).map((point, pointIndex) =>
+        pointIndex === index ? { ...point, [field]: value } : point
+      ),
+    }));
+  }
+
+  function addRaccoglimentoPoint() {
+    setForm((current) => ({
+      ...current,
+      raccoglimento: [...(current.raccoglimento ?? []), { label: "", orario: "" }],
+    }));
+  }
+
+  function removeRaccoglimentoPoint(index: number) {
+    setForm((current) => ({
+      ...current,
+      raccoglimento: (current.raccoglimento ?? []).filter((_, pointIndex) => pointIndex !== index),
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+    setFormError(null);
     try {
       const slug = form.slug || slugify(form.titolo);
+      const currentRaccoglimento = form.raccoglimento ?? [];
+      const raccoglimento = form.showRaccoglimento
+        ? currentRaccoglimento
+            .map((point) => ({ label: point.label.trim(), orario: point.orario.trim() }))
+            .filter((point) => point.label || point.orario)
+        : [];
+
+      if (form.showRaccoglimento) {
+        const hasInvalidPoint = raccoglimento.some((point) => !point.label || !point.orario);
+        if (raccoglimento.length === 0) {
+          setFormError("Aggiungi almeno un punto di raccolta.");
+          return;
+        }
+        if (hasInvalidPoint) {
+          setFormError("Compila nome e orario per ogni punto di raccolta.");
+          return;
+        }
+      }
+
       const payload = {
         ...form,
         slug,
         referente: form.referente?.trim() || undefined,
         postiDisponibili: form.postiDisponibili ? Number(form.postiDisponibili) : undefined,
         showRaccoglimento: Boolean(form.showRaccoglimento),
+        raccoglimento,
         paymentDeadline: form.paymentDeadline?.trim() || undefined,
       };
 
@@ -174,11 +243,77 @@ export default function AdminEventiPage() {
           </div>
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
             <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
-              <input type="checkbox" checked={Boolean(form.showRaccoglimento)} onChange={(e) => setForm({ ...form, showRaccoglimento: e.target.checked })} className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold" />
+              <input
+                type="checkbox"
+                checked={Boolean(form.showRaccoglimento)}
+                onChange={(e) =>
+                  setForm((current) => ({
+                    ...current,
+                    showRaccoglimento: e.target.checked,
+                    raccoglimento:
+                      e.target.checked && (current.raccoglimento?.length ?? 0) === 0
+                        ? [{ label: "", orario: "" }]
+                        : current.raccoglimento ?? [],
+                  }))
+                }
+                className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+              />
               Mostra opzione raccoglimento nel form pubblico
             </label>
             <p className="text-xs text-gray-500 mt-1">Se disattivato, la sezione non appare nell&apos;iscrizione pubblica.</p>
           </div>
+
+          <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Punti di raccolta</h4>
+                <p className="text-xs text-gray-500">Ogni punto richiede nome e orario nel formato HH:mm.</p>
+              </div>
+              <button
+                type="button"
+                onClick={addRaccoglimentoPoint}
+                className="inline-flex items-center gap-1 rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-xs font-semibold text-gold"
+              >
+                <Plus className="w-3.5 h-3.5" /> Aggiungi punto di raccolta
+              </button>
+            </div>
+            <div className="space-y-3">
+              {(form.raccoglimento ?? []).map((point, index) => (
+                <div key={index} className="rounded-lg border border-gray-200 p-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Nome punto</label>
+                      <input
+                        type="text"
+                        value={point.label}
+                        onChange={(e) => updateRaccoglimentoPoint(index, "label", e.target.value)}
+                        placeholder="Es. Davanti alla chiesa"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+                      />
+                    </div>
+                    <div className="w-36 shrink-0">
+                      <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Orario di raccolta</label>
+                      <input
+                        type="time"
+                        value={point.orario}
+                        onChange={(e) => updateRaccoglimentoPoint(index, "orario", e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeRaccoglimentoPoint(index)}
+                      className="mt-6 inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Rimuovi
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {formError && <p className="text-sm text-red-600">{formError}</p>}
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione</label>
             <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={3} placeholder="Descrizione dell'evento" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />

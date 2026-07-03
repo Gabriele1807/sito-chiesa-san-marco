@@ -6,7 +6,7 @@ import { useLocale } from "next-intl";
 import { format } from "date-fns";
 import { it, ar } from "date-fns/locale";
 import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo, Info, Plus, Trash2 } from "lucide-react";
-import type { Evento } from "@/types";
+import type { Evento, RaccoglimentoPoint } from "@/types";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 import { useAuth } from "@/components/auth/AuthContext";
 
@@ -26,7 +26,7 @@ const emptyForm = {
   note: "",
   registrationType: "self" as "self" | "other" | "family",
   familyMembers: [] as Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>,
-  raccoglimento: undefined as "chiesa" | "luogo" | undefined,
+  raccoglimentoPunto: null as RaccoglimentoPoint | null,
 };
 
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
@@ -45,6 +45,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const [enrollmentFor, setEnrollmentFor] = useState<"me" | "other" | "family" | null>(null);
 
   const selectedEvento = eventi.find((evento) => evento.id === formOpen) ?? null;
+  const raccoglimentoPoints = selectedEvento?.raccoglimento ?? [];
   const currentIdentity = type === "user" ? user : type === "admin" ? admin : null;
 
   /** Calcola i posti rimasti per un evento; null se illimitati */
@@ -82,12 +83,14 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
         nome: "",
         cognome: "",
         registrationType: "other",
+        raccoglimentoPunto: null,
       }));
     } else if (type === "family") {
       setFormData(prev => ({
         ...prev,
         registrationType: "family",
         familyMembers: [{ role: "madre", fullName: "" }],
+        raccoglimentoPunto: null,
       }));
     }
   }
@@ -134,6 +137,9 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
         newErrors.familyMembers = t("erroreMembriFamiglia");
       }
     }
+    if (selectedEvento?.showRaccoglimento && raccoglimentoPoints.length > 0 && !formData.raccoglimentoPunto) {
+      newErrors.raccoglimentoPunto = t("errorePuntoRaccolta");
+    }
     return newErrors;
   }
 
@@ -163,7 +169,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
           note: formData.note || undefined,
           registrationType: formData.registrationType,
           familyMembers: formData.registrationType === "family" ? formData.familyMembers.filter((member) => member.fullName.trim()) : undefined,
-          raccoglimento: formData.raccoglimento,
+          raccoglimentoPunto: formData.raccoglimentoPunto || undefined,
         }),
       });
 
@@ -209,6 +215,10 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     });
   }
 
+  function formatRaccoglimentoTime(orario: string) {
+    return t("raccoglimentoOrarioDisplay", { orario });
+  }
+
   function updateFamilyMember(index: number, field: "role" | "fullName", value: string) {
     setFormData((prev) => ({
       ...prev,
@@ -229,6 +239,13 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     setFormData((prev) => ({
       ...prev,
       familyMembers: prev.familyMembers.filter((_, memberIndex) => memberIndex !== index),
+    }));
+  }
+
+  function setRaccoglimentoPunto(point: RaccoglimentoPoint) {
+    setFormData((prev) => ({
+      ...prev,
+      raccoglimentoPunto: point,
     }));
   }
 
@@ -571,38 +588,48 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   <p className="text-xs text-gray-400 mt-1.5">{t("padreHelper")}</p>
                 </div>
 
-                {selectedEvento?.showRaccoglimento && (
+                {selectedEvento?.showRaccoglimento && raccoglimentoPoints.length > 0 && (
                   <div>
                     <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("sezioneRaccoglimento")}</h4>
                     <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
                       <div className="space-y-3">
-                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                          <input
-                            type="radio"
-                            name="raccoglimento"
-                            checked={formData.raccoglimento === "chiesa"}
-                            onChange={() => setFormData((prev) => ({ ...prev, raccoglimento: "chiesa" }))}
-                            className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                          />
-                          {t("raccoglimentoChiesa")}
-                        </label>
-                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                          <input
-                            type="radio"
-                            name="raccoglimento"
-                            checked={formData.raccoglimento === "luogo"}
-                            onChange={() => setFormData((prev) => ({ ...prev, raccoglimento: "luogo" }))}
-                            className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                          />
-                          {t("raccoglimentoLuogo")}
-                        </label>
+                        {raccoglimentoPoints.map((point) => {
+                          const isSelected = formData.raccoglimentoPunto?.label === point.label && formData.raccoglimentoPunto?.orario === point.orario;
+                          return (
+                            <label
+                              key={`${point.label}-${point.orario}`}
+                              className={`flex items-start gap-3 rounded-lg border px-3 py-3 text-sm font-medium transition-colors ${
+                                isSelected ? "border-primary bg-white" : "border-gray-200 bg-white/80 hover:border-primary/30"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="raccoglimento"
+                                checked={isSelected}
+                                onChange={() => setRaccoglimentoPunto(point)}
+                                className="mt-0.5 h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                              />
+                              <span className="flex-1 text-gray-700">
+                                <span className="block font-semibold text-gray-900">{point.label}</span>
+                                <span className="block text-xs text-gray-500">{formatRaccoglimentoTime(point.orario)}</span>
+                              </span>
+                            </label>
+                          );
+                        })}
                       </div>
-                      <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3">
-                        <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                        <p className="text-xs leading-relaxed text-amber-800">
-                          {t("raccoglimentoNote", { referente: selectedEvento.referente || t("referenteSconosciuto") })}
-                        </p>
-                      </div>
+                      {errors.raccoglimentoPunto && <p className="mt-2 text-xs text-danger">{errors.raccoglimentoPunto}</p>}
+                      {formData.raccoglimentoPunto && (
+                        <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3">
+                          <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                          <p className="text-xs leading-relaxed text-amber-800">
+                            {t("raccoglimentoNote", {
+                              punto: formData.raccoglimentoPunto.label,
+                              orario: formatRaccoglimentoTime(formData.raccoglimentoPunto.orario),
+                              referente: selectedEvento.referente || t("referenteSconosciuto"),
+                            })}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

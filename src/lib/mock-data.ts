@@ -509,6 +509,11 @@ export const eventi: Evento[] = [
     referente: "Padre Mina Kolta",
     postiDisponibili: 45,
     immagine: "/images/eventi/monastero.jpg",
+    showRaccoglimento: true,
+    raccoglimento: [
+      { label: "Davanti alla chiesa", orario: "08:00" },
+      { label: "Parcheggio principale", orario: "08:15" },
+    ],
   },
   {
     id: "2",
@@ -521,6 +526,8 @@ export const eventi: Evento[] = [
     referente: "Michele Wasef",
     postiDisponibili: 200,
     immagine: "/images/eventi/festa-san-marco.jpg",
+    showRaccoglimento: true,
+    raccoglimento: [{ label: "Ingresso principale", orario: "09:30" }],
   },
   {
     id: "3",
@@ -534,6 +541,11 @@ export const eventi: Evento[] = [
     referente: "George Mina",
     postiDisponibili: 30,
     immagine: "/images/eventi/ritiro-giovani.jpg",
+    showRaccoglimento: true,
+    raccoglimento: [
+      { label: "Davanti alla chiesa", orario: "09:00" },
+      { label: "Fermata autobus", orario: "09:15" },
+    ],
   },
   {
     id: "4",
@@ -546,6 +558,8 @@ export const eventi: Evento[] = [
     referente: "Michele Wasef",
     postiDisponibili: 20,
     immagine: "/images/eventi/corso-copto.jpg",
+    showRaccoglimento: false,
+    raccoglimento: [],
   },
 ];
 

@@ -38,6 +38,15 @@ export function personKey(nome: string, cognome: string): string {
   return `${normalizeName(nome)}|${normalizeName(cognome)}`;
 }
 
+function normalizeRaccoglimentoPunto(value: unknown): IscrizioneEvento["raccoglimentoPunto"] {
+  if (!value || typeof value !== "object") return undefined;
+  const raw = value as { label?: string; orario?: string };
+  const label = (raw.label || "").trim();
+  const orario = (raw.orario || "").trim();
+  if (!label || !orario) return undefined;
+  return { label, orario };
+}
+
 function col() {
   return getDb().then((db) => db.collection(COLLECTION));
 }
@@ -161,14 +170,32 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     return { success: false, errorCode: "validation" };
   }
 
+  const evento = await getEventoById(data.eventoId);
+  if (!evento) {
+    return { success: false, errorCode: "validation" };
+  }
+
   const raccoglimento = data.raccoglimento === "chiesa" || data.raccoglimento === "luogo"
     ? data.raccoglimento
     : undefined;
 
   // L'evento deve esistere
-  const evento = await getEventoById(data.eventoId);
-  if (!evento) {
-    return { success: false, errorCode: "validation" };
+  const raccoglimentoPunto = normalizeRaccoglimentoPunto(data.raccoglimentoPunto);
+  const raccoglimentoDisponibile = Array.isArray(evento.raccoglimento) ? evento.raccoglimento : [];
+  if (evento.showRaccoglimento) {
+    if (raccoglimentoDisponibile.length === 0) {
+      return { success: false, errorCode: "validation" };
+    }
+
+    const selectedMatch = raccoglimentoPunto
+      ? raccoglimentoDisponibile.some(
+          (punto) => normalizeName(punto.label) === normalizeName(raccoglimentoPunto.label) && normalizeName(punto.orario) === normalizeName(raccoglimentoPunto.orario)
+        )
+      : false;
+
+    if (!selectedMatch) {
+      return { success: false, errorCode: "validation" };
+    }
   }
 
   const c = await col();
@@ -207,6 +234,7 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     registrationType,
     familyMembers: normalizedFamilyMembers,
     raccoglimento,
+    raccoglimentoPunto,
     createdAt: now,
     // campi tecnici per indici/lookup (non esposti al client)
     _familyKey: fKey,

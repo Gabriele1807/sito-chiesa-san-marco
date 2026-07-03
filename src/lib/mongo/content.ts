@@ -11,7 +11,7 @@
  */
 
 import { getDb } from "@/lib/mongo/client";
-import type { Icona, TestoSacro, Preghiera, VideoCorso, Evento, OrarioSettimanale } from "@/types";
+import type { Icona, TestoSacro, Preghiera, VideoCorso, Evento, OrarioSettimanale, RaccoglimentoPoint } from "@/types";
 import type { FilePrivato } from "@/lib/data/store";
 import {
   icone as iconeInit,
@@ -45,6 +45,34 @@ function sortOrariByWeekOrder(orari: OrarioSettimanale[]): OrarioSettimanale[] {
     if (indexA !== indexB) return indexA - indexB;
     return a.giorno.localeCompare(b.giorno, "it");
   });
+}
+
+function normalizeRaccoglimentoPoints(value: unknown): RaccoglimentoPoint[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => {
+      if (typeof entry === "string") {
+        const label = entry.trim();
+        return label ? { label, orario: "" } : null;
+      }
+
+      if (!entry || typeof entry !== "object") return null;
+      const raw = entry as Partial<RaccoglimentoPoint>;
+      const label = (raw.label || "").trim();
+      const orario = (raw.orario || "").trim();
+      if (!label || !orario) return null;
+      return { label, orario };
+    })
+    .filter((entry): entry is RaccoglimentoPoint => Boolean(entry));
+}
+
+function normalizeEvento(doc: unknown): Evento {
+  const cleanDoc = clean<Evento>(doc);
+  return {
+    ...cleanDoc,
+    raccoglimento: normalizeRaccoglimentoPoints((doc as { raccoglimento?: unknown })?.raccoglimento),
+  };
 }
 
 // Genera ID stringa numerica incrementale (compatibile con lo store)
@@ -280,38 +308,42 @@ export async function getEventi(): Promise<Evento[]> {
   await ensureIndexes();
   await seedIfEmpty("eventi", eventiInit);
   const db = await getDb();
-  return (await db.collection("eventi").find({}).sort({ data: 1 }).toArray()).map((d) => clean<Evento>(d));
+  return (await db.collection("eventi").find({}).sort({ data: 1 }).toArray()).map((d) => normalizeEvento(d));
 }
 
 export async function getEventoById(id: string): Promise<Evento | undefined> {
   const db = await getDb();
   const doc = await db.collection("eventi").findOne({ id });
-  return doc ? clean<Evento>(doc) : undefined;
+  return doc ? normalizeEvento(doc) : undefined;
 }
 
 export async function getEventoBySlug(slug: string): Promise<Evento | undefined> {
   const db = await getDb();
   const doc = await db.collection("eventi").findOne({ slug });
-  return doc ? clean<Evento>(doc) : undefined;
+  return doc ? normalizeEvento(doc) : undefined;
 }
 
 export async function addEvento(data: Omit<Evento, "id">): Promise<Evento> {
   await ensureIndexes();
   const id = await nextId("eventi");
-  const nuovo: Evento = { ...data, id };
+  const nuovo: Evento = { ...data, id, raccoglimento: normalizeRaccoglimentoPoints(data.raccoglimento) };
   const db = await getDb();
   await db.collection("eventi").insertOne({ ...nuovo });
-  return nuovo;
+  return normalizeEvento(nuovo);
 }
 
 export async function updateEvento(id: string, data: Partial<Evento>): Promise<Evento | null> {
   const db = await getDb();
+  const payload = {
+    ...data,
+    raccoglimento: data.raccoglimento ? normalizeRaccoglimentoPoints(data.raccoglimento) : data.raccoglimento,
+  };
   const result = await db.collection("eventi").findOneAndUpdate(
     { id },
-    { $set: data },
+    { $set: payload },
     { returnDocument: "after" }
   );
-  return result ? clean<Evento>(result) : null;
+  return result ? normalizeEvento(result) : null;
 }
 
 export async function deleteEvento(id: string): Promise<boolean> {

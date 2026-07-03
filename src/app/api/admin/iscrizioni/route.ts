@@ -35,6 +35,7 @@ export async function GET(request: Request) {
         luogo: ev.luogo,
         referente: ev.referente,
         postiDisponibili: ev.postiDisponibili,
+        showRaccoglimento: ev.showRaccoglimento,
         iscritti: counts[ev.id] ?? 0,
       }));
       return NextResponse.json({ success: true, eventi: riepilogo });
@@ -66,6 +67,7 @@ export async function GET(request: Request) {
         luogo: evento.luogo,
         referente: evento.referente,
         postiDisponibili: evento.postiDisponibili,
+        showRaccoglimento: evento.showRaccoglimento,
       },
       iscrizioni,
       summary,

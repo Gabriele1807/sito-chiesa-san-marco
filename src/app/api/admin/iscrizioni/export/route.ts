@@ -7,20 +7,11 @@ import { requireAdminSession } from "@/lib/auth/session";
 import type { IscrizioneEvento } from "@/types";
 
 /**
- * GET /api/admin/iscrizioni/export?eventoId=XXX&format=excel|pdf
+ * GET /api/admin/iscrizioni/export?eventoId=XXX&format=pdf
  *
  * Genera l'esportazione della lista iscritti senza dipendenze esterne:
- *  - excel: file .xls in formato HTML-table (aperto nativamente da Excel)
- *  - pdf:   documento HTML stampabile (Salva come PDF dal browser)
+ *  - pdf: documento PDF server-side
  */
-
-function escapeHtml(s: string): string {
-  return (s || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 function formatData(iso: string): string {
   try {
@@ -77,34 +68,6 @@ const EXPORT_COLUMNS: ExportColumn[] = [
   { key: "note", label: "Note", width: 1.8, value: (row) => row.note || "" },
   { key: "createdAt", label: "Data iscrizione", width: 1.2, value: (row) => formatData(row.createdAt || "") },
 ];
-
-const HEADERS = [
-  "#",
-  "Nome",
-  "Cognome",
-  "Nome padre",
-  "Cognome padre",
-  "Pagato",
-  "Telefono",
-  "Email",
-  "Note",
-  "Data iscrizione",
-];
-
-function rowsFrom(iscrizioni: IscrizioneEvento[]): string[][] {
-  return iscrizioni.map((r, i) => [
-    String(i + 1),
-    r.nome || "",
-    r.cognome || "",
-    r.padreNome || "",
-    r.padreCognome || "",
-    r.ha_pagato ? "Si" : "No",
-    r.telefono || "",
-    r.email || "",
-    r.note || "",
-    formatData(r.createdAt || ""),
-  ]);
-}
 
 function parseSelectedColumns(raw: string | null): ExportColumnKey[] {
   const allKeys = EXPORT_COLUMNS.map((column) => column.key);
@@ -288,7 +251,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const eventoId = url.searchParams.get("eventoId");
-  const format = (url.searchParams.get("format") || "excel").toLowerCase();
+  const format = (url.searchParams.get("format") || "pdf").toLowerCase();
   const selectedColumns = parseSelectedColumns(url.searchParams.get("columns"));
 
   if (!eventoId) {
@@ -301,39 +264,7 @@ export async function GET(request: Request) {
   }
 
   const iscrizioni = await getIscrizioniByEvento(eventoId);
-  const rows = rowsFrom(iscrizioni);
   const baseName = `iscritti_${sanitizeFilename(evento.titolo)}`;
-
-  // ---------------- EXCEL (.xls come tabella HTML) ----------------
-  if (format === "excel" || format === "xls") {
-    const headerCells = HEADERS.map((c) => `<th style="background:#d4af37;color:#fff;border:1px solid #999;padding:6px;text-align:left;">${escapeHtml(c)}</th>`).join("");
-    const bodyRows = rows
-      .map(
-        (r) =>
-          `<tr>${r
-            .map((c) => `<td style="border:1px solid #ccc;padding:6px;">${escapeHtml(c)}</td>`)
-            .join("")}</tr>`
-      )
-      .join("");
-
-    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="UTF-8" /></head>
-<body>
-<table border="1">
-<tr><th colspan="${HEADERS.length}" style="font-size:14px;padding:8px;">Iscritti — ${escapeHtml(evento.titolo)} (${rows.length})</th></tr>
-<tr>${headerCells}</tr>
-${bodyRows}
-</table>
-</body></html>`;
-
-    return new NextResponse("\uFEFF" + html, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/vnd.ms-excel; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${baseName}.xls"`,
-      },
-    });
-  }
 
   // ---------------- PDF reale server-side ----------------
   if (format === "pdf") {

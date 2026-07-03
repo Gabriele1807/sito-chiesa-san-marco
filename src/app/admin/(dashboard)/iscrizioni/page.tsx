@@ -5,7 +5,6 @@ import {
   Loader2,
   Users,
   Search,
-  FileSpreadsheet,
   FileText,
   Trash2,
   Pencil,
@@ -25,7 +24,7 @@ import ConfirmModal from "@/components/admin/ConfirmModal";
 import {
   buildRegistrationSummary,
   filterAndSortRegistrations,
-  type RegistrationPaymentFilter,
+  type RegistrationFilterKey,
   type RegistrationSortOption,
 } from "./registrations-utils";
 
@@ -50,6 +49,7 @@ interface Iscrizione {
   email?: string;
   note?: string;
   ha_pagato: boolean;
+  raccoglimento?: "chiesa" | "luogo";
   createdAt?: string;
 }
 
@@ -60,6 +60,7 @@ interface DettaglioEvento {
   luogo: string;
   referente?: string;
   postiDisponibili?: number;
+  showRaccoglimento?: boolean;
 }
 
 type PdfExportColumnKey =
@@ -87,6 +88,43 @@ const PDF_EXPORT_COLUMNS: Array<{ key: PdfExportColumnKey; label: string }> = [
   { key: "createdAt", label: "Data iscrizione" },
 ];
 
+const REGISTRATION_FILTERS: Array<{
+  key: RegistrationFilterKey;
+  label: string;
+  activeClassName: string;
+  inactiveClassName: string;
+  countClassName: string;
+}> = [
+  {
+    key: "paid",
+    label: "Pagati",
+    activeClassName: "border-green-300 bg-green-50",
+    inactiveClassName: "border-gray-200 bg-white hover:border-green-300",
+    countClassName: "text-green-700",
+  },
+  {
+    key: "unpaid",
+    label: "Da saldare",
+    activeClassName: "border-amber-300 bg-amber-50",
+    inactiveClassName: "border-gray-200 bg-white hover:border-amber-300",
+    countClassName: "text-amber-700",
+  },
+  {
+    key: "chiesa",
+    label: "In chiesa",
+    activeClassName: "border-primary bg-primary/10",
+    inactiveClassName: "border-gray-200 bg-white hover:border-primary/30",
+    countClassName: "text-primary",
+  },
+  {
+    key: "luogo",
+    label: "Al luogo dell'evento",
+    activeClassName: "border-primary bg-primary/10",
+    inactiveClassName: "border-gray-200 bg-white hover:border-primary/30",
+    countClassName: "text-primary",
+  },
+];
+
 function normalize(s: string): string {
   return (s || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -104,7 +142,7 @@ export default function AdminIscrizioniPage() {
   const [loadingDettaglio, setLoadingDettaglio] = useState(false);
 
   const [search, setSearch] = useState("");
-  const [paymentFilter, setPaymentFilter] = useState<RegistrationPaymentFilter>("all");
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<RegistrationSortOption>("createdAtDesc");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -166,7 +204,7 @@ export default function AdminIscrizioniPage() {
   function openEvento(id: string) {
     setSelectedId(id);
     setSearch("");
-    setPaymentFilter("all");
+    setActiveFilters(new Set());
     setSortBy("createdAtDesc");
     setPage(1);
     fetchDettaglio(id);
@@ -178,7 +216,7 @@ export default function AdminIscrizioniPage() {
     setIscrizioni([]);
     setSummary({ totali: 0, pagati: 0, nonPagati: 0 });
     setSearch("");
-    setPaymentFilter("all");
+    setActiveFilters(new Set());
     setSortBy("createdAtDesc");
     setPage(1);
     fetchEventi();
@@ -273,8 +311,20 @@ export default function AdminIscrizioniPage() {
     }
   }
 
-  async function downloadExportFile(url: string, format: "excel" | "pdf") {
-    setExporting(format);
+  function toggleFilter(filterKey: RegistrationFilterKey) {
+    setActiveFilters((current) => {
+      const next = new Set(current);
+      if (next.has(filterKey)) {
+        next.delete(filterKey);
+      } else {
+        next.add(filterKey);
+      }
+      return next;
+    });
+  }
+
+  async function downloadExportFile(url: string, fileName: string) {
+    setExporting("pdf");
     try {
       const res = await fetch(url);
       if (!res.ok) {
@@ -288,7 +338,7 @@ export default function AdminIscrizioniPage() {
       const disposition = res.headers.get("Content-Disposition");
       const fileNameMatch = disposition?.match(/filename="([^"]+)"/i);
       anchor.href = objectUrl;
-      anchor.download = fileNameMatch?.[1] || `iscrizioni.${format === "excel" ? "xls" : "pdf"}`;
+      anchor.download = fileNameMatch?.[1] || fileName;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -300,14 +350,9 @@ export default function AdminIscrizioniPage() {
     }
   }
 
-  async function exportFile(format: "excel" | "pdf") {
+  async function exportFile() {
     if (!selectedId) return;
-    const url = `/api/admin/iscrizioni/export?eventoId=${encodeURIComponent(selectedId)}&format=${format}`;
-    if (format === "pdf") {
-      setShowPdfExportModal(true);
-      return;
-    }
-    await downloadExportFile(url, format);
+    setShowPdfExportModal(true);
   }
 
   function togglePdfColumn(columnKey: PdfExportColumnKey) {
@@ -356,11 +401,32 @@ export default function AdminIscrizioniPage() {
     () =>
       filterAndSortRegistrations(iscrizioni, {
         search,
-        paymentFilter,
+        activeFilters,
         sortBy,
       }),
-    [iscrizioni, paymentFilter, search, sortBy]
+    [iscrizioni, activeFilters, search, sortBy]
   );
+
+  const filterCardCounts = useMemo(() => {
+    const counts: Record<RegistrationFilterKey, number> = {
+      paid: 0,
+      unpaid: 0,
+      chiesa: 0,
+      luogo: 0,
+    };
+
+    for (const filter of REGISTRATION_FILTERS) {
+      const nextFilters = new Set(activeFilters);
+      nextFilters.add(filter.key);
+      counts[filter.key] = filterAndSortRegistrations(iscrizioni, {
+        search,
+        activeFilters: nextFilters,
+        sortBy,
+      }).length;
+    }
+
+    return counts;
+  }, [activeFilters, iscrizioni, search, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
   const paginatedIscrizioni = filtered.slice((page - 1) * limit, page * limit);
@@ -373,7 +439,7 @@ export default function AdminIscrizioniPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, paymentFilter, sortBy, selectedId]);
+  }, [search, activeFilters, sortBy, selectedId]);
 
   function formatDate(dateStr?: string) {
     if (!dateStr) return "—";
@@ -491,14 +557,7 @@ export default function AdminIscrizioniPage() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => exportFile("excel")}
-                disabled={iscrizioni.length === 0 || exporting !== null}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-              >
-                {exporting === "excel" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />} Excel
-              </button>
-              <button
-                onClick={() => exportFile("pdf")}
+                onClick={() => exportFile()}
                 disabled={iscrizioni.length === 0 || exporting !== null}
                 className="inline-flex items-center gap-2 px-3 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
               >
@@ -535,30 +594,27 @@ export default function AdminIscrizioniPage() {
                 </div>
               </>
             )}
-            <button
-              type="button"
-              onClick={() => setPaymentFilter((current) => (current === "pagato" ? "all" : "pagato"))}
-              className={`rounded-xl border px-5 py-3 text-left transition-colors ${
-                paymentFilter === "pagato"
-                  ? "border-green-300 bg-green-50"
-                  : "border-gray-200 bg-white hover:border-green-300"
-              }`}
-            >
-              <p className="text-xs uppercase tracking-wide text-gray-500">Pagati</p>
-              <p className="text-2xl font-bold text-green-700">{summary.pagati}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentFilter((current) => (current === "non-pagato" ? "all" : "non-pagato"))}
-              className={`rounded-xl border px-5 py-3 text-left transition-colors ${
-                paymentFilter === "non-pagato"
-                  ? "border-amber-300 bg-amber-50"
-                  : "border-gray-200 bg-white hover:border-amber-300"
-              }`}
-            >
-              <p className="text-xs uppercase tracking-wide text-gray-500">Da saldare</p>
-              <p className="text-2xl font-bold text-amber-700">{summary.nonPagati}</p>
-            </button>
+            {REGISTRATION_FILTERS.filter((filter) => {
+              if (filter.key === "chiesa" || filter.key === "luogo") {
+                return evento?.showRaccoglimento === true;
+              }
+              return true;
+            }).map((filter) => {
+              const isActive = activeFilters.has(filter.key);
+              return (
+                <button
+                  key={filter.key}
+                  type="button"
+                  onClick={() => toggleFilter(filter.key)}
+                  className={`rounded-xl border px-5 py-3 text-left transition-colors ${
+                    isActive ? filter.activeClassName : filter.inactiveClassName
+                  }`}
+                >
+                  <p className="text-xs uppercase tracking-wide text-gray-500">{filter.label}</p>
+                  <p className={`text-2xl font-bold ${filter.countClassName}`}>{filterCardCounts[filter.key]}</p>
+                </button>
+              );
+            })}
           </div>
 
           {/* Ricerca e filtri */}
@@ -574,18 +630,6 @@ export default function AdminIscrizioniPage() {
               />
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-              <label className="flex flex-col text-xs font-semibold uppercase tracking-wide text-gray-500">
-                <span className="mb-1">Stato pagamento</span>
-                <select
-                  value={paymentFilter}
-                  onChange={(e) => setPaymentFilter(e.target.value as RegistrationPaymentFilter)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700"
-                >
-                  <option value="all">Tutti</option>
-                  <option value="pagato">Pagati</option>
-                  <option value="non-pagato">Da saldare</option>
-                </select>
-              </label>
               <label className="flex flex-col text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <span className="mb-1">Ordina per</span>
                 <select
@@ -603,7 +647,7 @@ export default function AdminIscrizioniPage() {
                 type="button"
                 onClick={() => {
                   setSearch("");
-                  setPaymentFilter("all");
+                  setActiveFilters(new Set());
                   setSortBy("createdAtDesc");
                 }}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"

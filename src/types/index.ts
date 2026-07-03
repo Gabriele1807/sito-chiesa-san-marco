@@ -50,6 +50,11 @@ export interface VideoCorso {
   thumbnail?: string;
 }
 
+export interface RaccoglimentoPoint {
+  label: string;
+  orario: string;
+}
+
 export interface Evento {
   id: string;
   slug: string;
@@ -62,6 +67,7 @@ export interface Evento {
   postiDisponibili?: number;
   immagine?: string;
   showRaccoglimento?: boolean;
+  raccoglimento?: RaccoglimentoPoint[];
   paymentDeadline?: string;
 }
 
@@ -93,6 +99,7 @@ export interface IscrizioneEvento {
   registrationType?: "self" | "other" | "family";
   familyMembers?: Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>;
   raccoglimento?: "chiesa" | "luogo";
+  raccoglimentoPunto?: RaccoglimentoPoint;
   // Metadati
   createdAt?: string;      // ISO date
 }
