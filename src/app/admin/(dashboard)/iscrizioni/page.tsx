@@ -137,7 +137,6 @@ export default function AdminIscrizioniPage() {
   const [evento, setEvento] = useState<DettaglioEvento | null>(null);
   const [iscrizioni, setIscrizioni] = useState<Iscrizione[]>([]);
   const [summary, setSummary] = useState({ totali: 0, pagati: 0, nonPagati: 0 });
-  const [postiTotali, setPostiTotali] = useState<number | null>(null);
   const [postiRimasti, setPostiRimasti] = useState<number | null>(null);
   const [loadingDettaglio, setLoadingDettaglio] = useState(false);
 
@@ -185,7 +184,6 @@ export default function AdminIscrizioniPage() {
         setEvento(data.evento);
         setIscrizioni(data.iscrizioni);
         setSummary(data.summary ?? buildRegistrationSummary(data.iscrizioni));
-        setPostiTotali(data.postiTotali);
         setPostiRimasti(data.postiRimasti);
       } else {
         showToast(data.error || "Errore nel caricamento", "error");
@@ -572,28 +570,20 @@ export default function AdminIscrizioniPage() {
               <p className="text-xs text-gray-500 uppercase tracking-wide">Iscritti</p>
               <p className="text-2xl font-bold text-gray-900">{summary.totali}</p>
             </div>
-            {postiTotali !== null && (
-              <>
-                <div className="bg-white rounded-xl border border-gray-200 px-5 py-3">
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Posti totali</p>
-                  <p className="text-2xl font-bold text-gray-900">{postiTotali}</p>
-                </div>
-                <div
-                  className={`rounded-xl border px-5 py-3 ${
-                    postiRimasti === 0 ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"
-                  }`}
-                >
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Posti rimasti</p>
-                  <p
-                    className={`text-2xl font-bold ${
-                      postiRimasti === 0 ? "text-red-600" : "text-green-700"
-                    }`}
-                  >
-                    {postiRimasti}
-                  </p>
-                </div>
-              </>
-            )}
+            <div
+              className={`rounded-xl border px-5 py-3 ${
+                postiRimasti === 0 ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"
+              }`}
+            >
+              <p className="text-xs text-gray-500 uppercase tracking-wide">Posti rimasti</p>
+              <p
+                className={`text-2xl font-bold ${
+                  postiRimasti === 0 ? "text-red-600" : "text-green-700"
+                }`}
+              >
+                {postiRimasti}
+              </p>
+            </div>
             {REGISTRATION_FILTERS.filter((filter) => {
               if (filter.key === "chiesa" || filter.key === "luogo") {
                 return evento?.showRaccoglimento === true;

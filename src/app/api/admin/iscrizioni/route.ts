@@ -72,7 +72,6 @@ export async function GET(request: Request) {
       iscrizioni,
       summary,
       totali: iscrizioni.length,
-      postiTotali,
       postiRimasti,
     });
   } catch (err) {

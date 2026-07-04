@@ -352,6 +352,8 @@
     "registerPasswordRuleNumber": "رقم واحد على الأقل",
     "registerPasswordRuleSpecial": "رمز خاص واحد على الأقل",
     "registerPasswordRequirementsTitle": "متطلبات كلمة المرور",
+    "registerPasswordMatchMismatch": "كلمتا المرور غير متطابقتين",
+    "registerPasswordMatchOk": "كلمتا المرور متطابقتان",
     "registerPasswordHintSpecial": "أمثلة على الأحرف الخاصة: !@#$%^&*()",
     "registerUsernameHintTitle": "انتباه إلى اسم المستخدم",
     "registerUsernameHintText": "اسم المستخدم ليس كلمة المرور أو البريد الإلكتروني الخاص بك.",

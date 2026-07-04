@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, AlertTriangle, Eye, EyeOff, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -10,6 +10,35 @@ import { CHIESE_LIST } from "@/lib/churches";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
 
 type Step = "credentials" | "quiz" | "confirm";
+
+type RegisterFieldName =
+  | "nome"
+  | "cognome"
+  | "email"
+  | "username"
+  | "password"
+  | "confirmPassword"
+  | "role"
+  | "ageGroup"
+  | "chiesa";
+
+function PasswordMatchIndicator({ password, confirm }: { password: string; confirm: string }) {
+  const t = useTranslations("auth");
+
+  if (!confirm) return null;
+
+  const matches = password === confirm;
+  const Icon = matches ? CheckCircle : XCircle;
+
+  return (
+    <div className="mt-2 flex items-center gap-2 text-sm">
+      <Icon className={`h-4 w-4 shrink-0 ${matches ? "text-green-500" : "text-red-500"}`} />
+      <span className={matches ? "text-green-700" : "text-red-600"}>
+        {matches ? t("registerPasswordMatchOk") : t("registerPasswordMatchMismatch")}
+      </span>
+    </div>
+  );
+}
 
 export default function RegisterModal() {
   const t = useTranslations("auth");
@@ -26,6 +55,7 @@ export default function RegisterModal() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<RegisterFieldName, string>>>({});
   const passwordRules = validatePasswordRules(password);
   const trimmedUsername = username.trim();
   const usernameRules = {
@@ -56,6 +86,7 @@ export default function RegisterModal() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const modalScrollRef = useRef<HTMLDivElement | null>(null);
 
   const roles: { value: UserRole; label: string; description: string }[] = [
     { value: "credente", label: t("registerRoleCredente"), description: t("registerRoleCredenteDesc") },
@@ -94,6 +125,27 @@ export default function RegisterModal() {
     return errorMap[errorText] ?? "";
   }
 
+  function clearFieldError(field: RegisterFieldName) {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function scrollToFirstError(errorsToHandle: Partial<Record<RegisterFieldName, string>>) {
+    const fieldOrder: RegisterFieldName[] = ["nome", "cognome", "email", "username", "password", "confirmPassword", "role", "ageGroup", "chiesa"];
+    const firstErrorField = fieldOrder.find((field) => errorsToHandle[field]);
+    if (!firstErrorField) return;
+
+    const el = modalScrollRef.current?.querySelector(`[name="${firstErrorField}"]`) as HTMLElement | null;
+    if (!el) return;
+
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.focus({ preventScroll: true });
+  }
+
   // Reset form quando si apre
   useEffect(() => {
     if (showRegisterModal) {
@@ -110,6 +162,7 @@ export default function RegisterModal() {
       setChiesa("");
       setRequestAdmin(false);
       setError("");
+      setFieldErrors({});
       setLoading(false);
       setSuccess(false);
     }
@@ -130,42 +183,77 @@ export default function RegisterModal() {
 
   function handleNextToQuiz() {
     setError("");
+    const nextFieldErrors: Partial<Record<RegisterFieldName, string>> = {};
+
     if (!nome.trim() || !cognome.trim() || !email.trim() || !username.trim() || !password) {
       setError(t("registerErrorFillAll"));
+      nextFieldErrors.nome = t("registerErrorFillAll");
+      if (!cognome.trim()) nextFieldErrors.cognome = t("registerErrorFillAll");
+      if (!email.trim()) nextFieldErrors.email = t("registerErrorFillAll");
+      if (!username.trim()) nextFieldErrors.username = t("registerErrorFillAll");
+      if (!password) nextFieldErrors.password = t("registerErrorFillAll");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError(t("registerErrorEmailInvalid"));
+      nextFieldErrors.email = t("registerErrorEmailInvalid");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
     const trimmedUsername = username.trim();
     if (trimmedUsername.length < 3 || trimmedUsername.length > 20 || !/^[a-zA-Z0-9_-]+$/.test(trimmedUsername)) {
       setError(t("registerErrorUsernameInvalid"));
+      nextFieldErrors.username = t("registerErrorUsernameInvalid");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
     if (password.length < 8) {
       setError(t("registerErrorPasswordLength"));
+      nextFieldErrors.password = t("registerErrorPasswordLength");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
     if (Object.values(passwordRules).some((rule) => !rule)) {
       setError(t("registerErrorPasswordRules"));
+      nextFieldErrors.password = t("registerErrorPasswordRules");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
     if (password !== confirmPassword) {
       setError(t("registerErrorPasswordMismatch"));
+      nextFieldErrors.confirmPassword = t("registerErrorPasswordMismatch");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
+
+    setFieldErrors({});
     setStep("quiz");
   }
 
   async function handleSubmit() {
     setError("");
+    const nextFieldErrors: Partial<Record<RegisterFieldName, string>> = {};
+
     if (!role || !ageGroup) {
       setError(t("registerErrorRoleAge"));
+      if (!role) nextFieldErrors.role = t("registerErrorRoleAge");
+      if (!ageGroup) nextFieldErrors.ageGroup = t("registerErrorRoleAge");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
     if (role === "ospite_chiesa" && !chiesa) {
       setError(t("registerErrorChurch"));
+      nextFieldErrors.chiesa = t("registerErrorChurch");
+      setFieldErrors(nextFieldErrors);
+      scrollToFirstError(nextFieldErrors);
       return;
     }
 
@@ -213,6 +301,18 @@ export default function RegisterModal() {
       } else {
         const mapped = mapRegisterError(data.error);
         setError(mapped || t("registerErrorGeneric"));
+        if (data.error === "Email già registrata") {
+          nextFieldErrors.email = t("registerErrorEmailTaken");
+        } else if (data.error === "Username già in uso") {
+          nextFieldErrors.username = t("registerErrorUsernameTaken");
+        } else if (data.error === "Email o username già in uso") {
+          nextFieldErrors.email = t("registerErrorEmailTaken");
+          nextFieldErrors.username = t("registerErrorUsernameTaken");
+        }
+        if (Object.keys(nextFieldErrors).length > 0) {
+          setFieldErrors(nextFieldErrors);
+          scrollToFirstError(nextFieldErrors);
+        }
       }
     } catch {
       setError(t("registerErrorConnection"));
@@ -235,7 +335,7 @@ export default function RegisterModal() {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-surface rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-in border border-border">
+      <div ref={modalScrollRef} className="relative w-full max-w-md bg-surface rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-in border border-border">
         {/* Close */}
         <button
           onClick={() => setShowRegisterModal(false)}
@@ -298,9 +398,13 @@ export default function RegisterModal() {
                 <div>
                   <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldNome")}</label>
                   <input
+                    name="nome"
                     type="text"
                     value={nome}
-                    onChange={(e) => setNome(e.target.value)}
+                    onChange={(e) => {
+                      setNome(e.target.value);
+                      clearFieldError("nome");
+                    }}
                     required
                     className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   />
@@ -308,9 +412,13 @@ export default function RegisterModal() {
                 <div>
                   <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldCognome")}</label>
                   <input
+                    name="cognome"
                     type="text"
                     value={cognome}
-                    onChange={(e) => setCognome(e.target.value)}
+                    onChange={(e) => {
+                      setCognome(e.target.value);
+                      clearFieldError("cognome");
+                    }}
                     required
                     className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   />
@@ -320,9 +428,13 @@ export default function RegisterModal() {
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldEmail")}</label>
                 <input
+                  name="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    clearFieldError("email");
+                  }}
                   placeholder={t("registerPlaceholderEmail")}
                   required
                   autoComplete="email"
@@ -333,9 +445,13 @@ export default function RegisterModal() {
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldUsername")}</label>
                 <input
+                  name="username"
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    clearFieldError("username");
+                  }}
                   placeholder={t("registerPlaceholderUsername")}
                   required
                   autoComplete="username"
@@ -374,11 +490,13 @@ export default function RegisterModal() {
                 </div>
                 <div className="relative">
                   <input
+                    name="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
                       if (error) setError("");
+                      clearFieldError("password");
                     }}
                     placeholder={t("registerPlaceholderPassword")}
                     required
@@ -417,14 +535,19 @@ export default function RegisterModal() {
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldPasswordConfirm")}</label>
                 <input
+                  name="confirmPassword"
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    clearFieldError("confirmPassword");
+                  }}
                   placeholder={t("registerPlaceholderPasswordConfirm")}
                   required
                   autoComplete="new-password"
                   className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
+                <PasswordMatchIndicator password={password} confirm={confirmPassword} />
               </div>
 
               <div className="flex items-center justify-between gap-3">
@@ -461,6 +584,7 @@ export default function RegisterModal() {
                       onClick={() => {
                         setRole(r.value);
                         if (r.value !== "ospite_chiesa") setChiesa("");
+                        clearFieldError("role");
                       }}
                       className={`p-3 rounded-lg border text-left transition-all ${
                         role === r.value
@@ -478,8 +602,12 @@ export default function RegisterModal() {
                 <div>
                   <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1.5">{t("registerChurchLabel")}</label>
                   <select
+                    name="chiesa"
                     value={chiesa}
-                    onChange={(e) => setChiesa(e.target.value)}
+                    onChange={(e) => {
+                      setChiesa(e.target.value);
+                      clearFieldError("chiesa");
+                    }}
                     className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                   >
                     <option value="" className="bg-surface">{t("registerChurchPlaceholder")}</option>
@@ -498,7 +626,10 @@ export default function RegisterModal() {
                     <button
                       key={ag.value}
                       type="button"
-                      onClick={() => setAgeGroup(ag.value)}
+                      onClick={() => {
+                        setAgeGroup(ag.value);
+                        clearFieldError("ageGroup");
+                      }}
                       className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
                         ageGroup === ag.value
                           ? "border-accent bg-accent/20 text-foreground"

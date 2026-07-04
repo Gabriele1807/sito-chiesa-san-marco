@@ -352,6 +352,8 @@
     "registerPasswordRuleNumber": "Un numero",
     "registerPasswordRuleSpecial": "Un carattere speciale",
     "registerPasswordRequirementsTitle": "Requisiti password",
+    "registerPasswordMatchMismatch": "Le password non corrispondono",
+    "registerPasswordMatchOk": "Le password corrispondono",
     "registerPasswordHintSpecial": "Esempi di caratteri speciali: !@#$%^&*()",
     "registerUsernameHintTitle": "Attenzione allo username",
     "registerUsernameHintText": "Lo username non è la tua password o la tua email.",
