@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { format } from "date-fns";
@@ -9,6 +9,13 @@ import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo, Info, P
 import type { Evento, RaccoglimentoPoint } from "@/types";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 import { useAuth } from "@/components/auth/AuthContext";
+
+type FamilyRole = "madre" | "padre" | "figlio";
+
+interface FamilyMemberDraft {
+  role: FamilyRole;
+  fullName: string;
+}
 
 interface Props {
   eventi: Evento[];
@@ -25,9 +32,19 @@ const emptyForm = {
   email: "",
   note: "",
   registrationType: "self" as "self" | "other" | "family",
-  familyMembers: [] as Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>,
+  familyMembers: [{ role: "figlio", fullName: "" }] as FamilyMemberDraft[],
   raccoglimentoPunto: null as RaccoglimentoPoint | null,
 };
+
+const UNIQUE_FAMILY_ROLES: FamilyRole[] = ["madre", "padre"];
+
+function extractSurname(fullName: string): string {
+  const normalized = fullName.trim().replace(/\s+/g, " ");
+  if (!normalized) return "";
+  const parts = normalized.split(" ");
+  if (parts.length === 1) return parts[0];
+  return parts.slice(1).join(" ");
+}
 
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const t = useTranslations("eventi");
@@ -41,12 +58,26 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [familyRoleWarning, setFamilyRoleWarning] = useState<string | null>(null);
+  const [familyMemberSurnameDefault, setFamilyMemberSurnameDefault] = useState("");
   // Step preliminare: per chi si iscrive?
   const [enrollmentFor, setEnrollmentFor] = useState<"me" | "other" | "family" | null>(null);
 
   const selectedEvento = eventi.find((evento) => evento.id === formOpen) ?? null;
   const raccoglimentoPoints = selectedEvento?.raccoglimento ?? [];
+  const familyMembers = formData.familyMembers;
+  const padreInMembers = formData.registrationType === "family" && familyMembers.some((member) => member.role === "padre");
+  const fatherMember = padreInMembers ? familyMembers.find((member) => member.role === "padre") ?? null : null;
+  const fatherSurnameSource = padreInMembers ? extractSurname(fatherMember?.fullName || "") : formData.padreCognome;
   const currentIdentity = type === "user" ? user : type === "admin" ? admin : null;
+
+  useEffect(() => {
+    if (formData.registrationType === "family") {
+      setFamilyMemberSurnameDefault(fatherSurnameSource.trim());
+    } else {
+      setFamilyMemberSurnameDefault("");
+    }
+  }, [fatherSurnameSource, formData.registrationType]);
 
   /** Calcola i posti rimasti per un evento; null se illimitati */
   function postiRimasti(evento: Evento): number | null {
@@ -61,6 +92,8 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     setFormOpen(eventoId);
     setEnrollmentFor(null); // Reset step preliminare
     setFormData({ ...emptyForm });
+    setFamilyRoleWarning(null);
+    setFamilyMemberSurnameDefault("");
     setSubmitted(false);
     setSuccessFamily(false);
     setErrors({});
@@ -89,7 +122,11 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
       setFormData(prev => ({
         ...prev,
         registrationType: "family",
-        familyMembers: [{ role: "madre", fullName: "" }],
+        familyMembers: [{ role: "figlio", fullName: familyMemberSurnameDefault }],
+        nome: "",
+        cognome: "",
+        padreNome: "",
+        padreCognome: "",
         raccoglimentoPunto: null,
       }));
     }
@@ -99,6 +136,8 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     setFormOpen(null);
     setEnrollmentFor(null);
     setFormData({ ...emptyForm });
+    setFamilyRoleWarning(null);
+    setFamilyMemberSurnameDefault("");
   }
 
   function handlePhoneChange(val: string) {
@@ -119,10 +158,15 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
 
   function validate() {
     const newErrors: Record<string, string> = {};
-    if (!formData.nome.trim()) newErrors.nome = t("erroreNome");
-    if (!formData.cognome.trim()) newErrors.cognome = t("erroreCognome");
-    if (!formData.padreNome.trim()) newErrors.padreNome = t("errorePadreNome");
-    if (!formData.padreCognome.trim()) newErrors.padreCognome = t("errorePadreCognome");
+    const isFamily = formData.registrationType === "family";
+
+    if (!isFamily) {
+      if (!formData.nome.trim()) newErrors.nome = t("erroreNome");
+      if (!formData.cognome.trim()) newErrors.cognome = t("erroreCognome");
+      if (!formData.padreNome.trim()) newErrors.padreNome = t("errorePadreNome");
+      if (!formData.padreCognome.trim()) newErrors.padreCognome = t("errorePadreCognome");
+    }
+
     if (!formData.telefono.trim()) {
       newErrors.telefono = t("erroreTelefono");
     } else if (!/^\+?[0-9]+$/.test(formData.telefono.trim().replace(/\s/g, ""))) {
@@ -131,10 +175,20 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = t("erroreEmailFormato");
     }
-    if (formData.registrationType === "family") {
-      const members = formData.familyMembers.filter((member) => member.fullName.trim());
-      if (members.length === 0) {
+    if (isFamily) {
+      if (familyMembers.length === 0) {
         newErrors.familyMembers = t("erroreMembriFamiglia");
+      }
+      if (familyMembers.some((member) => !member.fullName.trim())) {
+        newErrors.familyMembers = t("erroreMembroFamiglia");
+      }
+      const missingRoles = UNIQUE_FAMILY_ROLES.filter((role) => familyMembers.filter((member) => member.role === role).length > 1);
+      if (missingRoles.length > 0) {
+        newErrors.familyMembers = t("ruoloUnivocoGiaPresente");
+      }
+      if (!padreInMembers) {
+        if (!formData.padreNome.trim()) newErrors.padreNome = t("errorePadreNome");
+        if (!formData.padreCognome.trim()) newErrors.padreCognome = t("errorePadreCognome");
       }
     }
     if (selectedEvento?.showRaccoglimento && raccoglimentoPoints.length > 0 && !formData.raccoglimentoPunto) {
@@ -160,10 +214,12 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventoId: formOpen,
-          nome: formData.nome,
-          cognome: formData.cognome,
-          padreNome: formData.padreNome,
-          padreCognome: formData.padreCognome,
+          nome: formData.registrationType === "family" ? "" : formData.nome,
+          cognome: formData.registrationType === "family" ? "" : formData.cognome,
+          padreNome: formData.registrationType === "family" && padreInMembers ? "" : formData.padreNome,
+          padreCognome: formData.registrationType === "family" && padreInMembers ? "" : formData.padreCognome,
+          fatherName: formData.registrationType === "family" && padreInMembers ? "" : formData.padreNome,
+          fatherSurname: formData.registrationType === "family" && padreInMembers ? "" : formData.padreCognome,
           telefono: formData.telefono.trim().replace(/\s/g, ""),
           email: formData.email || undefined,
           note: formData.note || undefined,
@@ -220,6 +276,18 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   }
 
   function updateFamilyMember(index: number, field: "role" | "fullName", value: string) {
+    if (field === "role") {
+      const nextRole = value as FamilyRole;
+      if (UNIQUE_FAMILY_ROLES.includes(nextRole)) {
+        const alreadyUsed = familyMembers.some((member, memberIndex) => memberIndex !== index && member.role === nextRole);
+        if (alreadyUsed) {
+          setFamilyRoleWarning(t("ruoloUnivocoGiaPresente"));
+          return;
+        }
+      }
+      setFamilyRoleWarning(null);
+    }
+
     setFormData((prev) => ({
       ...prev,
       familyMembers: prev.familyMembers.map((member, memberIndex) =>
@@ -231,7 +299,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   function addFamilyMember() {
     setFormData((prev) => ({
       ...prev,
-      familyMembers: [...prev.familyMembers, { role: "figlio", fullName: "" }],
+      familyMembers: [...prev.familyMembers, { role: "figlio", fullName: familyMemberSurnameDefault }],
     }));
   }
 
@@ -240,6 +308,23 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
       ...prev,
       familyMembers: prev.familyMembers.filter((_, memberIndex) => memberIndex !== index),
     }));
+  }
+
+  function availableRolesFor(index: number): Array<{ value: FamilyRole; label: string }> {
+    const currentRole = familyMembers[index]?.role;
+    const roles: Array<{ value: FamilyRole; label: string }> = [];
+
+    for (const role of ["madre", "padre", "figlio"] as FamilyRole[]) {
+      const usedElsewhere = familyMembers.some((member, memberIndex) => memberIndex !== index && member.role === role);
+      if (!usedElsewhere || currentRole === role || role === "figlio") {
+        roles.push({
+          value: role,
+          label: role === "madre" ? t("ruoloMadre") : role === "padre" ? t("ruoloPadre") : t("ruoloFiglio"),
+        });
+      }
+    }
+
+    return roles;
   }
 
   function setRaccoglimentoPunto(point: RaccoglimentoPoint) {
@@ -506,6 +591,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 )}
 
                 {/* Sezione partecipante */}
+                {enrollmentFor !== "family" && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("sezionePartecipante")}</h4>
@@ -557,8 +643,10 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Sezione padre */}
+                {enrollmentFor !== "family" && (
                 <div>
                   <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("sezionePadre")}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -587,6 +675,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   </div>
                   <p className="text-xs text-gray-400 mt-1.5">{t("padreHelper")}</p>
                 </div>
+                )}
 
                 {selectedEvento?.showRaccoglimento && raccoglimentoPoints.length > 0 && (
                   <div>
@@ -643,15 +732,13 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                       </button>
                     </div>
                     <div className="space-y-2">
-                      {formData.familyMembers.map((member, index) => (
+                      {familyMembers.map((member, index) => (
                         <div key={index} className="rounded-lg border border-gray-200 p-3">
                           <div className="flex items-center justify-between gap-3 mb-2">
                             <span className="text-sm font-medium text-gray-700">{t("membro")} {index + 1}</span>
-                            {index > 0 && (
-                              <button type="button" onClick={() => removeFamilyMember(index)} className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
-                                <Trash2 className="h-3.5 w-3.5" /> {t("rimuovi")}
-                              </button>
-                            )}
+                            <button type="button" onClick={() => removeFamilyMember(index)} className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                              <Trash2 className="h-3.5 w-3.5" /> {t("rimuoviMembro")}
+                            </button>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] gap-3">
                             <div>
@@ -661,9 +748,11 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                                 onChange={(e) => updateFamilyMember(index, "role", e.target.value)}
                                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
                               >
-                                <option value="madre">{t("ruoloMadre")}</option>
-                                <option value="padre">{t("ruoloPadre")}</option>
-                                <option value="figlio">{t("ruoloFiglio")}</option>
+                                {availableRolesFor(index).map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
                               </select>
                             </div>
                             <div>
@@ -680,7 +769,35 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                         </div>
                       ))}
                     </div>
+                    {familyRoleWarning && <p className="text-xs text-amber-700 mt-2">{familyRoleWarning}</p>}
                     {errors.familyMembers && <p className="text-xs text-danger mt-2">{errors.familyMembers}</p>}
+
+                    {!padreInMembers && (
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreNome")} <span className="text-red-500 ml-0.5">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.padreNome}
+                            onChange={(e) => setFormData({ ...formData, padreNome: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            placeholder="Giuseppe"
+                          />
+                          {errors.padreNome && <p className="text-xs text-danger mt-1">{errors.padreNome}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreCognome")} <span className="text-red-500 ml-0.5">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.padreCognome}
+                            onChange={(e) => setFormData({ ...formData, padreCognome: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            placeholder="Rossi"
+                          />
+                          {errors.padreCognome && <p className="text-xs text-danger mt-1">{errors.padreCognome}</p>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -98,6 +98,8 @@ export interface IscrizioneEvento {
   ha_pagato: boolean;
   registrationType?: "self" | "other" | "family";
   familyMembers?: Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>;
+  fatherName?: string;
+  fatherSurname?: string;
   raccoglimento?: "chiesa" | "luogo";
   raccoglimentoPunto?: RaccoglimentoPoint;
   // Metadati

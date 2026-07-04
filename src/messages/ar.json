@@ -219,13 +219,16 @@
     "sezioneFamiglia": "أعضاء العائلة",
     "aggiungiMembro": "إضافة عضو",
     "rimuovi": "إزالة",
+    "rimuoviMembro": "إزالة عضو",
     "membro": "عضو",
     "ruolo": "الوظيفة",
     "ruoloMadre": "الأم",
     "ruoloPadre": "الأب",
     "ruoloFiglio": "الابن/الابنة",
+    "ruoloUnivocoGiaPresente": "هذه الوظيفة موجودة بالفعل في قائمة الأعضاء.",
     "nomeCognome": "الاسم والكنية",
     "nomeCognomePlaceholder": "ماري رزّي",
+    "erroreMembroFamiglia": "أدخل الاسم والكنية لكل عضو من العائلة.",
     "erroreMembriFamiglia": "أضف عضوًا واحدًا على الأقل من العائلة"
   },
   "contatti": {

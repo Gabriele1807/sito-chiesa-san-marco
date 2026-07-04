@@ -5,25 +5,34 @@ import type { CreateIscrizioneData } from "@/types";
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as Partial<CreateIscrizioneData>;
+    const isFamily = body.registrationType === "family";
 
-    // Campi obbligatori: partecipante (nome+cognome), padre (nome+cognome),
-    // telefono ed eventoId. Email opzionale.
+    // Campi obbligatori: telefono ed eventoId. Email opzionale.
+    // Per le iscrizioni non-famiglia restano obbligatori partecipante e padre.
     if (
       !body.eventoId ||
-      !body.nome?.trim() ||
-      !body.cognome?.trim() ||
-      !body.padreNome?.trim() ||
-      !body.padreCognome?.trim() ||
       !body.telefono?.trim()
     ) {
       return NextResponse.json(
         {
-          error:
-            "Campi obbligatori mancanti: nome, cognome, nome del padre, cognome del padre, telefono ed evento",
+          error: "Campi obbligatori mancanti: telefono ed evento",
           errorCode: "validation",
         },
         { status: 400 }
       );
+    }
+
+    if (!isFamily) {
+      if (!body.nome?.trim() || !body.cognome?.trim() || !body.padreNome?.trim() || !body.padreCognome?.trim()) {
+        return NextResponse.json(
+          {
+            error:
+              "Campi obbligatori mancanti: nome, cognome, nome del padre, cognome del padre, telefono ed evento",
+            errorCode: "validation",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Email opzionale: se presente deve essere valida

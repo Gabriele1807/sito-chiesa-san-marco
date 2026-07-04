@@ -38,6 +38,16 @@ export function personKey(nome: string, cognome: string): string {
   return `${normalizeName(nome)}|${normalizeName(cognome)}`;
 }
 
+function splitFullName(fullName: string): { name: string; surname: string } {
+  const normalized = (fullName || "").trim().replace(/\s+/g, " ");
+  if (!normalized) return { name: "", surname: "" };
+
+  const parts = normalized.split(" ");
+  if (parts.length === 1) return { name: parts[0], surname: "" };
+
+  return { name: parts[0], surname: parts.slice(1).join(" ") };
+}
+
 function normalizeRaccoglimentoPunto(value: unknown): IscrizioneEvento["raccoglimentoPunto"] {
   if (!value || typeof value !== "object") return undefined;
   const raw = value as { label?: string; orario?: string };
@@ -133,10 +143,6 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
   // Validazione minima lato server
   if (
     !data.eventoId ||
-    !data.nome?.trim() ||
-    !data.cognome?.trim() ||
-    !data.padreNome?.trim() ||
-    !data.padreCognome?.trim() ||
     !data.telefono?.trim()
   ) {
     return { success: false, errorCode: "validation" };
@@ -170,6 +176,18 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     return { success: false, errorCode: "validation" };
   }
 
+  if (registrationType === "family") {
+    const uniqueRoles = new Set<"madre" | "padre">();
+    for (const member of normalizedFamilyMembers) {
+      if (member.role === "madre" || member.role === "padre") {
+        if (uniqueRoles.has(member.role)) {
+          return { success: false, errorCode: "validation" };
+        }
+        uniqueRoles.add(member.role);
+      }
+    }
+  }
+
   const evento = await getEventoById(data.eventoId);
   if (!evento) {
     return { success: false, errorCode: "validation" };
@@ -198,10 +216,49 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     }
   }
 
+  const fatherInMembers = normalizedFamilyMembers.some((member) => member.role === "padre");
+  const fatherMember = normalizedFamilyMembers.find((member) => member.role === "padre");
+  const fatherFromMembers = fatherMember ? splitFullName(fatherMember.fullName) : { name: "", surname: "" };
+
+  const rawFatherName = (data.fatherName ?? data.padreNome ?? "").trim();
+  const rawFatherSurname = (data.fatherSurname ?? data.padreCognome ?? "").trim();
+
+  const effectiveFatherName = fatherInMembers ? fatherFromMembers.name : rawFatherName;
+  const effectiveFatherSurname = fatherInMembers ? fatherFromMembers.surname : rawFatherSurname;
+
+  if (registrationType !== "family") {
+    if (!data.nome?.trim() || !data.cognome?.trim() || !effectiveFatherName || !effectiveFatherSurname) {
+      return { success: false, errorCode: "validation" };
+    }
+  } else {
+    const hasAnyRepresentative = normalizedFamilyMembers.some((member) => member.fullName.trim());
+    if (!hasAnyRepresentative) {
+      return { success: false, errorCode: "validation" };
+    }
+    if (!fatherInMembers && (!effectiveFatherName || !effectiveFatherSurname)) {
+      return { success: false, errorCode: "validation" };
+    }
+  }
+
+  const primaryFamilyMember = registrationType === "family"
+    ? normalizedFamilyMembers.find((member) => member.role !== "padre") ?? normalizedFamilyMembers[0]
+    : null;
+  const primaryFullName = registrationType === "family"
+    ? primaryFamilyMember?.fullName ?? ""
+    : `${data.nome?.trim() || ""} ${data.cognome?.trim() || ""}`.trim();
+  const { name: resolvedNome, surname: resolvedCognome } = splitFullName(primaryFullName);
+
+  const savedFatherName = registrationType === "family" && fatherInMembers ? "" : effectiveFatherName;
+  const savedFatherSurname = registrationType === "family" && fatherInMembers ? "" : effectiveFatherSurname;
+
+  const storedRaccoglimento = data.raccoglimento === "chiesa" || data.raccoglimento === "luogo"
+    ? data.raccoglimento
+    : undefined;
+
   const c = await col();
 
-  const fKey = familyKey(data.padreNome, data.padreCognome);
-  const pKey = personKey(data.nome, data.cognome);
+  const fKey = familyKey(effectiveFatherName, effectiveFatherSurname);
+  const pKey = personKey(resolvedNome, resolvedCognome);
 
   // Controllo duplicato esplicito (oltre all'indice unico)
   const existing = await c.findOne({ eventoId: data.eventoId, _familyKey: fKey, _personKey: pKey });
@@ -223,17 +280,19 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
   const now = new Date().toISOString();
   const doc = {
     eventoId: data.eventoId,
-    nome: data.nome.trim(),
-    cognome: data.cognome.trim(),
-    padreNome: data.padreNome.trim(),
-    padreCognome: data.padreCognome.trim(),
+    nome: resolvedNome,
+    cognome: resolvedCognome,
+    fatherName: savedFatherName,
+    fatherSurname: savedFatherSurname,
+    padreNome: effectiveFatherName,
+    padreCognome: effectiveFatherSurname,
     telefono: data.telefono.trim(),
     email: data.email?.trim() || undefined,
     note: data.note?.trim() || undefined,
     ha_pagato: false,
     registrationType,
     familyMembers: normalizedFamilyMembers,
-    raccoglimento,
+    raccoglimento: storedRaccoglimento,
     raccoglimentoPunto,
     createdAt: now,
     // campi tecnici per indici/lookup (non esposti al client)
