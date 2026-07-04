@@ -119,9 +119,9 @@ export default async function HomePage() {
               {tOrari("sottotitolo")}
             </p>
           </div>
-          <Link href="/video-corsi" className="btn-secondary w-full justify-center sm:w-auto">
+          {/* <Link href="/video-corsi" className="btn-secondary w-full justify-center sm:w-auto">
             {tContatti("youtubeSezione")}
-          </Link>
+          </Link> */}
         </div>
 
         <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
