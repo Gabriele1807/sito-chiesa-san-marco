@@ -66,6 +66,9 @@
     "vediTutti": "عرض الكل",
     "ultimePreghiere": "أحدث الصلوات",
     "vediTutte": "عرض الكل",
+    "nextEventTitle": "الفعالية القادمة",
+    "eventiActionCta": "سجّل الآن",
+    "eventiOverviewCta": "اكتشف الفعاليات",
     "nessunEvento": "لا توجد فعاليات مجدولة حالياً",
     "controllaPiuTardi": "تفقّدوا لاحقاً للاطّلاع على المستجدات"
   },
@@ -175,6 +178,7 @@
     "postiRimasti": "{posti} أماكن متبقية",
     "chiudi": "إغلاق",
     "successMessage": "تمّ إرسال تسجيلكم بنجاح! بارك الله فيكم.",
+    "vediMieIscrizioni": "انظر تسجيلاتي",
     "successFamiglia": "تمت إضافة التسجيل. يبدو أنه ينتمي إلى نفس عائلة تسجيل آخر موجود.",
     "caricamentoAccesso": "جارٍ التحقق من حالة الدخول...",
     "guestTitle": "سجّل الدخول أو أنشئ حساباً لعرض الفعاليات",
@@ -485,6 +489,11 @@
     "salvaPassword": "حفظ كلمة المرور الجديدة",
     "salvataggioInCorso": "جارٍ الحفظ...",
     "annulla": "إلغاء",
+    "passwordRuleLength": "8 أحرف على الأقل",
+    "passwordRuleLowercase": "حرف صغير واحد على الأقل",
+    "passwordRuleUppercase": "حرف كبير واحد على الأقل",
+    "passwordRuleNumber": "رقم واحد على الأقل",
+    "passwordRuleSpecial": "رمز خاص واحد على الأقل",
     "passwordCambiata": "تمّ تحديث كلمة المرور بنجاح!",
     "passwordNonCoincidono": "كلمتا المرور غير متطابقتين.",
     "passwordTroppoCorta": "يجب أن تتكوّن كلمة المرور من 8 أحرف على الأقل.",
@@ -559,6 +568,10 @@
     "telefono": "الهاتف",
     "email": "البريد الإلكتروني",
     "referenteLabel": "مسؤول الفعالية",
-    "referentePagamentoInfo": "يجب تسليم مدفوعات هذه الفعالية حصرياً إلى {referente}."
+    "referentePagamentoInfo": "يجب تسليم مدفوعات هذا الحدث حصريًا إلى {referente}.",
+    "iscrizionePerMe": "لي أنا",
+    "iscrizionePerAltro": "لشخص آخر",
+    "iscrizionePerFamiglia": "العائلة",
+    "componentiFamiglia": "أفراد العائلة"
   }
 }

@@ -10,6 +10,15 @@ import {
 } from "@/lib/mongo/registrations";
 import { requireAdminSession } from "@/lib/auth/session";
 
+function countIscrittiInRegistrations(iscrizioni: Array<{ familyMembers?: Array<unknown> }>): number {
+  return iscrizioni.reduce((total, iscrizione: any) => {
+    if (iscrizione.registrationType === "family") {
+      return total + (Array.isArray(iscrizione.familyMembers) ? iscrizione.familyMembers.length : 0);
+    }
+    return total + 1;
+  }, 0);
+}
+
 /**
  * GET /api/admin/iscrizioni
  *  - senza query: ritorna la lista eventi + conteggio iscrizioni per ciascuno
@@ -47,8 +56,9 @@ export async function GET(request: Request) {
     }
 
     const iscrizioni = await getIscrizioniByEvento(eventoId);
+    const iscrittiTotali = countIscrittiInRegistrations(iscrizioni);
     const summary = {
-      totali: iscrizioni.length,
+      totali: iscrittiTotali,
       pagati: iscrizioni.filter((iscrizione) => iscrizione.ha_pagato).length,
       nonPagati: iscrizioni.filter((iscrizione) => !iscrizione.ha_pagato).length,
     };
@@ -56,7 +66,7 @@ export async function GET(request: Request) {
       typeof evento.postiDisponibili === "number" && evento.postiDisponibili > 0
         ? evento.postiDisponibili
         : null;
-    const postiRimasti = postiTotali !== null ? Math.max(0, postiTotali - iscrizioni.length) : null;
+    const postiRimasti = postiTotali !== null ? Math.max(0, postiTotali - iscrittiTotali) : null;
 
     return NextResponse.json({
       success: true,
@@ -71,7 +81,7 @@ export async function GET(request: Request) {
       },
       iscrizioni,
       summary,
-      totali: iscrizioni.length,
+      totali: iscrittiTotali,
       postiRimasti,
     });
   } catch (err) {

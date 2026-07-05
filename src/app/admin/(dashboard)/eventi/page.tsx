@@ -61,7 +61,15 @@ export default function AdminEventiPage() {
 
   function openAdd() {
     setEditId(null);
-    setForm(emptyForm);
+    // Default raccolgimento points: admin only sets the time
+    setForm({
+      ...emptyForm,
+      showRaccoglimento: true,
+      raccoglimento: [
+        { label: "Davanti alla chiesa", orario: "" },
+        { label: "Davanti al luogo dell'evento", orario: "" },
+      ],
+    });
     setFormError(null);
     setShowForm(true);
   }
@@ -281,7 +289,7 @@ export default function AdminEventiPage() {
               {(form.raccoglimento ?? []).map((point, index) => (
                 <div key={index} className="rounded-lg border border-gray-200 p-3">
                   <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0">
                       <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Nome punto</label>
                       <input
                         type="text"
@@ -289,6 +297,8 @@ export default function AdminEventiPage() {
                         onChange={(e) => updateRaccoglimentoPoint(index, "label", e.target.value)}
                         placeholder="Es. Davanti alla chiesa"
                         className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+                        // If label matches one of the defaults, admin should only set time
+                        disabled={point.label === "Davanti alla chiesa" || point.label === "Davanti al luogo dell'evento"}
                       />
                     </div>
                     <div className="w-36 shrink-0">
@@ -300,13 +310,15 @@ export default function AdminEventiPage() {
                         className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
                       />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeRaccoglimentoPoint(index)}
-                      className="mt-6 inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> Rimuovi
-                    </button>
+                    {!(point.label === "Davanti alla chiesa" || point.label === "Davanti al luogo dell'evento") && (
+                      <button
+                        type="button"
+                        onClick={() => removeRaccoglimentoPoint(index)}
+                        className="mt-6 inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Rimuovi
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -341,7 +353,7 @@ export default function AdminEventiPage() {
           </thead>
           <tbody>
             {eventi.map((ev, i) => (
-              <tr key={ev.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+              <tr key={ev.id ?? ev.slug ?? `evento-${i}`} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
                 <td className="px-4 py-3 font-medium text-gray-900">{ev.titolo}</td>
                 <td className="px-4 py-3 text-gray-600">{new Date(ev.data).toLocaleDateString("it-IT")}</td>
                 <td className="px-4 py-3 text-gray-600">{ev.luogo}</td>

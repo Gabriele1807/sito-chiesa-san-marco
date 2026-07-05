@@ -260,9 +260,9 @@ export default async function AdminDashboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {eventiFuturi.slice(0, 3).map((evento) => (
+              {eventiFuturi.slice(0, 3).map((evento, index) => (
                 <Link
-                  key={evento.id}
+                  key={evento.id ?? evento.slug ?? `evento-${index}`}
                   href={`/admin/eventi`}
                   className="group flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 transition-all hover:border-gold/40 hover:bg-gold/5"
                 >

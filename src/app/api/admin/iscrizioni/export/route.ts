@@ -43,6 +43,7 @@ type ExportColumnKey =
   | "cognome"
   | "padreNome"
   | "padreCognome"
+  | "raccoglimento"
   | "ha_pagato"
   | "telefono"
   | "email"
@@ -62,6 +63,12 @@ const EXPORT_COLUMNS: ExportColumn[] = [
   { key: "cognome", label: "Cognome", width: 1.1, value: (row) => row.cognome || "" },
   { key: "padreNome", label: "Nome padre", width: 1.1, value: (row) => row.padreNome || "" },
   { key: "padreCognome", label: "Cognome padre", width: 1.1, value: (row) => row.padreCognome || "" },
+  { key: "raccoglimento", label: "Punto raccolta", width: 1.4, value: (row) => {
+    if (row.raccoglimentoPunto) return `${row.raccoglimentoPunto.label} ${row.raccoglimentoPunto.orario}`;
+    if (row.raccoglimento === 'chiesa') return 'In chiesa';
+    if (row.raccoglimento === 'luogo') return 'Al luogo';
+    return '';
+  } },
   { key: "ha_pagato", label: "Pagamento", width: 0.9, value: (row) => (row.ha_pagato ? "PAGATO" : "") },
   { key: "telefono", label: "Telefono", width: 1.15, value: (row) => row.telefono || "" },
   { key: "email", label: "Email", width: 1.6, value: (row) => row.email || "" },

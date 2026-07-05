@@ -31,8 +31,23 @@ import { validatePasswordRules } from "@/lib/auth/password-rules";
 
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
+  const tCommon = useTranslations("common");
+  const tIscrizioni = useTranslations("iscrizioni");
   const router = useRouter();
   const { type, user, admin, setShowLoginModal, refresh, logout } = useAuth();
+
+  function getRegistrationTypeInfo(
+    type?: "self" | "other" | "family"
+  ): { label: string; icon: string; classes: string } {
+    switch (type) {
+      case "other":
+        return { label: tIscrizioni("iscrizionePerAltro"), icon: "👤", classes: "bg-amber-100 text-amber-700" };
+      case "family":
+        return { label: tIscrizioni("iscrizionePerFamiglia"), icon: "👨‍👩‍👧", classes: "bg-sky-100 text-sky-700" };
+      default:
+        return { label: tIscrizioni("iscrizionePerMe"), icon: "🙋", classes: "bg-emerald-100 text-emerald-700" };
+    }
+  }
 
   // Refresh on mount so the profile always reflects the latest DB state
   useEffect(() => {
@@ -975,16 +990,42 @@ export default function ProfiloPage() {
               <p className="text-sm text-gray-500">{t("nessunaIscrizione")}</p>
             ) : (
               <ul className="space-y-3">
-                {iscrizioni.map((isc, idx) => (
-                  <li key={idx} className="p-3 border border-gray-100 rounded-xl bg-gray-50/50">
-                    <p className="text-sm font-semibold text-gray-900">{isc.eventoTitolo}</p>
-                    <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
-                      <span>{isc.eventoData ? new Date(isc.eventoData).toLocaleDateString() : ""}</span>
-                      <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                      <span>Partecipante: {isc.nome} {isc.cognome}</span>
-                    </div>
-                  </li>
-                ))}
+                {iscrizioni.map((isc, idx) => {
+                  const registrationType = isc.registrationType ?? "self";
+                  const registrationTypeInfo = getRegistrationTypeInfo(registrationType);
+
+                  return (
+                    <li key={idx} className="p-3 border border-gray-100 rounded-xl bg-gray-50/50">
+                      <div className="flex items-start justify-between gap-2 mb-1 flex-wrap">
+                        <p className="text-sm font-semibold text-gray-900">{isc.eventoTitolo}</p>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg ${registrationTypeInfo.classes} text-xs font-semibold flex-shrink-0`}>
+                          {registrationTypeInfo.icon} {registrationTypeInfo.label}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                        <span>{isc.eventoData ? new Date(isc.eventoData).toLocaleDateString() : ""}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                        <span>{tIscrizioni("partecipante")}:{" "}{isc.nome} {isc.cognome}</span>
+                      </div>
+                      
+                      {registrationType === "family" && isc.familyMembers && isc.familyMembers.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-gray-200 space-y-1">
+                          <p className="text-xs font-semibold text-gray-600">{tIscrizioni("componentiFamiglia")}:</p>
+                          <div className="text-xs text-gray-600 space-y-0.5">
+                            {isc.familyMembers.map((member: { role: string; fullName: string }, memberIdx: number) => (
+                              <div key={memberIdx} className="flex items-center gap-2">
+                                <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
+                                  {member.role === "madre" ? "👩" : member.role === "padre" ? "👨" : "👧"}
+                                </span>
+                                <span>{member.fullName} <span className="text-gray-400">({member.role})</span></span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -997,7 +1038,7 @@ export default function ProfiloPage() {
           className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 transition-colors"
         >
           <LogOut className="h-4 w-4" />
-          Logout
+          {tCommon("userMenuLogout")}
         </button>
       </div>
         </div>

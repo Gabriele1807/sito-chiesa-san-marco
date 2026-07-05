@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
+import Link from "next/link";
 import { format } from "date-fns";
 import { it, ar } from "date-fns/locale";
 import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo, Info, Plus, Trash2 } from "lucide-react";
@@ -874,12 +875,21 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 {successFamily && (
                   <p className="text-sm text-gray-500 mt-2">{t("successFamiglia")}</p>
                 )}
-                <button
-                  onClick={closeForm}
-                  className="mt-4 btn-secondary"
-                >
-                  {t("chiudi")}
-                </button>
+                <div className="flex gap-3 mt-6">
+                  <Link
+                    href="/iscrizioni"
+                    onClick={closeForm}
+                    className="flex-1 btn-primary"
+                  >
+                    {t("vediMieIscrizioni")}
+                  </Link>
+                  <button
+                    onClick={closeForm}
+                    className="flex-1 btn-secondary"
+                  >
+                    {t("chiudi")}
+                  </button>
+                </div>
               </div>
             )}
           </div>

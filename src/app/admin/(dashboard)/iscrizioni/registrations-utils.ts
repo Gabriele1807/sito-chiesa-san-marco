@@ -47,8 +47,27 @@ export function filterAndSortRegistrations<T extends RegistrationLike>(
   const filtered = registrations.filter((item) => {
     if (filters.activeFilters.has("paid") && !item.ha_pagato) return false;
     if (filters.activeFilters.has("unpaid") && item.ha_pagato) return false;
-    if (filters.activeFilters.has("chiesa") && item.raccoglimento !== "chiesa") return false;
-    if (filters.activeFilters.has("luogo") && item.raccoglimento !== "luogo") return false;
+    // Support both semantic `raccoglimento` and explicit `raccoglimentoPunto` labels.
+    // If a specific `raccoglimentoPunto` is present, give it priority over the stored `raccoglimento` value
+    const punto = (item as any).raccoglimentoPunto;
+    const hasPunto = Boolean(punto && (punto.label || "").toString().trim());
+    const puntoLabel = hasPunto ? normalize((punto.label || "").toString()) : "";
+
+    if (filters.activeFilters.has("chiesa")) {
+      if (hasPunto) {
+        if (!puntoLabel.includes("chiesa")) return false;
+      } else {
+        if (item.raccoglimento !== "chiesa") return false;
+      }
+    }
+
+    if (filters.activeFilters.has("luogo")) {
+      if (hasPunto) {
+        if (!puntoLabel.includes("luogo")) return false;
+      } else {
+        if (item.raccoglimento !== "luogo") return false;
+      }
+    }
 
     if (!q) return true;
 

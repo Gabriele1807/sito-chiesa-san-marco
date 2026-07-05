@@ -45,8 +45,13 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
     }
 
+    // Debug logging
+    console.log("🔍 Ricerca iscrizioni per:", { targetNome, targetCognome, targetEmail });
+
     // Recupera iscrizioni dell'utente (o admin)
     const iscrizioniRaw = await getIscrizioniByUser(targetNome, targetCognome, targetEmail);
+
+    console.log("📝 Iscrizioni trovate:", iscrizioniRaw.length);
 
     // Arricchisci i dati con informazioni sull'evento (titolo, data, etc.)
     const iscrizioniArr = [];

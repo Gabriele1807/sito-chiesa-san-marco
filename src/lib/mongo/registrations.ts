@@ -30,12 +30,16 @@ export function normalizeName(s: string): string {
 
 /** Chiave identificativa del padre (per raggruppamento famiglia) */
 export function familyKey(padreNome: string, padreCognome: string): string {
-  return `${normalizeName(padreNome)}|${normalizeName(padreCognome)}`;
+  const padre = normalizeName(padreNome);
+  const cognome = normalizeName(padreCognome);
+  return `${padre}|${cognome}`.replace(/\s+\|$/, "|"); // rimuove spazi prima del pipe
 }
 
 /** Chiave identificativa del partecipante */
 export function personKey(nome: string, cognome: string): string {
-  return `${normalizeName(nome)}|${normalizeName(cognome)}`;
+  const n = normalizeName(nome);
+  const c = normalizeName(cognome);
+  return `${n}|${c}`.replace(/\s+\|$/, "|"); // rimuove spazi prima del pipe
 }
 
 function splitFullName(fullName: string): { name: string; surname: string } {
@@ -92,7 +96,26 @@ export async function ensureIndexes(): Promise<void> {
 /** Numero di iscrizioni per un evento */
 export async function countIscrizioniByEvento(eventoId: string): Promise<number> {
   const c = await col();
-  return c.countDocuments({ eventoId });
+  const agg = await c
+    .aggregate<{ _id: null; total: number }>([
+      { $match: { eventoId } },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: {
+              $cond: [
+                { $eq: ["$registrationType", "family"] },
+                { $size: { $ifNull: ["$familyMembers", []] } },
+                1,
+              ],
+            },
+          },
+        },
+      },
+    ])
+    .toArray();
+  return agg[0]?.total ?? 0;
 }
 
 /** Lista iscrizioni di un evento, ordinate per data di iscrizione */
@@ -103,32 +126,125 @@ export async function getIscrizioniByEvento(eventoId: string): Promise<Iscrizion
   return docs.map(toIscrizione);
 }
 
-/** Lista iscrizioni di un utente, cercate per email o (nome + cognome), ordinate per data di iscrizione (più recenti prima) */
+/** Lista iscrizioni di un utente, cercate per email o (nome + cognome) o come membro famiglia, ordinate per data di iscrizione (più recenti prima) */
 export async function getIscrizioniByUser(nome: string, cognome: string, email?: string): Promise<IscrizioneEvento[]> {
   await ensureIndexes();
   const c = await col();
   const pKey = personKey(nome, cognome);
+  const fKey = familyKey(nome, cognome);
+  const fullName = `${nome} ${cognome}`.trim();
+  
+  // Normalizza nome e cognome per confronti
+  const nomeNorm = normalizeName(nome);
+  const cognomeNorm = normalizeName(cognome);
 
-  // Costruiamo la query in modo sicuro
-  const query = email
-    ? { $or: [{ email }, { _personKey: pKey }] }
-    : { _personKey: pKey };
+  // Costruiamo una query che cerca:
+  // 1. Per email (se disponibile)
+  // 2. Per persona principale (_personKey)
+  // 3. Per nome e cognome esatto (case-insensitive) - partecipante
+  // 4. Come membro della famiglia (fullName esatto)
+  // 5. Come padre della famiglia (_familyKey)
+  // 6. Per chi ha creato l'iscrizione (createdByNome + createdByCognome)
+  // 7. Per email di chi ha creato l'iscrizione (createdByEmail)
+  const conditions = [];
+  
+  if (email && email.trim()) {
+    conditions.push({ email: email.trim() });
+  }
+  
+  // Ricerca per _personKey (nome|cognome)
+  conditions.push({ _personKey: pKey });
+  
+  // Ricerca per nome e cognome esatto (case-insensitive)
+  conditions.push({
+    nome: { $regex: `^${nomeNorm}$`, $options: "i" },
+    cognome: { $regex: `^${cognomeNorm}$`, $options: "i" }
+  });
+  
+  // Ricerca come membro della famiglia (fullName esatto)
+  if (fullName) {
+    conditions.push({
+      "familyMembers": {
+        $elemMatch: {
+          fullName: { $regex: `^${fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: "i" }
+        }
+      }
+    });
+  }
+  
+  // Ricerca come padre della famiglia (_familyKey)
+  conditions.push({ _familyKey: fKey });
 
-  const docs = await c.find(query).sort({ createdAt: -1 }).toArray();
-  return docs.map(toIscrizione);
+  // === NUOVO: Ricerca per chi ha creato l'iscrizione ===
+  // Questo consente di trovare iscrizioni create per altre persone o famiglie
+  // se create dall'utente autenticato
+  const createdByNomeNorm = normalizeName(nome);
+  const createdByCognomeNorm = normalizeName(cognome);
+  
+  conditions.push({
+    createdByNome: { $regex: `^${createdByNomeNorm}$`, $options: "i" },
+    createdByCognome: { $regex: `^${createdByCognomeNorm}$`, $options: "i" }
+  });
+  
+  if (email && email.trim()) {
+    conditions.push({ createdByEmail: email.trim() });
+  }
+
+  const query = conditions.length > 0 ? { $or: conditions } : { _personKey: pKey };
+  
+  try {
+    const docs = await c.find(query).sort({ createdAt: -1 }).toArray();
+    // Deduplicazione per evitare risultati doppi
+    const seenIds = new Set<string>();
+    return docs
+      .filter((doc) => {
+        const id = (doc._id as ObjectId).toString();
+        if (seenIds.has(id)) return false;
+        seenIds.add(id);
+        return true;
+      })
+      .map(toIscrizione);
+  } catch (err) {
+    console.error("Errore in getIscrizioniByUser:", err);
+    return [];
+  }
 }
 
-/** Conteggio iscrizioni per tutti gli eventi: { [eventoId]: count } */
+/** Conteggio iscritti per tutti gli eventi: include i membri della famiglia */
 export async function countIscrizioniPerEvento(): Promise<Record<string, number>> {
   const c = await col();
   const agg = await c
     .aggregate<{ _id: string; count: number }>([
-      { $group: { _id: "$eventoId", count: { $sum: 1 } } },
+      // For family registrations the participants are the elements in `familyMembers`.
+      // For non-family registrations count as 1 document.
+      {
+        $group: {
+          _id: "$eventoId",
+          count: {
+            $sum: {
+              $cond: [
+                { $eq: ["$registrationType", "family"] },
+                { $size: { $ifNull: ["$familyMembers", []] } },
+                1,
+              ],
+            },
+          },
+        },
+      },
     ])
     .toArray();
   const map: Record<string, number> = {};
   for (const row of agg) map[row._id] = row.count;
   return map;
+}
+
+export function countIscrittiInRegistrations(iscrizioni: Array<IscrizioneEvento>): number {
+  return iscrizioni.reduce((total, iscrizione) => {
+    if (iscrizione.registrationType === "family") {
+      return total + (Array.isArray(iscrizione.familyMembers) ? iscrizione.familyMembers.length : 0);
+    }
+    return total + 1;
+  }, 0);
 }
 
 // --------------- Create ---------------
@@ -251,9 +367,20 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
   const savedFatherName = registrationType === "family" && fatherInMembers ? "" : effectiveFatherName;
   const savedFatherSurname = registrationType === "family" && fatherInMembers ? "" : effectiveFatherSurname;
 
-  const storedRaccoglimento = data.raccoglimento === "chiesa" || data.raccoglimento === "luogo"
-    ? data.raccoglimento
-    : undefined;
+  // If a specific collection point was provided, try to infer semantic type:
+  // - if the selected point label mentions 'chiesa' treat as 'chiesa'
+  // - otherwise treat as 'luogo'
+  let storedRaccoglimento: IscrizioneEvento["raccoglimento"] | undefined = undefined;
+  if (raccoglimentoPunto) {
+    const lbl = normalizeName(raccoglimentoPunto.label || "");
+    if (lbl.includes("chiesa")) {
+      storedRaccoglimento = "chiesa";
+    } else {
+      storedRaccoglimento = "luogo";
+    }
+  } else if (data.raccoglimento === "chiesa" || data.raccoglimento === "luogo") {
+    storedRaccoglimento = data.raccoglimento;
+  }
 
   const c = await col();
 
@@ -271,7 +398,22 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
 
   // Controllo posti disponibili (solo se l'evento ha un limite definito)
   if (typeof evento.postiDisponibili === "number" && evento.postiDisponibili > 0) {
-    const current = await c.countDocuments({ eventoId: data.eventoId });
+    const agg = await c
+      .aggregate<{ _id: null; total: number }>([
+        { $match: { eventoId: data.eventoId } },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: {
+                $add: [1, { $size: { $ifNull: ["$familyMembers", []] } }],
+              },
+            },
+          },
+        },
+      ])
+      .toArray();
+    const current = agg[0]?.total ?? 0;
     if (current >= evento.postiDisponibili) {
       return { success: false, errorCode: "full", sameFamily };
     }
@@ -295,6 +437,9 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     raccoglimento: storedRaccoglimento,
     raccoglimentoPunto,
     createdAt: now,
+    createdByNome: data.createdByNome?.trim() || undefined,
+    createdByCognome: data.createdByCognome?.trim() || undefined,
+    createdByEmail: data.createdByEmail?.trim() || undefined,
     // campi tecnici per indici/lookup (non esposti al client)
     _familyKey: fKey,
     _personKey: pKey,

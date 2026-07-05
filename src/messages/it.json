@@ -66,6 +66,9 @@
     "vediTutti": "Vedi tutti",
     "ultimePreghiere": "Ultime Preghiere",
     "vediTutte": "Vedi tutte",
+    "nextEventTitle": "Prossimo Evento",
+    "eventiActionCta": "Iscriviti ora",
+    "eventiOverviewCta": "Esplora gli eventi",
     "nessunEvento": "Nessun evento in programma",
     "controllaPiuTardi": "Controlla più tardi"
   },
@@ -176,6 +179,7 @@
     "postiRimasti": "{posti} posti rimasti",
     "chiudi": "Chiudi",
     "successMessage": "Iscrizione inviata con successo!",
+    "vediMieIscrizioni": "Vedi le mie iscrizioni",
     "successFamiglia": "Iscrizione aggiunta. Risulta appartenere alla stessa famiglia di un'altra iscrizione esistente.",
     "caricamentoAccesso": "Verifica accesso in corso...",
     "guestTitle": "Accedi o registrati per vedere gli eventi",
@@ -485,6 +489,11 @@
     "salvaPassword": "Salva nuova password",
     "salvataggioInCorso": "Salvataggio...",
     "annulla": "Annulla",
+    "passwordRuleLength": "Almeno 8 caratteri",
+    "passwordRuleLowercase": "Una lettera minuscola",
+    "passwordRuleUppercase": "Una lettera maiuscola",
+    "passwordRuleNumber": "Un numero",
+    "passwordRuleSpecial": "Un carattere speciale",
     "passwordCambiata": "Password aggiornata con successo!",
     "passwordNonCoincidono": "Le due password non coincidono.",
     "passwordTroppoCorta": "La password deve avere almeno 8 caratteri.",
@@ -560,6 +569,10 @@
     "telefono": "Telefono",
     "email": "Email",
     "referenteLabel": "Referente dell'evento",
-    "referentePagamentoInfo": "I pagamenti di questo evento devono essere consegnati esclusivamente a {referente}."
+    "referentePagamentoInfo": "I pagamenti di questo evento devono essere consegnati esclusivamente a {referente}.",
+    "iscrizionePerMe": "Per me",
+    "iscrizionePerAltro": "Per un'altra persona",
+    "iscrizionePerFamiglia": "Famiglia",
+    "componentiFamiglia": "Componenti famiglia"
   }
 }

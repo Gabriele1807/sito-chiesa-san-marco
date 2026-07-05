@@ -102,6 +102,10 @@ export interface IscrizioneEvento {
   fatherSurname?: string;
   raccoglimento?: "chiesa" | "luogo";
   raccoglimentoPunto?: RaccoglimentoPoint;
+  // Chi ha creato l'iscrizione (tracciamento dell'utente autenticato)
+  createdByNome?: string;      // Nome dell'utente autenticato che ha creato l'iscrizione
+  createdByCognome?: string;   // Cognome dell'utente autenticato che ha creato l'iscrizione
+  createdByEmail?: string;     // Email dell'utente autenticato che ha creato l'iscrizione
   // Metadati
   createdAt?: string;      // ISO date
 }

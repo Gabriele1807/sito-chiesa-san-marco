@@ -20,12 +20,30 @@ interface IscrizioneArricchita {
   telefono: string;
   email?: string;
   note?: string;
+  registrationType?: "self" | "other" | "family";
+  familyMembers?: Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>;
+  createdByNome?: string;
+  createdByCognome?: string;
+  createdByEmail?: string;
   createdAt?: string;
 }
 
 export default function IscrizioniPage() {
   const t = useTranslations("iscrizioni");
   const tAuth = useTranslations("auth");
+
+  function getRegistrationTypeInfo(
+    type?: "self" | "other" | "family"
+  ): { label: string; icon: string; classes: string } {
+    switch (type) {
+      case "other":
+        return { label: t("iscrizionePerAltro"), icon: "👤", classes: "bg-amber-100 text-amber-700" };
+      case "family":
+        return { label: t("iscrizionePerFamiglia"), icon: "👨‍👩‍👧", classes: "bg-sky-100 text-sky-700" };
+      default:
+        return { label: t("iscrizionePerMe"), icon: "🙋", classes: "bg-emerald-100 text-emerald-700" };
+    }
+  }
   const { type, loading: authLoading } = useAuth();
   const isAuthenticated = type === "user" || type === "admin";
 
@@ -156,106 +174,113 @@ export default function IscrizioniPage() {
       {/* Lista iscrizioni */}
       {!loading && !error && iscrizioni.length > 0 && (
         <div className="grid gap-4 animate-fade-in-up [animation-delay:150ms]">
-          {iscrizioni.map((isc, index) => (
-            <div
-              key={isc._id ?? index}
-              className="bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
-            >
-              {/* Header card evento */}
-              <div className="bg-primary px-5 py-3 flex items-center justify-between">
-                <h3 className="text-white font-bold text-base truncate pr-4">
-                  {isc.eventoTitolo}
-                </h3>
-                {isc.createdAt && (
-                  <span className="text-white/60 text-xs shrink-0">
-                    {t("iscrittoIl")} {formatCreatedAt(isc.createdAt)}
-                  </span>
-                )}
-              </div>
+          {iscrizioni.map((isc, index) => {
+            const registrationTypeInfo = getRegistrationTypeInfo(isc.registrationType as "self" | "other" | "family");
 
-              {/* Dettagli */}
-              <div className="px-5 py-4 space-y-3">
-                {/* Info evento */}
-                <div className="flex flex-wrap gap-4 text-sm text-foreground/60">
-                  {isc.eventoData && (
-                    <span className="flex items-center gap-1.5">
-                      <CalendarDays className="w-3.5 h-3.5 text-accent" />
-                      {formatDate(isc.eventoData)}
+            return (
+              <div
+                key={isc._id ?? index}
+                className="bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
+              >
+                {/* Header card evento */}
+                <div className="bg-primary px-5 py-3 flex items-center justify-between flex-wrap gap-3">
+                  <h3 className="text-white font-bold text-base truncate pr-4">
+                    {isc.eventoTitolo}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg ${registrationTypeInfo.classes} text-xs font-semibold flex-shrink-0`}>
+                      {registrationTypeInfo.icon} {registrationTypeInfo.label}
                     </span>
-                  )}
-                  {isc.eventoLuogo && (
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-accent" />
-                      {isc.eventoLuogo}
-                    </span>
-                  )}
-                </div>
-
-                {/* Dati iscrizione */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
-                      {t("partecipante")}
-                    </p>
-                    <p className="text-sm font-semibold text-foreground">
-                      {isc.nome} {isc.cognome}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
-                      {t("padre")}
-                    </p>
-                    <p className="text-sm font-medium text-foreground/70">
-                      {isc.padreNome} {isc.padreCognome}
-                    </p>
+                    {isc.createdAt && (
+                      <span className="text-white/80 text-xs shrink-0">
+                        {t("iscrittoIl")} {formatCreatedAt(isc.createdAt)}
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {isc.eventoReferente && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/70">
-                      {t("referenteLabel")}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-amber-950">
-                      {isc.eventoReferente}
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-amber-900/80">
-                      {t("referentePagamentoInfo", { referente: isc.eventoReferente })}
-                    </p>
-                  </div>
-                )}
-
-                {/* Telefono ed email se presenti */}
-                {(isc.telefono || isc.email) && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border">
-                    {isc.telefono && (
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
-                          {t("telefono")}
-                        </p>
-                        <p className="text-sm text-foreground/70">{isc.telefono}</p>
-                      </div>
+                {/* Dettagli */}
+                <div className="px-5 py-4 space-y-3">
+                  {/* Info evento */}
+                  <div className="flex flex-wrap gap-4 text-sm text-foreground/60">
+                    {isc.eventoData && (
+                      <span className="flex items-center gap-1.5">
+                        <CalendarDays className="w-3.5 h-3.5 text-accent" />
+                        {formatDate(isc.eventoData)}
+                      </span>
                     )}
-                    {isc.email && (
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
-                          {t("email")}
-                        </p>
-                        <p className="text-sm text-foreground/70 break-all">{isc.email}</p>
-                      </div>
+                    {isc.eventoLuogo && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-accent" />
+                        {isc.eventoLuogo}
+                      </span>
                     )}
                   </div>
-                )}
 
-                {/* Note se presenti */}
-                {isc.note && (
-                  <div className="bg-surface-alt rounded-lg px-3 py-2">
-                    <p className="text-xs text-foreground/60 italic">{isc.note}</p>
+                  {/* Dati iscrizione */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
+                        {t("partecipante")}
+                      </p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {isc.nome} {isc.cognome}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
+                        {t("padre")}
+                      </p>
+                      <p className="text-sm font-medium text-foreground/70">
+                        {isc.padreNome} {isc.padreCognome}
+                      </p>
+                    </div>
                   </div>
-                )}
+
+                  {isc.eventoReferente && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/70">
+                        {t("referenteLabel")}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-amber-950">
+                        {isc.eventoReferente}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-amber-900/80">
+                        {t("referentePagamentoInfo", { referente: isc.eventoReferente })}
+                      </p>
+                    </div>
+                  )}
+
+                  {(isc.telefono || isc.email) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border">
+                      {isc.telefono && (
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
+                            {t("telefono")}
+                          </p>
+                          <p className="text-sm text-foreground/70">{isc.telefono}</p>
+                        </div>
+                      )}
+                      {isc.email && (
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
+                            {t("email")}
+                          </p>
+                          <p className="text-sm text-foreground/70 break-all">{isc.email}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {isc.note && (
+                    <div className="bg-surface-alt rounded-lg px-3 py-2">
+                      <p className="text-xs text-foreground/60 italic">{isc.note}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -159,6 +159,9 @@ html {
 .animate-scroll-hint { animation: scrollHint 1.6s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Allow a developer/admin override for testing: elements inside `.force-motion` will keep animations */
+  .force-motion * { animation: revert !important; transition: revert !important; }
+
   .animate-fade-in-up,
   .animate-fade-in,
   .animate-scale-in,

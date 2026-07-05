@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createIscrizione } from "@/lib/db";
 import type { CreateIscrizioneData } from "@/types";
+import { cookies } from "next/headers";
+import { validateUserSession } from "@/lib/mongo/sessions";
+import { findUserById, findUserByUsername } from "@/lib/mongo/users";
+import { validateSession } from "@/lib/auth/session";
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,7 +50,54 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const result = await createIscrizione(body as CreateIscrizioneData);
+    // === Estrai l'utente autenticato per tracciare chi ha creato l'iscrizione ===
+    const cookieStore = await cookies();
+    const token = cookieStore.get("user_session")?.value;
+    const adminToken = cookieStore.get("admin_session")?.value;
+
+    let createdByNome = "";
+    let createdByCognome = "";
+    let createdByEmail: string | undefined = undefined;
+
+    if (adminToken) {
+      const adminUser = await validateSession(adminToken);
+      if (adminUser) {
+        createdByNome = adminUser.nome;
+        createdByCognome = adminUser.cognome;
+        const relatedUser = await findUserByUsername(adminUser.username);
+        if (relatedUser) {
+          createdByEmail = relatedUser.email;
+        }
+      }
+    }
+
+    if (!createdByNome && token) {
+      const session = await validateUserSession(token);
+      if (session) {
+        const user = await findUserById(session.userId);
+        if (user) {
+          createdByNome = user.nome;
+          createdByCognome = user.cognome;
+          createdByEmail = user.email;
+        }
+      }
+    }
+
+    // Se non autenticato, aggiungi comunque i dati se disponibili nel body (backward compatibility)
+    if (!createdByNome && body.email) {
+      // Per utenti non autenticati ma con email, usa l'email come tracciamento
+      createdByEmail = body.email;
+    }
+
+    // Aggiungi i campi di tracciamento al body
+    const bodyWithCreator = {
+      ...body,
+      createdByNome,
+      createdByCognome,
+      createdByEmail,
+    };
+
+    const result = await createIscrizione(bodyWithCreator as CreateIscrizioneData);
 
     if (!result.success) {
       switch (result.errorCode) {

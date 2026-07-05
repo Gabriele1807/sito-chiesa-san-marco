@@ -65,8 +65,8 @@ export default async function HomePage() {
                     {t("heroCtaPrimary")}
                   </Link>
 
-                  <Link href="/#live" className="btn-secondary">
-                    {t("heroCtaSecondary")}
+                  <Link href="/eventi" className="btn-secondary" aria-label={t("eventiOverviewCta")}>
+                    {t("eventiOverviewCta")}
                   </Link>
                 </div>
               </div>
@@ -84,11 +84,47 @@ export default async function HomePage() {
                   </span>
                 </div>
 
-                <NextCelebrationCard
-                  orari={orari}
-                  title={t("quickProssima")}
-                  emptyLabel={t("noCelebration")}
-                />
+                <div className="flex flex-col gap-3">
+                  {/* CTA Iscrizione agli eventi */}
+                  <Link href="/eventi" className="group relative overflow-hidden rounded-2xl border-2 border-accent/40 bg-gradient-to-br from-accent/15 to-accent/5 p-4 transition-all hover:border-accent hover:shadow-lg hover:from-accent/20 hover:to-accent/10">
+                    <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors" />
+                    <div className="relative space-y-3">
+                      {eventi.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+                            {t("nextEventTitle")}
+                          </p>
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/20">
+                              <CalendarDays className="h-5 w-5 text-accent" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="line-clamp-1 text-sm font-bold text-foreground">
+                                {eventi[0].titolo}
+                              </p>
+                              <p className="text-xs text-foreground/60">
+                                {new Date(eventi[0].data).toLocaleDateString(dateLocale, {
+                                  weekday: "short",
+                                  day: "numeric",
+                                  month: "short",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <button className="w-full rounded-lg bg-accent/90 px-3 py-2.5 text-center text-sm font-bold text-white transition-all group-hover:bg-accent" aria-label={eventi.length > 0 ? t("eventiActionCta") : t("eventiOverviewCta")}>
+                        {eventi.length > 0 ? t("eventiActionCta") : t("eventiOverviewCta")}
+                      </button>
+                    </div>
+                  </Link>
+
+                  <NextCelebrationCard
+                    orari={orari}
+                    title={t("quickProssima")}
+                    emptyLabel={t("noCelebration")}
+                  />
+                </div>
 
                 <div className="flex flex-col items-center gap-3 pt-2 text-foreground/70 lg:hidden">
                   <span className="text-center text-[10px] font-semibold uppercase tracking-[0.4em]">
@@ -172,8 +208,8 @@ export default async function HomePage() {
               </span>
             </div>
             <div className="divide-y divide-border/60 px-5 py-2 sm:px-6">
-              {eventi.slice(0, 3).map((ev) => (
-                <div key={ev.id} className="flex items-start gap-3 py-3">
+              {eventi.slice(0, 3).map((ev, index) => (
+                <div key={ev.id ?? ev.slug ?? `evento-${index}`} className="flex items-start gap-3 py-3">
                   <div className="min-w-[60px] rounded-xl bg-accent/10 px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-accent">
                     {new Date(ev.data).toLocaleDateString(dateLocale, {
                       day: "numeric",
@@ -204,8 +240,8 @@ export default async function HomePage() {
               </span>
             </div>
             <div className="divide-y divide-border/60 px-5 py-2 sm:px-6">
-              {preghiere.slice(0, 3).map((p) => (
-                <div key={p.id} className="flex items-start gap-3 py-3">
+              {preghiere.slice(0, 3).map((p, index) => (
+                <div key={p.id ?? p.slug ?? `preghiera-${index}`} className="flex items-start gap-3 py-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                     <BookOpen className="h-4 w-4" />
                   </div>

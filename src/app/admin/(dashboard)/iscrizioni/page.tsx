@@ -50,6 +50,9 @@ interface Iscrizione {
   note?: string;
   ha_pagato: boolean;
   raccoglimento?: "chiesa" | "luogo";
+  raccoglimentoPunto?: { label: string; orario: string };
+  registrationType?: "self" | "other" | "family";
+  familyMembers?: Array<{ role: "madre" | "padre" | "figlio"; fullName: string }>;
   createdAt?: string;
 }
 
@@ -69,6 +72,7 @@ type PdfExportColumnKey =
   | "cognome"
   | "padreNome"
   | "padreCognome"
+  | "raccoglimento"
   | "ha_pagato"
   | "telefono"
   | "email"
@@ -81,6 +85,7 @@ const PDF_EXPORT_COLUMNS: Array<{ key: PdfExportColumnKey; label: string }> = [
   { key: "cognome", label: "Cognome" },
   { key: "padreNome", label: "Nome padre" },
   { key: "padreCognome", label: "Cognome padre" },
+  { key: "raccoglimento", label: "Punto raccolta" },
   { key: "ha_pagato", label: "Pagato" },
   { key: "telefono", label: "Telefono" },
   { key: "email", label: "Email" },
@@ -137,7 +142,6 @@ export default function AdminIscrizioniPage() {
   const [evento, setEvento] = useState<DettaglioEvento | null>(null);
   const [iscrizioni, setIscrizioni] = useState<Iscrizione[]>([]);
   const [summary, setSummary] = useState({ totali: 0, pagati: 0, nonPagati: 0 });
-  const [postiRimasti, setPostiRimasti] = useState<number | null>(null);
   const [loadingDettaglio, setLoadingDettaglio] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -184,7 +188,6 @@ export default function AdminIscrizioniPage() {
         setEvento(data.evento);
         setIscrizioni(data.iscrizioni);
         setSummary(data.summary ?? buildRegistrationSummary(data.iscrizioni));
-        setPostiRimasti(data.postiRimasti);
       } else {
         showToast(data.error || "Errore nel caricamento", "error");
       }
@@ -472,12 +475,12 @@ export default function AdminIscrizioniPage() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            {eventi.map((ev) => {
+            {eventi.map((ev, index) => {
               const limitato = typeof ev.postiDisponibili === "number" && ev.postiDisponibili > 0;
               const rimasti = limitato ? Math.max(0, (ev.postiDisponibili as number) - ev.iscritti) : null;
               return (
                 <button
-                  key={ev.id}
+                  key={ev.id ?? `evento-${index}`}
                   onClick={() => openEvento(ev.id)}
                   className="text-left bg-white rounded-xl border border-gray-200 p-5 hover:border-gold hover:shadow-sm transition-all"
                 >
@@ -570,20 +573,6 @@ export default function AdminIscrizioniPage() {
               <p className="text-xs text-gray-500 uppercase tracking-wide">Iscritti</p>
               <p className="text-2xl font-bold text-gray-900">{summary.totali}</p>
             </div>
-            <div
-              className={`rounded-xl border px-5 py-3 ${
-                postiRimasti === 0 ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"
-              }`}
-            >
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Posti rimasti</p>
-              <p
-                className={`text-2xl font-bold ${
-                  postiRimasti === 0 ? "text-red-600" : "text-green-700"
-                }`}
-              >
-                {postiRimasti}
-              </p>
-            </div>
             {REGISTRATION_FILTERS.filter((filter) => {
               if (filter.key === "chiesa" || filter.key === "luogo") {
                 return evento?.showRaccoglimento === true;
@@ -649,12 +638,14 @@ export default function AdminIscrizioniPage() {
 
           {/* Tabella iscritti */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
-            <table className="w-full text-sm min-w-[800px]">
+            <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">#</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Tipo</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Partecipante</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Padre</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Punto raccolta</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Contatti</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Note</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Pagamento</th>
@@ -670,6 +661,27 @@ export default function AdminIscrizioniPage() {
                     return (
                       <tr key={i._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3 text-gray-400">{(page - 1) * limit + idx + 1}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col gap-1">
+                            <span className={`inline-block px-2 py-1 text-[10px] font-semibold rounded-full w-fit ${
+                              i.registrationType === "family" ? "bg-blue-100 text-blue-700" :
+                              i.registrationType === "other" ? "bg-amber-100 text-amber-700" :
+                              "bg-gray-100 text-gray-700"
+                            }`}>
+                              {i.registrationType === "family" ? "Famiglia" :
+                               i.registrationType === "other" ? "Altro" : "Individuale"}
+                            </span>
+                            {i.registrationType === "family" && i.familyMembers && i.familyMembers.length > 0 && (
+                              <div className="text-[10px] text-gray-600 space-y-0.5">
+                                {i.familyMembers.map((member, idx) => (
+                                  <div key={idx} className="text-gray-500">
+                                    <span className="font-medium text-gray-600">{member.role}:</span> {member.fullName}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-4 py-3 font-medium text-gray-900">
                           {i.nome} {i.cognome}
                         </td>
@@ -687,6 +699,20 @@ export default function AdminIscrizioniPage() {
                               </span>
                             )}
                           </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {i.raccoglimentoPunto ? (
+                            <div className="text-sm text-gray-700">
+                              <div>{i.raccoglimentoPunto.label}</div>
+                              <div className="text-xs text-gray-500">{i.raccoglimentoPunto.orario}</div>
+                            </div>
+                          ) : i.raccoglimento === "chiesa" ? (
+                            <span className="text-sm text-gray-700">In chiesa</span>
+                          ) : i.raccoglimento === "luogo" ? (
+                            <span className="text-sm text-gray-700">Al luogo</span>
+                          ) : (
+                            <span className="text-sm text-gray-500">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-gray-600">
                           <div className="flex flex-col gap-0.5">
@@ -759,7 +785,7 @@ export default function AdminIscrizioniPage() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={8} className="px-4 py-10 text-center text-gray-500">
+                    <td colSpan={9} className="px-4 py-10 text-center text-gray-500">
                       {iscrizioni.length === 0
                         ? "Nessuna iscrizione per questo evento"
                         : "Nessun risultato per i filtri selezionati"}
@@ -824,6 +850,15 @@ export default function AdminIscrizioniPage() {
               </button>
             </div>
             <div className="p-6 space-y-4">
+              {editTarget?.registrationType === "family" && (
+                <div className="rounded-xl bg-blue-50 border border-blue-200 p-3">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-semibold">Iscrizione famigliare</span>
+                    <br />
+                    <span className="text-xs">I dati dei familiari non possono essere modificati da qui</span>
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome</label>
@@ -831,7 +866,8 @@ export default function AdminIscrizioniPage() {
                     type="text"
                     value={editForm.nome || ""}
                     onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none"
+                    disabled={editTarget?.registrationType === "family"}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -840,7 +876,8 @@ export default function AdminIscrizioniPage() {
                     type="text"
                     value={editForm.cognome || ""}
                     onChange={(e) => setEditForm({ ...editForm, cognome: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none"
+                    disabled={editTarget?.registrationType === "family"}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -851,7 +888,8 @@ export default function AdminIscrizioniPage() {
                     type="text"
                     value={editForm.padreNome || ""}
                     onChange={(e) => setEditForm({ ...editForm, padreNome: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none"
+                    disabled={editTarget?.registrationType === "family"}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -860,7 +898,8 @@ export default function AdminIscrizioniPage() {
                     type="text"
                     value={editForm.padreCognome || ""}
                     onChange={(e) => setEditForm({ ...editForm, padreCognome: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none"
+                    disabled={editTarget?.registrationType === "family"}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>

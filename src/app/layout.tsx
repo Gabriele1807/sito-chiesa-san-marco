@@ -9,6 +9,8 @@ import LoginModal from "@/components/auth/LoginModal";
 import RegisterModal from "@/components/auth/RegisterModal";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const bodyFont = Source_Sans_3({
   variable: "--font-body",
   subsets: ["latin"],
@@ -44,7 +46,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir="ltr" data-locale={locale} suppressHydrationWarning>
       <body
-        className={`${bodyFont.variable} ${displayFont.variable} ${arabicFont.variable} antialiased`}
+        className={`${bodyFont.variable} ${displayFont.variable} ${arabicFont.variable} antialiased force-motion`}
         suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages}>
