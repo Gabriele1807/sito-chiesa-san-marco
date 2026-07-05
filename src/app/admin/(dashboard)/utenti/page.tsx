@@ -138,8 +138,14 @@ export default function GestioneUtentiPage() {
   }, [page, limit, query, roleFilter, adminRequestFilter, ageMin, ageMax]);
 
   useEffect(() => {
+    if (!isSuperAdmin) {
+      setLoading(false);
+      setError("Solo i superadmin possono gestire gli utenti.");
+      return;
+    }
+
     fetchUsers();
-  }, [fetchUsers]);
+  }, [fetchUsers, isSuperAdmin]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -388,9 +394,9 @@ export default function GestioneUtentiPage() {
   const isUserAdmin = (u: UserPublic) => u.adminRequest === "approved";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <Users className="w-7 h-7 text-amber-600" />
@@ -405,8 +411,7 @@ export default function GestioneUtentiPage() {
       )}
 
       {/* Filtri */}
-      {/* Filtri */}
-      <div className="rounded-xl p-4">
+      <div className="rounded-xl p-4 -mt-2">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:gap-4">
           <div className="relative lg:max-w-xl flex-1">
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />

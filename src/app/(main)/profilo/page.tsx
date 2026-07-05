@@ -32,6 +32,7 @@ import { validatePasswordRules } from "@/lib/auth/password-rules";
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
   const tCommon = useTranslations("common");
+  const tAuth = useTranslations("auth");
   const tIscrizioni = useTranslations("iscrizioni");
   const router = useRouter();
   const { type, user, admin, setShowLoginModal, refresh, logout } = useAuth();
@@ -1038,7 +1039,7 @@ export default function ProfiloPage() {
           className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 transition-colors"
         >
           <LogOut className="h-4 w-4" />
-          {tCommon("userMenuLogout")}
+          {tAuth("userMenuLogout")}
         </button>
       </div>
         </div>
