@@ -19,6 +19,8 @@ if (!MONGODB_URI) {
   );
 }
 
+const MONGODB_URI_NON_NULL: string = MONGODB_URI;
+
 // Singleton pattern per evitare connessioni multiple in dev (HMR) e in production
 const globalForMongo = globalThis as unknown as {
   _mongoClient?: MongoClient;
@@ -33,7 +35,7 @@ let clientPromise: Promise<MongoClient>;
  * Initialize MongoDB connection with retry logic
  */
 function createClientConnection(): Promise<MongoClient> {
-  return connectWithRetry(MONGODB_URI, {
+  return connectWithRetry(MONGODB_URI_NON_NULL, {
     maxAttempts: 4,
     initialDelayMs: 1000,
     maxDelayMs: 8000,

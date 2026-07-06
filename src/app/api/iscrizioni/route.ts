@@ -5,7 +5,7 @@ import { findUserById } from "@/lib/mongo/users";
 import { getIscrizioniByUser } from "@/lib/mongo/registrations";
 import { getEventoById } from "@/lib/mongo/content";
 import { withDbRetry, getErrorMessage, isConnectionError } from "@/lib/mongo/operation-retry";
-import type { IscrizioneEvento } from "@/types";
+import type { IscrizioneEvento, UserPublic } from "@/types";
 
 /**
  * GET /api/iscrizioni
@@ -47,13 +47,14 @@ export async function GET() {
     }
 
     // Fetch user and registrations with retry
-    let user;
-    let iscrizioni;
+    let user: UserPublic | null = null;
+    let iscrizioni: IscrizioneEvento[] = [];
     try {
-      [user, iscrizioni] = await Promise.all([
-        withDbRetry(() => findUserById(session.userId), { maxAttempts: 2 }),
-        withDbRetry(() => getIscrizioniByUser(session.userId), { maxAttempts: 2 }).catch(() => []),
-      ]);
+      user = await withDbRetry(() => findUserById(session.userId), { maxAttempts: 2 });
+      iscrizioni = await withDbRetry(
+        () => getIscrizioniByUser(user?.nome ?? "", user?.cognome ?? "", user?.email),
+        { maxAttempts: 2 }
+      ).catch(() => []);
     } catch (dbErr) {
       console.error("[Iscrizioni API] Database error:", dbErr);
       if (isConnectionError(dbErr)) {

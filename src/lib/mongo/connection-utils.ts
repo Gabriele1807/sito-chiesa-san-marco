@@ -44,9 +44,8 @@ export function getOptimizedMongoOptions() {
     retryWrites: true,
     retryReads: true,
 
-    // Keep-alive to avoid connection drops
-    keepAlive: true,
-    keepAliveInitialDelayMS: 30000,
+    // Note: keepAlive and keepAliveInitialDelayMS are not supported by newer MongoDB drivers.
+    // Use socket timeout and server selection timeouts instead.
 
     // Family: "ipv4" can help in some serverless environments
     // Uncomment if needed:
