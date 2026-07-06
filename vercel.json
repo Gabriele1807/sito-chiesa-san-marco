@@ -1,7 +1,6 @@
 {
   "buildCommand": "next build",
   "framework": "nextjs",
-  "nodeVersion": "20.x",
   "env": {
     "MONGODB_URI": {
       "description": "MongoDB Atlas connection string (mongodb+srv://...)"
