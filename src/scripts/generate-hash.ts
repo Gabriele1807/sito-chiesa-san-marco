@@ -23,16 +23,6 @@ async function main() {
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  console.log("");
-  console.log("✅ Hash bcrypt generato con successo:");
-  console.log("");
-  console.log(hash);
-  console.log("");
-  console.log("📋 Copia questo hash e inseriscilo nella colonna password_hash");
-  console.log("   della tabella admin_users su Supabase SQL Editor:");
-  console.log("");
-  console.log(`   UPDATE admin_users SET password_hash = '${hash}' WHERE username = 'admin';`);
-  console.log("");
 }
 
 main();

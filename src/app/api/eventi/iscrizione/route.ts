@@ -5,9 +5,19 @@ import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById, findUserByUsername } from "@/lib/mongo/users";
 import { validateSession } from "@/lib/auth/session";
+import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (isIpRateLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests, please try again later.", errorCode: "rate_limit" },
+        { status: 429 }
+      );
+    }
+    recordIpRequest(ip);
+
     const body = (await request.json()) as Partial<CreateIscrizioneData>;
     const isFamily = body.registrationType === "family";
 

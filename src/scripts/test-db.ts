@@ -15,12 +15,8 @@ dotenv.config({ path: resolve(process.cwd(), ".env.local") });
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-console.log("\n=== TEST CONNESSIONE SUPABASE ===\n");
 
 // 1. Verifica variabili d'ambiente
-console.log("1. Variabili d'ambiente:");
-console.log(`   SUPABASE_URL:  ${url ? "✅ configurata" : "❌ MANCANTE"}`);
-console.log(`   SERVICE_KEY:   ${key ? "✅ configurata" : "❌ MANCANTE"}`);
 
 if (!url || !key) {
   console.error("\n❌ Variabili d'ambiente mancanti. Controlla .env.local");
@@ -33,7 +29,6 @@ const supabase = createClient(url, key, {
 
 async function runTests() {
   // 2. Test connessione base
-  console.log("\n2. Test connessione...");
   try {
     const { data, error } = await supabase.from("admin_users").select("count", { count: "exact", head: true });
     if (error) {
@@ -46,7 +41,6 @@ async function runTests() {
       }
       return false;
     }
-    console.log("   ✅ Connessione riuscita!");
     return true;
   } catch (err) {
     console.error(`   ❌ Errore di rete: ${err}`);
@@ -56,7 +50,6 @@ async function runTests() {
 
 async function testTables() {
   // 3. Verifica tabella admin_users
-  console.log("\n3. Tabella admin_users:");
   const { data: users, error: usersErr, count } = await supabase
     .from("admin_users")
     .select("id, username, email, nome, cognome, ruolo, attivo, created_at", { count: "exact" });
@@ -69,20 +62,14 @@ async function testTables() {
     return;
   }
 
-  console.log(`   ✅ Tabella esiste — ${count ?? users?.length ?? 0} admin trovati`);
 
   if (users && users.length > 0) {
     users.forEach((u) => {
-      console.log(`   👤 ${u.nome} ${u.cognome} (@${u.username}) — ruolo: ${u.ruolo}, attivo: ${u.attivo}`);
     });
   } else {
-    console.log("   ⚠️  Nessun admin presente. Devi creare il primo superadmin.");
-    console.log("   Usa: npm run generate-hash -- \"tua_password\"");
-    console.log("   Poi inserisci l'INSERT nel SQL Editor di Supabase.");
   }
 
   // 4. Verifica tabella admin_sessions
-  console.log("\n4. Tabella admin_sessions:");
   const { data: sessions, error: sessErr, count: sessCount } = await supabase
     .from("admin_sessions")
     .select("id", { count: "exact" });
@@ -95,10 +82,8 @@ async function testTables() {
     return;
   }
 
-  console.log(`   ✅ Tabella esiste — ${sessCount ?? sessions?.length ?? 0} sessioni attive`);
 
   // 5. Test scrittura (insert + delete test row)
-  console.log("\n5. Test scrittura (INSERT + DELETE temporaneo)...");
   const testUsername = `__test_${Date.now()}`;
   const { data: inserted, error: insErr } = await supabase
     .from("admin_users")
@@ -118,7 +103,6 @@ async function testTables() {
     return;
   }
 
-  console.log(`   ✅ INSERT riuscito (id: ${inserted.id})`);
 
   // Pulizia: elimina la riga di test
   const { error: delErr } = await supabase
@@ -129,10 +113,8 @@ async function testTables() {
   if (delErr) {
     console.error(`   ⚠️  DELETE pulizia fallito: ${delErr.message}`);
   } else {
-    console.log("   ✅ DELETE pulizia riuscito");
   }
 
-  console.log("\n=== TUTTI I TEST SUPERATI ✅ ===\n");
 }
 
 async function main() {

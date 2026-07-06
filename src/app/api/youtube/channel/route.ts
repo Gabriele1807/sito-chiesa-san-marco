@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_HANDLE = "SanMarco-Milano";
@@ -111,7 +112,16 @@ async function fetchYouTubeData(): Promise<YouTubeChannelData | null> {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  if (isIpRateLimited(ip)) {
+    return NextResponse.json({
+      success: false,
+      error: "Too many requests, please try again later.",
+    }, { status: 429 });
+  }
+  recordIpRequest(ip);
+
   if (!YOUTUBE_API_KEY) {
     return NextResponse.json({
       success: false,

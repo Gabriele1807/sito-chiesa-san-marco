@@ -99,7 +99,6 @@ function main() {
     unusedAr,
     hardcodedStrings: hardcoded.slice(0, 500)
   }, null, 2));
-  console.log('Report written to translation-audit-report.json');
 }
 
 main();
