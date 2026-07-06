@@ -1,15 +1,6 @@
 {
   "buildCommand": "next build",
   "framework": "nextjs",
-  "env": {
-    "MONGODB_URI": {
-      "description": "MongoDB Atlas connection string (mongodb+srv://...)"
-    },
-    "MONGODB_DB": {
-      "description": "MongoDB database name",
-      "value": "chiesa_san_marco"
-    }
-  },
   "functions": {
     "src/app/api/**": {
       "maxDuration": 60
