@@ -4,12 +4,14 @@ import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById } from "@/lib/mongo/users";
 import { getIscrizioniByUser } from "@/lib/mongo/registrations";
 import { getEventoById } from "@/lib/mongo/content";
+import { withDbRetry, getErrorMessage, isConnectionError } from "@/lib/mongo/operation-retry";
 import type { IscrizioneEvento } from "@/types";
 
 /**
  * GET /api/iscrizioni
  * Ritorna le iscrizioni agli eventi dell'utente corrente (user_session).
  * Solo per utenti normali loggati. Gli admin non hanno iscrizioni personali.
+ * Includes retry logic for MongoDB cold start resilience.
  */
 export async function GET() {
   try {
@@ -23,7 +25,20 @@ export async function GET() {
       );
     }
 
-    const session = await validateUserSession(token);
+    // Validate session with retry
+    let session;
+    try {
+      session = await withDbRetry(() => validateUserSession(token), { maxAttempts: 2 });
+    } catch (err) {
+      if (isConnectionError(err)) {
+        return NextResponse.json(
+          { success: false, error: "Database connection issue, please try again", retryable: true },
+          { status: 503 }
+        );
+      }
+      throw err;
+    }
+
     if (!session) {
       return NextResponse.json(
         { success: false, error: "Sessione non valida" },
@@ -31,7 +46,28 @@ export async function GET() {
       );
     }
 
-    const user = await findUserById(session.userId);
+    // Fetch user and registrations with retry
+    let user;
+    let iscrizioni;
+    try {
+      [user, iscrizioni] = await Promise.all([
+        withDbRetry(() => findUserById(session.userId), { maxAttempts: 2 }),
+        withDbRetry(() => getIscrizioniByUser(session.userId), { maxAttempts: 2 }).catch(() => []),
+      ]);
+    } catch (dbErr) {
+      console.error("[Iscrizioni API] Database error:", dbErr);
+      if (isConnectionError(dbErr)) {
+        return NextResponse.json(
+          { success: false, error: "Database unavailable, please try again", retryable: true },
+          { status: 503 }
+        );
+      }
+      return NextResponse.json(
+        { success: false, error: getErrorMessage(dbErr) },
+        { status: 500 }
+      );
+    }
+
     if (!user || !user.attivo) {
       return NextResponse.json(
         { success: false, error: "Utente non trovato" },
@@ -39,20 +75,31 @@ export async function GET() {
       );
     }
 
-    // Recupera le iscrizioni dell'utente (per nome + cognome + email)
-    const iscrizioni = await getIscrizioniByUser(user.nome, user.cognome, user.email);
-
-    // Arricchisce ogni iscrizione con il titolo e la data dell'evento
+    // Enrich registrations with event details (with retry for each event)
     const iscrizioniArricchite = await Promise.all(
       iscrizioni.map(async (isc: IscrizioneEvento) => {
-        const evento = await getEventoById(isc.eventoId).catch(() => null);
-        return {
-          ...isc,
-          eventoTitolo: evento?.titolo ?? "Evento non trovato",
-          eventoData: evento?.data ?? null,
-          eventoLuogo: evento?.luogo ?? null,
-          eventoReferente: evento?.referente ?? null,
-        };
+        try {
+          const evento = await withDbRetry(
+            () => getEventoById(isc.eventoId),
+            { maxAttempts: 2 }
+          ).catch(() => null);
+
+          return {
+            ...isc,
+            eventoTitolo: evento?.titolo ?? "Evento non trovato",
+            eventoData: evento?.data ?? null,
+            eventoLuogo: evento?.luogo ?? null,
+            eventoReferente: evento?.referente ?? null,
+          };
+        } catch {
+          return {
+            ...isc,
+            eventoTitolo: "Evento non trovato",
+            eventoData: null,
+            eventoLuogo: null,
+            eventoReferente: null,
+          };
+        }
       })
     );
 
@@ -61,7 +108,7 @@ export async function GET() {
       iscrizioni: iscrizioniArricchite,
     });
   } catch (err) {
-    console.error("Errore GET /api/iscrizioni:", err);
+    console.error("[Iscrizioni API] Unexpected error:", err);
     return NextResponse.json(
       { success: false, error: "Errore interno del server" },
       { status: 500 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createIscrizione } from "@/lib/db";
+import { withDbRetry, getErrorMessage, isConnectionError } from "@/lib/mongo/operation-retry";
 import type { CreateIscrizioneData } from "@/types";
 import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
@@ -21,8 +22,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as Partial<CreateIscrizioneData>;
     const isFamily = body.registrationType === "family";
 
-    // Campi obbligatori: telefono ed eventoId. Email opzionale.
-    // Per le iscrizioni non-famiglia restano obbligatori partecipante e padre.
+    // Validation: required fields
     if (
       !body.eventoId ||
       !body.telefono?.trim()
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Email opzionale: se presente deve essere valida
+    // Validate email format if provided
     if (body.email && body.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(body.email.trim())) {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // === Estrai l'utente autenticato per tracciare chi ha creato l'iscrizione ===
+    // === Extract authenticated user for tracking ===
     const cookieStore = await cookies();
     const token = cookieStore.get("user_session")?.value;
     const adminToken = cookieStore.get("admin_session")?.value;
@@ -69,37 +69,55 @@ export async function POST(request: NextRequest) {
     let createdByCognome = "";
     let createdByEmail: string | undefined = undefined;
 
-    if (adminToken) {
-      const adminUser = await validateSession(adminToken);
-      if (adminUser) {
-        createdByNome = adminUser.nome;
-        createdByCognome = adminUser.cognome;
-        const relatedUser = await findUserByUsername(adminUser.username);
-        if (relatedUser) {
-          createdByEmail = relatedUser.email;
+    // Fetch authenticated user info with retry for cold start resilience
+    try {
+      if (adminToken) {
+        const adminUser = await withDbRetry(
+          () => validateSession(adminToken),
+          { maxAttempts: 2 }
+        );
+        if (adminUser) {
+          createdByNome = adminUser.nome;
+          createdByCognome = adminUser.cognome;
+          const relatedUser = await withDbRetry(
+            () => findUserByUsername(adminUser.username),
+            { maxAttempts: 2 }
+          );
+          if (relatedUser) {
+            createdByEmail = relatedUser.email;
+          }
         }
       }
-    }
 
-    if (!createdByNome && token) {
-      const session = await validateUserSession(token);
-      if (session) {
-        const user = await findUserById(session.userId);
-        if (user) {
-          createdByNome = user.nome;
-          createdByCognome = user.cognome;
-          createdByEmail = user.email;
+      if (!createdByNome && token) {
+        const session = await withDbRetry(
+          () => validateUserSession(token),
+          { maxAttempts: 2 }
+        );
+        if (session) {
+          const user = await withDbRetry(
+            () => findUserById(session.userId),
+            { maxAttempts: 2 }
+          );
+          if (user) {
+            createdByNome = user.nome;
+            createdByCognome = user.cognome;
+            createdByEmail = user.email;
+          }
         }
       }
+    } catch (dbErr) {
+      console.error("[Iscrizione API] Database lookup error:", dbErr);
+      // Continue without user tracking if auth lookup fails
+      // This is non-critical for registration itself
     }
 
     // Se non autenticato, aggiungi comunque i dati se disponibili nel body (backward compatibility)
     if (!createdByNome && body.email) {
-      // Per utenti non autenticati ma con email, usa l'email come tracciamento
       createdByEmail = body.email;
     }
 
-    // Aggiungi i campi di tracciamento al body
+    // Add creator tracking to body
     const bodyWithCreator = {
       ...body,
       createdByNome,
@@ -107,7 +125,30 @@ export async function POST(request: NextRequest) {
       createdByEmail,
     };
 
-    const result = await createIscrizione(bodyWithCreator as CreateIscrizioneData);
+    // Create registration with retry logic for database resilience
+    let result;
+    try {
+      result = await withDbRetry(
+        () => createIscrizione(bodyWithCreator as CreateIscrizioneData),
+        { maxAttempts: 3 }
+      );
+    } catch (dbErr) {
+      console.error("[Iscrizione API] Registration error:", dbErr);
+      if (isConnectionError(dbErr)) {
+        return NextResponse.json(
+          {
+            error: "Registrazione non disponibile temporaneamente. Riprova tra pochi secondi.",
+            errorCode: "db_unavailable",
+            retryable: true,
+          },
+          { status: 503 }
+        );
+      }
+      return NextResponse.json(
+        { error: getErrorMessage(dbErr), errorCode: "server" },
+        { status: 500 }
+      );
+    }
 
     if (!result.success) {
       switch (result.errorCode) {

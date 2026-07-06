@@ -1,0 +1,36 @@
+{
+  "buildCommand": "next build",
+  "framework": "nextjs",
+  "nodeVersion": "20.x",
+  "env": {
+    "MONGODB_URI": {
+      "description": "MongoDB Atlas connection string (mongodb+srv://...)"
+    },
+    "MONGODB_DB": {
+      "description": "MongoDB database name",
+      "value": "chiesa_san_marco"
+    }
+  },
+  "functions": {
+    "src/app/api/**": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}

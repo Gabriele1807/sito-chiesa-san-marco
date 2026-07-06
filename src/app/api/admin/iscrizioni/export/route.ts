@@ -4,6 +4,7 @@ import { hasPermission } from "@/lib/auth/permissions";
 import { getEventoById } from "@/lib/mongo/content";
 import { getIscrizioniByEvento } from "@/lib/mongo/registrations";
 import { requireAdminSession } from "@/lib/auth/session";
+import { withDbRetry, getErrorMessage, isConnectionError } from "@/lib/mongo/operation-retry";
 import type { IscrizioneEvento } from "@/types";
 
 /**
@@ -251,39 +252,89 @@ async function buildPdfBuffer(
 }
 
 export async function GET(request: Request) {
-  const adminUser = await requireAdminSession();
-  if (!adminUser || !hasPermission(adminUser.ruolo, "iscrizioni.read")) {
-    return NextResponse.json({ success: false, error: "Permessi insufficienti" }, { status: 403 });
-  }
+  try {
+    const adminUser = await requireAdminSession();
+    if (!adminUser || !hasPermission(adminUser.ruolo, "iscrizioni.read")) {
+      return NextResponse.json(
+        { success: false, error: "Permessi insufficienti" },
+        { status: 403 }
+      );
+    }
 
-  const url = new URL(request.url);
-  const eventoId = url.searchParams.get("eventoId");
-  const format = (url.searchParams.get("format") || "pdf").toLowerCase();
-  const selectedColumns = parseSelectedColumns(url.searchParams.get("columns"));
+    const url = new URL(request.url);
+    const eventoId = url.searchParams.get("eventoId");
+    const format = (url.searchParams.get("format") || "pdf").toLowerCase();
+    const selectedColumns = parseSelectedColumns(url.searchParams.get("columns"));
 
-  if (!eventoId) {
-    return NextResponse.json({ success: false, error: "eventoId mancante" }, { status: 400 });
-  }
+    if (!eventoId) {
+      return NextResponse.json(
+        { success: false, error: "eventoId mancante" },
+        { status: 400 }
+      );
+    }
 
-  const evento = await getEventoById(eventoId);
-  if (!evento) {
-    return NextResponse.json({ success: false, error: "Evento non trovato" }, { status: 404 });
-  }
+    // Fetch data with retry logic for cold start resilience
+    let evento: Awaited<ReturnType<typeof getEventoById>>;
+    let iscrizioni: IscrizioneEvento[];
 
-  const iscrizioni = await getIscrizioniByEvento(eventoId);
-  const baseName = `iscritti_${sanitizeFilename(evento.titolo)}`;
+    try {
+      [evento, iscrizioni] = await Promise.all([
+        withDbRetry(() => getEventoById(eventoId), { maxAttempts: 3 }),
+        withDbRetry(() => getIscrizioniByEvento(eventoId), { maxAttempts: 3 }),
+      ]);
+    } catch (dbError) {
+      console.error("[Export API] Database error:", dbError);
 
-  // ---------------- PDF reale server-side ----------------
-  if (format === "pdf") {
-    const pdfBytes = await buildPdfBuffer(evento, iscrizioni, selectedColumns);
-    return new NextResponse(Buffer.from(pdfBytes), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${baseName}.pdf"`,
+      if (isConnectionError(dbError)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Database connection unavailable. Please try again.",
+            retryable: true,
+          },
+          { status: 503 }
+        );
+      }
+
+      return NextResponse.json(
+        { success: false, error: getErrorMessage(dbError) },
+        { status: 500 }
+      );
+    }
+
+    if (!evento) {
+      return NextResponse.json(
+        { success: false, error: "Evento non trovato" },
+        { status: 404 }
+      );
+    }
+
+    const baseName = `iscritti_${sanitizeFilename(evento.titolo)}`;
+
+    // Generate PDF with server-side rendering
+    if (format === "pdf") {
+      const pdfBytes = await buildPdfBuffer(evento, iscrizioni, selectedColumns);
+      return new NextResponse(Buffer.from(pdfBytes), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${baseName}.pdf"`,
+        },
+      });
+    }
+
+    return NextResponse.json(
+      { success: false, error: "Formato non supportato" },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("[Export API] Unexpected error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "An unexpected error occurred during export",
       },
-    });
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ success: false, error: "Formato non supportato" }, { status: 400 });
 }
