@@ -1,7 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import {
   Mail,
-  Phone,
   MapPin,
   Cross,
   Facebook,
@@ -11,7 +10,6 @@ import {
 export const revalidate = 60;
 
 const EMAIL = "info@sanmarcocopti.it";
-const PHONE = "+39 02 1234 5678";
 const ADDRESS_MAPS_URL = "https://maps.app.goo.gl/fUqwmy5ZGXMidqWf8";
 const FACEBOOK_URL = "https://www.facebook.com/people/Chiesa-di-San-Marco/61556571205312/";
 
@@ -33,10 +31,10 @@ export default async function ContattiPage() {
       {/* ══════════════════════════════════════════════════════════
           GRIGLIA CONTATTI PRINCIPALI
           ══════════════════════════════════════════════════════════ */}
-      <section>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-          {/* Email */}
+       <section>
+         <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-5">
+ 
+           {/* Email */}
           <div
             key="email"
             style={{ animationDelay: "0ms" }}
@@ -56,30 +54,6 @@ export default async function ContattiPage() {
             >
               <Mail className="w-4 h-4" />
               {t("emailButton")}
-            </a>
-          </div>
-
-          {/* Telefono */}
-          <div
-            key="telefono"
-            style={{ animationDelay: "60ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] bg-surface rounded-2xl border border-border/80 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-accent/30 transition-all duration-300"
-          >
-            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
-              <Phone className="w-5 h-5 text-accent" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-foreground mb-1">{t("telefonoSezione")}</h3>
-              <p className="text-sm text-foreground/70 leading-relaxed mb-2">{t("telefonoDesc")}</p>
-              <p className="text-sm font-bold text-foreground mb-1">{PHONE}</p>
-              <p className="text-xs text-foreground/50">{t("telefonoOrari")}</p>
-            </div>
-            <a
-              href={`tel:${PHONE.replace(/\s/g, "")}`}
-              className="btn-primary w-fit"
-            >
-              <Phone className="w-4 h-4" />
-              Chiama ora
             </a>
           </div>
 
