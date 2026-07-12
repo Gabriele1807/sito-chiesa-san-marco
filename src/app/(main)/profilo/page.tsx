@@ -911,79 +911,91 @@ export default function ProfiloPage() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                    {tAuth("registerFieldPassword")}
-                  </label>
-                  <span className="text-[11px] text-gray-500">{tAuth("registerPasswordRequirementsTitle")}</span>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => {
-                      setNewPassword(e.target.value);
-                      if (passwordMessage?.type === "error") setPasswordMessage(null);
-                    }}
-                    required
-                    minLength={8}
-                    autoComplete="new-password"
-                    className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <div className="mt-3 text-xs text-gray-500">{tAuth("registerPasswordHintSpecial")}</div>
-                <div className="mt-3 grid gap-2 text-sm text-gray-500">
-                  {passwordRequirementItems.map((rule) => {
-                    const Icon = rule.ok ? CheckCircle : XCircle;
-                    return (
-                      <div key={rule.key} className="flex items-center gap-2" style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
-                        <Icon className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-green-500 scale-100 opacity-100" : "text-red-500 scale-95 opacity-80"}`} />
-                        <span className={`text-xs ${rule.ok ? "text-green-700" : "text-red-600"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
-                          {rule.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">
-                  {tAuth("registerFieldPasswordConfirm")}
-                </label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
-                />
-                {confirmPassword ? (
-                  <div className="mt-2 flex items-center gap-2 text-sm">
-                    {newPassword === confirmPassword ? (
-                      <>
-                        <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
-                        <span className="text-green-700">{tAuth("registerPasswordMatchOk")}</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="h-4 w-4 shrink-0 text-red-500" />
-                        <span className="text-red-600">{tAuth("registerPasswordMatchMismatch")}</span>
-                      </>
-                    )}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                      {tAuth("registerFieldPassword")}
+                    </label>
+                    <span className="text-[11px] text-gray-500">{tAuth("registerPasswordRequirementsTitle")}</span>
                   </div>
-                ) : null}
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => {
+                        setNewPassword(e.target.value);
+                        if (passwordMessage?.type === "error") setPasswordMessage(null);
+                      }}
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                      className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500">{tAuth("registerPasswordHintSpecial")}</div>
+                  <div className="mt-3 grid gap-2 text-sm text-gray-500">
+                    {passwordRequirementItems.map((rule) => {
+                      const Icon = rule.ok ? CheckCircle : XCircle;
+                      return (
+                        <div key={rule.key} className="flex items-center gap-2" style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                          <Icon className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-green-500 scale-100 opacity-100" : "text-red-500 scale-95 opacity-80"}`} />
+                          <span className={`text-xs ${rule.ok ? "text-green-700" : "text-red-600"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                            {rule.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+                  <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">
+                    {tAuth("registerFieldPasswordConfirm")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                      className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {confirmPassword ? (
+                    <div className="mt-2 flex items-center gap-2 text-sm">
+                      {newPassword === confirmPassword ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
+                          <span className="text-green-700">{tAuth("registerPasswordMatchOk")}</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-4 w-4 shrink-0 text-red-500" />
+                          <span className="text-red-600">{tAuth("registerPasswordMatchMismatch")}</span>
+                        </>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               {passwordMessage && (
