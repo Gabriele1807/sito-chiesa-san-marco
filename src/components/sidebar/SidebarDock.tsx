@@ -8,6 +8,7 @@ import { useAuth } from "@/components/auth/AuthContext";
 import type { SidebarItem } from "./nav-config";
 import type { SectionVisibility, RoleAccessType } from "@/types";
 import { infoSection, modeToggleItems, primarySection, utilitySection } from "./nav-config";
+import { useSidebar } from "./SidebarContext";
 
 const DOCK_WIDTH = 240;
 const DOCK_WIDTH_COMPACT = 72;
@@ -19,7 +20,7 @@ export default function SidebarDock() {
   const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
   const { type, user, admin, setShowLoginModal, setShowRegisterModal } = useAuth();
-  const [isCompact, setIsCompact] = useState(false);
+  const { isMobileOpen, closeMobile, toggleCompact, isCompact } = useSidebar();
   const [sectionVisibilities, setSectionVisibilities] = useState<SectionVisibility[]>([]);
   const [visibilitiesLoaded, setVisibilitiesLoaded] = useState(false);
 
@@ -70,26 +71,6 @@ export default function SidebarDock() {
     return roleAccess || "hidden"; // Default: hidden
   }
 
-  useEffect(() => {
-    const stored = typeof window !== "undefined" && localStorage.getItem("dock_compact") === "true";
-    if (stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync with persisted UI preference post-mount.
-      setIsCompact(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.style.setProperty(
-        "--dock-width",
-        isCompact ? `${DOCK_WIDTH_COMPACT}px` : `${DOCK_WIDTH}px`
-      );
-    }
-    if (typeof window !== "undefined") {
-      localStorage.setItem("dock_compact", isCompact ? "true" : "false");
-    }
-  }, [isCompact]);
-
   const sections = useMemo(() => [primarySection, infoSection], []);
   const guestAuthItems = useMemo(
     () => utilitySection.items.filter(
@@ -104,32 +85,6 @@ export default function SidebarDock() {
     []
   );
   const mobileUtilityItems = useMemo(() => utilitySection.items, []);
-
-  function closeMobile() {
-    const sidebar = document.getElementById("mobile-sidebar");
-    const overlay = document.getElementById("sidebar-overlay");
-    if (!sidebar || !overlay) return;
-
-    const sidebarEl = sidebar as HTMLElement;
-    const overlayEl = overlay as HTMLElement;
-
-    function onOverlayTransition(e: Event) {
-      const transitionEvent = e as TransitionEvent;
-      if (transitionEvent.propertyName !== "opacity") return;
-      if (getComputedStyle(overlayEl).opacity === "0") {
-        overlayEl.classList.add("pointer-events-none");
-      }
-      overlayEl.removeEventListener("transitionend", onOverlayTransition);
-    }
-
-    overlayEl.addEventListener("transitionend", onOverlayTransition);
-
-    sidebarEl.classList.add("-translate-x-full");
-    sidebarEl.classList.remove("translate-x-0");
-    sidebarEl.classList.add("opacity-0");
-    sidebarEl.classList.remove("opacity-100");
-    setTimeout(() => overlayEl.classList.add("opacity-0"), 260);
-  }
 
   function isActive(item: SidebarItem) {
     if (!item.href) return false;
@@ -155,13 +110,15 @@ export default function SidebarDock() {
 
   function handleAction(item: SidebarItem) {
     if (item.actionId === "openLogin") {
+      closeMobile();
       setShowLoginModal(true);
     }
     if (item.actionId === "openRegister") {
+      closeMobile();
       setShowRegisterModal(true);
     }
     if (item.actionId === "toggleDock") {
-      setIsCompact((prev) => !prev);
+      toggleCompact();
     }
   }
 
@@ -268,8 +225,9 @@ export default function SidebarDock() {
     <>
       <div
         id="sidebar-overlay"
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out lg:hidden"
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out lg:hidden ${isMobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}
         onClick={closeMobile}
+        aria-hidden="true"
       />
 
       <aside
@@ -279,8 +237,10 @@ export default function SidebarDock() {
           top: "var(--topbar-offset)",
           height: "calc(100vh - var(--topbar-offset))",
         }}
-        className="fixed left-0 z-40 bg-sidebar text-white border-r border-white/10 flex flex-col min-h-0 will-change-transform transform -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100 transition-transform duration-300 ease-in-out"
+        className={`sidebar-panel fixed left-0 z-40 flex flex-col min-h-0 border-r border-white/10 bg-sidebar text-white shadow-2xl transition-all duration-300 ease-out lg:translate-x-0 lg:opacity-100 lg:pointer-events-auto ${isMobileOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"}`}
         data-compact={isCompact ? "true" : "false"}
+        aria-label={tSidebar("navigazione")}
+        aria-hidden="true"
       >
         <div className="shrink-0 border-b border-white/10 px-2 py-2.5 lg:hidden">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-1.5 shadow-sm">

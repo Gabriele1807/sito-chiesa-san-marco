@@ -5,55 +5,13 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { SidebarItem } from "./nav-config";
 import { mobileDockItems } from "./nav-config";
+import { useSidebar } from "./SidebarContext";
 
 export default function MobileDock() {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const tSidebar = useTranslations("sidebar");
-
-  function openMobileMenu() {
-    const sidebar = document.getElementById("mobile-sidebar");
-    const overlay = document.getElementById("sidebar-overlay");
-    if (!sidebar || !overlay) return;
-
-    const sidebarEl = sidebar as HTMLElement;
-    const overlayEl = overlay as HTMLElement;
-
-    const isOpen = !sidebarEl.classList.contains("-translate-x-full");
-
-    function onOverlayTransition(e: Event) {
-      const transitionEvent = e as TransitionEvent;
-      if (transitionEvent.propertyName !== "opacity") return;
-      if (getComputedStyle(overlayEl).opacity === "0") {
-        overlayEl.classList.add("pointer-events-none");
-      }
-      overlayEl.removeEventListener("transitionend", onOverlayTransition);
-    }
-
-    overlayEl.addEventListener("transitionend", onOverlayTransition);
-
-    if (isOpen) {
-      // closing: slide sidebar out first, then fade overlay
-      sidebarEl.classList.add("-translate-x-full");
-      sidebarEl.classList.remove("translate-x-0");
-      sidebarEl.classList.add("opacity-0");
-      sidebarEl.classList.remove("opacity-100");
-      setTimeout(() => {
-        overlayEl.classList.add("opacity-0");
-      }, 260);
-    } else {
-      // opening: enable overlay, fade it in, then slide sidebar in
-      overlayEl.classList.remove("pointer-events-none");
-      overlayEl.classList.remove("opacity-0");
-      // ensure the overlay paint happens before starting the slide
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        sidebarEl.classList.remove("-translate-x-full");
-        sidebarEl.classList.add("translate-x-0");
-        sidebarEl.classList.remove("opacity-0");
-        sidebarEl.classList.add("opacity-100");
-      }));
-    }
-  }
+  const { toggleMobile } = useSidebar();
 
   function isActive(item: SidebarItem) {
     if (!item.href) return false;
@@ -90,7 +48,7 @@ export default function MobileDock() {
               <button
                 key={item.id}
                 type="button"
-                onClick={openMobileMenu}
+                onClick={toggleMobile}
                 className={baseClass}
                 aria-label={label}
               >

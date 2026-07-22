@@ -105,6 +105,11 @@ html {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.sidebar-panel {
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+}
+
 @layer components {
   .font-display {
     font-family: var(--font-display), var(--font-sans), serif;
@@ -165,5 +170,7 @@ html {
   .animate-fade-in-up,
   .animate-fade-in,
   .animate-scale-in,
+  .sidebar-panel,
+  .sidebar-link,
   * { animation: none !important; transition: none !important; }
 }

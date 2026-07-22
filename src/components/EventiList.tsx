@@ -49,8 +49,9 @@ function extractSurname(fullName: string): string {
 
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const t = useTranslations("eventi");
+  const tAuth = useTranslations("auth");
   const locale = useLocale();
-  const { type, loading, user, admin } = useAuth();
+  const { type, loading, user, admin, setShowLoginModal, setShowRegisterModal } = useAuth();
   const isAuthenticated = type === "user" || type === "admin";
   const [formOpen, setFormOpen] = useState<string | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
@@ -361,6 +362,22 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
         <div className="mx-auto mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-surface-alt px-4 py-2 text-xs font-medium text-foreground/70">
           <Lock className="h-3.5 w-3.5" />
           <span>{t("guestDescription")}</span>
+        </div>
+        <div className="mx-auto mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            onClick={() => setShowLoginModal(true)}
+            className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90"
+          >
+            {tAuth("loginButton")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowRegisterModal(true)}
+            className="rounded-full border border-primary/20 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:border-primary hover:bg-primary/5"
+          >
+            {tAuth("registerTitle")}
+          </button>
         </div>
       </div>
     );
@@ -774,29 +791,32 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                     {errors.familyMembers && <p className="text-xs text-danger mt-2">{errors.familyMembers}</p>}
 
                     {!padreInMembers && (
-                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreNome")} <span className="text-red-500 ml-0.5">*</span></label>
-                          <input
-                            type="text"
-                            value={formData.padreNome}
-                            onChange={(e) => setFormData({ ...formData, padreNome: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                            placeholder="Giuseppe"
-                          />
-                          {errors.padreNome && <p className="text-xs text-danger mt-1">{errors.padreNome}</p>}
+                      <div className="mt-4 space-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreNome")} <span className="text-red-500 ml-0.5">*</span></label>
+                            <input
+                              type="text"
+                              value={formData.padreNome}
+                              onChange={(e) => setFormData({ ...formData, padreNome: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                              placeholder="Giuseppe"
+                            />
+                            {errors.padreNome && <p className="text-xs text-danger mt-1">{errors.padreNome}</p>}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreCognome")} <span className="text-red-500 ml-0.5">*</span></label>
+                            <input
+                              type="text"
+                              value={formData.padreCognome}
+                              onChange={(e) => setFormData({ ...formData, padreCognome: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                              placeholder="Rossi"
+                            />
+                            {errors.padreCognome && <p className="text-xs text-danger mt-1">{errors.padreCognome}</p>}
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreCognome")} <span className="text-red-500 ml-0.5">*</span></label>
-                          <input
-                            type="text"
-                            value={formData.padreCognome}
-                            onChange={(e) => setFormData({ ...formData, padreCognome: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                            placeholder="Rossi"
-                          />
-                          {errors.padreCognome && <p className="text-xs text-danger mt-1">{errors.padreCognome}</p>}
-                        </div>
+                        <p className="text-xs text-gray-400">{t("padreHelper")}</p>
                       </div>
                     )}
                   </div>
