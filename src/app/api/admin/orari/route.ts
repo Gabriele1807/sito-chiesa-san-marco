@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { getOrari, addOrario, updateOrario, deleteOrario } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
+import { requireAdminSession } from "@/lib/auth/session";
 
 export async function GET() {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   return NextResponse.json(await getOrari());
 }
 
 export async function POST(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const orario = await addOrario(body);
@@ -18,6 +27,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { giorno, ...data } = body;
@@ -31,6 +44,10 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const giorno = searchParams.get("giorno");

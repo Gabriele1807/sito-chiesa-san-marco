@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { getFilePrivati, addFilePrivato, deleteFilePrivato } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
+import { requireAdminSession } from "@/lib/auth/session";
 
 export async function GET() {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   return NextResponse.json(await getFilePrivati());
 }
 
 export async function POST(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const file = await addFilePrivato(body);
@@ -18,6 +27,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

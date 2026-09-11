@@ -2,12 +2,21 @@ import { NextResponse } from "next/server";
 import { getEventi, addEvento, updateEvento, deleteEvento } from "@/lib/mongo/content";
 import { deleteIscrizioniByEvento } from "@/lib/mongo/registrations";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
+import { requireAdminSession } from "@/lib/auth/session";
 
 export async function GET() {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   return NextResponse.json(await getEventi());
 }
 
 export async function POST(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const evento = await addEvento(body);
@@ -19,6 +28,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { id, ...data } = body;
@@ -32,6 +45,10 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const adminUser = await requireAdminSession();
+  if (!adminUser) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
