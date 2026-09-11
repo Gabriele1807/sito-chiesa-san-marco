@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -48,7 +49,7 @@ export default function AdminEventiPage() {
   const [deleting, setDeleting] = useState(false);
 
   async function fetchData() {
-    const res = await fetch("/api/admin/eventi");
+    const res = await adminFetch("/api/admin/eventi");
     setEventi(await res.json());
     setLoading(false);
   }
@@ -156,14 +157,14 @@ export default function AdminEventiPage() {
       };
 
       if (editId) {
-        const res = await fetch("/api/admin/eventi", {
+        const res = await adminFetch("/api/admin/eventi", {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editId, ...payload }),
         });
         if (!res.ok) throw new Error("Errore server");
         showToast("Evento modificato con successo");
       } else {
-        const res = await fetch("/api/admin/eventi", {
+        const res = await adminFetch("/api/admin/eventi", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -183,7 +184,7 @@ export default function AdminEventiPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/eventi?id=${deleteTarget.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/eventi?id=${deleteTarget.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Errore server");
       showToast("Eliminato con successo");
       setDeleteTarget(null);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import type { SectionVisibility, RoleAccessType } from "@/types";
 import { AlertTriangle, Check, X, Clock } from "lucide-react";
 
@@ -38,7 +39,7 @@ export default function SuperAdminSectionVisibilityManager({
     
     async function fetchSections() {
       try {
-        const res = await fetch("/api/admin/section-visibility");
+        const res = await adminFetch("/api/admin/section-visibility");
         const data = await res.json();
         if (data.success) {
           setSections(data.data);
@@ -74,7 +75,7 @@ export default function SuperAdminSectionVisibilityManager({
         [role]: access,
       };
       
-      const res = await fetch(`/api/admin/section-visibility/${sectionId}`, {
+      const res = await adminFetch(`/api/admin/section-visibility/${sectionId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

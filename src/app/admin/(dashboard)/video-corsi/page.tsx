@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import { Loader2, Pencil, Plus, Trash2, Youtube } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -38,7 +39,7 @@ export default function AdminVideoCorsiPage() {
   const [deleting, setDeleting] = useState(false);
 
   async function fetchData() {
-    const res = await fetch("/api/admin/video-corsi");
+    const res = await adminFetch("/api/admin/video-corsi");
     setItems(await res.json());
     setLoading(false);
   }
@@ -96,7 +97,7 @@ export default function AdminVideoCorsiPage() {
       const payload = { ...form };
 
       if (editId) {
-        const res = await fetch("/api/admin/video-corsi", {
+        const res = await adminFetch("/api/admin/video-corsi", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editId, ...payload }),
@@ -104,7 +105,7 @@ export default function AdminVideoCorsiPage() {
         if (!res.ok) throw new Error("Errore server");
         showToast("Video modificato con successo");
       } else {
-        const res = await fetch("/api/admin/video-corsi", {
+        const res = await adminFetch("/api/admin/video-corsi", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -125,7 +126,7 @@ export default function AdminVideoCorsiPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/video-corsi?id=${deleteTarget.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/video-corsi?id=${deleteTarget.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Errore server");
       showToast("Eliminato con successo");
       setDeleteTarget(null);

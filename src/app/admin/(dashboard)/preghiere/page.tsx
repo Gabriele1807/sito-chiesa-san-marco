@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -32,7 +33,7 @@ export default function AdminPreghierePage() {
   const [deleting, setDeleting] = useState(false);
 
   async function fetchData() {
-    const res = await fetch("/api/admin/preghiere");
+    const res = await adminFetch("/api/admin/preghiere");
     setPreghiere(await res.json());
     setLoading(false);
   }
@@ -63,14 +64,14 @@ export default function AdminPreghierePage() {
       const payload = { ...form, slug };
 
       if (editId) {
-        const res = await fetch("/api/admin/preghiere", {
+        const res = await adminFetch("/api/admin/preghiere", {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editId, ...payload }),
         });
         if (!res.ok) throw new Error("Errore server");
         showToast("Preghiera modificata con successo");
       } else {
-        const res = await fetch("/api/admin/preghiere", {
+        const res = await adminFetch("/api/admin/preghiere", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -90,7 +91,7 @@ export default function AdminPreghierePage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/preghiere?id=${deleteTarget.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/preghiere?id=${deleteTarget.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Errore server");
       showToast("Eliminata con successo");
       setDeleteTarget(null);

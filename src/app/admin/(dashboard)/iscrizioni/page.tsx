@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import {
   Loader2,
   Users,
@@ -169,7 +170,7 @@ export default function AdminIscrizioniPage() {
   async function fetchEventi() {
     setLoadingEventi(true);
     try {
-      const res = await fetch("/api/admin/iscrizioni");
+      const res = await adminFetch("/api/admin/iscrizioni");
       const data = await res.json();
       if (data.success) setEventi(data.eventi);
     } catch {
@@ -182,7 +183,7 @@ export default function AdminIscrizioniPage() {
   async function fetchDettaglio(eventoId: string) {
     setLoadingDettaglio(true);
     try {
-      const res = await fetch(`/api/admin/iscrizioni?eventoId=${encodeURIComponent(eventoId)}`);
+      const res = await adminFetch(`/api/admin/iscrizioni?eventoId=${encodeURIComponent(eventoId)}`);
       const data = await res.json();
       if (data.success) {
         setEvento(data.evento);
@@ -227,7 +228,7 @@ export default function AdminIscrizioniPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/iscrizioni?id=${deleteTarget._id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/iscrizioni?id=${deleteTarget._id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error();
       showToast("Iscrizione eliminata");
@@ -249,7 +250,7 @@ export default function AdminIscrizioniPage() {
     if (!editTarget || !editTarget._id) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/admin/iscrizioni?id=${editTarget._id}`, {
+      const res = await adminFetch(`/api/admin/iscrizioni?id=${editTarget._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editForm),
@@ -272,7 +273,7 @@ export default function AdminIscrizioniPage() {
     const nextValue = !iscrizione.ha_pagato;
 
     try {
-      const res = await fetch(`/api/admin/iscrizioni?id=${iscrizione._id}`, {
+      const res = await adminFetch(`/api/admin/iscrizioni?id=${iscrizione._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ha_pagato: nextValue }),
@@ -327,7 +328,7 @@ export default function AdminIscrizioniPage() {
   async function downloadExportFile(url: string, fileName: string) {
     setExporting("pdf");
     try {
-      const res = await fetch(url);
+      const res = await adminFetch(url);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || "Errore nell'esportazione");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import {
   Users,
   Search,
@@ -123,7 +124,7 @@ export default function GestioneUtentiPage() {
       if (adminRequestFilter !== "all") params.set("adminRequest", adminRequestFilter);
       if (ageMin !== "all") params.set("ageMin", ageMin);
       if (ageMax !== "all") params.set("ageMax", ageMax);
-      const res = await fetch(`/api/admin/utenti?${params.toString()}`);
+      const res = await adminFetch(`/api/admin/utenti?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         setUsers(data.users);
@@ -199,7 +200,7 @@ export default function GestioneUtentiPage() {
     if (!editingUser) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/utenti", {
+      const res = await adminFetch("/api/admin/utenti", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -235,7 +236,7 @@ export default function GestioneUtentiPage() {
     setSavingPassword(true);
     setPasswordMsg(null);
     try {
-      const res = await fetch("/api/admin/utenti", {
+      const res = await adminFetch("/api/admin/utenti", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: editingUser._id, newPassword }),
@@ -259,7 +260,7 @@ export default function GestioneUtentiPage() {
     setPromoting(true);
     setPromoteMsg(null);
     try {
-      const res = await fetch("/api/admin/richieste-admin", {
+      const res = await adminFetch("/api/admin/richieste-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: editingUser._id, action: "promote", ruolo: promoteRuolo }),
@@ -286,7 +287,7 @@ export default function GestioneUtentiPage() {
     setPromoting(true);
     setPromoteMsg(null);
     try {
-      const res = await fetch("/api/admin/richieste-admin", {
+      const res = await adminFetch("/api/admin/richieste-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: editingUser._id, action: "revoke" }),
@@ -320,7 +321,7 @@ export default function GestioneUtentiPage() {
     setRequestSaving(true);
     setRequestMessage(null);
     try {
-      const res = await fetch("/api/admin/richieste-admin", {
+      const res = await adminFetch("/api/admin/richieste-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -359,7 +360,7 @@ export default function GestioneUtentiPage() {
 
   async function handleDelete(id: string) {
     try {
-      const res = await fetch("/api/admin/utenti", {
+      const res = await adminFetch("/api/admin/utenti", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),

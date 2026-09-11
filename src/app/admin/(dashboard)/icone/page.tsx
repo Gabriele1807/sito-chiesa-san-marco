@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -42,7 +43,7 @@ export default function AdminIconePage() {
   const [immaginiStr, setImmaginiStr] = useState("");
 
   async function fetchData() {
-    const res = await fetch("/api/admin/icone");
+    const res = await adminFetch("/api/admin/icone");
     setIcone(await res.json());
     setLoading(false);
   }
@@ -76,7 +77,7 @@ export default function AdminIconePage() {
       const payload = { ...form, slug, immagini };
 
       if (editId) {
-        const res = await fetch("/api/admin/icone", {
+        const res = await adminFetch("/api/admin/icone", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editId, ...payload }),
@@ -84,7 +85,7 @@ export default function AdminIconePage() {
         if (!res.ok) throw new Error("Errore server");
         showToast("Icona modificata con successo");
       } else {
-        const res = await fetch("/api/admin/icone", {
+        const res = await adminFetch("/api/admin/icone", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -105,7 +106,7 @@ export default function AdminIconePage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/icone?id=${deleteTarget.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/icone?id=${deleteTarget.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Errore server");
       showToast("Eliminata con successo");
       setDeleteTarget(null);

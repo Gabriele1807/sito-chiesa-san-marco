@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import {
   Plus,
   Shield,
@@ -86,7 +87,7 @@ export default function GestioneAdminPage() {
 
   const fetchAdmins = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/users");
+      const res = await adminFetch("/api/admin/users");
       const data = await res.json();
       if (data.success) {
         setAdmins(data.data);
@@ -102,7 +103,7 @@ export default function GestioneAdminPage() {
 
   const fetchPendingRequests = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/richieste-admin");
+      const res = await adminFetch("/api/admin/richieste-admin");
       const data = await res.json();
       if (data.success) {
         setPendingRequests(data.data);
@@ -114,7 +115,7 @@ export default function GestioneAdminPage() {
 
   const fetchPendingSuperAdminRequests = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/richieste-superadmin");
+      const res = await adminFetch("/api/admin/richieste-superadmin");
       const data = await res.json();
       if (data.success) {
         setPendingSuperAdminRequests(data.data);
@@ -133,7 +134,7 @@ export default function GestioneAdminPage() {
   async function handleApproveRequest(userId: string) {
     setProcessingRequest(userId);
     try {
-      const res = await fetch("/api/admin/richieste-admin", {
+      const res = await adminFetch("/api/admin/richieste-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, action: "approve", ruolo: "admin" }),
@@ -154,7 +155,7 @@ export default function GestioneAdminPage() {
   async function handleRejectRequest(userId: string) {
     setProcessingRequest(userId);
     try {
-      const res = await fetch("/api/admin/richieste-admin", {
+      const res = await adminFetch("/api/admin/richieste-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, action: "reject" }),
@@ -175,7 +176,7 @@ export default function GestioneAdminPage() {
   async function handleApproveSuperAdminRequest(userId: string) {
     setProcessingRequest(userId);
     try {
-      const res = await fetch("/api/admin/richieste-superadmin", {
+      const res = await adminFetch("/api/admin/richieste-superadmin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, action: "approve" }),
@@ -196,7 +197,7 @@ export default function GestioneAdminPage() {
   async function handleRejectSuperAdminRequest(userId: string) {
     setProcessingRequest(userId);
     try {
-      const res = await fetch("/api/admin/richieste-superadmin", {
+      const res = await adminFetch("/api/admin/richieste-superadmin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, action: "reject" }),
@@ -252,7 +253,7 @@ export default function GestioneAdminPage() {
         };
         if (form.password) body.password = form.password;
 
-        const res = await fetch(`/api/admin/users/${editingId}`, {
+        const res = await adminFetch(`/api/admin/users/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -264,7 +265,7 @@ export default function GestioneAdminPage() {
         }
       } else {
         // Creazione
-        const res = await fetch("/api/admin/users", {
+        const res = await adminFetch("/api/admin/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
@@ -289,7 +290,7 @@ export default function GestioneAdminPage() {
   async function handleToggle(id: string) {
     setTogglingId(id);
     try {
-      const res = await fetch(`/api/admin/users/${id}/toggle`, {
+      const res = await adminFetch(`/api/admin/users/${id}/toggle`, {
         method: "PATCH",
       });
       const data = await res.json();
@@ -308,7 +309,7 @@ export default function GestioneAdminPage() {
   async function handleDelete(id: string) {
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/users/${id}`, {
+      const res = await adminFetch(`/api/admin/users/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();

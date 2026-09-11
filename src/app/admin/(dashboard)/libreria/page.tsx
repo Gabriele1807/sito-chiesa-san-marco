@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -35,7 +36,7 @@ export default function AdminLibreriaPage() {
   const [deleting, setDeleting] = useState(false);
 
   async function fetchData() {
-    const res = await fetch("/api/admin/libreria");
+    const res = await adminFetch("/api/admin/libreria");
     setLibri(await res.json());
     setLoading(false);
   }
@@ -66,7 +67,7 @@ export default function AdminLibreriaPage() {
       const payload = { ...form, slug };
 
       if (editId) {
-        const res = await fetch("/api/admin/libreria", {
+        const res = await adminFetch("/api/admin/libreria", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editId, ...payload }),
@@ -74,7 +75,7 @@ export default function AdminLibreriaPage() {
         if (!res.ok) throw new Error("Errore server");
         showToast("Libro modificato con successo");
       } else {
-        const res = await fetch("/api/admin/libreria", {
+        const res = await adminFetch("/api/admin/libreria", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -95,7 +96,7 @@ export default function AdminLibreriaPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/libreria?id=${deleteTarget.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/libreria?id=${deleteTarget.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Errore server");
       showToast("Eliminato con successo");
       setDeleteTarget(null);

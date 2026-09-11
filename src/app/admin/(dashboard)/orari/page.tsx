@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
@@ -30,7 +31,7 @@ export default function AdminOrariPage() {
   const [newGiorno, setNewGiorno] = useState("");
 
   async function fetchData() {
-    const res = await fetch("/api/admin/orari");
+    const res = await adminFetch("/api/admin/orari");
     setOrari(await res.json());
     setLoading(false);
   }
@@ -60,7 +61,7 @@ export default function AdminOrariPage() {
     if (!editGiorno) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/orari", {
+      const res = await adminFetch("/api/admin/orari", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ giorno: editGiorno, celebrazioni }),
@@ -80,7 +81,7 @@ export default function AdminOrariPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/orari", {
+      const res = await adminFetch("/api/admin/orari", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ giorno: newGiorno, celebrazioni: [{ tipo: "", orario: "" }] }),
@@ -101,7 +102,7 @@ export default function AdminOrariPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/orari?giorno=${encodeURIComponent(deleteTarget)}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/orari?giorno=${encodeURIComponent(deleteTarget)}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Errore server");
       showToast("Giorno eliminato con successo");
       setDeleteTarget(null);
