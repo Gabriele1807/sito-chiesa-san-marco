@@ -94,6 +94,11 @@ npm run generate-hash -- "password"
   - abilita `next-intl` con `src/i18n/request.ts`
   - imposta Content Security Policy e security headers globali
   - consente immagini da Google Drive / Googleusercontent e alcuni embed esterni
+  - `script-src` include `'unsafe-eval'` solo quando `NODE_ENV !== "production"`
+    (serve solo per Fast Refresh/HMR in sviluppo); `'unsafe-inline'` resta in
+    entrambi gli ambienti perché richiesto dagli script inline di streaming
+    RSC di Next.js App Router (`self.__next_f.push(...)`), non rimovibile
+    senza introdurre una CSP a nonce (cambio architetturale più ampio)
 
 - `vercel.json`
   - build command: `next build`
@@ -171,6 +176,9 @@ Note operative:
 
 - `src/app/admin/(dashboard)/layout.tsx`
   - shell admin con sidebar fissa e contenuto spostato a destra
+  - server component `async`: verifica `getAdminSession()` e reindirizza a
+    `/admin/login` se assente/scaduta/disattivata, prima di renderizzare
+    la shell (vedi §6.4.1)
 
 ---
 
@@ -223,6 +231,101 @@ Note operative:
   - `admin_session` per admin
   - `user_session` per utenti normali
 - Non esiste un persistere delle sessioni in DB per il flusso attuale.
+
+#### 6.4.1 Stato sicurezza post-audit (2026-09-12)
+
+Un audit di sicurezza/UX/grafica (branch `fix/security-ux-graphics-audit`) ha
+corretto le seguenti vulnerabilità e ora documenta lo stato reale:
+
+- **Route admin protette.** Tutte le route sotto `src/app/api/admin/**`
+  richiedono ora `requireAdminSession()` (o `requireSuperAdminSession()` dove
+  già previsto) su ogni handler HTTP. In precedenza `eventi`, `icone`,
+  `libreria`, `libreria-privata`, `orari`, `preghiere` e `video-corsi`
+  accettavano GET/POST/PUT/DELETE senza alcun controllo di sessione. Le route
+  `section-visibility/route.ts` e `section-visibility/[sectionId]/route.ts`
+  reimplementavano localmente la verifica sessione (`requireAdminUser()`
+  duplicato): ora riusano `requireAdminSession()` da `session.ts`.
+- **Guard centralizzato nel layout dashboard.** `src/app/admin/(dashboard)/layout.tsx`
+  è un server component `async` che chiama `getAdminSession()` e fa
+  `redirect("/admin/login")` se la sessione è assente, scaduta o
+  l'account è disattivato (tutti e tre i casi già coperti da
+  `getAdminSession()`). Prima il layout non eseguiva alcun controllo:
+  la shell admin (sidebar/topbar) poteva renderizzarsi anche senza sessione,
+  lasciando la protezione reale solo ai singoli fetch client-side.
+- **Nessun fallback debole per la secret JWT.** `src/lib/auth/jwt.ts` non
+  ripiega più su `NEXT_PUBLIC_SUPABASE_ANON_KEY` (chiave pubblica) o su una
+  stringa hardcoded (`"san-marco-dev-jwt-secret"`) quando `ADMIN_SESSION_SECRET`
+  manca: `getJwtSecret()` lancia un errore esplicito. `ADMIN_SESSION_SECRET`
+  è confermata impostata su Vercel Production, quindi il deploy del fix non
+  ha richiesto azioni aggiuntive. Non è stata eseguita alcuna rotazione
+  manuale della secret: poiché il JWT è verificato solo per firma HMAC,
+  la rimozione del fallback invalida automaticamente, dal primo deploy del
+  fix in poi, qualunque token eventualmente firmato in passato con la chiave
+  pubblica (la verifica contro la secret reale fallisce). Non è stato
+  possibile escludere con certezza che il fallback fosse scattato in
+  passato in produzione; se sorgono dubbi su sessioni admin anomale dopo
+  questa data, il fix stesso è la mitigazione.
+- **Redirect al login su sessione scaduta durante l'uso.** Le pagine
+  client della dashboard non usano più `fetch` diretto verso
+  `/api/admin/*`, ma `adminFetch()` da
+  `src/lib/admin/fetch-with-auth-redirect.ts`, che reindirizza a
+  `/admin/login` su risposta 401 invece di mostrare tabelle vuote o errori
+  silenziosi.
+- **Limiti noti rimasti aperti (non risolti in questo audit, fuori scopo):**
+  - Rate limiting login/IP (`src/lib/auth/rate-limit.ts`) e revoca token
+    admin (`revokedAdminTokens` in `session.ts`) vivono in memoria di
+    processo: su Vercel serverless non sono condivisi tra istanze/regioni,
+    quindi la protezione reale è "per istanza", più debole dei limiti
+    nominali (5 tentativi/15 min, 60 richieste/min). Commentato inline nel
+    codice. Soluzione futura suggerita: Redis o storage condiviso
+    equivalente (`INCR`/`EXPIRE`).
+  - `src/app/api/auth/login/route.ts`: il lookup admin su Supabase usava
+    `.or()` con l'identifier utente interpolato direttamente nella
+    mini-sintassi PostgREST (rischio di alterazione del filtro). Corretto
+    con due query `.eq().maybeSingle()` separate (username, poi email);
+    comportamento di login invariato, solo il meccanismo di lookup è più
+    sicuro.
+  - `dir="ltr"` in `src/app/layout.tsx` è hardcoded indipendentemente dalla
+    lingua: il supporto RTL per `ar` si basa solo su `text-align: right`
+    via selettore CSS `[data-locale="ar"]`, non sull'attributo `dir`
+    nativo. Preesistente, non toccato in questo audit (avrebbe richiesto
+    verifica visiva approfondita non disponibile in questa sessione senza
+    browser).
+
+#### 6.4.2 Convenzioni UI admin
+
+Il pannello admin usava classi Tailwind hardcoded (`bg-gray-50`,
+`text-gray-900`, `border-gray-200`, mix incoerente `gold`/`amber-600`/`amber-700`
+tra pagine) invece dei token semantici già definiti in `src/app/globals.css`
+e usati dal sito pubblico. Un audit ha consolidato l'admin su questi token:
+
+| Prima (hardcoded) | Ora (token semantico) |
+|---|---|
+| `bg-gray-50` | `bg-background` |
+| `bg-white` | `bg-surface` |
+| `bg-gray-100` / `bg-gray-200` | `bg-surface-2` |
+| `bg-gray-300` | `bg-border` |
+| `border-gray-100/200/300` | `border-border` |
+| `border-gray-900` | `border-foreground` |
+| `text-gray-900` / `text-gray-800` | `text-foreground` |
+| `text-gray-700` / `600` / `500` / `400` | `text-foreground/80` / `/70` / `/60` / `/40` |
+| `amber-600` | `gold-light` (stesso hex, `#D97706`) |
+| `amber-700` | `gold` (stesso hex, `#B45309`) |
+
+**Convenzione da seguire per nuove pagine admin:** usare sempre i token
+semantici sopra (già disponibili via `@theme` in `globals.css`) invece di
+classi Tailwind con colori hardcoded, per coerenza col brand pubblico e per
+non dover reintervenire in futuro se si introduce una dark mode.
+
+Eccezioni intenzionali non toccate dal consolidamento:
+- `src/app/admin/login/page.tsx` e `src/components/admin/AdminSidebar.tsx`
+  usano uno sfondo scuro dedicato (`text-gray-300/400` come testo chiaro su
+  sfondo scuro): non hanno un token semantico "chiaro su scuro" equivalente,
+  quindi sono stati lasciati come sono.
+- Le tinte `amber-50/100/200/300/500/800/900` usate nei badge/banner di
+  avviso (non il colore principale del brand) non hanno un token semantico
+  equivalente e rappresentano un uso distinto (colore di stato "warning"),
+  non la stessa incoerenza gold/amber risolta sopra.
 
 ### 6.5 Account admin e utenti normali
 
@@ -351,6 +454,9 @@ Note operative:
 - `src/lib/auth/session.ts`
 - `src/lib/auth/jwt.ts`
 - `src/lib/auth/rate-limit.ts`
+- `src/lib/admin/fetch-with-auth-redirect.ts` — wrapper `adminFetch()` usato
+  dalle pagine client della dashboard: reindirizza a `/admin/login` su
+  risposta 401 invece di lasciare la UI in uno stato silenzioso
 - `src/lib/section-access.ts`
 - `src/lib/gdrive.ts`
 - `src/lib/next-celebration.ts`
@@ -384,6 +490,12 @@ Note operative:
 
 - `eventi` dipende dai contenuti reali in MongoDB e dal conteggio iscrizioni.
 - `icone`, `libreria`, `preghiere`, `video-corsi` e `orari` non ricevono più seed demo automatici.
+- Tutte le sezioni con liste di contenuti (`eventi`, `icone`, `libreria`,
+  `preghiere`, `video-corsi`) mostrano ora uno stato vuoto curato e coerente
+  quando la collezione è vuota (pattern comune: contenitore con bordo
+  tratteggiato e messaggio dedicato). `IconeGrid` distingue esplicitamente
+  "nessuna icona esistente" da "nessuna icona che rispetta i filtri
+  selezionati".
 
 ---
 
