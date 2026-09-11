@@ -16,11 +16,13 @@ export type JwtPayload = JwtPayloadBase & {
 };
 
 function getJwtSecret(): string {
-  return (
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    "san-marco-dev-jwt-secret"
-  );
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (!secret) {
+    throw new Error(
+      "ADMIN_SESSION_SECRET non è impostata: impossibile firmare o verificare sessioni admin."
+    );
+  }
+  return secret;
 }
 
 function bytesToBase64Url(bytes: Uint8Array): string {
