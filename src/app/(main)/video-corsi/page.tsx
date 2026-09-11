@@ -54,7 +54,7 @@ export default async function VideoCorsiPage() {
                 href={video.urlVideo}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group overflow-hidden rounded-xl border border-gray-100 bg-gray-50 shadow-sm transition-colors hover:bg-gray-100"
+                className="group overflow-hidden rounded-xl border border-gray-100 bg-gray-50 shadow-sm transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
                 <div className="relative aspect-video bg-gradient-to-br from-[#0f1a2e] via-[#15213b] to-[#c95d00]">
                   {video.thumbnail ? (

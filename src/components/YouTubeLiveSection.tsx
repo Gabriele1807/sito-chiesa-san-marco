@@ -142,7 +142,7 @@ export default function YouTubeLiveSection() {
                     href={videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-red-400 transition-colors hover:text-white"
+                    className="mt-4 inline-flex items-center gap-2 rounded text-xs font-semibold text-red-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     {t("youtubeGuardaTutti")}
@@ -198,7 +198,7 @@ export default function YouTubeLiveSection() {
                     href={YOUTUBE_CHANNEL_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-700"
+                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
                   >
                     <Bell className="w-4 h-4" />
                     {t("youtubeIscriviti")}
@@ -207,7 +207,7 @@ export default function YouTubeLiveSection() {
                     href={`${YOUTUBE_CHANNEL_URL}/videos`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
                   >
                     <Play className="w-4 h-4" />
                     {t("youtubeGuardaTutti")}

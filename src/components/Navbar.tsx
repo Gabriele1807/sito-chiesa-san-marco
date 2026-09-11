@@ -70,7 +70,7 @@ export default function Navbar({ locale }: Props) {
           <div className="lg:hidden">
             <MobileMenuButton />
           </div>
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
             <Image
               src="/logo-san-marco.png"
               alt={t("logoAlt")}

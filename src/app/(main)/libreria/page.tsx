@@ -23,7 +23,7 @@ export default async function LibreriaPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {testi.map((testo, index) => (
-          <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group animate-fade-in-up" style={{ animationDelay: `${index * 60}ms` }}>
+          <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group animate-fade-in-up block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2" style={{ animationDelay: `${index * 60}ms` }}>
             <div className="card-hover bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 h-full flex flex-col">
               <div className="h-44 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center overflow-hidden">
                 {testo.copertina ? (

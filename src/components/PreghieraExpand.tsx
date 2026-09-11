@@ -15,7 +15,7 @@ export default function PreghieraExpand({ testo, labelRead }: Props) {
     <div className="mt-3">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-primary transition-colors cursor-pointer"
+        className="inline-flex items-center gap-1.5 rounded text-sm font-medium text-accent hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
       >
         {labelRead}
         {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}

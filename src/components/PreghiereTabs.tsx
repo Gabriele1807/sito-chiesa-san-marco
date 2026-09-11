@@ -102,7 +102,7 @@ export default function PreghiereTabs({ preghiere, videoCorsi, texts }: Props) {
                             href={isGDriveUrl(preghiera.urlPDF) ? toGDrivePreviewUrl(preghiera.urlPDF) : preghiera.urlPDF}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-lg hover:bg-primary/20 transition-colors shrink-0"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-lg hover:bg-primary/20 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                           >
                             <Download className="w-3.5 h-3.5" />
                             PDF
@@ -143,7 +143,7 @@ export default function PreghiereTabs({ preghiere, videoCorsi, texts }: Props) {
                   href={video.urlVideo}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group block overflow-hidden rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors shadow-sm"
+                  className="group block overflow-hidden rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                   style={{ animationDelay: `${140 + index * 60}ms` }}
                 >
                   <div className="aspect-video bg-gradient-to-br from-[#0f1a2e] via-[#15213b] to-[#c95d00] relative flex items-center justify-center">
@@ -177,7 +177,7 @@ export default function PreghiereTabs({ preghiere, videoCorsi, texts }: Props) {
 
             <a
               href="#"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-primary transition-colors"
+              className="inline-flex items-center gap-2 rounded text-sm font-semibold text-accent hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               onClick={(e) => {
                 // default to YouTube channel link coming from texts if provided
                 if (texts.youtubeChannel) {

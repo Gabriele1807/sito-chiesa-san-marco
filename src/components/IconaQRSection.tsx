@@ -74,7 +74,7 @@ export default function IconaQRSection({ slug }: Props) {
           {/* FIX [11] — Download button with visual feedback */}
           <button
             onClick={handleDownloadQR}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-white text-sm font-medium rounded-xl transition-colors duration-150 cursor-pointer ${
+            className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-white text-sm font-medium rounded-xl transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 ${
               qrScaricato ? "bg-sage hover:bg-sage" : "bg-accent hover:bg-accent-light"
             }`}
           >

@@ -13,7 +13,7 @@ export default function RelatedResourceCard({ href, tag, tagColor, title, subtit
   const tagColorClass = tagColor === "primary" ? "text-primary" : "text-accent";
 
   return (
-    <Link href={href} className="group">
+    <Link href={href} className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
       <div className="card-hover bg-white rounded-xl p-5 shadow-sm border border-gray-100">
         <span className={`text-xs font-semibold uppercase tracking-wider ${tagColorClass}`}>
           {tag}

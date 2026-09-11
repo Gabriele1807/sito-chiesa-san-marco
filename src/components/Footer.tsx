@@ -87,25 +87,25 @@ export default async function Footer() {
               {tFooter("quickLinksTitle")}
             </p>
             <nav className="grid gap-2 text-sm">
-              <Link href="/" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("home")}
               </Link>
-              <Link href="/#orari" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("orari")}
               </Link>
-              <Link href="/video-corsi" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/video-corsi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("videoCorsi")}
               </Link>
-              <Link href="/eventi" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/eventi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("eventi")}
               </Link>
-              <Link href="/libreria" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/libreria" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("libreria")}
               </Link>
-              <Link href="/icone" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/icone" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("icone")}
               </Link>
-              <Link href="/chi-siamo" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/chi-siamo" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("chiSiamo")}
               </Link>
             </nav>
@@ -119,7 +119,7 @@ export default async function Footer() {
                   href={FACEBOOK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-foreground/70 hover:text-accent transition-colors"
+                  className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                 >
                   {tFooter("facebook")}
                 </a>
@@ -127,7 +127,7 @@ export default async function Footer() {
                   href={YOUTUBE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-foreground/70 hover:text-accent transition-colors"
+                  className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                 >
                   {tFooter("youtube")}
                 </a>
@@ -157,13 +157,13 @@ export default async function Footer() {
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/#orari"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
                 {tFooter("orariCta")}
               </Link>
               <Link
                 href="/contatti"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white text-foreground/80 px-4 py-2 text-xs font-semibold border border-border shadow-sm transition hover:text-foreground hover:border-accent/40"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-white text-foreground/80 px-4 py-2 text-xs font-semibold border border-border shadow-sm transition hover:text-foreground hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
                 {tNav("contatti")}
               </Link>
@@ -201,25 +201,25 @@ export default async function Footer() {
           {/* Quick Links Accordion */}
           <FooterAccordion title={tFooter("quickLinksTitle")}>
             <nav className="grid gap-3 text-sm">
-              <Link href="/" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("home")}
               </Link>
-              <Link href="/#orari" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("orari")}
               </Link>
-              <Link href="/video-corsi" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/video-corsi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("videoCorsi")}
               </Link>
-              <Link href="/eventi" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/eventi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("eventi")}
               </Link>
-              <Link href="/libreria" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/libreria" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("libreria")}
               </Link>
-              <Link href="/icone" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/icone" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("icone")}
               </Link>
-              <Link href="/chi-siamo" className="text-foreground/70 hover:text-accent transition-colors">
+              <Link href="/chi-siamo" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("chiSiamo")}
               </Link>
             </nav>
@@ -232,7 +232,7 @@ export default async function Footer() {
                 href={FACEBOOK_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground/70 hover:text-accent transition-colors"
+                className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
                 {tFooter("facebook")}
               </a>
@@ -240,7 +240,7 @@ export default async function Footer() {
                 href={YOUTUBE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground/70 hover:text-accent transition-colors"
+                className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
                 {tFooter("youtube")}
               </a>

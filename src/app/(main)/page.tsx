@@ -208,7 +208,7 @@ export default async function HomePage() {
           {t("featuredTitle")}
         </h2>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <Link href="/eventi" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md">
+          <Link href="/eventi" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
               <h3 className="text-base font-bold uppercase tracking-wide text-foreground">
                 {t("prossimiEventi")}
@@ -240,7 +240,7 @@ export default async function HomePage() {
             </div>
           </Link>
 
-          <Link href="/preghiere" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md">
+          <Link href="/preghiere" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
               <h3 className="text-base font-bold uppercase tracking-wide text-foreground">
                 {t("ultimePreghiere")}

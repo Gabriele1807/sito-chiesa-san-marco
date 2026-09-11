@@ -144,7 +144,7 @@ export default async function ContattiPage() {
           href={FACEBOOK_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-4 bg-surface rounded-2xl border border-border/80 shadow-sm p-5 hover:shadow-md hover:border-accent/30 transition-all group"
+          className="flex items-center gap-4 bg-surface rounded-2xl border border-border/80 shadow-sm p-5 hover:shadow-md hover:border-accent/30 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
         >
           <div className="w-12 h-12 rounded-xl bg-[#1877F2] flex items-center justify-center shrink-0">
             <Facebook className="w-6 h-6 text-white" />
@@ -203,7 +203,7 @@ export default async function ContattiPage() {
             href={ADDRESS_MAPS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between px-5 py-3 bg-surface hover:bg-surface-2 transition-colors"
+            className="flex items-center justify-between px-5 py-3 bg-surface hover:bg-surface-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold"
           >
             <div>
               <p className="text-sm font-bold text-foreground">{t("indirizzoVia")}</p>

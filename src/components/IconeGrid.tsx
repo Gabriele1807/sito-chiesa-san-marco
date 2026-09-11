@@ -64,7 +64,7 @@ export default function IconeGrid({ icone }: Props) {
       {/* Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.map((icona, index) => (
-          <Link key={icona.id} href={`/icone/${icona.slug}`} className="group animate-fade-in-up" style={{ animationDelay: `${index * 60}ms` }}>
+          <Link key={icona.id} href={`/icone/${icona.slug}`} className="group animate-fade-in-up block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2" style={{ animationDelay: `${index * 60}ms` }}>
             <div className="card-hover bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
               <div className="h-52 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
                 {icona.immagini?.[0] ? (
