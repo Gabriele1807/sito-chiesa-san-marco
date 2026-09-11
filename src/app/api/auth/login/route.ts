@@ -79,14 +79,27 @@ async function tryAdminLogin(
   request: Request,
   rememberMe: boolean
 ): Promise<NextResponse | null> {
-  // Cerchiamo sia per username che per email
-  const { data: user, error: dbError } = await supabaseAdmin
+  // Cerchiamo sia per username che per email. Due query .eq() separate
+  // invece di .or() con interpolazione diretta: il filtro .or() di
+  // PostgREST usa una mini-sintassi (virgole, parentesi) che l'input
+  // utente non sanificato potrebbe alterare.
+  const { data: byUsername } = await supabaseAdmin
     .from("admin_users")
     .select("id, username, email, password_hash, nome, cognome, ruolo, attivo")
-    .or(`username.eq.${identifier},email.eq.${identifier}`)
-    .single();
+    .eq("username", identifier)
+    .maybeSingle();
 
-  if (dbError || !user) return null;
+  const user =
+    byUsername ??
+    (
+      await supabaseAdmin
+        .from("admin_users")
+        .select("id, username, email, password_hash, nome, cognome, ruolo, attivo")
+        .eq("email", identifier)
+        .maybeSingle()
+    ).data;
+
+  if (!user) return null;
   if (!user.attivo) {
     return NextResponse.json(
       { success: false, error: "Account admin disattivato. Contatta il superadmin." },
