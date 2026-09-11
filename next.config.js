@@ -6,11 +6,18 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
   : null;
 
+const isProduction = process.env.NODE_ENV === "production";
+
 // Aggiungi qui nuovi script esterni consentiti dalla CSP.
+// 'unsafe-inline' è richiesto in produzione dai payload RSC di Next.js
+// App Router (script inline `self.__next_f.push(...)` per lo streaming),
+// non risulta rimovibile senza introdurre un middleware con CSP a nonce
+// (cambio architetturale più ampio, fuori scopo qui). 'unsafe-eval' serve
+// solo in sviluppo per Fast Refresh/HMR: in produzione non è necessario.
 const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
-  "'unsafe-eval'",
+  ...(isProduction ? [] : ["'unsafe-eval'"]),
   "https://www.youtube.com",
   "https://www.googletagmanager.com",
   "https://va.vercel-scripts.com",
