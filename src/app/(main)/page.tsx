@@ -85,9 +85,15 @@ export default async function HomePage() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  {/* CTA Iscrizione agli eventi */}
-                  <Link href="/eventi" className="group relative overflow-hidden rounded-2xl border-2 border-accent/40 bg-gradient-to-br from-accent/15 to-accent/5 p-4 transition-all hover:border-accent hover:shadow-lg hover:from-accent/20 hover:to-accent/10">
-                    <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors" />
+                  {/*
+                  CTA iscrizione all'evento attivo disattivata temporaneamente.
+                  Il blocco resta pronto per essere riattivato decommentandolo.
+
+                  <Link
+                    href="/eventi"
+                    className="group relative overflow-hidden rounded-2xl border-2 border-accent/40 bg-gradient-to-br from-accent/15 to-accent/5 p-4 transition-all hover:border-accent hover:shadow-lg hover:from-accent/20 hover:to-accent/10"
+                  >
+                    <div className="absolute inset-0 bg-accent/0 transition-colors group-hover:bg-accent/5" />
                     <div className="relative space-y-3">
                       {eventi.length > 0 && (
                         <div className="space-y-2">
@@ -113,11 +119,15 @@ export default async function HomePage() {
                           </div>
                         </div>
                       )}
-                      <button className="w-full rounded-lg bg-accent/90 px-3 py-2.5 text-center text-sm font-bold text-white transition-all group-hover:bg-accent" aria-label={eventi.length > 0 ? t("eventiActionCta") : t("eventiOverviewCta")}>
+                      <button
+                        className="w-full rounded-lg bg-accent/90 px-3 py-2.5 text-center text-sm font-bold text-white transition-all group-hover:bg-accent"
+                        aria-label={eventi.length > 0 ? t("eventiActionCta") : t("eventiOverviewCta")}
+                      >
                         {eventi.length > 0 ? t("eventiActionCta") : t("eventiOverviewCta")}
                       </button>
                     </div>
                   </Link>
+                  */}
 
                   <NextCelebrationCard
                     orari={orari}
@@ -251,6 +261,11 @@ export default async function HomePage() {
                   </div>
                 </div>
               ))}
+              {preghiere.length === 0 && (
+                <div className="py-6 text-sm text-foreground/60">
+                  Nessuna preghiera disponibile al momento.
+                </div>
+              )}
             </div>
           </Link>
         </div>

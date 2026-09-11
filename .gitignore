@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local agent and editor tooling
+/.agents/
+/.claude/
+/.dbg/
+/.remember/
+/.mcp.json

@@ -3,8 +3,8 @@
  * Tutte le operazioni CRUD sui contenuti del sito (icone, testi sacri,
  * preghiere, eventi, orari) passano da qui.
  *
- * Se le tabelle sono vuote o non esistono ancora, getters tornano
- * i dati mock come fallback per garantire il funzionamento offline.
+ * Se le tabelle sono vuote o non esistono ancora, i getter tornano
+ * lo store in-memory compatibile, che ora parte vuoto.
  */
 
 import { supabaseAdmin } from "@/lib/supabase/server";

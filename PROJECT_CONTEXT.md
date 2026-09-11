@@ -1,71 +1,82 @@
-﻿# PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
+# PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Ultimo aggiornamento: 1 luglio 2026.
+> Documento di contesto operativo del progetto. Questa versione riflette lo stato reale del repository nel workspace: contenuti pubblici letti da MongoDB, area admin protetta, supporto bilingue italiano/arabo e nessun seed demo automatico nei layer dati.
 
 ---
 
 ## 1. Scopo del progetto
 
-Sito web bilingue italiano/arabo per la Chiesa Copta Ortodossa di San Marco a Milano.
-Il progetto unisce:
+Il progetto è il sito web ufficiale della Chiesa Copta Ortodossa di San Marco a Milano. Il sito unisce:
 
-- area pubblica per fedeli e visitatori
-- area admin protetta per gestione contenuti e amministratori
+- una parte pubblica per fedeli, visitatori e famiglie della comunità
+- un'area admin protetta per creare, aggiornare e pubblicare contenuti
 
-L'obiettivo del documento è fornire un quadro aggiornato e realistico dell'architettura, del flow di autenticazione, del layer dati, delle route e delle convenzioni attuali.
+L'architettura è orientata al rendering server-side di Next.js e separa chiaramente:
+
+- autenticazione utenti normali e amministratori
+- contenuti pubblici e contenuti riservati
+- visibilità delle sezioni e protezione di alcune pagine
+
+Il documento serve come fotografia aggiornata del codice presente nel repository, con particolare attenzione a route, layout, data layer, auth flow e struttura delle cartelle.
 
 ---
 
 ## 2. Snapshot rapido
 
 | Voce | Valore |
-|------|--------|
-| Nome progetto | chiesa-san-marco |
-| URL dev previsto | http://localhost:3000 |
-| Framework | Next.js 16 App Router |
+|---|---|
+| Nome progetto | `chiesa-san-marco` |
+| URL sviluppo | `http://localhost:3000` |
+| Framework | Next.js 16.1.6 con App Router |
+| UI runtime | React 19.2.3 / React DOM 19.2.3 |
+| Linguaggio | TypeScript |
+| Styling | Tailwind CSS 4 |
+| i18n | `next-intl` 4.8.3 |
 | Lingue | italiano, arabo |
-| UI kit | Tailwind CSS v4 |
-| i18n | next-intl |
-| Persistenza contenuti | MongoDB Atlas |
-| Persistenza autenticazione | JWT cookie + MongoDB/Supabase |
-| Autenticazione admin | Supabase admin users + `ADMIN_SESSION_SECRET` JWT |
-| Autenticazione utenti | JWT cookie `user_session` via MongoDB user store |
-| Login unificato | `/api/auth/login` per admin + utenti normali |
-| Route admin login | `/admin/login` separata dalla shell admin |
-| Route admin protetta | `/admin/(dashboard)` |
-| Visibilità sezioni | `src/lib/mongo/visibility.ts` + `SectionVisibilityGate` |
-| Residui non usati | `src/lib/supabase/content.ts`, `src/lib/data/store.ts`, `src/proxy.ts` non automaticamente collegato |
-
+| Contenuti pubblici | MongoDB |
+| Iscrizioni eventi | MongoDB |
+| Admin users | Supabase |
+| Sessioni | JWT cookie lato server |
+| Login pubblico | `/api/auth/login` |
+| Login admin | `/admin/login` e `/api/admin/login` |
+| Sezioni protette | `eventi`, `icone`, `libreria`, `orari`, `preghiere`, `video-corsi` |
+| Stato seed contenuti | nessun mock seed automatico; le collezioni partono vuote |
+| File mock demo | `src/lib/mock-data.ts` rimosso dal flusso applicativo |
 
 ---
 
 ## 3. Stack tecnologico reale
 
-Versioni lette da `package.json`:
+Dipendenze principali lette da `package.json`:
 
-| Tecnologia | Versione | Uso |
-|------------|----------|-----|
-| next | 16.1.6 | App Router, server components |
-| react | 19.2.3 | UI |
-| react-dom | 19.2.3 | UI runtime |
-| typescript | ^5 | tipizzazione |
-| tailwindcss | ^4 | styling |
-| @tailwindcss/postcss | ^4 | integrazione Tailwind |
-| next-intl | ^4.8.3 | i18n |
-| @supabase/supabase-js | ^2.98.0 | Supabase client/server |
-| mongodb | ^7.1.1 | persistenza dati |
-| bcryptjs | ^3.0.3 | hash password |
-| lucide-react | ^0.575.0 | icone |
-| react-qr-code | ^2.0.18 | generazione QR |
-| babel-plugin-react-compiler | 1.0.0 | React Compiler |
-| dotenv | ^17.3.1 | caricamento env |
-| eslint | ^9 | lint |
-| eslint-config-next | 16.1.6 | configurazione ESLint |
-| tailwindcss | ^4 | styling |
+| Tecnologia | Versione | Ruolo |
+|---|---:|---|
+| `next` | 16.1.6 | Framework, App Router, API routes |
+| `react` | 19.2.3 | UI |
+| `react-dom` | 19.2.3 | Runtime React |
+| `typescript` | ^5 | Tipizzazione |
+| `tailwindcss` | ^4 | Styling utility-first |
+| `@tailwindcss/postcss` | ^4 | Integrazione PostCSS |
+| `next-intl` | ^4.8.3 | Traduzioni IT/AR |
+| `mongodb` | ^7.1.1 | Database contenuti, utenti, sessioni, iscrizioni |
+| `@supabase/supabase-js` | ^2.98.0 | Layer admin e residui compatibili |
+| `bcryptjs` | ^3.0.3 | Hash password |
+| `lucide-react` | ^0.575.0 | Icone |
+| `react-qr-code` | ^2.0.18 | QR code |
+| `date-fns` | ^4.4.0 | Formattazione date in alcune viste client |
+| `pdf-lib` | ^1.17.1 | Gestione PDF lato admin |
+| `@vercel/analytics` | ^2.0.1 | Analytics |
+| `@vercel/speed-insights` | ^2.0.0 | Speed Insights |
+| `babel-plugin-react-compiler` | 1.0.0 | React Compiler |
+| `dotenv` | ^17.3.1 | Supporto env locale |
+| `eslint` | ^9 | Lint |
+| `eslint-config-next` | 16.1.6 | Preset ESLint Next.js |
+| `agentation`, `thinking-orbs` | presenti | Dipendenze non centrali per il flusso pubblico |
 
 Script utili:
 
 ```bash
+npm install
 npm run dev
 npm run build
 npm run start
@@ -75,136 +86,199 @@ npm run generate-hash -- "password"
 
 ---
 
-## 4. Architettura e route groups
+## 4. Configurazione e deploy
 
-### 4.1 Route groups reali
+### 4.1 File di configurazione
 
-- `src/app/(main)` → sito pubblico
-- `src/app/admin/(dashboard)` → area admin protetta
-- `src/app/admin/login` → login admin separato
+- `next.config.js`
+  - abilita `next-intl` con `src/i18n/request.ts`
+  - imposta Content Security Policy e security headers globali
+  - consente immagini da Google Drive / Googleusercontent e alcuni embed esterni
 
-### 4.2 Layout principali
+- `vercel.json`
+  - build command: `next build`
+  - route API con `maxDuration` maggiore
+  - cache-control disattivato sulle API
+
+- `eslint.config.mjs`
+  - configurazione lint del progetto
+
+- `tsconfig.json`
+  - configurazione TypeScript del workspace
+
+- `postcss.config.mjs`
+  - integrazione Tailwind/PostCSS
+
+### 4.2 Variabili d'ambiente rilevate nel codice
+
+Le variabili effettivamente usate nel repository sono:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_SESSION_SECRET=
+MONGODB_URI=
+MONGODB_DB=
+NEXT_PUBLIC_SITE_URL=
+YOUTUBE_API_KEY=
+```
+
+Note operative:
+
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` alimentano il layer admin Supabase.
+- `ADMIN_SESSION_SECRET` firma la sessione admin JWT.
+- `MONGODB_URI` e `MONGODB_DB` alimentano MongoDB per contenuti, utenti e iscrizioni.
+- `NEXT_PUBLIC_SITE_URL` viene usato per costruire URL assoluti in alcune API.
+- `YOUTUBE_API_KEY` alimenta l'endpoint del canale YouTube.
+
+---
+
+## 5. Architettura generale
+
+### 5.1 Route groups e layout
+
+- `src/app/(main)`
+  - sito pubblico
+  - include home, pagine contenuto, profilo, iscrizioni e sezione live / orari
+
+- `src/app/admin/login`
+  - pagina autonoma di login admin
+
+- `src/app/admin/(dashboard)`
+  - shell protetta del pannello amministrativo
+  - sidebar admin, topbar fissa e toast
+
+### 5.2 Layout principali
 
 - `src/app/layout.tsx`
   - root layout globale
-  - carica font Google
-  - avvolge con `NextIntlClientProvider`
-  - avvolge con `AuthProvider`
+  - carica tre font Google: `Source_Sans_3`, `Cormorant_Garamond`, `Noto_Naskh_Arabic`
+  - avvolge tutto con `NextIntlClientProvider`
+  - avvolge tutto con `AuthProvider`
   - renderizza `LoginModal` e `RegisterModal`
+  - include `Analytics` e `SpeedInsights`
 
 - `src/app/(main)/layout.tsx`
   - shell pubblica con `Navbar`, `Sidebar`, `Footer`
-  - spazio per bottom dock mobile
+  - struttura flex full-height con area contenuto centrale
 
 - `src/app/admin/layout.tsx`
   - layout minimale per la login admin
-  - non include sidebar o topbar admin
 
 - `src/app/admin/login/layout.tsx`
   - layout centrato per la pagina di login admin
 
 - `src/app/admin/(dashboard)/layout.tsx`
-  - shell admin con `AdminSidebar`, topbar fissa, `AdminToast`
-  - area contenuto con `lg:ml-[260px]` e `pt-14`
+  - shell admin con sidebar fissa e contenuto spostato a destra
 
 ---
 
-## 5. Layer dati e persistenza
+## 6. Modello dati e persistenza
 
-### 5.1 Dati contenuti
+### 6.1 Layer pubblico di lettura
 
-- `src/lib/db.ts` è il layer utile per le pagine pubbliche
-- usa `unstable_cache` con revalidate 60 e tag di invalidazione
-- chiama `src/lib/mongo/content.ts`
+- `src/lib/db.ts` è il punto di accesso usato dalle pagine pubbliche.
+- Usa `unstable_cache` con revalidate a 60 secondi e tag di invalidazione.
+- Espone letture per:
+  - icone
+  - testi sacri / libreria
+  - preghiere
+  - video corsi
+  - eventi
+  - orari settimanali
+  - iscrizioni evento
 
-### 5.2 Contenuti e seed
+### 6.2 Layer MongoDB contenuti
 
-- `src/lib/mongo/content.ts` legge e scrive su MongoDB
-- collezioni gestite: `icone`, `testi_sacri`, `preghiere`, `eventi`, `orari_settimanali`, `file_privati`
-- se le collezioni sono vuote, i getter popolano i mock da `src/lib/mock-data.ts`
-- il codice crea indici su slug, data ed altri campi utili
+- `src/lib/mongo/content.ts` è il layer reale dei contenuti.
+- Gestisce le collezioni:
+  - `icone`
+  - `testi_sacri`
+  - `preghiere`
+  - `video_corsi`
+  - `eventi`
+  - `orari_settimanali`
+  - `file_privati`
+- Crea indici su `id`, `slug`, `giorno` e altri campi utili.
+- Normalizza gli eventi con `raccoglimento` e ordina gli orari secondo la settimana italiana.
+- Le collezioni non vengono più popolate da dati demo all'avvio: partono vuote e vengono riempite dall'admin.
 
-### 5.3 Sessioni e autenticazione
+### 6.3 Layer legacy / compatibilità
 
-- `src/lib/auth/session.ts` crea e valida JWT admin con `ADMIN_SESSION_SECRET`
-- `src/lib/mongo/sessions.ts` crea e valida JWT utenti normali
-- non esiste un vero persistere di sessioni in DB nel codice attuale
-  - `admin_sessions` e `user_sessions` sono citate in documentazione/schema ma non usate attivamente
-- i cookie sono:
+- `src/lib/data/store.ts`
+  - store in-memory di compatibilità con il vecchio flusso Supabase
+  - ora parte vuoto e non contiene più dati demo
+
+- `src/lib/supabase/content.ts`
+  - layer Supabase residuo che legge e scrive alcune entità
+  - in assenza di dati, cade sullo store in-memory compatibile
+  - non deve essere interpretato come seed demo attivo
+
+### 6.4 Sessioni e autenticazione
+
+- `src/lib/auth/session.ts` crea e valida il JWT admin con `ADMIN_SESSION_SECRET`.
+- `src/lib/mongo/sessions.ts` crea e valida il JWT utente normale.
+- I cookie in uso sono:
   - `admin_session` per admin
   - `user_session` per utenti normali
+- Non esiste un persistere delle sessioni in DB per il flusso attuale.
 
-### 5.4 Autenticazione admin vs utenti normali
+### 6.5 Account admin e utenti normali
 
-- admin users sono memorizzati in Supabase (`admin_users`)
-- utenti normali sono memorizzati in MongoDB (`users`)
-- login pubblico unificato in `/api/auth/login` tenta prima admin Supabase e poi user MongoDB
-- admin login diretto esiste anche in `/api/admin/login`
+- Gli admin sono letti da Supabase nella tabella `admin_users`.
+- Gli utenti normali sono letti da MongoDB nella collezione `users`.
+- Il login pubblico unificato in `/api/auth/login` tenta prima l'admin Supabase e poi l'utente MongoDB.
+- La route `/api/admin/login` rimane disponibile per il login diretto dell'area amministrativa.
 
 ---
 
-## 6. Autenticazione e auth flow
+## 7. Flusso autenticazione
 
-### 6.1 Root auth client-side
+### 7.1 Root auth client-side
 
 - `src/components/auth/AuthContext.tsx`
-  - gestisce stato `guest` / `user` / `admin`
+  - stato `guest` / `user` / `admin`
   - espone `showLoginModal`, `showRegisterModal`, `isExplicitGuest`, `refresh`, `logout`
-  - chiama `/api/auth/me` all'avvio
-  - salva `admin_info` in `localStorage` per lo stato admin
+  - esegue `GET /api/auth/me` al mount
+  - salva `admin_info` in `localStorage` quando serve
 
-- `src/components/auth/LoginModal.tsx` e `src/components/auth/RegisterModal.tsx`
-  - resi a livello root
-  - hanno accesso a `AuthContext`
+- `src/components/auth/LoginModal.tsx`
+  - modale login condivisa
 
-### 6.2 Endpoint importanti
+- `src/components/auth/RegisterModal.tsx`
+  - modale registrazione condivisa
 
-- `POST /api/auth/login` — login unificato admin + utenti normali
-- `POST /api/auth/register` — registrazione utenti normali
-- `POST /api/auth/logout` — logout utente normale
-- `GET /api/auth/me` — stato autentificazione corrente
-- `POST /api/auth/change-password` — cambio password
-- `POST /api/auth/update-profile` — modifica profilo (utenti normali o admin in base al cookie)
-- `GET /api/youtube/channel` — dati canale YouTube con cache
+### 7.2 Endpoint principali
 
-### 6.3 Login unificato
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `POST /api/auth/change-password`
+- `POST /api/auth/update-profile`
+- `POST /api/admin/login`
+- `POST /api/admin/logout`
+- `GET /api/youtube/channel`
 
-- `src/app/api/auth/login/route.ts` cerca prima `admin_users` in Supabase
-- se l'utente admin esiste e la password è valida, imposta `admin_session`
-- altrimenti cerca l'utente MongoDB e imposta `user_session`
-- la logica di rate limit è in `src/lib/auth/rate-limit.ts`
+### 7.3 Logica login unificato
 
-### 6.4 Auto-promozione admin
-
-- `GET /api/auth/me` verifica sessione `user_session`
-- se l'utente MongoDB ha `adminRequest === "approved"`, cerca l'utente corrispondente in Supabase
-- se trovato, crea un token admin e imposta `admin_session`
-- ritorna `type: "admin"`
-
-### 6.5 Logout admin
-
-- `POST /api/admin/logout` elimina il cookie `admin_session`
-- `AuthContext.logout()` chiama endpoint appropriato in base al tipo utente
+- `src/app/api/auth/login/route.ts` verifica il rate limit per IP.
+- Prova prima il match admin su Supabase usando username o email.
+- Se l'admin è valido, aggiorna `ultimo_accesso` e setta `admin_session`.
+- Se fallisce, prova l'utente normale su MongoDB usando email o username.
+- Se fallisce anche quello, incrementa i tentativi falliti e restituisce errore 401.
 
 ---
 
-## 7. Section visibility e gate
+## 8. Visibilità sezioni
 
-### 7.1 Come funziona
+### 8.1 Gate
 
-- il sistema di visibilità è implementato in `src/lib/mongo/visibility.ts`
-- dati di default per le sezioni sono definiti in `DEFAULT_SECTIONS`
-- la collezione MongoDB `section_visibility` viene popolata al primo avvio se vuota
+- `src/lib/mongo/visibility.ts` gestisce i permessi per sezione.
+- `src/components/SectionVisibilityGate.tsx` decide lato server se mostrare contenuto, pagina coming soon o blocco accesso negato.
 
-### 7.2 Gate server-side
-
-- `src/components/SectionVisibilityGate.tsx` chiama `getSectionAccess(sectionId)`
-- mostra:
-  - contenuto normale se accesso `full`
-  - `ComingSoonPage` se accesso `coming_soon`
-  - messaggio lock se accesso `hidden`
-
-### 7.3 Sezioni protette attualmente wrappate
+### 8.2 Sezioni attualmente wrappate
 
 - `/eventi`
 - `/icone`
@@ -213,174 +287,126 @@ npm run generate-hash -- "password"
 - `/preghiere`
 - `/video-corsi`
 
-### 7.4 Endpoint client-side per la navbar
+### 8.3 API di supporto
 
-- `GET /api/public/section-visibility` fornisce visibilità sezione lato client per la sidebar
+- `GET /api/public/section-visibility` fornisce al client la visibilità delle sezioni.
 
 ---
 
-## 8. Struttura file chiave
+## 9. Struttura del progetto
 
-### 8.1 Directory principale rilevante
+### 9.1 Root e file di supporto
 
-- `src/app/layout.tsx`
-- `src/app/(main)/layout.tsx`
-- `src/app/admin/layout.tsx`
-- `src/app/admin/login/layout.tsx`
-- `src/app/admin/(dashboard)/layout.tsx`
-- `src/components/auth/AuthContext.tsx`
-- `src/components/auth/LoginModal.tsx`
-- `src/components/auth/RegisterModal.tsx`
-- `src/components/auth/GuestGate.tsx`
-- `src/components/SectionVisibilityGate.tsx`
-- `src/components/sidebar/SidebarDock.tsx`
-- `src/components/sidebar/MobileDock.tsx`
-- `src/components/Navbar.tsx`
-- `src/components/Footer.tsx`
-- `src/components/admin/AdminSidebar.tsx`
-- `src/components/admin/AdminTopbarTitle.tsx`
-- `src/lib/db.ts`
-- `src/lib/mongo/content.ts`
-- `src/lib/mongo/registrations.ts`
-- `src/lib/mongo/sessions.ts`
-- `src/lib/auth/session.ts`
-- `src/lib/auth/jwt.ts`
-- `src/lib/auth/rate-limit.ts`
-- `src/lib/mongo/visibility.ts`
-- `src/lib/supabase/server.ts`
-- `src/lib/supabase/content.ts` (residuo)
-- `src/lib/data/store.ts` (residuo)
+- `README.md` documentazione sintetica del progetto
+- `PROJECT_CONTEXT.md` contesto operativo dettagliato
+- `vercel.json` configurazione deploy Vercel
+- `next.config.js` config Next/CSP
+- `package.json` dipendenze e script
+- `tsconfig.json` configurazione TypeScript
+- `eslint.config.mjs` configurazione lint
+- `tailwind.config.mjs` config Tailwind di supporto
 
-### 8.2 Pagine pubbliche principali
+### 9.2 App pubblica
 
-- `src/app/(main)/page.tsx`
+- `src/app/(main)/page.tsx` home page con hero, orari, live, contenuti in evidenza
 - `src/app/(main)/chi-siamo/page.tsx`
 - `src/app/(main)/contatti/page.tsx`
 - `src/app/(main)/eventi/page.tsx`
 - `src/app/(main)/icone/page.tsx`
-- `src/app/(main)/icone/[slug]/page.tsx`
 - `src/app/(main)/libreria/page.tsx`
-- `src/app/(main)/libreria/[slug]/page.tsx`
 - `src/app/(main)/orari/page.tsx`
 - `src/app/(main)/preghiere/page.tsx`
-- `src/app/(main)/profilo/page.tsx`
 - `src/app/(main)/video-corsi/page.tsx`
 - `src/app/(main)/iscrizioni/page.tsx`
+- `src/app/(main)/profilo/page.tsx`
 
-### 8.3 Pagine admin principali
+### 9.3 App admin
 
-- `src/app/admin/(dashboard)/page.tsx`
-- `src/app/admin/(dashboard)/eventi/page.tsx`
-- `src/app/admin/(dashboard)/icone/page.tsx`
-- `src/app/admin/(dashboard)/libreria/page.tsx`
-- `src/app/admin/(dashboard)/libreria-privata/page.tsx`
-- `src/app/admin/(dashboard)/orari/page.tsx`
-- `src/app/admin/(dashboard)/preghiere/page.tsx`
-- `src/app/admin/(dashboard)/video-corsi/page.tsx`
-- `src/app/admin/(dashboard)/iscrizioni/page.tsx` — gestione iscrizioni eventi con filtri, riepiloghi pagati/da saldare, ordinamento e export
-- `src/app/admin/(dashboard)/utenti/page.tsx` — gestione utenti con filtri per ruolo, fascia d’età e richiesta admin, oltre a review della richiesta tramite modal
-- `src/app/admin/(dashboard)/gestione-admin/page.tsx`
-- `src/app/admin/(dashboard)/gestione-sezioni/page.tsx`
-- `src/app/admin/(dashboard)/gestione-permessi/page.tsx`
-- `src/app/admin/login/page.tsx`
+- `src/app/admin/(dashboard)/page.tsx` dashboard amministrativa
+- cartelle admin per gestione contenuti, utenti, permessi, visibilità e iscrizioni
 
-### 8.4 API rilevanti
+### 9.4 Componenti principali
 
-- `src/app/api/auth/login/route.ts`
-- `src/app/api/auth/register/route.ts`
-- `src/app/api/auth/logout/route.ts`
-- `src/app/api/auth/me/route.ts`
-- `src/app/api/auth/change-password/route.ts`
-- `src/app/api/auth/update-profile/route.ts`
-- `src/app/api/eventi/iscrizione/route.ts`
-- `src/app/api/public/section-visibility/route.ts`
-- `src/app/api/youtube/channel/route.ts`
-- `src/app/api/admin/login/route.ts`
-- `src/app/api/admin/logout/route.ts`
-- `src/app/api/admin/eventi/route.ts`
-- `src/app/api/admin/icone/route.ts`
-- `src/app/api/admin/libreria/route.ts`
-- `src/app/api/admin/libreria-privata/route.ts`
-- `src/app/api/admin/orari/route.ts`
-- `src/app/api/admin/preghiere/route.ts`
-- `src/app/api/admin/video-corsi/route.ts`
-- `src/app/api/admin/iscrizioni/route.ts` — lista iscrizioni, aggiornamenti stato pagamento e riepiloghi aggregati
-- `src/app/api/admin/iscrizioni/export/route.ts` — export CSV delle iscrizioni
-- `src/app/api/admin/utenti/route.ts` — lista utenti con filtri ruolo/età/richiesta admin
-- `src/app/api/admin/users/route.ts`
-- `src/app/api/admin/users/[id]/toggle/route.ts`
-- `src/app/api/admin/richieste-admin/route.ts`
-- `src/app/api/admin/richieste-superadmin/route.ts`
-- `src/app/api/admin/section-visibility/route.ts`
-- `src/app/api/admin/section-visibility/[sectionId]/route.ts`
+- `src/components/Navbar.tsx`
+- `src/components/Sidebar.tsx`
+- `src/components/Footer.tsx`
+- `src/components/EventiList.tsx`
+- `src/components/IconeGrid.tsx`
+- `src/components/OrariTable.tsx`
+- `src/components/NextCelebrationCard.tsx`
+- `src/components/YouTubeLiveSection.tsx`
+- `src/components/SectionVisibilityGate.tsx`
+- `src/components/ComingSoonPage.tsx`
+- `src/components/auth/*`
+- `src/components/admin/*`
+
+### 9.5 Layer dati e utility
+
+- `src/lib/db.ts`
+- `src/lib/mongo/content.ts`
+- `src/lib/mongo/registrations.ts`
+- `src/lib/mongo/sessions.ts`
+- `src/lib/mongo/users.ts`
+- `src/lib/mongo/client.ts`
+- `src/lib/auth/session.ts`
+- `src/lib/auth/jwt.ts`
+- `src/lib/auth/rate-limit.ts`
+- `src/lib/section-access.ts`
+- `src/lib/gdrive.ts`
+- `src/lib/next-celebration.ts`
+- `src/lib/supabase/server.ts`
+- `src/lib/supabase/client.ts`
+
+### 9.6 Tipi e traduzioni
+
+- `src/types/index.ts` definisce i modelli principali: `Icona`, `TestoSacro`, `Preghiera`, `VideoCorso`, `Evento`, `OrarioSettimanale`, `IscrizioneEvento`, `UserSessionInfo`, `AdminSessionInfo`.
+- `src/messages/it.json` e `src/messages/ar.json` contengono le traduzioni.
+- `src/i18n/request.ts` configura `next-intl` lato server.
 
 ---
 
-## 9. Variabili ambiente
+## 10. Home page e contenuti
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_SESSION_SECRET`
-- `MONGODB_URI`
-- `MONGODB_DB`
-- `YOUTUBE_API_KEY`
-- `NEXT_PUBLIC_SITE_URL` (usato come fallback URL in `api/auth/me`)
+### 10.1 Hero page
 
-Note:
-- `SUPABASE_SERVICE_ROLE_KEY` è sensibile e va mantenuta server-only
-- `ADMIN_SESSION_SECRET` è usato per firmare/verificare JWT
-- i cookie admin/user sono `httpOnly`, `secure` in produzione e `sameSite: lax`
+- La hero è in `src/app/(main)/page.tsx`.
+- Mostra titolo, sottotitolo, call to action sugli orari e accesso alla pagina eventi.
+- La card che invitava all'iscrizione all'evento attivo è stata disattivata nel codice ma lasciata commentata, pronta per essere riattivata senza riscrittura.
+- La card della prossima celebrazione usa `NextCelebrationCard` e i dati degli orari settimanali.
 
----
+### 10.2 Contenuti in evidenza
 
-## 10. Note importanti e limiti attuali
+- La home mostra anche un blocco eventi e un blocco preghiere.
+- Gli eventi hanno uno stato vuoto esplicito.
+- Le preghiere e la libreria mostrano uno stato vuoto quando le collezioni sono assenti.
 
-- `src/proxy.ts` esiste ma non è collegato da un middleware `middleware.ts` nel repository corrente;
-  quindi non è automaticamente attivo in Next.js come middleware Edge.
-- Il progetto usa JWT nei cookie per sessioni, non una tabella di sessioni DB attiva.
-- `src/lib/supabase/content.ts` e `src/lib/data/store.ts` sono residui di un layer dati alternativo e non sono usati dalle API pubbliche esistenti.
-- La shell admin è separata dalla pagina di login: `/admin/login` usa `src/app/admin/layout.tsx`, mentre l'admin protetto usa `src/app/admin/(dashboard)/layout.tsx`.
-- Le pagine pubbliche che usano `SectionVisibilityGate` sono controllate lato server e possono mostrare "coming soon" o "hidden" in base al ruolo.
-- Le modifiche CRUD admin dovrebbero invalidare i tag di cache in `src/lib/db.ts` quando aggiornano contenuti pubblici.
+### 10.3 Sezioni con dati reali o vuoti
+
+- `eventi` dipende dai contenuti reali in MongoDB e dal conteggio iscrizioni.
+- `icone`, `libreria`, `preghiere`, `video-corsi` e `orari` non ricevono più seed demo automatici.
 
 ---
 
-## 11. Come leggere questo progetto
+## 11. Note operative
 
-1. Verifica il layout root in `src/app/layout.tsx`
-2. Controlla `src/components/auth/AuthContext.tsx` per il flow auth cliente
-3. Leggi `src/app/api/auth/login/route.ts` per la login unificata
-4. Leggi `src/lib/mongo/content.ts` e `src/lib/db.ts` per il layer contenuti pubblici
-5. Leggi `src/lib/mongo/visibility.ts` e `src/components/SectionVisibilityGate.tsx` per la visibilità sezioni
-6. Leggi `src/app/admin/(dashboard)/layout.tsx` prima di modificare l'admin shell
+- L'area admin è la fonte primaria per creare contenuti iniziali.
+- Se una collezione è vuota, la UI deve mostrare uno stato vuoto o una vista compatibile, non dati inventati.
+- Il repository contiene ancora alcuni layer legacy di compatibilità con Supabase, ma il flusso dominante oggi è MongoDB per i contenuti e Supabase per gli admin.
+- `src/lib/mock-data.ts` non è più parte del flusso applicativo.
 
 ---
 
-## 12. Esempi di flussi chiave
+## 12. Comandi rapidi
 
-### Login utente normale
-- POST `/api/auth/login` con `identifier`, `password`, `rememberMe`
-- trova utente MongoDB
-- crea JWT `user_session`
-- il client chiama `/api/auth/me` per aggiornare lo stato
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+```
 
-### Login admin
-- POST `/api/auth/login` con username/email e password
-- se l'utente è admin su Supabase, crea JWT `admin_session`
-- `AuthContext` salva `admin_info` in localStorage e imposta stato `admin`
+Per l'hash bcrypt iniziale di un admin:
 
-### Accesso sezione protetta
-- `SectionVisibilityGate` legge il cookie
-- usa `getSectionAccess(sectionId)`
-- restituisce `full`, `coming_soon` o `hidden`
-
----
-
-## 13. Raccomandazioni rapide
-
-- Non aggiungere una `middleware.ts` senza confermare l'intento di attivare `src/proxy.ts`.
-- Non assumere che `admin_sessions` o `user_sessions` siano utilizzate: la sessione è JWT-based.
-- Mantieni la separazione login/admin shell.
-- Preserva il supporto IT/AR nelle pagine pubbliche.
-- Se aggiungi un nuovo contenuto, aggiorna `src/lib/mongo/content.ts`, le API admin e le pagine pubbliche/privato.
+```bash
+npm run generate-hash -- "la-tua-password"
+```

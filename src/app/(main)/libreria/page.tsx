@@ -58,6 +58,12 @@ export default async function LibreriaPage() {
           </Link>
         ))}
       </div>
+
+      {testi.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-10 text-center text-sm text-foreground/60">
+          Nessun contenuto disponibile al momento.
+        </div>
+      )}
     </div>
   );
 

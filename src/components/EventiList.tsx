@@ -383,6 +383,15 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
     );
   }
 
+  if (eventi.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
+        <p className="text-sm font-semibold text-gray-900">Nessun evento disponibile al momento.</p>
+        <p className="mt-2 text-sm text-gray-500">Torna più tardi quando saranno pubblicati nuovi eventi.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="grid gap-6">

@@ -1,12 +1,8 @@
 /**
  * In-memory data store — funge da "database" condiviso tra area admin e parte pubblica.
  *
- * FUTURO: Sostituire questo file con chiamate a Supabase.
- * Ogni funzione get/add/update/delete può essere rimpiazzata con:
- *   - supabase.from('tabella').select('*')
- *   - supabase.from('tabella').insert(...)
- *   - supabase.from('tabella').update(...).eq('id', id)
- *   - supabase.from('tabella').delete().eq('id', id)
+ * Questo layer resta come compatibilità per il vecchio flusso Supabase,
+ * ma non contiene più dati demo seedati.
  */
 
 import type {
@@ -16,13 +12,6 @@ import type {
   Evento,
   OrarioSettimanale,
 } from "@/types";
-import {
-  icone as iconeInit,
-  testiSacri as testiSacriInit,
-  preghiere as preghiereInit,
-  eventi as eventiInit,
-  orariSettimanali as orariInit,
-} from "@/lib/mock-data";
 
 // === Tipo per i file privati admin ===
 export interface FilePrivato {
@@ -52,11 +41,11 @@ const globalForStore = globalThis as unknown as { __store?: StoreData };
 
 if (!globalForStore.__store) {
   globalForStore.__store = {
-    libri: [...testiSacriInit],
-    icone: [...iconeInit],
-    preghiere: [...preghiereInit],
-    eventi: [...eventiInit],
-    orari: [...orariInit],
+    libri: [],
+    icone: [],
+    preghiere: [],
+    eventi: [],
+    orari: [],
     filePrivati: [],
   };
 }

@@ -4,7 +4,7 @@
  * Collezioni su Atlas (stesso DB degli utenti normali):
  *   icone, testi_sacri, preghiere, eventi, orari_settimanali, file_privati
  *
- * Al primo avvio le collezioni vuote vengono popolate dai dati mock.
+ * Le collezioni partono vuote e vengono popolate dall'area admin.
  * Le modifiche dell'admin sopravvivono a qualsiasi riavvio del server.
  *
  * ⚠️ NON importare in codice client / "use client".
@@ -13,14 +13,6 @@
 import { getDb } from "@/lib/mongo/client";
 import type { Icona, TestoSacro, Preghiera, VideoCorso, Evento, OrarioSettimanale, RaccoglimentoPoint } from "@/types";
 import type { FilePrivato } from "@/lib/data/store";
-import {
-  icone as iconeInit,
-  testiSacri as testiSacriInit,
-  preghiere as preghiereInit,
-  videoCorsi as videoCorsiInit,
-  eventi as eventiInit,
-  orariSettimanali as orariInit,
-} from "@/lib/mock-data";
 
 const GIORNI_SETTIMANA = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
 const GIORNO_TO_INDEX = new Map(GIORNI_SETTIMANA.map((giorno, index) => [giorno, index]));
@@ -86,9 +78,7 @@ async function nextId(colName: string): Promise<string> {
 // Flag per indici — su globalThis per sopravvivere all'HMR in sviluppo
 const g = globalThis as unknown as {
   _mongoContentIndexes?: boolean;
-  _mongoContentSeeded?: Record<string, boolean>;
 };
-if (!g._mongoContentSeeded) g._mongoContentSeeded = {};
 
 async function ensureIndexes(): Promise<void> {
   if (g._mongoContentIndexes) return;
@@ -109,24 +99,12 @@ async function ensureIndexes(): Promise<void> {
   g._mongoContentIndexes = true;
 }
 
-// Popola la collezione dai mock solo se è vuota (una volta sola)
-async function seedIfEmpty(colName: string, data: object[]): Promise<void> {
-  if (g._mongoContentSeeded![colName]) return;
-  const db = await getDb();
-  const count = await db.collection(colName).countDocuments();
-  if (count === 0 && data.length > 0) {
-    await db.collection(colName).insertMany(data.map((d) => ({ ...d })));
-  }
-  g._mongoContentSeeded![colName] = true;
-}
-
 // ============================================================
 //  ICONE
 // ============================================================
 
 export async function getIcone(): Promise<Icona[]> {
   await ensureIndexes();
-  await seedIfEmpty("icone", iconeInit);
   const db = await getDb();
   return (await db.collection("icone").find({}).toArray()).map((d) => clean<Icona>(d));
 }
@@ -174,7 +152,6 @@ export async function deleteIcona(id: string): Promise<boolean> {
 
 export async function getLibri(): Promise<TestoSacro[]> {
   await ensureIndexes();
-  await seedIfEmpty("testi_sacri", testiSacriInit);
   const db = await getDb();
   return (await db.collection("testi_sacri").find({}).toArray()).map((d) => clean<TestoSacro>(d));
 }
@@ -222,7 +199,6 @@ export async function deleteLibro(id: string): Promise<boolean> {
 
 export async function getPreghiere(): Promise<Preghiera[]> {
   await ensureIndexes();
-  await seedIfEmpty("preghiere", preghiereInit);
   const db = await getDb();
   return (await db.collection("preghiere").find({}).toArray()).map((d) => clean<Preghiera>(d));
 }
@@ -264,7 +240,6 @@ export async function deletePreghiera(id: string): Promise<boolean> {
 
 export async function getVideoCorsi(): Promise<VideoCorso[]> {
   await ensureIndexes();
-  await seedIfEmpty("video_corsi", videoCorsiInit);
   const db = await getDb();
   return (await db.collection("video_corsi").find({}).toArray()).map((d) => clean<VideoCorso>(d));
 }
@@ -306,7 +281,6 @@ export async function deleteVideoCorso(id: string): Promise<boolean> {
 
 export async function getEventi(): Promise<Evento[]> {
   await ensureIndexes();
-  await seedIfEmpty("eventi", eventiInit);
   const db = await getDb();
   return (await db.collection("eventi").find({}).sort({ data: 1 }).toArray()).map((d) => normalizeEvento(d));
 }
@@ -358,7 +332,6 @@ export async function deleteEvento(id: string): Promise<boolean> {
 
 export async function getOrari(): Promise<OrarioSettimanale[]> {
   await ensureIndexes();
-  await seedIfEmpty("orari_settimanali", orariInit);
   const db = await getDb();
   const orari = (await db.collection("orari_settimanali").find({}).toArray()).map((d) =>
     clean<OrarioSettimanale>(d)
