@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { CHIESE_LIST } from "@/lib/churches";
+import { showToast } from "@/components/admin/AdminToast";
 
 interface UserPublic {
   _id: string;
@@ -216,10 +217,10 @@ export default function GestioneUtentiPage() {
         ));
         closeEdit();
       } else {
-        alert(data.error);
+        showToast(data.error, "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     } finally {
       setSaving(false);
     }
@@ -368,10 +369,10 @@ export default function GestioneUtentiPage() {
         setConfirmDelete(null);
         await fetchUsers();
       } else {
-        alert(data.error);
+        showToast(data.error, "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     }
   }
 

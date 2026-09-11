@@ -16,6 +16,7 @@ import {
   Check,
   XCircle,
 } from "lucide-react";
+import { showToast } from "@/components/admin/AdminToast";
 
 interface AdminUser {
   id: string;
@@ -141,10 +142,10 @@ export default function GestioneAdminPage() {
       if (data.success) {
         await Promise.all([fetchPendingRequests(), fetchAdmins()]);
       } else {
-        alert(data.error || "Errore nell'approvazione");
+        showToast(data.error || "Errore nell'approvazione", "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     } finally {
       setProcessingRequest(null);
     }
@@ -162,10 +163,10 @@ export default function GestioneAdminPage() {
       if (data.success) {
         await fetchPendingRequests();
       } else {
-        alert(data.error || "Errore nel rifiuto");
+        showToast(data.error || "Errore nel rifiuto", "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     } finally {
       setProcessingRequest(null);
     }
@@ -183,10 +184,10 @@ export default function GestioneAdminPage() {
       if (data.success) {
         await Promise.all([fetchPendingSuperAdminRequests(), fetchAdmins()]);
       } else {
-        alert(data.error || "Errore nell'approvazione richiesta superadmin");
+        showToast(data.error || "Errore nell'approvazione richiesta superadmin", "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     } finally {
       setProcessingRequest(null);
     }
@@ -204,10 +205,10 @@ export default function GestioneAdminPage() {
       if (data.success) {
         await fetchPendingSuperAdminRequests();
       } else {
-        alert(data.error || "Errore nel rifiuto richiesta superadmin");
+        showToast(data.error || "Errore nel rifiuto richiesta superadmin", "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     } finally {
       setProcessingRequest(null);
     }
@@ -295,10 +296,10 @@ export default function GestioneAdminPage() {
       if (data.success) {
         await fetchAdmins();
       } else {
-        alert(data.error);
+        showToast(data.error, "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     } finally {
       setTogglingId(null);
     }
@@ -315,10 +316,10 @@ export default function GestioneAdminPage() {
         setConfirmDelete(null);
         await fetchAdmins();
       } else {
-        alert(data.error);
+        showToast(data.error, "error");
       }
     } catch {
-      alert("Errore di connessione");
+      showToast("Errore di connessione", "error");
     } finally {
       setDeletingId(null);
     }
