@@ -178,7 +178,7 @@ export default function SuperAdminSectionVisibilityManager({
                               className={`inline-flex items-center justify-center w-8 h-8 rounded transition-all ${
                                 isSelected
                                   ? "bg-blue-500 text-white shadow-sm"
-                                  : "bg-surface-2 text-foreground/70 hover:bg-surface-2"
+                                  : "bg-surface-2 text-foreground/70 hover:bg-border"
                               } ${
                                 saving === section.sectionId ? "opacity-50 cursor-not-allowed" : ""
                               }`}

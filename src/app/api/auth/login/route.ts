@@ -80,24 +80,16 @@ async function tryAdminLogin(
   rememberMe: boolean
 ): Promise<NextResponse | null> {
   // Cerchiamo sia per username che per email. Due query .eq() separate
-  // invece di .or() con interpolazione diretta: il filtro .or() di
-  // PostgREST usa una mini-sintassi (virgole, parentesi) che l'input
-  // utente non sanificato potrebbe alterare.
-  const { data: byUsername } = await supabaseAdmin
-    .from("admin_users")
-    .select("id, username, email, password_hash, nome, cognome, ruolo, attivo")
-    .eq("username", identifier)
-    .maybeSingle();
+  // (in parallelo) invece di .or() con interpolazione diretta: il filtro
+  // .or() di PostgREST usa una mini-sintassi (virgole, parentesi) che
+  // l'input utente non sanificato potrebbe alterare.
+  const selectColumns = "id, username, email, password_hash, nome, cognome, ruolo, attivo";
+  const [{ data: byUsername }, { data: byEmail }] = await Promise.all([
+    supabaseAdmin.from("admin_users").select(selectColumns).eq("username", identifier).maybeSingle(),
+    supabaseAdmin.from("admin_users").select(selectColumns).eq("email", identifier).maybeSingle(),
+  ]);
 
-  const user =
-    byUsername ??
-    (
-      await supabaseAdmin
-        .from("admin_users")
-        .select("id, username, email, password_hash, nome, cognome, ruolo, attivo")
-        .eq("email", identifier)
-        .maybeSingle()
-    ).data;
+  const user = byUsername ?? byEmail;
 
   if (!user) return null;
   if (!user.attivo) {

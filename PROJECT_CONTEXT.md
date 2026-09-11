@@ -291,6 +291,15 @@ corretto le seguenti vulnerabilità e ora documenta lo stato reale:
     nativo. Preesistente, non toccato in questo audit (avrebbe richiesto
     verifica visiva approfondita non disponibile in questa sessione senza
     browser).
+  - Il controllo `requireAdminSession()` è ripetuto identico in ogni
+    handler HTTP delle 7 route appena protette (`eventi`, `icone`,
+    `libreria`, `libreria-privata`, `orari`, `preghiere`, `video-corsi`) —
+    corretto e sicuro, ma duplicato: una futura route admin aggiunta senza
+    copiare questo boilerplate riaprirebbe lo stesso buco. Non consolidato
+    in questo audit in un `middleware.ts` o wrapper condiviso perché è un
+    cambio più ampio (Edge runtime, matcher su tutte le route
+    `/api/admin/*`) che richiede test più estesi di quelli eseguibili in
+    questa sessione; considerarlo come refactor futuro dedicato.
 
 #### 6.4.2 Convenzioni UI admin
 
