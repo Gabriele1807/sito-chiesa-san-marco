@@ -7,8 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { validateSession } from "@/lib/auth/session";
+import { requireAdminSession } from "@/lib/auth/session";
 import {
   getSectionVisibility,
   updateSectionActive,
@@ -23,21 +22,9 @@ interface RouteParams {
   }>;
 }
 
-async function requireAdminUser() {
-  const cookieStore = await cookies();
-  const adminToken = cookieStore.get("admin_session")?.value;
-  if (!adminToken) return null;
-
-  const adminUser = await validateSession(adminToken);
-  if (!adminUser || !adminUser.attivo) return null;
-  if (adminUser.ruolo !== "admin" && adminUser.ruolo !== "superadmin") return null;
-
-  return adminUser;
-}
-
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   try {
-    const adminUser = await requireAdminUser();
+    const adminUser = await requireAdminSession();
     if (!adminUser) {
       return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
     }
@@ -64,7 +51,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
-    const adminUser = await requireAdminUser();
+    const adminUser = await requireAdminSession();
     if (!adminUser) {
       return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
     }
