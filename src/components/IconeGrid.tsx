@@ -105,7 +105,11 @@ export default function IconeGrid({ icone }: Props) {
 
       {filtered.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">Nessuna icona trovata con i filtri selezionati.</p>
+          <p className="text-gray-500">
+            {icone.length === 0
+              ? "Nessuna icona disponibile al momento."
+              : "Nessuna icona trovata con i filtri selezionati."}
+          </p>
         </div>
       )}
     </>

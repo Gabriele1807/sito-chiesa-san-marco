@@ -41,6 +41,12 @@ export default async function VideoCorsiPage() {
             </div>
           </div>
 
+          {videoCorsi.length === 0 && (
+            <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center text-sm text-gray-500">
+              Nessun video corso disponibile al momento.
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {videoCorsi.map((video) => (
               <a
