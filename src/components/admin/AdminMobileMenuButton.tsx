@@ -25,7 +25,7 @@ export default function AdminMobileMenuButton() {
   return (
     <button
       onClick={handleClick}
-      className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer lg:hidden"
+      className="p-2 rounded-lg text-foreground/70 hover:bg-surface-2 transition-colors cursor-pointer lg:hidden"
       aria-label="Apri menu admin"
     >
       <Menu className="w-5 h-5" />

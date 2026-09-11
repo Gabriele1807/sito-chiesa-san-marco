@@ -118,14 +118,14 @@ export default function AdminIconePage() {
     }
   }
 
-  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-foreground/40" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestione Icone</h1>
-          <p className="text-sm text-gray-500 mt-1">{icone.length} icone nella galleria</p>
+          <h1 className="text-2xl font-bold text-foreground">Gestione Icone</h1>
+          <p className="text-sm text-foreground/60 mt-1">{icone.length} icone nella galleria</p>
         </div>
         <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors">
           <Plus className="w-4 h-4" /> Aggiungi icona
@@ -133,87 +133,87 @@ export default function AdminIconePage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">{editId ? "Modifica icona" : "Nuova icona"}</h3>
+        <form onSubmit={handleSubmit} className="bg-surface rounded-xl border border-border p-6 space-y-4">
+          <h3 className="text-lg font-bold text-foreground">{editId ? "Modifica icona" : "Nuova icona"}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Nome Santo/a</label>
-              <input type="text" value={form.nomeSanto} onChange={(e) => setForm({ ...form, nomeSanto: e.target.value, nome: `Icona di ${e.target.value}` })} required placeholder="San Marco Evangelista" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Nome Santo/a</label>
+              <input type="text" value={form.nomeSanto} onChange={(e) => setForm({ ...form, nomeSanto: e.target.value, nome: `Icona di ${e.target.value}` })} required placeholder="San Marco Evangelista" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Slug</label>
-              <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Auto-generato" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Slug</label>
+              <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Auto-generato" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Posizione in chiesa</label>
-              <input type="text" value={form.posizione} onChange={(e) => setForm({ ...form, posizione: e.target.value })} placeholder="Altare principale" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Posizione in chiesa</label>
+              <input type="text" value={form.posizione} onChange={(e) => setForm({ ...form, posizione: e.target.value })} placeholder="Altare principale" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Categoria</label>
-              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold">
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Categoria</label>
+              <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold">
                 {categorie.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Tecnica</label>
-              <input type="text" value={form.tecnica} onChange={(e) => setForm({ ...form, tecnica: e.target.value })} placeholder="Tempera su legno" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Tecnica</label>
+              <input type="text" value={form.tecnica} onChange={(e) => setForm({ ...form, tecnica: e.target.value })} placeholder="Tempera su legno" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Autore</label>
-              <input type="text" value={form.autore} onChange={(e) => setForm({ ...form, autore: e.target.value })} placeholder="Iconografo copto" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Autore</label>
+              <input type="text" value={form.autore} onChange={(e) => setForm({ ...form, autore: e.target.value })} placeholder="Iconografo copto" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Anno</label>
-              <input type="text" value={form.anno} onChange={(e) => setForm({ ...form, anno: e.target.value })} placeholder="2024" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Anno</label>
+              <input type="text" value={form.anno} onChange={(e) => setForm({ ...form, anno: e.target.value })} placeholder="2024" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Immagini (URLs separati da virgola)</label>
-              <input type="text" value={immaginiStr} onChange={(e) => setImmaginiStr(e.target.value)} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
-              <p className="text-xs text-gray-400 mt-1">Incolla il link di condivisione di Google Drive</p>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Immagini (URLs separati da virgola)</label>
+              <input type="text" value={immaginiStr} onChange={(e) => setImmaginiStr(e.target.value)} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
+              <p className="text-xs text-foreground/40 mt-1">Incolla il link di condivisione di Google Drive</p>
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione breve</label>
-            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={2} placeholder="Breve descrizione" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+            <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Descrizione breve</label>
+            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={2} placeholder="Breve descrizione" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Storia completa</label>
-            <textarea value={form.descrizioneEstesa} onChange={(e) => setForm({ ...form, descrizioneEstesa: e.target.value })} rows={5} placeholder="Testo completo della storia dell'icona" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+            <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Storia completa</label>
+            <textarea value={form.descrizioneEstesa} onChange={(e) => setForm({ ...form, descrizioneEstesa: e.target.value })} rows={5} placeholder="Testo completo della storia dell'icona" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={saving} className="px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50">
               {saving ? "Salvando..." : editId ? "Salva modifiche" : "Aggiungi"}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">Annulla</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-foreground/80 text-sm rounded-lg hover:bg-background transition-colors">Annulla</button>
           </div>
         </form>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-surface rounded-xl border border-border overflow-x-auto">
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Nome</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Posizione</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Categoria</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Azioni</th>
+            <tr className="bg-background border-b border-border">
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Nome</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Posizione</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Categoria</th>
+              <th className="text-right px-4 py-3 font-semibold text-foreground/70">Azioni</th>
             </tr>
           </thead>
           <tbody>
             {icone.map((icona, i) => (
-              <tr key={icona.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                <td className="px-4 py-3 font-medium text-gray-900">{icona.nomeSanto}</td>
-                <td className="px-4 py-3 text-gray-600">{icona.posizione}</td>
-                <td className="px-4 py-3 text-gray-600">{icona.categoria}</td>
+              <tr key={icona.id} className={i % 2 === 0 ? "bg-surface" : "bg-background/50"}>
+                <td className="px-4 py-3 font-medium text-foreground">{icona.nomeSanto}</td>
+                <td className="px-4 py-3 text-foreground/70">{icona.posizione}</td>
+                <td className="px-4 py-3 text-foreground/70">{icona.categoria}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openEdit(icona)} className="p-1.5 text-gray-400 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => setDeleteTarget(icona)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(icona)} className="p-1.5 text-foreground/40 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => setDeleteTarget(icona)} className="p-1.5 text-foreground/40 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {icone.length === 0 && <p className="text-center py-8 text-gray-400 text-sm">Nessuna icona presente</p>}
+        {icone.length === 0 && <p className="text-center py-8 text-foreground/40 text-sm">Nessuna icona presente</p>}
       </div>
 
       <ConfirmModal

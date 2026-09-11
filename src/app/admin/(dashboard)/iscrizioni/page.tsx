@@ -105,28 +105,28 @@ const REGISTRATION_FILTERS: Array<{
     key: "paid",
     label: "Pagati",
     activeClassName: "border-green-300 bg-green-50",
-    inactiveClassName: "border-gray-200 bg-white hover:border-green-300",
+    inactiveClassName: "border-border bg-surface hover:border-green-300",
     countClassName: "text-green-700",
   },
   {
     key: "unpaid",
     label: "Da saldare",
     activeClassName: "border-amber-300 bg-amber-50",
-    inactiveClassName: "border-gray-200 bg-white hover:border-amber-300",
-    countClassName: "text-amber-700",
+    inactiveClassName: "border-border bg-surface hover:border-amber-300",
+    countClassName: "text-gold",
   },
   {
     key: "chiesa",
     label: "In chiesa",
     activeClassName: "border-primary bg-primary/10",
-    inactiveClassName: "border-gray-200 bg-white hover:border-primary/30",
+    inactiveClassName: "border-border bg-surface hover:border-primary/30",
     countClassName: "text-primary",
   },
   {
     key: "luogo",
     label: "Al luogo dell'evento",
     activeClassName: "border-primary bg-primary/10",
-    inactiveClassName: "border-gray-200 bg-white hover:border-primary/30",
+    inactiveClassName: "border-border bg-surface hover:border-primary/30",
     countClassName: "text-primary",
   },
 ];
@@ -459,18 +459,18 @@ export default function AdminIscrizioniPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Iscrizioni Eventi</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Iscrizioni Eventi</h1>
+          <p className="text-sm text-foreground/60 mt-1">
             Seleziona un evento per vedere la lista delle persone iscritte.
           </p>
         </div>
 
         {loadingEventi ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-foreground/40" />
           </div>
         ) : eventi.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-gray-400">
+          <div className="bg-surface rounded-xl border border-border p-10 text-center text-foreground/40">
             <Inbox className="w-8 h-8 mx-auto mb-2" />
             Nessun evento presente
           </div>
@@ -483,10 +483,10 @@ export default function AdminIscrizioniPage() {
                 <button
                   key={ev.id ?? `evento-${index}`}
                   onClick={() => openEvento(ev.id)}
-                  className="text-left bg-white rounded-xl border border-gray-200 p-5 hover:border-gold hover:shadow-sm transition-all"
+                  className="text-left bg-surface rounded-xl border border-border p-5 hover:border-gold hover:shadow-sm transition-all"
                 >
-                  <h3 className="font-bold text-gray-900">{ev.titolo}</h3>
-                  <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+                  <h3 className="font-bold text-foreground">{ev.titolo}</h3>
+                  <div className="flex flex-wrap gap-3 mt-2 text-xs text-foreground/60">
                     <span className="flex items-center gap-1">
                       <CalendarDays className="w-3.5 h-3.5" />
                       {new Date(ev.data).toLocaleDateString("it-IT")}
@@ -525,22 +525,22 @@ export default function AdminIscrizioniPage() {
     <div className="space-y-6">
       <button
         onClick={backToList}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gold transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-foreground/60 hover:text-gold transition-colors"
       >
         <ChevronLeft className="w-4 h-4" /> Tutti gli eventi
       </button>
 
       {loadingDettaglio ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-foreground/40" />
         </div>
       ) : (
         <>
           {/* Intestazione evento + statistiche */}
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{evento?.titolo}</h1>
-              <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-foreground">{evento?.titolo}</h1>
+              <div className="flex flex-wrap gap-3 mt-1 text-sm text-foreground/60">
                 <span className="flex items-center gap-1">
                   <CalendarDays className="w-3.5 h-3.5" />
                   {formatDate(evento?.data)}
@@ -570,9 +570,9 @@ export default function AdminIscrizioniPage() {
 
           {/* Indicatori */}
           <div className="flex flex-wrap gap-3">
-            <div className="bg-white rounded-xl border border-gray-200 px-5 py-3">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Iscritti</p>
-              <p className="text-2xl font-bold text-gray-900">{summary.totali}</p>
+            <div className="bg-surface rounded-xl border border-border px-5 py-3">
+              <p className="text-xs text-foreground/60 uppercase tracking-wide">Iscritti</p>
+              <p className="text-2xl font-bold text-foreground">{summary.totali}</p>
             </div>
             {REGISTRATION_FILTERS.filter((filter) => {
               if (filter.key === "chiesa" || filter.key === "luogo") {
@@ -590,7 +590,7 @@ export default function AdminIscrizioniPage() {
                     isActive ? filter.activeClassName : filter.inactiveClassName
                   }`}
                 >
-                  <p className="text-xs uppercase tracking-wide text-gray-500">{filter.label}</p>
+                  <p className="text-xs uppercase tracking-wide text-foreground/60">{filter.label}</p>
                   <p className={`text-2xl font-bold ${filter.countClassName}`}>{filterCardCounts[filter.key]}</p>
                 </button>
               );
@@ -600,22 +600,22 @@ export default function AdminIscrizioniPage() {
           {/* Ricerca e filtri */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="relative max-w-sm flex-1">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-foreground/40 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cerca per nome, padre, telefono..."
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold"
               />
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-              <label className="flex flex-col text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <label className="flex flex-col text-xs font-semibold uppercase tracking-wide text-foreground/60">
                 <span className="mb-1">Ordina per</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as RegistrationSortOption)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700"
+                  className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground/80"
                 >
                   <option value="createdAtDesc">Più recenti</option>
                   <option value="createdAtAsc">Meno recenti</option>
@@ -630,7 +630,7 @@ export default function AdminIscrizioniPage() {
                   setActiveFilters(new Set());
                   setSortBy("createdAtDesc");
                 }}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground/70 hover:bg-background"
               >
                 Reset
               </button>
@@ -638,55 +638,55 @@ export default function AdminIscrizioniPage() {
           </div>
 
           {/* Tabella iscritti */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <div className="bg-surface rounded-xl border border-border overflow-x-auto">
             <table className="w-full text-sm min-w-[900px]">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">#</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Tipo</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Partecipante</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Padre</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Punto raccolta</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Contatti</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Note</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Pagamento</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Iscritto il</th>
-                  <th className="text-right px-4 py-3 font-semibold text-gray-600">Azioni</th>
+                <tr className="bg-background border-b border-border">
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">#</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Tipo</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Partecipante</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Padre</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Punto raccolta</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Contatti</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Note</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Pagamento</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground/70">Iscritto il</th>
+                  <th className="text-right px-4 py-3 font-semibold text-foreground/70">Azioni</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {paginatedIscrizioni.length > 0 ? (
                   paginatedIscrizioni.map((i, idx) => {
                     const fk = familyKeyOf(i);
                     const isFamily = familyCounts[fk] > 1;
                     return (
-                      <tr key={i._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-400">{(page - 1) * limit + idx + 1}</td>
+                      <tr key={i._id} className="hover:bg-background transition-colors">
+                        <td className="px-4 py-3 text-foreground/40">{(page - 1) * limit + idx + 1}</td>
                         <td className="px-4 py-3">
                           <div className="flex flex-col gap-1">
                             <span className={`inline-block px-2 py-1 text-[10px] font-semibold rounded-full w-fit ${
                               i.registrationType === "family" ? "bg-blue-100 text-blue-700" :
-                              i.registrationType === "other" ? "bg-amber-100 text-amber-700" :
-                              "bg-gray-100 text-gray-700"
+                              i.registrationType === "other" ? "bg-amber-100 text-gold" :
+                              "bg-surface-2 text-foreground/80"
                             }`}>
                               {i.registrationType === "family" ? "Famiglia" :
                                i.registrationType === "other" ? "Altro" : "Individuale"}
                             </span>
                             {i.registrationType === "family" && i.familyMembers && i.familyMembers.length > 0 && (
-                              <div className="text-[10px] text-gray-600 space-y-0.5">
+                              <div className="text-[10px] text-foreground/70 space-y-0.5">
                                 {i.familyMembers.map((member, idx) => (
-                                  <div key={idx} className="text-gray-500">
-                                    <span className="font-medium text-gray-600">{member.role}:</span> {member.fullName}
+                                  <div key={idx} className="text-foreground/60">
+                                    <span className="font-medium text-foreground/70">{member.role}:</span> {member.fullName}
                                   </div>
                                 ))}
                               </div>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 font-medium text-gray-900">
+                        <td className="px-4 py-3 font-medium text-foreground">
                           {i.nome} {i.cognome}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">
+                        <td className="px-4 py-3 text-foreground/70">
                           <div className="flex items-center gap-2">
                             <span>
                               {i.padreNome} {i.padreCognome}
@@ -701,55 +701,55 @@ export default function AdminIscrizioniPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-600">
+                        <td className="px-4 py-3 text-foreground/70">
                           {i.raccoglimentoPunto ? (
-                            <div className="text-sm text-gray-700">
+                            <div className="text-sm text-foreground/80">
                               <div>{i.raccoglimentoPunto.label}</div>
-                              <div className="text-xs text-gray-500">{i.raccoglimentoPunto.orario}</div>
+                              <div className="text-xs text-foreground/60">{i.raccoglimentoPunto.orario}</div>
                             </div>
                           ) : i.raccoglimento === "chiesa" ? (
-                            <span className="text-sm text-gray-700">In chiesa</span>
+                            <span className="text-sm text-foreground/80">In chiesa</span>
                           ) : i.raccoglimento === "luogo" ? (
-                            <span className="text-sm text-gray-700">Al luogo</span>
+                            <span className="text-sm text-foreground/80">Al luogo</span>
                           ) : (
-                            <span className="text-sm text-gray-500">—</span>
+                            <span className="text-sm text-foreground/60">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">
+                        <td className="px-4 py-3 text-foreground/70">
                           <div className="flex flex-col gap-0.5">
                             <span className="flex items-center gap-1.5">
-                              <Phone className="w-3 h-3 text-gray-400" />
+                              <Phone className="w-3 h-3 text-foreground/40" />
                               {i.telefono}
                             </span>
                             {i.email && (
-                              <span className="flex items-center gap-1.5 text-gray-500">
-                                <Mail className="w-3 h-3 text-gray-400" />
+                              <span className="flex items-center gap-1.5 text-foreground/60">
+                                <Mail className="w-3 h-3 text-foreground/40" />
                                 {i.email}
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate" title={i.note}>
+                        <td className="px-4 py-3 text-foreground/60 max-w-[200px] truncate" title={i.note}>
                           {i.note || "—"}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex min-w-[150px] flex-col gap-1">
-                            <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <label className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80">
                               <input
                                 type="checkbox"
                                 checked={!!i.ha_pagato}
                                 onChange={() => handlePaymentToggle(i)}
                                 disabled={paymentSavingId === i._id}
                                 aria-label={`Segna pagamento per ${i.nome} ${i.cognome}`}
-                                className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="h-4 w-4 rounded border-border text-green-600 focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-60"
                               />
-                              <span className={i.ha_pagato ? "text-green-700" : "text-amber-700"}>
+                              <span className={i.ha_pagato ? "text-green-700" : "text-gold"}>
                                 {i.ha_pagato ? "Pagato" : "Da saldare"}
                               </span>
                             </label>
                             <div className="min-h-[16px] text-[11px]">
                               {paymentSavingId === i._id ? (
-                                <span className="inline-flex items-center gap-1 text-gray-500">
+                                <span className="inline-flex items-center gap-1 text-foreground/60">
                                   <Loader2 className="h-3 w-3 animate-spin" />
                                   Salvataggio...
                                 </span>
@@ -762,19 +762,19 @@ export default function AdminIscrizioniPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(i.createdAt)}</td>
+                        <td className="px-4 py-3 text-foreground/60 whitespace-nowrap">{formatDate(i.createdAt)}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-1">
                             <button
                               onClick={() => openEdit(i)}
-                              className="p-1.5 text-gray-400 hover:text-gold transition-colors"
+                              className="p-1.5 text-foreground/40 hover:text-gold transition-colors"
                               title="Modifica iscrizione"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setDeleteTarget(i)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                              className="p-1.5 text-foreground/40 hover:text-red-500 transition-colors"
                               title="Elimina iscrizione"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -786,7 +786,7 @@ export default function AdminIscrizioniPage() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={9} className="px-4 py-10 text-center text-gray-500">
+                    <td colSpan={9} className="px-4 py-10 text-center text-foreground/60">
                       {iscrizioni.length === 0
                         ? "Nessuna iscrizione per questo evento"
                         : "Nessun risultato per i filtri selezionati"}
@@ -797,8 +797,8 @@ export default function AdminIscrizioniPage() {
             </table>
 
             {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 gap-3 border-t border-gray-200">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 gap-3 border-t border-border">
+                <div className="flex items-center gap-2 text-sm text-foreground/60">
                   <span>Mostra</span>
                   <select
                     value={limit}
@@ -806,7 +806,7 @@ export default function AdminIscrizioniPage() {
                       setLimit(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+                    className="rounded-lg border border-border bg-surface px-2 py-1 text-sm text-foreground/80"
                   >
                     {[10, 20, 50, 100].map((size) => (
                       <option key={size} value={size}>{size}</option>
@@ -818,15 +818,15 @@ export default function AdminIscrizioniPage() {
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                    className="p-1.5 rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-surface-2 disabled:opacity-50 transition-colors"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="text-sm text-gray-500">Pagina {page} di {totalPages}</span>
+                  <span className="text-sm text-foreground/60">Pagina {page} di {totalPages}</span>
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                    className="p-1.5 rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-surface-2 disabled:opacity-50 transition-colors"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -840,14 +840,14 @@ export default function AdminIscrizioniPage() {
       {/* Modal Modifica */}
       {editTarget && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-in">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-              <h3 className="text-lg font-bold text-gray-900">Modifica Iscrizione</h3>
+          <div className="bg-surface rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-surface z-10">
+              <h3 className="text-lg font-bold text-foreground">Modifica Iscrizione</h3>
               <button
                 onClick={() => setEditTarget(null)}
-                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-lg hover:bg-surface-2 transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-foreground/60" />
               </button>
             </div>
             <div className="p-6 space-y-4">
@@ -862,91 +862,91 @@ export default function AdminIscrizioniPage() {
               )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase mb-1">Nome</label>
                   <input
                     type="text"
                     value={editForm.nome || ""}
                     onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })}
                     disabled={editTarget?.registrationType === "family"}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-gold outline-none disabled:bg-surface-2 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Cognome</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase mb-1">Cognome</label>
                   <input
                     type="text"
                     value={editForm.cognome || ""}
                     onChange={(e) => setEditForm({ ...editForm, cognome: e.target.value })}
                     disabled={editTarget?.registrationType === "family"}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-gold outline-none disabled:bg-surface-2 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome Padre</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase mb-1">Nome Padre</label>
                   <input
                     type="text"
                     value={editForm.padreNome || ""}
                     onChange={(e) => setEditForm({ ...editForm, padreNome: e.target.value })}
                     disabled={editTarget?.registrationType === "family"}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-gold outline-none disabled:bg-surface-2 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Cognome Padre</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase mb-1">Cognome Padre</label>
                   <input
                     type="text"
                     value={editForm.padreCognome || ""}
                     onChange={(e) => setEditForm({ ...editForm, padreCognome: e.target.value })}
                     disabled={editTarget?.registrationType === "family"}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-gold outline-none disabled:bg-surface-2 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Telefono</label>
+                <label className="block text-xs font-semibold text-foreground/60 uppercase mb-1">Telefono</label>
                 <input
                   type="text"
                   value={editForm.telefono || ""}
                   onChange={(e) => setEditForm({ ...editForm, telefono: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none"
+                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-gold outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Email</label>
+                <label className="block text-xs font-semibold text-foreground/60 uppercase mb-1">Email</label>
                 <input
                   type="email"
                   value={editForm.email || ""}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none"
+                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-gold outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Note</label>
+                <label className="block text-xs font-semibold text-foreground/60 uppercase mb-1">Note</label>
                 <textarea
                   value={editForm.note || ""}
                   onChange={(e) => setEditForm({ ...editForm, note: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-gold outline-none resize-none"
+                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-gold outline-none resize-none"
                 />
               </div>
-              <label className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3">
+              <label className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
                 <input
                   type="checkbox"
                   checked={!!editForm.ha_pagato}
                   onChange={(e) => setEditForm({ ...editForm, ha_pagato: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  className="h-4 w-4 rounded border-border text-green-600 focus:ring-green-500"
                 />
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Pagamento ricevuto</p>
-                  <p className="text-xs text-gray-500">Aggiorna lo stato economico dell&apos;iscrizione.</p>
+                  <p className="text-sm font-semibold text-foreground">Pagamento ricevuto</p>
+                  <p className="text-xs text-foreground/60">Aggiorna lo stato economico dell&apos;iscrizione.</p>
                 </div>
               </label>
               <div className="pt-4 flex gap-3">
                 <button
                   onClick={() => setEditTarget(null)}
-                  className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-border text-foreground/70 rounded-lg text-sm font-semibold hover:bg-background transition-colors"
                 >
                   Annulla
                 </button>
@@ -966,17 +966,17 @@ export default function AdminIscrizioniPage() {
 
       {showPdfExportModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="bg-surface rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-surface z-10">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Esporta PDF</h3>
-                <p className="text-sm text-gray-500 mt-1">Scegli quali colonne includere nel PDF prima di scaricarlo.</p>
+                <h3 className="text-lg font-bold text-foreground">Esporta PDF</h3>
+                <p className="text-sm text-foreground/60 mt-1">Scegli quali colonne includere nel PDF prima di scaricarlo.</p>
               </div>
               <button
                 onClick={() => setShowPdfExportModal(false)}
-                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-lg hover:bg-surface-2 transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-foreground/60" />
               </button>
             </div>
             <div className="p-6 space-y-5">
@@ -987,36 +987,36 @@ export default function AdminIscrizioniPage() {
                     <label
                       key={column.key}
                       className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
-                        checked ? "border-gold bg-gold/5" : "border-gray-200 hover:bg-gray-50"
+                        checked ? "border-gold bg-gold/5" : "border-border hover:bg-background"
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => togglePdfColumn(column.key)}
-                        className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                        className="h-4 w-4 rounded border-border text-gold focus:ring-gold"
                       />
-                      <span className="text-sm font-medium text-gray-800">{column.label}</span>
+                      <span className="text-sm font-medium text-foreground">{column.label}</span>
                     </label>
                   );
                 })}
               </div>
-              <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                <p className="text-sm text-gray-600">
-                  Colonne selezionate: <span className="font-semibold text-gray-900">{selectedPdfColumns.length}</span>
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background px-4 py-3">
+                <p className="text-sm text-foreground/70">
+                  Colonne selezionate: <span className="font-semibold text-foreground">{selectedPdfColumns.length}</span>
                 </p>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedPdfColumns(PDF_EXPORT_COLUMNS.map((column) => column.key))}
-                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                    className="px-3 py-2 text-sm font-medium text-foreground/70 hover:text-foreground"
                   >
                     Seleziona tutto
                   </button>
                   <button
                     type="button"
                     onClick={() => setSelectedPdfColumns([])}
-                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                    className="px-3 py-2 text-sm font-medium text-foreground/70 hover:text-foreground"
                   >
                     Deseleziona tutto
                   </button>
@@ -1026,7 +1026,7 @@ export default function AdminIscrizioniPage() {
                 <button
                   type="button"
                   onClick={() => setShowPdfExportModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-border text-foreground/70 rounded-lg text-sm font-semibold hover:bg-background transition-colors"
                 >
                   Annulla
                 </button>

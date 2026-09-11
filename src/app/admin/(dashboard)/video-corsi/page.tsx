@@ -141,7 +141,7 @@ export default function AdminVideoCorsiPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-foreground/40" />
       </div>
     );
   }
@@ -150,8 +150,8 @@ export default function AdminVideoCorsiPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestione Video & Corsi</h1>
-          <p className="text-sm text-gray-500 mt-1">{filteredItems.length} contenuti video</p>
+          <h1 className="text-2xl font-bold text-foreground">Gestione Video & Corsi</h1>
+          <p className="text-sm text-foreground/60 mt-1">{filteredItems.length} contenuti video</p>
         </div>
         <button
           onClick={openAdd}
@@ -167,15 +167,15 @@ export default function AdminVideoCorsiPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cerca video..."
-            className="w-full pl-3 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600"
+            className="w-full pl-3 pr-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold-light"
           />
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-foreground/60">
           <span>Mostra</span>
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+            className="rounded-lg border border-border bg-surface px-2 py-1 text-sm text-foreground/80"
           >
             {[5, 10, 20, 50].map((size) => (
               <option key={size} value={size}>{size}</option>
@@ -215,35 +215,35 @@ export default function AdminVideoCorsiPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">URL video</label>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">URL video</label>
               <input
                 type="text"
                 value={form.urlVideo}
                 onChange={(e) => setForm({ ...form, urlVideo: e.target.value })}
                 required
                 placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600"
+                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold-light"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Thumbnail (opzionale)</label>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Thumbnail (opzionale)</label>
               <input
                 type="text"
                 value={form.thumbnail}
                 onChange={(e) => setForm({ ...form, thumbnail: e.target.value })}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600"
+                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold-light"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione</label>
+            <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Descrizione</label>
             <textarea
               value={form.descrizione}
               onChange={(e) => setForm({ ...form, descrizione: e.target.value })}
               rows={3}
               placeholder="Descrizione del contenuto video"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-amber-600"
+              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold-light"
             />
           </div>
           <div className="flex gap-3">
@@ -257,7 +257,7 @@ export default function AdminVideoCorsiPage() {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-border text-foreground/80 text-sm rounded-lg hover:bg-background transition-colors"
             >
               Annulla
             </button>
@@ -265,7 +265,7 @@ export default function AdminVideoCorsiPage() {
         </form>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-surface rounded-xl border border-border overflow-x-auto">
         <table className="w-full text-sm min-w-[720px]">
           <thead>
             <tr className="bg-surface border-b border-border">
@@ -296,20 +296,20 @@ export default function AdminVideoCorsiPage() {
         {paginatedItems.length === 0 && <p className="text-center py-8 text-foreground/30 text-sm">{search ? "Nessun video trovato" : "Nessun video presente"}</p>}
       </div>
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 text-sm text-gray-500 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 text-sm text-foreground/60 border-t border-border">
           <span>Pagina {page} di {totalPages}</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
-              className="rounded-lg border border-gray-300 px-3 py-1 disabled:opacity-50"
+              className="rounded-lg border border-border px-3 py-1 disabled:opacity-50"
             >
               Precedente
             </button>
             <button
               onClick={() => setPage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
-              className="rounded-lg border border-gray-300 px-3 py-1 disabled:opacity-50"
+              className="rounded-lg border border-border px-3 py-1 disabled:opacity-50"
             >
               Successiva
             </button>

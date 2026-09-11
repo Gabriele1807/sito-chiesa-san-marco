@@ -17,7 +17,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
       <AdminSidebar />
 
       {/* Topbar */}
-      <header className="fixed top-0 left-0 lg:left-[260px] right-0 h-14 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 z-30 gap-3">
+      <header className="fixed top-0 left-0 lg:left-[260px] right-0 h-14 bg-surface border-b border-border flex items-center px-4 lg:px-6 z-30 gap-3">
         <AdminMobileMenuButton />
         <AdminTopbarTitle />
       </header>

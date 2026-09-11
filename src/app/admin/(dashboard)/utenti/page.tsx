@@ -388,7 +388,7 @@ export default function GestioneUtentiPage() {
   if (loading && users.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-gold-light" />
       </div>
     );
   }
@@ -400,11 +400,11 @@ export default function GestioneUtentiPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            <Users className="w-7 h-7 text-amber-600" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <Users className="w-7 h-7 text-gold-light" />
             Gestione Utenti
           </h1>
-          <p className="text-sm text-gray-500 mt-1">{total} utenti registrati</p>
+          <p className="text-sm text-foreground/60 mt-1">{total} utenti registrati</p>
         </div>
       </div>
 
@@ -416,26 +416,26 @@ export default function GestioneUtentiPage() {
       <div className="rounded-xl p-4 -mt-2">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:gap-4">
           <div className="relative lg:max-w-xl flex-1">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-foreground/40 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cerca per nome, cognome, email..."
               autoComplete="off"
-              className="w-full pl-9 pr-2 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:border-gold"
+              className="w-full pl-9 pr-2 py-2 rounded-lg border border-border text-sm text-foreground focus:outline-none focus:border-gold"
             />
           </div>
 
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 flex-1">
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/60">
                 Ruolo
               </span>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+                className="rounded-lg border border-border bg-surface px-2 py-2 text-sm text-foreground/80 focus:outline-none"
               >
                 {ROLE_FILTER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -446,7 +446,7 @@ export default function GestioneUtentiPage() {
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/60">
                 Richiesta admin
               </span>
               <select
@@ -454,7 +454,7 @@ export default function GestioneUtentiPage() {
                 onChange={(e) =>
                   setAdminRequestFilter(e.target.value as "all" | "pending" | "rejected")
                 }
-                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+                className="rounded-lg border border-border bg-surface px-2 py-2 text-sm text-foreground/80 focus:outline-none"
               >
                 {ADMIN_REQUEST_FILTER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -465,7 +465,7 @@ export default function GestioneUtentiPage() {
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/60">
                 Età da
               </span>
               <select
@@ -473,7 +473,7 @@ export default function GestioneUtentiPage() {
                 onChange={(e) =>
                   setAgeMin(e.target.value as (typeof AGE_GROUP_OPTIONS)[number])
                 }
-                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+                className="rounded-lg border border-border bg-surface px-2 py-2 text-sm text-foreground/80 focus:outline-none"
               >
                 {AGE_GROUP_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -484,7 +484,7 @@ export default function GestioneUtentiPage() {
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/60">
                 Età a
               </span>
               <select
@@ -492,7 +492,7 @@ export default function GestioneUtentiPage() {
                 onChange={(e) =>
                   setAgeMax(e.target.value as (typeof AGE_GROUP_OPTIONS)[number])
                 }
-                className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-700 focus:outline-none"
+                className="rounded-lg border border-border bg-surface px-2 py-2 text-sm text-foreground/80 focus:outline-none"
               >
                 {AGE_GROUP_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -507,7 +507,7 @@ export default function GestioneUtentiPage() {
             <button
               type="button"
               onClick={resetFilters}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground/70 hover:bg-background"
             >
               Reset
             </button>
@@ -516,36 +516,36 @@ export default function GestioneUtentiPage() {
       </div>
 
       {/* Tabella */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">Utente</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">Email</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">Ruolo</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">Età</th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-700">Stato</th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-700">Admin</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-700">Azioni</th>
+              <tr className="bg-background border-b border-border">
+                <th className="text-left px-4 py-3 font-semibold text-foreground/80">Utente</th>
+                <th className="text-left px-4 py-3 font-semibold text-foreground/80">Email</th>
+                <th className="text-left px-4 py-3 font-semibold text-foreground/80">Ruolo</th>
+                <th className="text-left px-4 py-3 font-semibold text-foreground/80">Età</th>
+                <th className="text-center px-4 py-3 font-semibold text-foreground/80">Stato</th>
+                <th className="text-center px-4 py-3 font-semibold text-foreground/80">Admin</th>
+                <th className="text-right px-4 py-3 font-semibold text-foreground/80">Azioni</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {filteredUsers.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                <tr key={user._id} className="hover:bg-background transition-colors">
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900">{user.nome} {user.cognome}</p>
-                      <p className="text-xs text-gray-500">@{user.username}</p>
+                      <p className="font-medium text-foreground">{user.nome} {user.cognome}</p>
+                      <p className="text-xs text-foreground/60">@{user.username}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{user.email}</td>
+                  <td className="px-4 py-3 text-foreground/70">{user.email}</td>
                   <td className="px-4 py-3">
                     <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-medium">
                       {ROLE_LABELS[user.role] || user.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{AGE_LABELS[user.ageGroup] || user.ageGroup}</td>
+                  <td className="px-4 py-3 text-foreground/70">{AGE_LABELS[user.ageGroup] || user.ageGroup}</td>
                   <td className="px-4 py-3 text-center">
                     <span
                       className={`inline-block w-2 h-2 rounded-full ${user.attivo ? "bg-green-500" : "bg-red-500"}`}
@@ -556,7 +556,7 @@ export default function GestioneUtentiPage() {
                     <button
                       type="button"
                       onClick={() => openAdminRequestModal(user)}
-                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:bg-gray-100"
+                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:bg-surface-2"
                     >
                       {user.adminRequest === "approved" && (
                         <>
@@ -565,13 +565,13 @@ export default function GestioneUtentiPage() {
                         </>
                       )}
                       {user.adminRequest === "pending" && (
-                        <span className="text-amber-700">In attesa</span>
+                        <span className="text-gold">In attesa</span>
                       )}
                       {user.adminRequest === "rejected" && (
                         <span className="text-red-700">Rifiutata</span>
                       )}
                       {!user.adminRequest || user.adminRequest === "none" ? (
-                        <span className="text-gray-600">Nessuna</span>
+                        <span className="text-foreground/70">Nessuna</span>
                       ) : null}
                     </button>
                   </td>
@@ -586,7 +586,7 @@ export default function GestioneUtentiPage() {
                       </button>
                       <button
                         onClick={() => setConfirmDelete(user._id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-lg text-foreground/40 hover:text-red-600 hover:bg-red-50 transition-colors"
                         title="Elimina"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -597,7 +597,7 @@ export default function GestioneUtentiPage() {
               ))}
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-foreground/60">
                     {search ? "Nessun utente trovato" : "Nessun utente registrato"}
                   </td>
                 </tr>
@@ -607,8 +607,8 @@ export default function GestioneUtentiPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 gap-3 border-t border-gray-200">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 gap-3 border-t border-border">
+            <div className="flex items-center gap-2 text-sm text-foreground/60">
               <span>Mostra</span>
               <select
                 value={limit}
@@ -616,7 +616,7 @@ export default function GestioneUtentiPage() {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700"
+                className="rounded-lg border border-border bg-surface px-2 py-1 text-sm text-foreground/80"
               >
                 {[10, 20, 50, 100].map((size) => (
                   <option key={size} value={size}>{size}</option>
@@ -628,15 +628,15 @@ export default function GestioneUtentiPage() {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-surface-2 disabled:opacity-50 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-sm text-gray-500">Pagina {page} di {totalPages}</span>
+              <span className="text-sm text-foreground/60">Pagina {page} di {totalPages}</span>
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-surface-2 disabled:opacity-50 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -649,42 +649,42 @@ export default function GestioneUtentiPage() {
       {editingUser && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={closeEdit} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 overflow-y-auto max-h-[90vh]">
-            <button onClick={closeEdit} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
+          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg p-6 overflow-y-auto max-h-[90vh]">
+            <button onClick={closeEdit} className="absolute top-4 right-4 text-foreground/40 hover:text-foreground/80">
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-lg font-bold text-gray-900 mb-1">
+            <h3 className="text-lg font-bold text-foreground mb-1">
               {editingUser.nome} {editingUser.cognome}
             </h3>
-            <p className="text-xs text-gray-400 mb-5">@{editingUser.username} · {editingUser.email}</p>
+            <p className="text-xs text-foreground/40 mb-5">@{editingUser.username} · {editingUser.email}</p>
 
             {/* â”€â”€ Base fields â”€â”€ */}
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Nome</label>
+                  <label className="block text-xs font-semibold text-foreground/70 mb-1">Nome</label>
                   <input
                     type="text"
                     value={editForm.nome}
                     onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })}
                     autoComplete="off"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Cognome</label>
+                  <label className="block text-xs font-semibold text-foreground/70 mb-1">Cognome</label>
                   <input
                     type="text"
                     value={editForm.cognome}
                     onChange={(e) => setEditForm({ ...editForm, cognome: e.target.value })}
                     autoComplete="off"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Ruolo nella comunità</label>
+                <label className="block text-xs font-semibold text-foreground/70 mb-1">Ruolo nella comunità</label>
                 <select
                   value={editForm.role}
                     onChange={(e) => setEditForm({
@@ -692,7 +692,7 @@ export default function GestioneUtentiPage() {
                       role: e.target.value,
                       chiesa: e.target.value === "ospite_chiesa" ? editForm.chiesa : "",
                     })}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 >
                   <option value="credente">Credente</option>
                   <option value="madre">Madre</option>
@@ -702,11 +702,11 @@ export default function GestioneUtentiPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Fascia d&apos;età</label>
+                <label className="block text-xs font-semibold text-foreground/70 mb-1">Fascia d&apos;età</label>
                 <select
                   value={editForm.ageGroup}
                   onChange={(e) => setEditForm({ ...editForm, ageGroup: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 >
                   <option value="0-11">0–11</option>
                   <option value="12-18">12–18</option>
@@ -722,18 +722,18 @@ export default function GestioneUtentiPage() {
                   id="edit-attivo"
                   checked={editForm.attivo}
                   onChange={(e) => setEditForm({ ...editForm, attivo: e.target.checked })}
-                    className="w-4 h-4 rounded border-gray-300 text-gold focus:ring-gold"
+                    className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
                 />
-                <label htmlFor="edit-attivo" className="text-sm text-gray-700">Account attivo</label>
+                <label htmlFor="edit-attivo" className="text-sm text-foreground/80">Account attivo</label>
               </div>
 
                 {editForm.role === "ospite_chiesa" && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">Chiesa di provenienza</label>
+                    <label className="block text-xs font-semibold text-foreground/70 mb-1">Chiesa di provenienza</label>
                     <select
                       value={editForm.chiesa}
                       onChange={(e) => setEditForm({ ...editForm, chiesa: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
+                      className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
                     >
                       <option value="">Seleziona una chiesa...</option>
                       {CHIESE_LIST.map((chiesa) => (
@@ -748,7 +748,7 @@ export default function GestioneUtentiPage() {
               <div className="flex gap-3 pt-1">
                 <button
                   onClick={closeEdit}
-                  className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2 rounded-lg border border-border text-foreground/80 text-sm font-medium hover:bg-background transition-colors"
                 >
                   Annulla
                 </button>
@@ -764,19 +764,19 @@ export default function GestioneUtentiPage() {
 
             {/* â”€â”€ Superadmin extras â”€â”€ */}
             {isSuperAdmin && (
-              <div className="mt-5 space-y-4 border-t border-gray-100 pt-5">
+              <div className="mt-5 space-y-4 border-t border-border pt-5">
 
                 {/* Promozione / Revoca admin */}
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                <div className="bg-background rounded-xl p-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-gold" />
-                    <p className="text-sm font-semibold text-gray-800">Accesso Admin</p>
+                    <p className="text-sm font-semibold text-foreground">Accesso Admin</p>
                   </div>
 
                   {isUserAdmin(editingUser) ? (
                     // Already admin â†’ show revoke button
                     <div className="space-y-2">
-                      <p className="text-xs text-gray-500">Questo utente ha già accesso admin.</p>
+                      <p className="text-xs text-foreground/60">Questo utente ha già accesso admin.</p>
                       <button
                         onClick={handleRevoke}
                         disabled={promoting}
@@ -789,7 +789,7 @@ export default function GestioneUtentiPage() {
                   ) : (
                     // Not admin â†’ show promote form
                     <div className="space-y-2">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-foreground/60">
                         {editingUser.adminRequest === "pending"
                           ? "L'utente ha fatto richiesta – puoi approvarla oppure promuoverlo direttamente."
                           : "Promuovi questo utente ad admin senza che abbia fatto richiesta."}
@@ -798,7 +798,7 @@ export default function GestioneUtentiPage() {
                         <select
                           value={promoteRuolo}
                           onChange={(e) => setPromoteRuolo(e.target.value as "admin" | "superadmin")}
-                          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
+                          className="flex-1 px-3 py-2 rounded-lg border border-border text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
                         >
                           <option value="admin">Admin</option>
                           <option value="superadmin">Superadmin</option>
@@ -823,10 +823,10 @@ export default function GestioneUtentiPage() {
                 </div>
 
                 {/* Reset password */}
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                <div className="bg-background rounded-xl p-4 space-y-3">
                   <div className="flex items-center gap-2">
-                    <KeyRound className="w-4 h-4 text-amber-600" />
-                    <p className="text-sm font-semibold text-gray-800">Reset password</p>
+                    <KeyRound className="w-4 h-4 text-gold-light" />
+                    <p className="text-sm font-semibold text-foreground">Reset password</p>
                   </div>
                   <div className="flex gap-2">
                     {/* Honeypot nascosto per impedire al browser di autofillare il campo ricerca con lo username salvato */}
@@ -837,7 +837,7 @@ export default function GestioneUtentiPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       autoComplete="new-password"
-                      className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
+                      className="flex-1 px-3 py-2 rounded-lg border border-border text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold"
                     />
                     <button
                       onClick={handleResetPassword}
@@ -863,30 +863,30 @@ export default function GestioneUtentiPage() {
       {requestModalUser && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setRequestModalUser(null)} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 overflow-y-auto max-h-[90vh]">
-            <button onClick={() => setRequestModalUser(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
+          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-xl p-6 overflow-y-auto max-h-[90vh]">
+            <button onClick={() => setRequestModalUser(null)} className="absolute top-4 right-4 text-foreground/40 hover:text-foreground/80">
               <X className="w-5 h-5" />
             </button>
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Gestione richiesta admin</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Valuta la richiesta di <span className="font-semibold text-gray-800">{requestModalUser.nome} {requestModalUser.cognome}</span>
+                <h3 className="text-lg font-bold text-foreground">Gestione richiesta admin</h3>
+                <p className="text-sm text-foreground/60 mt-1">
+                  Valuta la richiesta di <span className="font-semibold text-foreground">{requestModalUser.nome} {requestModalUser.cognome}</span>
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Utente</p>
-                  <p className="mt-1 font-semibold text-gray-900">{requestModalUser.nome} {requestModalUser.cognome}</p>
-                  <p className="text-sm text-gray-600">@{requestModalUser.username}</p>
+                <div className="rounded-lg border border-border bg-background p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-foreground/60">Utente</p>
+                  <p className="mt-1 font-semibold text-foreground">{requestModalUser.nome} {requestModalUser.cognome}</p>
+                  <p className="text-sm text-foreground/70">@{requestModalUser.username}</p>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Contatti</p>
-                  <p className="mt-1 font-semibold text-gray-900">{requestModalUser.email}</p>
-                  <p className="text-sm text-gray-600">{ROLE_LABELS[requestModalUser.role] || requestModalUser.role}</p>
+                <div className="rounded-lg border border-border bg-background p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-foreground/60">Contatti</p>
+                  <p className="mt-1 font-semibold text-foreground">{requestModalUser.email}</p>
+                  <p className="text-sm text-foreground/70">{ROLE_LABELS[requestModalUser.role] || requestModalUser.role}</p>
                 </div>
               </div>
-              <div className="rounded-lg border border-gray-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <div className="rounded-lg border border-border bg-amber-50 p-4 text-sm text-amber-900">
                 <p className="font-semibold">Stato attuale</p>
                 <p className="mt-1">
                   {requestModalUser.adminRequest === "approved"
@@ -903,7 +903,7 @@ export default function GestioneUtentiPage() {
               </div>
               {requestModalUser.adminRequest === "approved" ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-600">L’utente ha già accesso admin. Puoi revocarlo se necessario.</p>
+                  <p className="text-sm text-foreground/70">L’utente ha già accesso admin. Puoi revocarlo se necessario.</p>
                   <button
                     type="button"
                     onClick={() => handleAdminRequest("revoke")}
@@ -917,11 +917,11 @@ export default function GestioneUtentiPage() {
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Ruolo da assegnare</label>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-foreground/60 mb-1">Ruolo da assegnare</label>
                     <select
                       value={requestRole}
                       onChange={(e) => setRequestRole(e.target.value as "admin" | "superadmin")}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700"
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground/80"
                     >
                       <option value="admin">Admin</option>
                       <option value="superadmin">Superadmin</option>
@@ -941,19 +941,19 @@ export default function GestioneUtentiPage() {
                       type="button"
                       onClick={() => handleAdminRequest("reject")}
                       disabled={requestSaving}
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-surface px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
                     >
                       <ShieldOff className="w-4 h-4" />
                       {requestSaving ? "Salvataggio..." : "Rifiuta richiesta"}
                     </button>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Motivazione del rifiuto (opzionale)</label>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-foreground/60 mb-1">Motivazione del rifiuto (opzionale)</label>
                     <textarea
                       value={requestReason}
                       onChange={(e) => setRequestReason(e.target.value)}
                       rows={3}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-gold focus:outline-none"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground/80 focus:border-gold focus:outline-none"
                       placeholder="Inserisci una motivazione da conservare per la richiesta"
                     />
                   </div>
@@ -973,16 +973,16 @@ export default function GestioneUtentiPage() {
       {confirmDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmDelete(null)} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
+          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
             <Trash2 className="w-10 h-10 text-red-500 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Conferma eliminazione</h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <h3 className="text-lg font-bold text-foreground mb-2">Conferma eliminazione</h3>
+            <p className="text-sm text-foreground/60 mb-4">
               Sei sicuro di voler eliminare questo utente? L&apos;azione è irreversibile.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2 rounded-lg border border-border text-foreground/80 text-sm font-medium hover:bg-background transition-colors"
               >
                 Annulla
               </button>

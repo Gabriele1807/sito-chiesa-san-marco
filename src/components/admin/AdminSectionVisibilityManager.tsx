@@ -75,8 +75,8 @@ export default function AdminSectionVisibilityManager({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
-          <p className="text-gray-600">Caricamento sezioni...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-2"></div>
+          <p className="text-foreground/70">Caricamento sezioni...</p>
         </div>
       </div>
     );
@@ -103,11 +103,11 @@ export default function AdminSectionVisibilityManager({
         {sections.map((section) => (
           <div
             key={section.sectionId}
-            className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
+            className="flex items-center justify-between p-4 bg-surface border border-border rounded-lg hover:shadow-sm transition-shadow"
           >
             <div>
-              <h4 className="font-medium text-gray-900">{section.sectionLabel}</h4>
-              <p className="text-xs text-gray-500 mt-0.5">ID: {section.sectionId}</p>
+              <h4 className="font-medium text-foreground">{section.sectionLabel}</h4>
+              <p className="text-xs text-foreground/60 mt-0.5">ID: {section.sectionId}</p>
             </div>
             
             <button
@@ -116,13 +116,13 @@ export default function AdminSectionVisibilityManager({
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 section.isActive
                   ? "bg-green-600 focus:ring-green-500"
-                  : "bg-gray-300 focus:ring-gray-500"
+                  : "bg-border focus:ring-gray-500"
               } ${
                 saving === section.sectionId ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-surface transition-transform ${
                   section.isActive ? "translate-x-5" : "translate-x-1"
                 }`}
               />

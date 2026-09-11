@@ -21,8 +21,8 @@ export default async function AdminSectionsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Gestione Sezioni</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-2xl font-bold text-foreground">Gestione Sezioni</h1>
+        <p className="text-foreground/70 mt-2">
           Attiva o disattiva le sezioni del sito. Le sezioni disattivate non saranno visibili ai visitatori.
         </p>
       </div>

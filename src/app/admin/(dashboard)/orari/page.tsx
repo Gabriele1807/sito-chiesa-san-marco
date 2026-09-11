@@ -114,7 +114,7 @@ export default function AdminOrariPage() {
     }
   }
 
-  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-foreground/40" /></div>;
 
   const giorniDisponibili = giorniSettimana.filter((g) => !orari.find((o) => o.giorno === g));
 
@@ -122,8 +122,8 @@ export default function AdminOrariPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestione Orari</h1>
-          <p className="text-sm text-gray-500 mt-1">{orari.length} giorni configurati</p>
+          <h1 className="text-2xl font-bold text-foreground">Gestione Orari</h1>
+          <p className="text-sm text-foreground/60 mt-1">{orari.length} giorni configurati</p>
         </div>
         {giorniDisponibili.length > 0 && (
           <button onClick={() => setShowAddForm(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors">
@@ -133,27 +133,27 @@ export default function AdminOrariPage() {
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleAddDay} className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col sm:flex-row sm:items-end gap-4">
+        <form onSubmit={handleAddDay} className="bg-surface rounded-xl border border-border p-6 flex flex-col sm:flex-row sm:items-end gap-4">
           <div className="flex-1">
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Giorno</label>
-            <select value={newGiorno} onChange={(e) => setNewGiorno(e.target.value)} required className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm">
+            <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Giorno</label>
+            <select value={newGiorno} onChange={(e) => setNewGiorno(e.target.value)} required className="w-full px-3 py-2 rounded-lg border border-border text-sm">
               <option value="">Seleziona...</option>
               {giorniDisponibili.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
           <button type="submit" disabled={saving} className="px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg">{saving ? "..." : "Aggiungi"}</button>
-          <button type="button" onClick={() => setShowAddForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg">Annulla</button>
+          <button type="button" onClick={() => setShowAddForm(false)} className="px-4 py-2 border border-border text-foreground/80 text-sm rounded-lg">Annulla</button>
         </form>
       )}
 
       <div className="space-y-4">
         {orari.map((orario) => (
-          <div key={orario.giorno} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <h3 className="font-bold text-gray-900">{orario.giorno}</h3>
+          <div key={orario.giorno} className="bg-surface rounded-xl border border-border overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 bg-background border-b border-border">
+              <h3 className="font-bold text-foreground">{orario.giorno}</h3>
               <div className="flex gap-1">
-                <button onClick={() => startEdit(orario)} className="p-1.5 text-gray-400 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => setDeleteTarget(orario.giorno)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => startEdit(orario)} className="p-1.5 text-foreground/40 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => setDeleteTarget(orario.giorno)} className="p-1.5 text-foreground/40 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
 
@@ -161,26 +161,26 @@ export default function AdminOrariPage() {
               <div className="p-4 space-y-3">
                 {celebrazioni.map((cel, idx) => (
                   <div key={idx} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-start">
-                    <input type="text" value={cel.tipo} onChange={(e) => updateCel(idx, "tipo", e.target.value)} placeholder="Tipo celebrazione" className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-gray-300 text-sm" />
-                    <input type="text" value={cel.orario} onChange={(e) => updateCel(idx, "orario", e.target.value)} placeholder="08:00 – 11:00" className="w-full sm:w-40 px-3 py-2 rounded-lg border border-gray-300 text-sm" />
-                    <input type="text" value={cel.note || ""} onChange={(e) => updateCel(idx, "note", e.target.value)} placeholder="Note" className="w-full sm:w-48 px-3 py-2 rounded-lg border border-gray-300 text-sm" />
+                    <input type="text" value={cel.tipo} onChange={(e) => updateCel(idx, "tipo", e.target.value)} placeholder="Tipo celebrazione" className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-border text-sm" />
+                    <input type="text" value={cel.orario} onChange={(e) => updateCel(idx, "orario", e.target.value)} placeholder="08:00 – 11:00" className="w-full sm:w-40 px-3 py-2 rounded-lg border border-border text-sm" />
+                    <input type="text" value={cel.note || ""} onChange={(e) => updateCel(idx, "note", e.target.value)} placeholder="Note" className="w-full sm:w-48 px-3 py-2 rounded-lg border border-border text-sm" />
                     <button onClick={() => removeCelebrazione(idx)} className="p-2 text-red-400 hover:text-red-600 self-end sm:self-auto"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
                 <div className="flex gap-3">
                   <button onClick={addCelebrazione} className="text-sm text-gold font-medium hover:underline">+ Aggiungi riga</button>
                   <button onClick={handleSave} disabled={saving} className="btn-primary text-sm">{saving ? "..." : "Salva"}</button>
-                  <button onClick={() => setEditGiorno(null)} className="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg">Annulla</button>
+                  <button onClick={() => setEditGiorno(null)} className="px-3 py-1.5 border border-border text-foreground/80 text-sm rounded-lg">Annulla</button>
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-border">
                 {orario.celebrazioni.map((cel, idx) => (
                   <div key={idx} className="px-4 py-2.5 flex justify-between">
-                    <span className="text-sm text-gray-900">{cel.tipo}</span>
+                    <span className="text-sm text-foreground">{cel.tipo}</span>
                     <div className="text-right">
-                      <span className="text-sm text-gray-600">{cel.orario}</span>
-                      {cel.note && <span className="text-xs text-gray-400 ml-2">({cel.note})</span>}
+                      <span className="text-sm text-foreground/70">{cel.orario}</span>
+                      {cel.note && <span className="text-xs text-foreground/40 ml-2">({cel.note})</span>}
                     </div>
                   </div>
                 ))}

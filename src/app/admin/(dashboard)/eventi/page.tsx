@@ -196,14 +196,14 @@ export default function AdminEventiPage() {
     }
   }
 
-  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-foreground/40" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestione Eventi</h1>
-          <p className="text-sm text-gray-500 mt-1">{eventi.length} eventi</p>
+          <h1 className="text-2xl font-bold text-foreground">Gestione Eventi</h1>
+          <p className="text-sm text-foreground/60 mt-1">{eventi.length} eventi</p>
         </div>
         <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors">
           <Plus className="w-4 h-4" /> Aggiungi evento
@@ -211,47 +211,47 @@ export default function AdminEventiPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">{editId ? "Modifica evento" : "Nuovo evento"}</h3>
+        <form onSubmit={handleSubmit} className="bg-surface rounded-xl border border-border p-6 space-y-4">
+          <h3 className="text-lg font-bold text-foreground">{editId ? "Modifica evento" : "Nuovo evento"}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Titolo</label>
-              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo evento" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Titolo</label>
+              <input type="text" value={form.titolo} onChange={(e) => setForm({ ...form, titolo: e.target.value })} required placeholder="Titolo evento" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Luogo</label>
-              <input type="text" value={form.luogo} onChange={(e) => setForm({ ...form, luogo: e.target.value })} required placeholder="Chiesa di San Marco, Milano" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Luogo</label>
+              <input type="text" value={form.luogo} onChange={(e) => setForm({ ...form, luogo: e.target.value })} required placeholder="Chiesa di San Marco, Milano" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Referente pagamenti</label>
-              <input type="text" value={form.referente ?? ""} onChange={(e) => setForm({ ...form, referente: e.target.value })} placeholder="Nome e cognome del referente" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
-              <p className="text-xs text-gray-400 mt-1">Nome e cognome della persona a cui consegnare i pagamenti dell&apos;evento</p>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Referente pagamenti</label>
+              <input type="text" value={form.referente ?? ""} onChange={(e) => setForm({ ...form, referente: e.target.value })} placeholder="Nome e cognome del referente" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
+              <p className="text-xs text-foreground/40 mt-1">Nome e cognome della persona a cui consegnare i pagamenti dell&apos;evento</p>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Data inizio</label>
-              <input type="datetime-local" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Data inizio</label>
+              <input type="datetime-local" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Data fine (opzionale)</label>
-              <input type="datetime-local" value={form.dataFine} onChange={(e) => setForm({ ...form, dataFine: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Data fine (opzionale)</label>
+              <input type="datetime-local" value={form.dataFine} onChange={(e) => setForm({ ...form, dataFine: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Posti disponibili</label>
-              <input type="number" value={form.postiDisponibili ?? ""} onChange={(e) => setForm({ ...form, postiDisponibili: e.target.value ? Number(e.target.value) : undefined })} placeholder="Illimitati" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Posti disponibili</label>
+              <input type="number" value={form.postiDisponibili ?? ""} onChange={(e) => setForm({ ...form, postiDisponibili: e.target.value ? Number(e.target.value) : undefined })} placeholder="Illimitati" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Immagine (URL)</label>
-              <input type="text" value={form.immagine} onChange={(e) => setForm({ ...form, immagine: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
-              <p className="text-xs text-gray-400 mt-1">Link Google Drive dell&apos;immagine</p>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Immagine (URL)</label>
+              <input type="text" value={form.immagine} onChange={(e) => setForm({ ...form, immagine: e.target.value })} placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
+              <p className="text-xs text-foreground/40 mt-1">Link Google Drive dell&apos;immagine</p>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Scadenza pagamento</label>
-              <input type="datetime-local" value={form.paymentDeadline ?? ""} onChange={(e) => setForm({ ...form, paymentDeadline: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
-              <p className="text-xs text-gray-400 mt-1">Mostra un banner pubblico con la scadenza del pagamento.</p>
+              <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Scadenza pagamento</label>
+              <input type="datetime-local" value={form.paymentDeadline ?? ""} onChange={(e) => setForm({ ...form, paymentDeadline: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
+              <p className="text-xs text-foreground/40 mt-1">Mostra un banner pubblico con la scadenza del pagamento.</p>
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+          <div className="rounded-lg border border-border bg-background p-4">
+            <label className="flex items-center gap-3 text-sm font-medium text-foreground/80">
               <input
                 type="checkbox"
                 checked={Boolean(form.showRaccoglimento)}
@@ -265,18 +265,18 @@ export default function AdminEventiPage() {
                         : current.raccoglimento ?? [],
                   }))
                 }
-                className="h-4 w-4 rounded border-gray-300 text-gold focus:ring-gold"
+                className="h-4 w-4 rounded border-border text-gold focus:ring-gold"
               />
               Mostra opzione raccoglimento nel form pubblico
             </label>
-            <p className="text-xs text-gray-500 mt-1">Se disattivato, la sezione non appare nell&apos;iscrizione pubblica.</p>
+            <p className="text-xs text-foreground/60 mt-1">Se disattivato, la sezione non appare nell&apos;iscrizione pubblica.</p>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div className="rounded-xl border border-border bg-surface p-4 space-y-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <h4 className="text-sm font-semibold text-gray-900">Punti di raccolta</h4>
-                <p className="text-xs text-gray-500">Ogni punto richiede nome e orario nel formato HH:mm.</p>
+                <h4 className="text-sm font-semibold text-foreground">Punti di raccolta</h4>
+                <p className="text-xs text-foreground/60">Ogni punto richiede nome e orario nel formato HH:mm.</p>
               </div>
               <button
                 type="button"
@@ -288,27 +288,27 @@ export default function AdminEventiPage() {
             </div>
             <div className="space-y-3">
               {(form.raccoglimento ?? []).map((point, index) => (
-                <div key={index} className="rounded-lg border border-gray-200 p-3">
+                <div key={index} className="rounded-lg border border-border p-3">
                   <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
-                      <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Nome punto</label>
+                      <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Nome punto</label>
                       <input
                         type="text"
                         value={point.label}
                         onChange={(e) => updateRaccoglimentoPoint(index, "label", e.target.value)}
                         placeholder="Es. Davanti alla chiesa"
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+                        className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold"
                         // If label matches one of the defaults, admin should only set time
                         disabled={point.label === "Davanti alla chiesa" || point.label === "Davanti al luogo dell'evento"}
                       />
                     </div>
                     <div className="w-36 shrink-0">
-                      <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Orario di raccolta</label>
+                      <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Orario di raccolta</label>
                       <input
                         type="time"
                         value={point.orario}
                         onChange={(e) => updateRaccoglimentoPoint(index, "orario", e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold"
+                        className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold"
                       />
                     </div>
                     {!(point.label === "Davanti alla chiesa" || point.label === "Davanti al luogo dell'evento") && (
@@ -328,47 +328,47 @@ export default function AdminEventiPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Descrizione</label>
-            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={3} placeholder="Descrizione dell'evento" className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-gold" />
+            <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">Descrizione</label>
+            <textarea value={form.descrizione} onChange={(e) => setForm({ ...form, descrizione: e.target.value })} rows={3} placeholder="Descrizione dell'evento" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={saving} className="px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50">
               {saving ? "Salvando..." : editId ? "Salva modifiche" : "Aggiungi"}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">Annulla</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-border text-foreground/80 text-sm rounded-lg hover:bg-background transition-colors">Annulla</button>
           </div>
         </form>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-surface rounded-xl border border-border overflow-x-auto">
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Titolo</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Data</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Luogo</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Referente</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Posti</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Azioni</th>
+            <tr className="bg-background border-b border-border">
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Titolo</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Data</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Luogo</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Referente</th>
+              <th className="text-left px-4 py-3 font-semibold text-foreground/70">Posti</th>
+              <th className="text-right px-4 py-3 font-semibold text-foreground/70">Azioni</th>
             </tr>
           </thead>
           <tbody>
             {eventi.map((ev, i) => (
-              <tr key={ev.id ?? ev.slug ?? `evento-${i}`} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                <td className="px-4 py-3 font-medium text-gray-900">{ev.titolo}</td>
-                <td className="px-4 py-3 text-gray-600">{new Date(ev.data).toLocaleDateString("it-IT")}</td>
-                <td className="px-4 py-3 text-gray-600">{ev.luogo}</td>
-                <td className="px-4 py-3 text-gray-600">{ev.referente || "—"}</td>
-                <td className="px-4 py-3 text-gray-600">{ev.postiDisponibili ?? "—"}</td>
+              <tr key={ev.id ?? ev.slug ?? `evento-${i}`} className={i % 2 === 0 ? "bg-surface" : "bg-background/50"}>
+                <td className="px-4 py-3 font-medium text-foreground">{ev.titolo}</td>
+                <td className="px-4 py-3 text-foreground/70">{new Date(ev.data).toLocaleDateString("it-IT")}</td>
+                <td className="px-4 py-3 text-foreground/70">{ev.luogo}</td>
+                <td className="px-4 py-3 text-foreground/70">{ev.referente || "—"}</td>
+                <td className="px-4 py-3 text-foreground/70">{ev.postiDisponibili ?? "—"}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => openEdit(ev)} className="p-1.5 text-gray-400 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => setDeleteTarget(ev)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(ev)} className="p-1.5 text-foreground/40 hover:text-gold transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => setDeleteTarget(ev)} className="p-1.5 text-foreground/40 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {eventi.length === 0 && <p className="text-center py-8 text-gray-400 text-sm">Nessun evento presente</p>}
+        {eventi.length === 0 && <p className="text-center py-8 text-foreground/40 text-sm">Nessun evento presente</p>}
       </div>
 
       <ConfirmModal

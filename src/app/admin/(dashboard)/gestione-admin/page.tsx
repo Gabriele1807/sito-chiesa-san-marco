@@ -329,7 +329,7 @@ export default function GestioneAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-gold-light" />
       </div>
     );
   }
@@ -348,8 +348,8 @@ export default function GestioneAdminPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestione Amministratori</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Gestione Amministratori</h1>
+          <p className="text-sm text-foreground/60 mt-1">
             {admins.length} amministrator{admins.length === 1 ? "e" : "i"} registrat{admins.length === 1 ? "o" : "i"}
           </p>
         </div>
@@ -363,22 +363,22 @@ export default function GestioneAdminPage() {
       </div>
 
       {/* Admin list */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Admin</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Username</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Ruolo</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Stato</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Ultimo accesso</th>
-                <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Azioni</th>
+              <tr className="bg-background border-b border-border">
+                <th className="text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider px-5 py-3">Admin</th>
+                <th className="text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider px-5 py-3">Username</th>
+                <th className="text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider px-5 py-3">Ruolo</th>
+                <th className="text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider px-5 py-3">Stato</th>
+                <th className="text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider px-5 py-3">Ultimo accesso</th>
+                <th className="text-right text-xs font-semibold text-foreground/60 uppercase tracking-wider px-5 py-3">Azioni</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {admins.map((admin) => (
-                <tr key={admin.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={admin.id} className="hover:bg-background transition-colors">
                   {/* Nome con avatar iniziali */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
@@ -390,9 +390,9 @@ export default function GestioneAdminPage() {
                         {admin.nome[0]}{admin.cognome[0]}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{admin.nome} {admin.cognome}</p>
+                        <p className="text-sm font-medium text-foreground">{admin.nome} {admin.cognome}</p>
                         {admin.email && (
-                          <p className="text-xs text-gray-400">{admin.email}</p>
+                          <p className="text-xs text-foreground/40">{admin.email}</p>
                         )}
                       </div>
                     </div>
@@ -400,7 +400,7 @@ export default function GestioneAdminPage() {
 
                   {/* Username */}
                   <td className="px-5 py-4">
-                    <span className="text-sm text-gray-600 font-mono">{admin.username}</span>
+                    <span className="text-sm text-foreground/70 font-mono">{admin.username}</span>
                   </td>
 
                   {/* Ruolo badge */}
@@ -408,7 +408,7 @@ export default function GestioneAdminPage() {
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                         admin.ruolo === "superadmin"
-                          ? "bg-amber-100 text-amber-700"
+                          ? "bg-amber-100 text-gold"
                           : "bg-blue-100 text-blue-700"
                       }`}
                     >
@@ -436,7 +436,7 @@ export default function GestioneAdminPage() {
                   </td>
 
                   {/* Ultimo accesso */}
-                  <td className="px-5 py-4 text-sm text-gray-500">
+                  <td className="px-5 py-4 text-sm text-foreground/60">
                     {admin.ultimo_accesso
                       ? new Date(admin.ultimo_accesso).toLocaleString("it-IT", {
                           day: "2-digit",
@@ -470,7 +470,7 @@ export default function GestioneAdminPage() {
                       {/* Modifica */}
                       <button
                         onClick={() => openEditForm(admin)}
-                        className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-2 rounded-lg text-foreground/40 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                         title="Modifica"
                       >
                         <Pencil className="w-4 h-4" />
@@ -488,7 +488,7 @@ export default function GestioneAdminPage() {
                           </button>
                           <button
                             onClick={() => setConfirmDelete(null)}
-                            className="p-1 rounded text-gray-400 hover:text-gray-600"
+                            className="p-1 rounded text-foreground/40 hover:text-foreground/70"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -496,7 +496,7 @@ export default function GestioneAdminPage() {
                       ) : (
                         <button
                           onClick={() => setConfirmDelete(admin.id)}
-                          className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          className="p-2 rounded-lg text-foreground/40 hover:text-red-600 hover:bg-red-50 transition-colors"
                           title="Elimina"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -530,11 +530,11 @@ export default function GestioneAdminPage() {
                     {req.nome?.[0] ?? "?"}{req.cognome?.[0] ?? ""}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {req.nome} {req.cognome}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">{req.email} · @{req.username}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-foreground/40 truncate">{req.email} · @{req.username}</p>
+                    <p className="text-xs text-foreground/60 mt-0.5">
                       Ruolo: <span className="font-medium">{req.role}</span> · Età: {req.ageGroup}
                       {req.adminRequestDate && (
                         <> · Richiesta il {new Date(req.adminRequestDate).toLocaleDateString("it-IT")}</>
@@ -575,14 +575,14 @@ export default function GestioneAdminPage() {
       )}
 
       {pendingSuperAdminRequests.length > 0 && (
-        <div className="bg-white rounded-xl border border-sky-200 overflow-hidden">
+        <div className="bg-surface rounded-xl border border-sky-200 overflow-hidden">
           <div className="px-5 py-4 bg-sky-50 border-b border-sky-200 flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-sky-700" />
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-foreground">
               Richieste Super Admin Pendenti ({pendingSuperAdminRequests.length})
             </h2>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-border">
             {pendingSuperAdminRequests.map((req) => (
               <div key={req._id} className="px-5 py-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
@@ -590,11 +590,11 @@ export default function GestioneAdminPage() {
                     {req.nome?.[0] ?? "?"}{req.cognome?.[0] ?? ""}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {req.nome} {req.cognome}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">{req.email} · @{req.username}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-foreground/40 truncate">{req.email} · @{req.username}</p>
+                    <p className="text-xs text-foreground/60 mt-0.5">
                       Richiede promozione a superadmin
                       {req.superAdminRequestDate && (
                         <> · Richiesta il {new Date(req.superAdminRequestDate).toLocaleDateString("it-IT")}</>
@@ -637,14 +637,14 @@ export default function GestioneAdminPage() {
       {/* Form modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">
+          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 className="text-lg font-bold text-foreground">
                 {editingId ? "Modifica Admin" : "Nuovo Admin"}
               </h3>
               <button
                 onClick={() => setShowForm(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                className="p-1.5 rounded-lg text-foreground/40 hover:text-foreground/70 hover:bg-surface-2"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -653,7 +653,7 @@ export default function GestioneAdminPage() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                     Nome *
                   </label>
                   <input
@@ -661,11 +661,11 @@ export default function GestioneAdminPage() {
                     value={form.nome}
                     onChange={(e) => setForm({ ...form, nome: e.target.value })}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                     Cognome *
                   </label>
                   <input
@@ -673,13 +673,13 @@ export default function GestioneAdminPage() {
                     value={form.cognome}
                     onChange={(e) => setForm({ ...form, cognome: e.target.value })}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-light/50 focus:border-gold-light"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Username *
                 </label>
                 <input
@@ -688,24 +688,24 @@ export default function GestioneAdminPage() {
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                   required
                   disabled={!!editingId}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold disabled:bg-gray-100 disabled:text-gray-400"
+                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold disabled:bg-surface-2 disabled:text-foreground/40"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Email
                 </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
+                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-light/50 focus:border-gold-light"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Password {editingId ? "(lascia vuoto per non modificare)" : "*"}
                 </label>
                 <input
@@ -715,18 +715,18 @@ export default function GestioneAdminPage() {
                   required={!editingId}
                   minLength={8}
                   placeholder={editingId ? "••••••••" : "Minimo 8 caratteri"}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
+                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-light/50 focus:border-gold-light"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Ruolo *
                 </label>
                 <select
                   value={form.ruolo}
                   onChange={(e) => setForm({ ...form, ruolo: e.target.value as "superadmin" | "admin" })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600"
+                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-light/50 focus:border-gold-light"
                 >
                   <option value="admin">Admin (gestione contenuti)</option>
                   <option value="superadmin">Super Admin (accesso completo)</option>
@@ -743,7 +743,7 @@ export default function GestioneAdminPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium text-foreground/70 hover:bg-background transition-colors"
                 >
                   Annulla
                 </button>

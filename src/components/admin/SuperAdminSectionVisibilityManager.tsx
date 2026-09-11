@@ -106,8 +106,8 @@ export default function SuperAdminSectionVisibilityManager({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
-          <p className="text-gray-600">Caricamento sezioni...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-2"></div>
+          <p className="text-foreground/70">Caricamento sezioni...</p>
         </div>
       </div>
     );
@@ -132,17 +132,17 @@ export default function SuperAdminSectionVisibilityManager({
 
       <div className="grid gap-6">
         {sections.map((section) => (
-          <div key={section.sectionId} className="border border-gray-200 rounded-lg p-6 bg-white">
+          <div key={section.sectionId} className="border border-border rounded-lg p-6 bg-surface">
             {/* Header della sezione */}
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{section.sectionLabel}</h3>
-                <p className="text-sm text-gray-600 mt-1">ID: {section.sectionId}</p>
+                <h3 className="text-lg font-semibold text-foreground">{section.sectionLabel}</h3>
+                <p className="text-sm text-foreground/70 mt-1">ID: {section.sectionId}</p>
               </div>
               <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                 section.isActive
                   ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-600"
+                  : "bg-surface-2 text-foreground/70"
               }`}>
                 {section.isActive ? "Attivo" : "Disattivo"}
               </div>
@@ -152,10 +152,10 @@ export default function SuperAdminSectionVisibilityManager({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 px-3 font-semibold text-gray-700">Ruolo</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 font-semibold text-foreground/80">Ruolo</th>
                     {ACCESS_OPTIONS.map((opt) => (
-                      <th key={opt.value} className="text-center py-2 px-3 font-semibold text-gray-700">
+                      <th key={opt.value} className="text-center py-2 px-3 font-semibold text-foreground/80">
                         {opt.label}
                       </th>
                     ))}
@@ -163,8 +163,8 @@ export default function SuperAdminSectionVisibilityManager({
                 </thead>
                 <tbody>
                   {Object.entries(ROLE_LABELS).map(([role, label]) => (
-                    <tr key={role} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-3 font-medium text-gray-900">{label}</td>
+                    <tr key={role} className="border-b border-border hover:bg-background">
+                      <td className="py-3 px-3 font-medium text-foreground">{label}</td>
                       {ACCESS_OPTIONS.map((opt) => {
                         const currentAccess = section.roleConfig[role as keyof typeof section.roleConfig] || "hidden";
                         const isSelected = currentAccess === opt.value;
@@ -178,7 +178,7 @@ export default function SuperAdminSectionVisibilityManager({
                               className={`inline-flex items-center justify-center w-8 h-8 rounded transition-all ${
                                 isSelected
                                   ? "bg-blue-500 text-white shadow-sm"
-                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                  : "bg-surface-2 text-foreground/70 hover:bg-surface-2"
                               } ${
                                 saving === section.sectionId ? "opacity-50 cursor-not-allowed" : ""
                               }`}
@@ -195,7 +195,7 @@ export default function SuperAdminSectionVisibilityManager({
               </table>
             </div>
 
-            <p className="text-xs text-gray-500 mt-4">
+            <p className="text-xs text-foreground/60 mt-4">
               Ultimo aggiornamento: {new Date(section.updatedAt).toLocaleString("it-IT")}
             </p>
           </div>
