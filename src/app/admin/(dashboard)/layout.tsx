@@ -1,10 +1,17 @@
 // FIX [9] — Dashboard layout with sidebar, separated from login route
+import { redirect } from "next/navigation";
+import { getAdminSession } from "@/lib/auth/session";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbarTitle from "@/components/admin/AdminTopbarTitle";
 import AdminToast from "@/components/admin/AdminToast";
 import AdminMobileMenuButton from "@/components/admin/AdminMobileMenuButton";
 
-export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
+  const adminUser = await getAdminSession();
+  if (!adminUser) {
+    redirect("/admin/login");
+  }
+
   return (
     <>
       <AdminSidebar />
