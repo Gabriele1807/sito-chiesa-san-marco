@@ -6,6 +6,11 @@ import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
 
+// LIMITE NOTO: come rate-limit.ts, questo Set vive in memoria di processo.
+// Su Vercel (serverless) non è condiviso tra istanze/regioni: un token
+// "revocato" (es. dopo logout) può restare valido su un'istanza diversa
+// finché non scade naturalmente. Fuori scopo risolverlo in questo
+// intervento: vedi PROJECT_CONTEXT.md sezione sicurezza.
 const revokedAdminTokens = new Set<string>();
 
 export interface AdminUser {

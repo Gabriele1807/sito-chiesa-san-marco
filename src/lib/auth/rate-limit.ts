@@ -7,8 +7,16 @@
  * Dopo 60 richieste dallo stesso IP in 1 minuto,
  * blocca temporaneamente ulteriori richieste generiche.
  *
+ * LIMITE NOTO: gli stati (`attempts`, `requestAttempts`) vivono in memoria
+ * di processo. Su Vercel (funzioni serverless), ogni istanza/regione ha la
+ * propria copia della Map e le istanze vengono riciclate: il rate limit
+ * reale è quindi "per istanza", non globale, e un attaccante distribuito su
+ * più richieste concorrenti può superare i limiti nominali. Non è una
+ * protezione robusta contro brute-force distribuito in produzione seriale.
+ *
  * FUTURO: sostituire con Redis o Supabase per ambienti multi-istanza
  * (es. Vercel serverless). Con Redis: usare INCR + EXPIRE per contatore IP.
+ * Fuori scopo per questo intervento: vedi PROJECT_CONTEXT.md sezione sicurezza.
  */
 
 const MAX_ATTEMPTS = 5;
