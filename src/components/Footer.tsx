@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { FooterAccordion } from "./FooterAccordion";
+import HashLink from "./HashLink";
 
 const ADDRESS_MAPS_URL = "https://maps.app.goo.gl/fUqwmy5ZGXMidqWf8";
 const FACEBOOK_URL = "https://www.facebook.com/people/Chiesa-di-San-Marco/61556571205312/";
@@ -15,32 +16,32 @@ export default async function Footer() {
   ]);
 
   return (
-    <footer className="mt-16 bg-gradient-to-b from-surface-2 via-surface-alt to-background text-foreground/70 border-t border-border/80">
+    <footer className="mt-16 border-t border-accent/25 bg-surface-2/70 text-foreground/70">
       <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10 py-12">
         {/* Desktop Layout (lg e superiori) */}
         <div className="hidden lg:grid gap-10 grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-accent/20 flex items-center justify-center">
-                <span className="text-foreground font-bold text-sm">☦</span>
+              <div className="flex h-11 w-11 items-center justify-center border border-accent/40 text-accent text-xl">
+                {"☦︎"}
               </div>
               <div>
-                <p className="font-display text-foreground text-base">
+                <p className="font-display text-foreground text-lg">
                   {tCommon("nomeChiesa")}
                 </p>
-                <p className="text-xs text-foreground/55">{tFooter("aboutTitle")}</p>
+                <p className="text-xs uppercase tracking-[0.25em] text-foreground/45">{tFooter("aboutTitle")}</p>
               </div>
             </div>
             <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("aboutText")}
             </p>
             <div className="flex flex-wrap gap-2">
-              <Link
+              <HashLink
                 href="/#orari"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-surface-alt"
               >
                 {tFooter("orariCta")}
-              </Link>
+              </HashLink>
               <Link
                 href="/contatti"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-white text-foreground/80 px-4 py-2 text-xs font-semibold border border-border shadow-sm transition hover:text-foreground hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-surface-alt"
@@ -57,9 +58,9 @@ export default async function Footer() {
             <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("orariDesc")}
             </p>
-            <Link href="/#orari" className="btn-link">
+            <HashLink href="/#orari" className="btn-link">
               {tFooter("orariCta")}
-            </Link>
+            </HashLink>
           </div>
 
           <div className="space-y-3">
@@ -90,9 +91,9 @@ export default async function Footer() {
               <Link href="/" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("home")}
               </Link>
-              <Link href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <HashLink href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("orari")}
-              </Link>
+              </HashLink>
               <Link href="/video-corsi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("videoCorsi")}
               </Link>
@@ -141,26 +142,26 @@ export default async function Footer() {
           {/* About Section - sempre aperto per primo */}
           <div className="border-b border-border/50 pb-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-11 h-11 rounded-2xl bg-accent/20 flex items-center justify-center">
-                <span className="text-foreground font-bold text-sm">☦</span>
+              <div className="flex h-11 w-11 items-center justify-center border border-accent/40 text-accent text-xl">
+                {"☦︎"}
               </div>
               <div>
-                <p className="font-display text-foreground text-base">
+                <p className="font-display text-foreground text-lg">
                   {tCommon("nomeChiesa")}
                 </p>
-                <p className="text-xs text-foreground/55">{tFooter("aboutTitle")}</p>
+                <p className="text-xs uppercase tracking-[0.25em] text-foreground/45">{tFooter("aboutTitle")}</p>
               </div>
             </div>
             <p className="text-sm text-foreground/70 leading-relaxed mb-4">
               {tFooter("aboutText")}
             </p>
             <div className="flex flex-wrap gap-2">
-              <Link
+              <HashLink
                 href="/#orari"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
                 {tFooter("orariCta")}
-              </Link>
+              </HashLink>
               <Link
                 href="/contatti"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-white text-foreground/80 px-4 py-2 text-xs font-semibold border border-border shadow-sm transition hover:text-foreground hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
@@ -175,9 +176,9 @@ export default async function Footer() {
             <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("orariDesc")}
             </p>
-            <Link href="/#orari" className="btn-link text-xs">
+            <HashLink href="/#orari" className="btn-link text-xs">
               {tFooter("orariCta")}
-            </Link>
+            </HashLink>
           </FooterAccordion>
 
           {/* Contatti Accordion */}
@@ -204,9 +205,9 @@ export default async function Footer() {
               <Link href="/" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("home")}
               </Link>
-              <Link href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <HashLink href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("orari")}
-              </Link>
+              </HashLink>
               <Link href="/video-corsi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
                 {tNav("videoCorsi")}
               </Link>

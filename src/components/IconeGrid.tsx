@@ -30,13 +30,13 @@ export default function IconeGrid({ icone }: Props) {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-8">
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1.5">
             {t("filtraCategoria")}
           </label>
           <select
             value={categoriaFilter}
             onChange={(e) => setCategoriaFilter(e.target.value)}
-            className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            className="px-3 py-2 bg-surface border border-border rounded-lg text-sm text-foreground/80 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
           >
             <option value="all">{t("tutte")}</option>
             {categorie.map((cat) => (
@@ -45,13 +45,13 @@ export default function IconeGrid({ icone }: Props) {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1.5">
             {t("filtraPosizione")}
           </label>
           <select
             value={posizioneFilter}
             onChange={(e) => setPosizioneFilter(e.target.value)}
-            className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            className="px-3 py-2 bg-surface border border-border rounded-lg text-sm text-foreground/80 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
           >
             <option value="all">{t("tutte")}</option>
             {posizioni.map((pos) => (
@@ -65,7 +65,7 @@ export default function IconeGrid({ icone }: Props) {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.map((icona, index) => (
           <Link key={icona.id} href={`/icone/${icona.slug}`} className="group animate-fade-in-up block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2" style={{ animationDelay: `${index * 60}ms` }}>
-            <div className="card-hover bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="card-hover bg-surface rounded-xl overflow-hidden border border-border/70 shadow-sm">
               <div className="h-52 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
                 {icona.immagini?.[0] ? (
                   <img
@@ -76,24 +76,22 @@ export default function IconeGrid({ icone }: Props) {
                 ) : (
                   <span className="text-5xl opacity-30">🖼️</span>
                 )}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md">
+                <div className="absolute top-3 right-3 bg-surface/90 backdrop-blur-sm px-2 py-1 rounded-md border border-border/60">
                   <span className="text-xs font-medium text-accent">{icona.categoria}</span>
                 </div>
               </div>
               <div className="p-5">
-                {/* FIX [21] — Title gray-900 at rest, amber-600 on hover only */}
-                <h3 className="font-bold text-gray-900 group-hover:text-gold transition-colors">
+                <h3 className="font-display text-lg text-foreground group-hover:text-gold transition-colors">
                   {icona.nomeSanto}
                 </h3>
-                <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-1">
+                <div className="flex items-center gap-1.5 text-sm text-foreground/60 mt-1">
                   <MapPin className="w-3.5 h-3.5" />
                   {icona.posizione}
                 </div>
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                <p className="text-sm text-foreground/70 mt-2 line-clamp-2">
                   {icona.descrizione}
                 </p>
-                {/* FIX [21] — Link text amber-600 on hover */}
-                <div className="flex items-center gap-1 text-gray-500 font-medium text-sm mt-3 group-hover:text-gold transition-colors">
+                <div className="flex items-center gap-1 text-foreground/60 font-medium text-sm mt-3 group-hover:text-gold transition-colors">
                   {t("scopri")}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
@@ -104,8 +102,8 @@ export default function IconeGrid({ icone }: Props) {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">
+        <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <p className="text-sm text-foreground/60">
             {icone.length === 0
               ? "Nessuna icona disponibile al momento."
               : "Nessuna icona trovata con i filtri selezionati."}

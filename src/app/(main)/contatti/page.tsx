@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import {
   Mail,
@@ -6,8 +7,13 @@ import {
   Facebook,
   ExternalLink,
 } from "lucide-react";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("contatti", "titolo", "sottotitolo", "/contatti");
+}
 
 const EMAIL = "info@sanmarcocopti.it";
 const ADDRESS_MAPS_URL = "https://maps.app.goo.gl/fUqwmy5ZGXMidqWf8";
@@ -20,7 +26,8 @@ export default async function ContattiPage() {
     <div className="space-y-14 text-foreground">
       {/* ── HEADER ── */}
       <section className="animate-[fadeInUp_0.4s_ease_both]">
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+        <p className="eyebrow mb-2">{t("titolo")}</p>
+        <h1 className="font-display text-3xl sm:text-4xl text-foreground mb-3">
           {t("titolo")}
         </h1>
         <p className="text-foreground/70 leading-relaxed max-w-2xl">
@@ -38,9 +45,9 @@ export default async function ContattiPage() {
           <div
             key="email"
             style={{ animationDelay: "0ms" }}
-            className="animate-[fadeInUp_0.4s_ease_both] bg-surface rounded-2xl border border-border/80 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-accent/30 transition-all duration-300"
+            className="animate-[fadeInUp_0.4s_ease_both] bg-surface-alt/50 rounded-2xl border border-accent/30 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-accent/50 transition-all duration-300"
           >
-            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
+            <div className="w-11 h-11 border border-accent/40 flex items-center justify-center">
               <Mail className="w-5 h-5 text-accent" />
             </div>
             <div className="flex-1">
@@ -63,8 +70,8 @@ export default async function ContattiPage() {
             style={{ animationDelay: "120ms" }}
             className="animate-[fadeInUp_0.4s_ease_both] bg-surface rounded-2xl border border-border/80 shadow-sm p-5 flex flex-col gap-4 hover:scale-[1.01] hover:shadow-md hover:border-accent/30 transition-all duration-300"
           >
-            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-accent" />
+            <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-foreground mb-1">{t("indirizzoSezione")}</h3>
@@ -92,7 +99,7 @@ export default async function ContattiPage() {
           SACERDOTI
           ══════════════════════════════════════════════════════════ */}
       <section className="animate-[fadeIn_0.5s_ease_both]">
-        <p className="text-xs font-bold text-accent uppercase tracking-widest mb-4 px-1">
+        <p className="eyebrow mb-4 px-1">
           {t("sacerdoteSezione")}
         </p>
         <div className="grid sm:grid-cols-3 gap-4">
@@ -135,9 +142,9 @@ export default async function ContattiPage() {
           SOCIAL MEDIA
           ══════════════════════════════════════════════════════════ */}
       <section>
-        <h2 className="text-lg font-bold text-foreground uppercase tracking-wide mb-5">
+        <p className="eyebrow mb-5">
           {t("socialSezione")}
-        </h2>
+        </p>
 
         {/* Facebook */}
         <a

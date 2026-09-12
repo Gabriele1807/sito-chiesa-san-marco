@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { BookOpen, Church, Cross, Landmark, Users } from "lucide-react";
+import { buildPageMetadata } from "@/lib/seo/metadata";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("chiSiamo", "titolo", "intro", "/chi-siamo");
+}
 
 type Copy = {
   title: string;
@@ -137,28 +143,43 @@ export default async function ChiSiamoPage() {
   return (
     <div className="space-y-12">
       <section className="space-y-6">
-        <div className="rounded-3xl border border-border bg-surface p-8 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-accent">
-            {copy.title}
-          </p>
-          <h1 className="mt-3 text-3xl font-bold text-foreground sm:text-4xl">
-            {copy.title}
-          </h1>
-          <p className="mt-4 max-w-4xl text-base leading-relaxed text-foreground/75">
-            {copy.intro}
-          </p>
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-8 shadow-sm">
+          <div className="texture-lattice pointer-events-none absolute inset-0 text-accent/[0.04]" />
+          <div className="relative">
+            <p className="eyebrow">{copy.title}</p>
+            <h1 className="mt-3 font-display text-3xl text-foreground sm:text-4xl">
+              {copy.title}
+            </h1>
+            <p className="mt-4 max-w-4xl text-base leading-relaxed text-foreground/75">
+              {copy.intro}
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-2">
-          {pillars.map((pillar) => {
+          {pillars.map((pillar, index) => {
             const Icon = pillar.icon;
+            const isPrimary = index === 0;
             return (
-              <article key={pillar.title} className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+              <article
+                key={pillar.title}
+                className={
+                  isPrimary
+                    ? "rounded-2xl border border-accent/30 bg-surface-alt/50 p-6 shadow-sm"
+                    : "rounded-2xl border border-border bg-surface p-6 shadow-sm"
+                }
+              >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <div
+                    className={
+                      isPrimary
+                        ? "flex h-11 w-11 items-center justify-center border border-accent/40 text-accent"
+                        : "flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary"
+                    }
+                  >
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h2 className="text-lg font-bold text-foreground">{pillar.title}</h2>
+                  <h2 className="font-display text-lg text-foreground">{pillar.title}</h2>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-foreground/70">
                   {pillar.body}
@@ -171,7 +192,8 @@ export default async function ChiSiamoPage() {
 
       <section className="space-y-6">
         <div className="max-w-3xl">
-          <h2 className="text-2xl font-bold text-foreground">{copy.institutionTitle}</h2>
+          <p className="eyebrow">{copy.institutionTitle}</p>
+          <h2 className="mt-2 font-display text-2xl text-foreground">{copy.institutionTitle}</h2>
           <p className="mt-2 text-sm leading-relaxed text-foreground/70">
             {copy.institutionIntro}
           </p>
@@ -183,10 +205,10 @@ export default async function ChiSiamoPage() {
             return (
               <article key={section.title} className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
                 <div className="flex items-center gap-3 border-b border-border/60 pb-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-foreground">{section.title}</h3>
+                  <h3 className="font-display text-lg text-foreground">{section.title}</h3>
                 </div>
                 <div className="mt-5 space-y-4">
                   {section.items.map((item) => (
@@ -207,13 +229,11 @@ export default async function ChiSiamoPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+      <section className="rounded-2xl border-l-2 border-accent bg-surface-alt/40 p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-            <BookOpen className="h-5 w-5" />
-          </div>
+          <BookOpen className="h-5 w-5 shrink-0 text-accent" />
           <div>
-            <h2 className="text-lg font-bold text-foreground">Fonti</h2>
+            <h2 className="font-display text-lg text-foreground">Fonti</h2>
             <p className="text-sm text-foreground/70">{copy.notes}</p>
           </div>
         </div>

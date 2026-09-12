@@ -68,6 +68,10 @@ Apri [http://localhost:3000](http://localhost:3000).
 | `npm run build` | Build di produzione |
 | `npm start` | Avvia in produzione |
 | `npm run lint` | Linting |
+| `npm run format` | Formatta il codice con Prettier |
+| `npm run format:check` | Verifica la formattazione senza modificare i file |
+| `npm test` | Esegue i test automatici (Vitest) |
+| `npm run test:watch` | Test in modalità watch |
 | `npm run generate-hash -- "pwd"` | Genera hash bcrypt |
 
 ## Struttura progetto

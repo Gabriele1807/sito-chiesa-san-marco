@@ -37,6 +37,12 @@ html[data-topbar-hidden="true"] {
   --topbar-offset: 0px;
 }
 
+/* Keeps in-page anchor targets (e.g. #orari) from landing under the fixed navbar */
+#orari,
+#live {
+  scroll-margin-top: calc(var(--topbar-height) + 16px);
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
@@ -117,6 +123,39 @@ html {
 
   [data-locale="ar"] .font-display {
     font-family: var(--font-arabic), var(--font-sans), serif;
+  }
+
+  /* Eyebrow label with a drawn rule instead of a generic uppercase-only tag */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-accent;
+  }
+  .eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 1.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  /* Coptic cross mark used as a recurring identity motif, not a stock icon */
+  .coptic-mark {
+    position: relative;
+    display: inline-block;
+  }
+  .coptic-mark::before,
+  .coptic-mark::after {
+    content: "";
+    position: absolute;
+    background: currentColor;
+  }
+
+  /* Subtle repeating cross-lattice texture for section backgrounds */
+  .texture-lattice {
+    background-image:
+      linear-gradient(45deg, currentColor 1px, transparent 1px),
+      linear-gradient(-45deg, currentColor 1px, transparent 1px);
+    background-size: 22px 22px;
   }
 
   .btn-primary {

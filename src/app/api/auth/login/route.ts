@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const forwarded = request.headers.get("x-forwarded-for");
     const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
 
-    if (isRateLimited(ip)) {
+    if (await isRateLimited(ip)) {
       return NextResponse.json(
         { success: false, error: "Troppi tentativi. Riprova tra 15 minuti." },
         { status: 429 }
@@ -44,20 +44,20 @@ export async function POST(request: Request) {
     // === TENTATIVO 1: Admin su Supabase (username match) ===
     const adminResult = await tryAdminLogin(id, pwd, request, rememberMe === true);
     if (adminResult) {
-      resetAttempts(ip);
+      await resetAttempts(ip);
       return adminResult;
     }
 
     // === TENTATIVO 2: Utente normale su MongoDB (email o username) ===
     const userResult = await tryUserLogin(id, pwd, request, rememberMe === true);
     if (userResult) {
-      resetAttempts(ip);
+      await resetAttempts(ip);
       return userResult;
     }
 
     // === Nessun match ===
-    recordFailedAttempt(ip);
-    const remaining = remainingAttempts(ip);
+    await recordFailedAttempt(ip);
+    const remaining = await remainingAttempts(ip);
     return NextResponse.json(
       { success: false, error: "Credenziali non valide", remaining },
       { status: 401 }

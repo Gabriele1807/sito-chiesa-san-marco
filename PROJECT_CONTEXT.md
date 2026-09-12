@@ -127,6 +127,11 @@ MONGODB_URI=
 MONGODB_DB=
 NEXT_PUBLIC_SITE_URL=
 YOUTUBE_API_KEY=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+# Alternative names created by the Vercel Marketplace integration
+KV_REST_API_URL=
+KV_REST_API_TOKEN=
 ```
 
 Note operative:
@@ -136,6 +141,10 @@ Note operative:
 - `MONGODB_URI` e `MONGODB_DB` alimentano MongoDB per contenuti, utenti e iscrizioni.
 - `NEXT_PUBLIC_SITE_URL` viene usato per costruire URL assoluti in alcune API.
 - `YOUTUBE_API_KEY` alimenta l'endpoint del canale YouTube.
+- `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` oppure `KV_REST_API_URL`/`KV_REST_API_TOKEN` sono **opzionali**:
+  alimentano `src/lib/redis/client.ts` (rate limiting e revoca token admin,
+  vedi §6.4.3). Se assenti, l'app funziona comunque con un fallback in
+  memoria di processo (comportamento pre-esistente).
 
 ---
 
@@ -272,13 +281,10 @@ corretto le seguenti vulnerabilità e ora documenta lo stato reale:
   `/admin/login` su risposta 401 invece di mostrare tabelle vuote o errori
   silenziosi.
 - **Limiti noti rimasti aperti (non risolti in questo audit, fuori scopo):**
-  - Rate limiting login/IP (`src/lib/auth/rate-limit.ts`) e revoca token
-    admin (`revokedAdminTokens` in `session.ts`) vivono in memoria di
-    processo: su Vercel serverless non sono condivisi tra istanze/regioni,
-    quindi la protezione reale è "per istanza", più debole dei limiti
-    nominali (5 tentativi/15 min, 60 richieste/min). Commentato inline nel
-    codice. Soluzione futura suggerita: Redis o storage condiviso
-    equivalente (`INCR`/`EXPIRE`).
+  - ~~Rate limiting login/IP e revoca token admin vivono in memoria di
+    processo~~ — **risolto in §6.4.3** (2026-09-12): entrambi ora usano
+    Redis (Upstash) quando configurato, con fallback automatico
+    all'in-memoria se le env var non sono presenti.
   - `src/app/api/auth/login/route.ts`: il lookup admin su Supabase usava
     `.or()` con l'identifier utente interpolato direttamente nella
     mini-sintassi PostgREST (rischio di alterazione del filtro). Corretto
@@ -300,6 +306,51 @@ corretto le seguenti vulnerabilità e ora documenta lo stato reale:
     cambio più ampio (Edge runtime, matcher su tutte le route
     `/api/admin/*`) che richiede test più estesi di quelli eseguibili in
     questa sessione; considerarlo come refactor futuro dedicato.
+
+#### 6.4.3 Rate limiting e revoca token su Redis (2026-09-12)
+
+Segue un audit generale del progetto che aveva ri-segnalato il limite già
+noto (rate limit e revoca token "per istanza" su Vercel serverless).
+Risolto introducendo Redis come backend condiviso, con fallback
+automatico al comportamento precedente quando Redis non è configurato.
+
+- Provider scelto: **Upstash Redis** (`@upstash/redis`, client HTTP senza
+  connessione TCP persistente) — l'unica scelta sensata in un ambiente
+  serverless come le funzioni Vercel, dove un client Redis a connessione
+  persistente (`ioredis`/`node-redis`) richiederebbe gestione di
+  connection pooling non banale.
+- `src/lib/redis/client.ts`: client singleton `getRedis()` che legge
+  `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`; ritorna `null` se
+  non configurate.
+- `src/lib/auth/rate-limit.ts`: le 6 funzioni esportate sono diventate
+  `async`. Quando Redis è configurato usano `INCR` + `EXPIRE` (finestra
+  scorrevole: l'`EXPIRE` viene impostato solo al primo incremento della
+  finestra, non ad ogni richiesta) su chiavi `ratelimit:login:{ip}` e
+  `ratelimit:request:{ip}`. Quando Redis non è configurato, ricadono
+  sulla stessa `Map` in memoria di processo usata prima di questa
+  modifica — nessuna rottura per l'ambiente di sviluppo locale (dove non
+  è configurato in questa sessione).
+- `src/lib/auth/session.ts`: la revoca token (`deleteSession` →
+  `revokeToken`, controllata in `validateSession` → `isTokenRevoked`) usa
+  una chiave Redis `admin_revoked:{token}` con **TTL pari alla scadenza
+  residua del JWT** (decodificata dal campo `exp` senza verificarne la
+  firma — solo per calcolare la TTL, non per fidarsi del contenuto: la
+  validazione della firma resta in `verifyJwt()`), così la chiave di
+  revoca scompare da sola quando il token sarebbe comunque scaduto,
+  invece di accumularsi indefinitamente. Fallback in memoria (`Set`)
+  identico a prima se Redis non è configurato.
+- 6 call site aggiornati con `await` (già dentro handler `async`,
+  modifica meccanica): `api/auth/login`, `api/admin/login`,
+  `api/auth/register`, `api/eventi/iscrizione`, `api/youtube/channel`.
+- Verificato: `tsc --noEmit` pulito, `eslint` senza nuovi errori/warning
+  sui file toccati, endpoint `/api/auth/login` testato via `curl` in
+  locale (senza `UPSTASH_*` configurate → percorso fallback in-memoria)
+  con risposta 401 e contatore `remaining` corretto.
+- **Non verificato in questa sessione**: comportamento con Redis
+  realmente configurato (nessuna istanza Upstash disponibile in locale) —
+  da confermare in un ambiente con `UPSTASH_REDIS_REST_URL`/`_TOKEN`
+  impostate (es. dopo aver collegato un'istanza Upstash da Vercel
+  Marketplace) prima del prossimo deploy in produzione.
 
 #### 6.4.2 Convenzioni UI admin
 
@@ -505,6 +556,467 @@ Eccezioni intenzionali non toccate dal consolidamento:
   tratteggiato e messaggio dedicato). `IconeGrid` distingue esplicitamente
   "nessuna icona esistente" da "nessuna icona che rispetta i filtri
   selezionati".
+
+---
+
+## 10.4 Refresh grafico home/hero/navbar/footer (2026-09-12)
+
+Un audit critico di design (art direction) ha rilevato che l'hero, le card
+"contenuti in evidenza" e alcuni elementi del footer avevano un aspetto
+molto simile a un template generato automaticamente: blob sfocati (`blur-3xl`)
+puramente decorativi nell'hero, due card "featured" identiche per peso
+visivo, etichette eyebrow generiche (solo maiuscolo+tracking), badge icona
+in cerchio arrotondato ripetuto ovunque. Palette cromatica (oro/crema)
+mantenuta invariata su richiesta esplicita: il lavoro si è concentrato su
+composizione, tipografia e motivi distintivi, non sui colori.
+
+Modifiche applicate:
+
+- `src/app/globals.css`
+  - nuova classe `.eyebrow` (etichetta con trattino disegnato via `::before`
+    invece del solo uppercase+tracking, per un'identità più riconoscibile)
+  - nuova classe `.texture-lattice` (motivo a reticolo incrociato, usato come
+    texture di sfondo molto tenue nell'hero al posto dei blob sfocati)
+  - classe `.coptic-mark` predisposta per marchi a croce (non ancora usata
+    oltre al footer)
+- `src/app/(main)/page.tsx`
+  - hero: rimossi i due blob `blur-3xl` decorativi senza funzione; aggiunta
+    texture a reticolo molto tenue (`text-primary/[0.035]`) e un divisore
+    verticale dorato che segna la composizione a due colonne su desktop
+  - titolo hero portato a `text-3xl`/`sm:text-5xl` con `leading-[1.1]` per
+    più presenza tipografica; eyebrow convertito alla classe `.eyebrow`
+  - meta riga data/luogo: da due "pillole" arrotondate generiche a un
+    blocco con bordo sinistro dorato (meno "badge in libreria componenti",
+    più intenzionale)
+  - sezione "Vivi la chiesa dal vivo": titolo passato a `font-display`
+  - sezione "Contenuti in primo piano": le due card (eventi/preghiere) non
+    sono più identiche — la card eventi ha un header con sfondo accent e
+    bordo dorato (priorità visiva maggiore), la card preghiere resta più
+    leggera; griglia asimmetrica `1.2fr/1fr` invece di `1fr/1fr`
+- `src/components/Navbar.tsx`
+  - bordo inferiore della topbar da `border-border/80` neutro a
+    `border-accent/20`, per un accento di brand invece di un bordo grigio
+    generico
+- `src/components/Footer.tsx`
+  - sfondo footer semplificato: da gradiente a tre stop
+    (`from-surface-2 via-surface-alt to-background`) a un singolo
+    `bg-surface-2/70` con bordo superiore accent — meno "effetto sfondo
+    decorativo AI", più piatto e intenzionale
+  - marchio a croce (☦): da badge circolare `bg-accent/20 rounded-2xl`
+    (pattern icona-in-cerchio ripetuto ovunque nel sito) a un riquadro
+    squadrato con solo bordo dorato; il glifo usa il variation selector
+    testuale `︎` perché senza di esso Windows/Chrome lo renderizza
+    come icona emoji a colori invece che come carattere tipografico
+    (bug scoperto durante la verifica visiva in browser, non solo lettura
+    codice)
+  - nome chiesa passato a `font-display text-lg` (era `text-base` senza
+    font display) per coerenza con gli altri titoli del sito
+
+Verifiche eseguite:
+
+- `npx tsc --noEmit` pulito, nessun errore
+- `npx eslint` sui file toccati: 0 errori (2 warning preesistenti non
+  legati a questa modifica, su variabili non usate nella home)
+- verifica visiva in browser (Chrome via MCP) su `/` in italiano e arabo:
+  hero, sezione orari/live, contenuti in evidenza, footer desktop e footer
+  mobile-accordion
+- durante la verifica è emerso che una vecchia istanza `next dev` sulla
+  porta 3000 (avviata alle 01:07, prima di queste modifiche) serviva CSS
+  stale e non rifletteva le nuove classi: riavviata per la verifica
+
+Non ancora affrontato in questo audit (lavoro futuro, fuori scopo di
+questa sessione):
+
+- pagine interne (`chi-siamo`, `eventi`, `icone`, `libreria`, `orari`,
+  `preghiere`, `video-corsi`, `contatti`, `profilo`, `iscrizioni`) —
+  usano ancora il pattern precedente di card arrotondate uniformi
+- componenti condivisi non toccati: `EventiList`, `IconeGrid`,
+  `OrariTable`, `NextCelebrationCard`, `YouTubeLiveSection`,
+  `SectionVisibilityGate`, `ComingSoonPage`
+- area admin (già consolidata su token semantici in un audit precedente,
+  §6.4.2, ma non ridisegnata dal punto di vista della composizione)
+- verifica responsive mobile via browser automation non completata al
+  100%: il resize della finestra Chrome non ha modificato il viewport di
+  cattura schermo nella sessione MCP; le classi responsive esistenti
+  (`sm:`/`lg:`) non sono state rimosse né alterate nelle sezioni toccate,
+  quindi il comportamento mobile pre-esistente dovrebbe essere preservato,
+  ma non è stato riconfermato visivamente a 390px di larghezza in questa
+  sessione
+
+## 10.5 Refresh grafico pagine interne (Fase 2, 2026-09-12)
+
+Estesa la stessa lingua visiva (§10.4: `.eyebrow`, `.texture-lattice`,
+`font-display` sui titoli, meno badge icona-in-cerchio ripetuti ovunque) a
+tutte le pagine pubbliche rimanenti e ai componenti condivisi non ancora
+toccati. Nessuna modifica a logica dati, fetch, props, tipi o chiavi i18n.
+
+File modificati:
+
+- `src/app/(main)/chi-siamo/page.tsx` — header con `.eyebrow` + texture
+  lattice tenue; le due card "pilastro" (missione/comunità) non sono più
+  identiche: la prima ha bordo accent, icona quadrata con solo bordo e
+  sfondo `surface-alt`, la seconda resta su icona circolare neutra;
+  blocco "Fonti" finale passato da card generica a blocco con bordo
+  sinistro accent (pattern già usato nell'hero della home)
+- `src/app/(main)/contatti/page.tsx` — header con `.eyebrow`; card
+  Email/Indirizzo differenziate (Email: bordo accent, icona quadrata;
+  Indirizzo: icona circolare primary) invece di essere identiche;
+  etichette sezione "Sacerdoti" e "Social" convertite a `.eyebrow`
+- `src/app/(main)/eventi/page.tsx` + `src/components/EventiList.tsx` —
+  header con eyebrow; il primo evento in lista (il più vicino) ha ora
+  bordo doppio accent ed eyebrow proprio nella card, per dargli priorità
+  visiva rispetto agli altri; stato vuoto e colori della card portati da
+  `gray-*`/`bg-white` hardcoded a token semantici (`bg-surface`,
+  `border-border`, `text-foreground/*`). Il modale di iscrizione (form
+  multi-step complesso, ~500 righe) non è stato toccato: troppo rischioso
+  ridisegnare la logica visiva di un form con validazione, step
+  condizionali e integrazione API in un audit grafico — resta con i suoi
+  `gray-*` hardcoded, da considerare in un refactor dedicato futuro
+- `src/app/(main)/icone/page.tsx` + `src/components/IconeGrid.tsx` —
+  header con eyebrow; filtri e card portati a token semantici; stato
+  vuoto uniformato al pattern "bordo tratteggiato" già usato in home e
+  libreria. La griglia di card resta uniforme intenzionalmente: è una
+  galleria fotografica (icone sacre), dove l'uniformità delle card è
+  corretta dal punto di vista curatoriale — variarla artificialmente
+  avrebbe reintrodotto rumore visivo senza motivo
+- `src/app/(main)/libreria/page.tsx` — stesso trattamento (eyebrow,
+  token semantici); griglia libri lasciata uniforme per lo stesso motivo
+  delle icone (galleria di copertine)
+- `src/app/(main)/orari/page.tsx` — solo redirect a `/#orari`, nessuna
+  modifica necessaria
+- `src/components/OrariTable.tsx` — non modificato: già usa token
+  semantici e ha già una differenziazione intenzionale (riga "prossima
+  celebrazione" evidenziata), coerente con l'obiettivo dell'audit
+- `src/app/(main)/preghiere/page.tsx` — header con eyebrow; rimossa
+  l'icona duplicata nell'header di sezione (era ripetuta identica anche
+  su ogni singola card sotto); le card alternano icona quadrata
+  bordata/icona circolare in base all'indice per rompere la monotonia
+  della lista; colori portati a token semantici
+- `src/app/(main)/video-corsi/page.tsx` — stesso pattern di preghiere;
+  il primo video ha bordo accent per segnalare priorità (più recente);
+  rimosso import `Youtube` non più usato dopo la modifica dell'header
+- `src/app/(main)/iscrizioni/page.tsx` — solo eyebrow sui due header
+  (stato guest e stato autenticato) e fix di un `bg-white` hardcoded
+  residuo; il resto della pagina (card iscrizione con header primary
+  scuro, badge tipo iscrizione) era già ben differenziato e non
+  richiedeva intervento
+- `src/app/(main)/profilo/page.tsx` — tocco leggero come da indicazione:
+  eyebrow/font-display sui due titoli principali (stato guest, nome
+  utente nella hero card); rimossi i due cerchi decorativi sfocati
+  (`opacity-10 bg-white`) dalla hero card, sostituiti con la stessa
+  texture a reticolo usata altrove; avatar iniziali portato da cerchio
+  pieno a riquadro con solo bordo. Il resto della pagina (tabelle,
+  form profilo, gestione permessi superadmin, ~1200 righe totali) non è
+  stato toccato: già su token semantici `bg-surface`/`border-border` in
+  gran parte, e un redesign più profondo avrebbe richiesto rivedere
+  interazioni complesse (editing inline, richieste superadmin) fuori
+  scopo per un audit grafico
+- `src/components/NextCelebrationCard.tsx` — icona da cerchio pieno a
+  riquadro bordato, titolo convertito a `.eyebrow`
+- `src/components/ComingSoonPage.tsx` — icona da cerchio pieno a
+  riquadro bordato, titolo a `font-display`
+- `src/components/SectionVisibilityGate.tsx` — icona lucchetto "accesso
+  negato" da emoji nuda a riquadro bordato coerente col resto del sito,
+  titolo a `font-display`
+- `src/components/YouTubeLiveSection.tsx` — non modificato: è già un
+  blocco visivamente distinto (dark, brand YouTube) e non soffre del
+  problema "genérico AI", nessun intervento necessario
+
+Problemi tecnici incontrati:
+
+- Nessun bug bloccante. L'unico punto di attenzione era il rischio di
+  rompere il form di iscrizione eventi (validazione client-side con
+  molti stati React) toccando `EventiList.tsx`: la modifica è stata
+  limitata alla card e allo stato vuoto, senza toccare il modale.
+
+Verifiche eseguite:
+
+- `npx tsc --noEmit -p .` pulito, nessun errore
+- `npx eslint` su tutti i file toccati: 0 errori, solo warning
+  preesistenti (`no-img-element` su `<img>` già presenti prima di questa
+  modifica, variabili non usate già presenti in `profilo/page.tsx`)
+- verifica visiva in browser (Chrome via MCP) su `/eventi` (gate ospite),
+  `/icone` (coming-soon con nuova icona riquadrata), `/chi-siamo`
+  (card asimmetriche pilastro missione/comunità) in italiano
+- non verificate visivamente in questa sessione: `/contatti`,
+  `/libreria`, `/preghiere`, `/video-corsi`, `/iscrizioni`, `/profilo`
+  in stato autenticato (il gate di sezione richiede login/admin per
+  vedere il contenuto reale di eventi/icone/libreria/preghiere/
+  video-corsi) — le modifiche sono state verificate a livello di
+  type-check/lint e lettura del JSX risultante, ma non a schermo
+- non verificata visivamente la lingua araba sulle pagine di Fase 2
+  (verificata solo su home/footer in Fase 1)
+
+Lavoro futuro rimasto fuori scopo:
+
+- Modale di iscrizione eventi (`EventiList.tsx`, form multi-step) e
+  form/tabelle interne di `profilo/page.tsx`: usano ancora `gray-*`
+  hardcoded, da consolidare su token semantici come già fatto per
+  l'admin (§6.4.2) in un refactor dedicato
+- Area admin (`src/app/admin/**`): non toccata in nessuna delle due
+  fasi di questo audit grafico; già consolidata sui token semantici in
+  un audit precedente ma non ridisegnata a livello di composizione
+- Verifica visiva completa in stato autenticato e in arabo per tutte le
+  pagine di Fase 2
+
+---
+
+## 10.6 Fix: scroll link "Orari settimanali" e preview YouTube (2026-09-12)
+
+Due bug funzionali segnalati dall'utente, non di sola grafica.
+
+### 10.6.1 Link "Orari settimanali" (sidebar/footer/hero) non scrollava
+
+Tutti i link verso `/#orari` (sidebar desktop `SidebarDock.tsx`, dock
+mobile `MobileDock.tsx`, footer `Footer.tsx` — 6 occorrenze, CTA hero in
+`page.tsx`) usavano `next/link` puro. Comportamento rotto osservato in
+browser reale (non solo letto nel codice):
+
+- cliccando "Orari" da un'altra pagina (es. `/eventi`), Next naviga a
+  `/#orari` ma non garantisce lo scroll fino alla sezione se il contenuto
+  monta dopo la navigazione
+- cliccando di nuovo lo stesso link mentre si è **già** su `/#orari`
+  (stesso pathname, stesso hash), Next non fa nulla: nessuna navigazione,
+  nessuno scroll, perché per il router l'URL di destinazione è identico a
+  quello corrente — verificato con `window.scrollY` rimasto a `0` dopo il
+  click
+
+Fix:
+
+- nuovo componente `src/components/HashLink.tsx` (client): wrapper di
+  `next/link` che intercetta il click quando l'`href` contiene un `#` e la
+  pagina corrente coincide col target — in quel caso fa
+  `element.scrollIntoView({ behavior: "smooth" })` e aggiorna l'hash con
+  `history.replaceState` invece di affidarsi al router; altrimenti lascia
+  che `Link` navighi normalmente (il caso cross-page funziona già con
+  Next standard una volta risolto il problema di posizionamento sotto la
+  navbar, vedi punto successivo)
+- sostituito `Link` con `HashLink` in: `SidebarDock.tsx` (rendering
+  generico di ogni voce con `href`, non solo "orari" — copre eventuali
+  futuri link-a-sezione), `MobileDock.tsx` (stesso pattern), `Footer.tsx`
+  (tutte le 6 occorrenze di `/#orari`), `page.tsx` (CTA hero "Scopri gli
+  orari")
+- aggiunta `scroll-margin-top` su `#orari` e `#live` in `globals.css`
+  (`calc(var(--topbar-height) + 16px)`) perché la navbar è `fixed`: senza
+  questo, anche uno scroll "corretto" lasciava il titolo della sezione
+  nascosto sotto la topbar
+- rimosso l'import `Link` ormai inutilizzato da `SidebarDock.tsx`
+
+Verificato in browser: click da `/eventi` → naviga a `/#orari` e scrolla
+correttamente sotto la navbar; tornati in cima alla home e ri-cliccato
+"Orari" nella sidebar → scrolla di nuovo (`window.scrollY` passa da `0` a
+`634` dopo l'animazione), risolvendo il caso "stesso hash, nessun no-op"
+che prima non funzionava.
+
+### 10.6.2 Preview "ultimo video" YouTube a volte rotta
+
+`src/app/api/youtube/channel/route.ts`: la query `search.list` per
+"l'ultimo video" (`order=date&maxResults=1&type=video`, senza altri
+filtri) può restituire come "più recente" una diretta programmata/in
+corso (perché i broadcast live compaiono anch'essi ordinati per data) o
+un video non incorporabile (`videoEmbeddable`) — in entrambi i casi
+l'`<iframe>` di `YouTubeLiveSection.tsx` mostrava un riquadro di errore
+("Video non disponibile" / player rotto) al posto di un'anteprima valida.
+In più, quando non c'era alcun video disponibile (nessuna API key in
+sviluppo, fetch fallita, canale senza contenuti), il fallback puntava a
+`youtube.com/embed/live_stream?channel=...`, che va esso stesso in errore
+quando il canale non è in diretta in quel momento.
+
+Fix:
+
+- `route.ts`: la ricerca "latest" ora usa `videoEmbeddable=true` e
+  richiede `maxResults=5` invece di `1`; i risultati vengono poi filtrati
+  lato server escludendo gli id già presenti come diretta attiva o come
+  eventi "upcoming" (richiesti separatamente), scegliendo così il primo
+  video realmente concluso e incorporabile. Non è stato usato
+  `eventType=completed` perché quel parametro dell'API YouTube restringe
+  la ricerca ai soli broadcast (dirette), escludendo gli upload normali —
+  errore di prima intenzione scartato durante l'implementazione
+- `YouTubeLiveSection.tsx`: rimosso il fallback `embed/live_stream`;
+  quando non c'è un video utilizzabile (`featuredVideo` nullo) il riquadro
+  mostra ora un placeholder statico (pulsante play + link "Tutti i
+  video") che porta al canale, invece di un iframe che può renderizzare
+  un errore
+- rimossa la costante `YOUTUBE_CHANNEL_ID` e la variabile `channelId`,
+  diventate inutilizzate dopo la rimozione del fallback `live_stream`
+
+Verificato in browser (senza `YOUTUBE_API_KEY` in locale, quindi in
+condizione di fallback): il riquadro mostra il placeholder pulito con
+pulsante play, non più un player rotto. Non verificato con una vera
+`YOUTUBE_API_KEY` configurata in un ambiente con dati reali (nessuna
+chiave disponibile in questa sessione locale) — da confermare in
+produzione o in un ambiente con la chiave configurata.
+
+### 10.6.3 Evidenziazione sidebar mentre si scorre (non solo al click)
+
+Richiesta di follow-up: la voce "Orari settimanali" nella sidebar deve
+evidenziarsi anche scorrendo semplicemente fino alla sezione `#orari`
+nella home, non solo subito dopo un click sul link. Prima di questo fix,
+`isActive()` in `SidebarDock.tsx`/`MobileDock.tsx` confrontava solo
+`pathname === item.href`: per un item con `href="/#orari"` questo non è
+mai vero (il pathname è `/`, l'href include l'hash), quindi "Orari" non
+si accendeva mai da solo — "Home" restava evidenziato per l'intera
+durata della permanenza su `/`, a prescindere dallo scroll.
+
+Fix:
+
+- nuovo hook `src/components/sidebar/useActiveHashSection.ts` (client):
+  tiene traccia di quale sezione tracciata (per ora solo `#orari`) ha
+  superato una "linea di attivazione" vicino alla cima del viewport
+  (`ACTIVATION_OFFSET = 96px`, per restare sotto la navbar fissa) mentre
+  l'utente scrolla sulla home; restituisce `null` quando nessuna sezione
+  tracciata è nella zona attiva (es. in cima alla pagina, o su un'altra
+  route)
+- **Scelta tecnica**: aggiornamento via listener `scroll`/`resize` +
+  `getBoundingClientRect()`, non `IntersectionObserver`. Prima
+  implementazione con `IntersectionObserver` (pattern standard per
+  scrollspy, `rootMargin` percentuale): verificata in browser reale
+  (Chrome via MCP) il callback non scattava affatto nella tab usata per
+  il test, perché la tab risultava `document.hidden === true` (finestra
+  non a fuoco nel sistema) — Chrome mette in pausa/rallenta pesantemente
+  gli `IntersectionObserver` nelle tab in background. Passato a un
+  listener di scroll diretto per non dipendere da questo throttling (che
+  colpirebbe anche utenti reali con più tab aperte e questa non a
+  fuoco), verificato funzionante con scroll reali in tutti e tre i casi:
+  scroll verso il basso fino a `#orari` → "Orari" si evidenzia e "Home"
+  si spegne; scroll di ritorno in cima → torna "Home"; navigazione verso
+  un'altra pagina (`/eventi`) → resta evidenziato "Eventi", non "Orari"
+  né "Home"
+- `SidebarDock.tsx` e `MobileDock.tsx`: `isActive()` ora, per un item con
+  hash nell'`href`, confronta sia il path sia
+  `activeHashSection === hash`; per l'item "Home" (`href="/"`), aggiunta
+  la condizione `!activeHashSection` così non resta acceso quando lo
+  scroll è già entrato in una sezione tracciata più sotto
+
+Limite noto: `ACTIVATION_OFFSET` è un valore fisso (96px) pensato per
+l'altezza attuale della navbar (`--topbar-height: 56px` + margine); se in
+futuro cambia l'altezza della navbar o si aggiungono altre sezioni
+tracciabili da sidebar (oggi solo `#orari`), va aggiornato o reso
+dinamico leggendo `--topbar-height` da CSS.
+
+---
+
+## 10.7 Implementazione migliorie da audit generale (2026-09-12)
+
+A seguito dell'audit generale del progetto, implementate le voci a basso
+rischio/alto impatto senza bisogno di credenziali o decisioni esterne
+(account Sentry, scelta di provider terzi non già in uso, ecc.).
+
+### 10.7.1 SEO
+
+- `src/lib/seo/metadata.ts`: helper `buildPageMetadata(namespace, titleKey,
+  descriptionKey, path)` che costruisce `Metadata` (title, description,
+  Open Graph, Twitter card, canonical) riusando le traduzioni next-intl già
+  esistenti per pagina, invece di duplicare testo. Nota architetturale
+  importante: il sito serve **un solo URL per pagina** e cambia lingua via
+  cookie (`src/i18n/request.ts`), non via prefisso `/it`/`/ar` — quindi
+  esiste un solo `canonical` per pagina indipendentemente dalla lingua
+  (limite pre-esistente dell'architettura i18n, non qualcosa risolto qui:
+  Google non può indorizzare separatamente la versione araba della stessa
+  pagina).
+- `generateMetadata()` aggiunto a: home, chi-siamo, contatti, eventi,
+  icone, libreria, preghiere, video-corsi (quest'ultimo riusa
+  deliberatamente il namespace `preghiere`/`sezioneVideoTitolo`, coerente
+  con una scelta già presente nel codice della pagina, non un refuso
+  introdotto qui). `/orari` escluso: la pagina fa solo `redirect("/#orari")`
+  e non renderizza mai contenuto proprio.
+- `src/app/layout.tsx`: `metadataBase` (da `NEXT_PUBLIC_SITE_URL`, con
+  fallback), `title.template` per i title di sottopagina, Open Graph e
+  Twitter card di default, `robots: { index: true, follow: true }`. Aggiunto
+  anche un blocco JSON-LD (`schema.org` `PlaceOfWorship`) con indirizzo,
+  logo e link social — dati statici noti (indirizzo da `Footer.tsx`/
+  `contatti/page.tsx`), non input utente, quindi `dangerouslySetInnerHTML`
+  qui non introduce rischio XSS.
+- `src/app/sitemap.ts` e `src/app/robots.ts` (route handler nativi di
+  Next.js, generati come statici in build — confermato in
+  `npm run build`): l'elenco pagine pubbliche esclude deliberatamente
+  `/orari` (redirect), `/iscrizioni` e `/profilo` (richiedono
+  autenticazione, non hanno senso indicizzati) e tutto `/admin`/`/api`.
+
+### 10.7.2 Middleware di sicurezza per le route admin
+
+- Nuovo `src/middleware.ts` con `matcher: ["/api/admin/:path*"]`: verifica
+  JWT (`verifyJwt`, Edge-compatibile via Web Crypto) e, quando Redis è
+  configurato, la revoca token, **prima** che la richiesta raggiunga
+  l'handler. Escluse esplicitamente `/api/admin/login` (deve restare
+  raggiungibile senza sessione) e `/api/admin/logout` (deve poter pulire il
+  cookie anche con un token scaduto/non valido, comportamento pre-esistente
+  in `logout/route.ts`).
+- **Scelta deliberata: additivo, non sostitutivo.** I controlli
+  `requireAdminSession()`/`requireSuperAdminSession()` già presenti in ogni
+  handler (17 file, vedi §6.4.1) NON sono stati rimossi: continuano a
+  gestire la logica ruolo-specifica (es. route riservate al superadmin).
+  Il middleware chiude solo il rischio descritto in §6.4.1 — una futura
+  route admin aggiunta senza copiare il boilerplate di auth resterebbe
+  comunque protetta, perché la richiesta non autenticata non raggiunge mai
+  l'handler. Rimuovere la duplicazione nei singoli file sarebbe stato un
+  refactor più ampio e rischioso (17 file da verificare uno per uno) non
+  giustificato nello scope di questo intervento additivo.
+- **Limite noto**: senza Redis configurato, la revoca-al-logout non è
+  applicata a questo livello (il `Set` in-memoria di `session.ts` vive in
+  un runtime/processo diverso da questo middleware Edge) — resta comunque
+  applicata dal controllo per-route successivo nella stessa istanza. Con
+  Redis configurato (vedi `REDIS_SETUP.md`) la revoca è invece effettiva
+  già a livello di middleware.
+- Verificato: `npm run build` mostra `ƒ Proxy (Middleware)` nell'output;
+  testato in locale con `curl` — richiesta senza cookie di sessione a
+  `/api/admin/eventi` → `401 {"success":false,"error":"Non autorizzato"}`;
+  `/api/admin/login` con credenziali sbagliate → passa il middleware e
+  arriva regolarmente all'handler (401 con messaggio "Credenziali non
+  valide", non quello del middleware).
+
+### 10.7.3 Prettier
+
+- Aggiunti `.prettierrc.json` (con `prettier-plugin-tailwindcss` per
+  l'ordinamento automatico delle classi Tailwind) e `.prettierignore`.
+  Script `format`/`format:check` in `package.json`.
+- **Scelta deliberata**: non è stata eseguita una riformattazione di massa
+  dell'intero repository (avrebbe prodotto un diff enorme e scollegato dal
+  lavoro reale, difficile da rivedere). Formattati solo i file toccati in
+  questa sessione. Il resto della codebase seguirà gradualmente lo stile
+  Prettier man mano che i file vengono modificati, oppure può essere
+  riformattato in blocco con `npm run format` in un commit dedicato e
+  isolato, quando/se lo si desidera.
+
+### 10.7.4 Test automatici (Vitest)
+
+- Il progetto non aveva alcun test. Aggiunto `vitest` (v2, compatibile con
+  `@types/node` ^20 già in uso — l'ultima major richiede `@types/node`
+  ^22/^24, upgrade non necessario per questo intervento) + `vitest.config.ts`
+  con alias `@` coerente con `tsconfig.json`. Script `test`/`test:watch`/
+  `test:coverage`.
+- Due suite iniziali su funzioni pure e critiche per la sicurezza, scelte
+  perché testabili senza mock di database esterni:
+  - `src/lib/auth/jwt.test.ts`: round-trip firma/verifica, token scaduto
+    rifiutato, firma manomessa rifiutata, secret diversa rifiutata, token
+    malformati rifiutati.
+  - `src/lib/auth/rate-limit.test.ts`: blocco dopo 5 tentativi falliti,
+    conteggio tentativi rimanenti, reset dopo login riuscito, isolamento
+    tra IP diversi, stesso pattern per il rate limit delle richieste
+    generiche (60/minuto). Esercita il percorso di fallback in-memoria
+    (nessuna istanza Redis nell'ambiente di test).
+  - 10/10 test passano; `tsc --noEmit` e `eslint` puliti sui nuovi file.
+- **Non fatto in questo intervento** (scope volutamente limitato): test di
+  integrazione sulle route API (richiederebbero mock di Supabase/MongoDB),
+  test end-to-end (Playwright), CI/GitHub Actions per eseguire i test
+  automaticamente sui push/PR — indicati come lavoro futuro.
+
+### 10.7.5 Non implementato in questo intervento (richiede input dell'utente)
+
+- **Error tracking (Sentry o equivalente)**: richiede la creazione di un
+  account e una DSN da parte dell'utente — non è stata creata alcuna
+  integrazione "vuota" per evitare dipendenze inutilizzabili senza
+  configurazione. Quando disponibile, l'integrazione è standard
+  (`@sentry/nextjs`, wizard di setup automatico).
+- **Consolidamento completo di `requireAdminSession()`** (rimozione della
+  duplicazione nei 17 file, non solo rete di sicurezza aggiuntiva): fuori
+  scope per rischio di regressione, vedi §10.7.2.
+- **Verifica diff completo delle chiavi di traduzione IT/AR**: non
+  eseguita in questo giro (richiederebbe un confronto programmatico
+  `it.json`/`ar.json` fuori scope qui).
+- **`MONGODB_COLD_START_FIX.md`**: non riletto in questo intervento per
+  verificare se il fix documentato sia ancora applicato nel codice attuale
+  o solo storico.
 
 ---
 

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const forwarded = request.headers.get("x-forwarded-for");
     const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
 
-    if (isRateLimited(ip)) {
+    if (await isRateLimited(ip)) {
       return NextResponse.json(
         {
           success: false,
@@ -44,8 +44,8 @@ export async function POST(request: Request) {
       .single();
 
     if (dbError || !user) {
-      recordFailedAttempt(ip);
-      const remaining = remainingAttempts(ip);
+      await recordFailedAttempt(ip);
+      const remaining = await remainingAttempts(ip);
       return NextResponse.json(
         {
           success: false,
@@ -70,8 +70,8 @@ export async function POST(request: Request) {
     // --- Verifica password ---
     const passwordValid = await verifyPassword(password, user.password_hash);
     if (!passwordValid) {
-      recordFailedAttempt(ip);
-      const remaining = remainingAttempts(ip);
+      await recordFailedAttempt(ip);
+      const remaining = await remainingAttempts(ip);
       return NextResponse.json(
         {
           success: false,
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     }
 
     // --- Login riuscito ---
-    resetAttempts(ip);
+    await resetAttempts(ip);
 
     // Aggiorna ultimo_accesso
     await supabaseAdmin

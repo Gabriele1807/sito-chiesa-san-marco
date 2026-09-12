@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import HashLink from "@/components/HashLink";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -9,6 +9,7 @@ import type { SidebarItem } from "./nav-config";
 import type { SectionVisibility, RoleAccessType } from "@/types";
 import { infoSection, modeToggleItems, primarySection, utilitySection } from "./nav-config";
 import { useSidebar } from "./SidebarContext";
+import { useActiveHashSection } from "./useActiveHashSection";
 
 const DOCK_WIDTH = 240;
 const DOCK_WIDTH_COMPACT = 72;
@@ -86,10 +87,31 @@ export default function SidebarDock() {
   );
   const mobileUtilityItems = useMemo(() => utilitySection.items, []);
 
+  const hashSectionIds = useMemo(
+    () =>
+      sections
+        .flatMap((s) => s.items)
+        .map((item) => item.href)
+        .filter((href): href is string => !!href && href.includes("#"))
+        .map((href) => href.split("#")[1]),
+    [sections]
+  );
+  const activeHashSection = useActiveHashSection(hashSectionIds);
+
   function isActive(item: SidebarItem) {
     if (!item.href) return false;
+
+    const hashIndex = item.href.indexOf("#");
+    if (hashIndex !== -1) {
+      const targetPath = item.href.slice(0, hashIndex) || "/";
+      const targetHash = item.href.slice(hashIndex + 1);
+      return pathname === targetPath && activeHashSection === targetHash;
+    }
+
     if (item.activeMatch === "exact" || item.href === "/") {
-      return pathname === item.href;
+      // On "/", don't show Home as active once scroll has entered a tracked
+      // section further down (e.g. #orari) — that section's own item takes over.
+      return pathname === item.href && !activeHashSection;
     }
     return pathname === item.href || pathname.startsWith(item.href + "/");
   }
@@ -190,7 +212,7 @@ export default function SidebarDock() {
 
     if (item.href) {
       return (
-        <Link
+        <HashLink
           key={item.id}
           href={item.href}
           onClick={closeMobile}
@@ -203,7 +225,7 @@ export default function SidebarDock() {
             <span className="block truncate">{label}</span>
             {subLabel && <span className={`block text-[10px] ${subLabelClass} truncate leading-tight`}>{subLabel}</span>}
           </div>
-        </Link>
+        </HashLink>
       );
     }
 

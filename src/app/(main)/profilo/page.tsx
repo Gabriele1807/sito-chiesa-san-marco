@@ -122,7 +122,7 @@ export default function ProfiloPage() {
         <div className="w-20 h-20 rounded-full bg-surface flex items-center justify-center mb-5">
           <User className="w-10 h-10 text-foreground/30" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">{t("titoloGuest")}</h1>
+        <h1 className="font-display text-2xl text-foreground mb-2">{t("titoloGuest")}</h1>
         <p className="text-foreground/60 mb-8 max-w-sm">{t("messaggioGuest")}</p>
         <button
           onClick={() => setShowLoginModal(true)}
@@ -408,16 +408,15 @@ export default function ProfiloPage() {
             : "bg-gradient-to-br from-primary to-primary-light"
         }`}
       >
-        <div aria-hidden className="absolute -right-8 -top-8 w-36 h-36 rounded-full opacity-10 bg-white" />
-        <div aria-hidden className="absolute -right-2 -bottom-10 w-24 h-24 rounded-full opacity-10 bg-white" />
+        <div aria-hidden className="texture-lattice pointer-events-none absolute inset-0 text-white/[0.06]" />
         <div className="relative flex items-center gap-4 sm:gap-5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0 shadow-inner bg-white/20 text-white">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0 border border-white/30 bg-white/10 text-white">
             {initials || <User className="w-8 h-8" />}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5 flex-wrap">
               {isAdmin && <Crown className="w-4 h-4 text-white/80 flex-shrink-0" />}
-              <h1 className="text-xl font-bold truncate">{fullName || "Utente"}</h1>
+              <h1 className="font-display text-xl truncate">{fullName || "Utente"}</h1>
             </div>
             {username && <p className="text-white/70 text-sm mb-2">@{username}</p>}
             <span className="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-white/15 border-white/25 text-white">

@@ -32,8 +32,8 @@ export default async function SectionVisibilityGate({
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
-          <div className="text-4xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">{tCommon("accessDenied")}</h1>
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center border border-border text-2xl">🔒</div>
+          <h1 className="font-display text-2xl text-foreground mb-2">{tCommon("accessDenied")}</h1>
           <p className="text-foreground/60">{tCommon("noPermission")}</p>
         </div>
       </div>

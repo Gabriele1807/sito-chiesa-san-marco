@@ -385,9 +385,9 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
 
   if (eventi.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
-        <p className="text-sm font-semibold text-gray-900">Nessun evento disponibile al momento.</p>
-        <p className="mt-2 text-sm text-gray-500">Torna più tardi quando saranno pubblicati nuovi eventi.</p>
+      <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center shadow-sm">
+        <p className="text-sm font-semibold text-foreground">Nessun evento disponibile al momento.</p>
+        <p className="mt-2 text-sm text-foreground/60">Torna più tardi quando saranno pubblicati nuovi eventi.</p>
       </div>
     );
   }
@@ -398,15 +398,18 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
         {eventi.map((evento, index) => {
           const rimasti = postiRimasti(evento);
           const esaurito = rimasti !== null && rimasti <= 0;
+          const isNext = index === 0;
           return (
             <div
               key={evento.id}
-              className="group card-hover bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up"
+              className={`group card-hover bg-surface rounded-xl shadow-sm overflow-hidden animate-fade-in-up ${
+                isNext ? "border-2 border-accent/40" : "border border-border/70"
+              }`}
               style={{ animationDelay: `${index * 80}ms` }}
             >
               <div className="flex flex-col sm:flex-row">
                 {evento.immagine ? (
-                  <div className="sm:w-48 h-40 sm:h-auto bg-gray-100 shrink-0 overflow-hidden">
+                  <div className="sm:w-48 h-40 sm:h-auto bg-surface-alt shrink-0 overflow-hidden">
                     <img
                       src={toGDriveImageUrl(evento.immagine)}
                       alt={evento.titolo}
@@ -423,8 +426,11 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 )}
 
                 <div className="flex-1 p-6">
-                  <h3 className="text-xl font-bold text-gray-900">{evento.titolo}</h3>
-                  <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-500">
+                  {isNext && (
+                    <p className="eyebrow mb-1.5">{t("titolo")}</p>
+                  )}
+                  <h3 className="font-display text-xl text-foreground">{evento.titolo}</h3>
+                  <div className="flex flex-wrap gap-4 mt-2 text-sm text-foreground/60">
                     <span className="flex items-center gap-1">
                       <CalendarDays className="w-3.5 h-3.5" />
                       {formatDate(evento.data)}
@@ -434,13 +440,13 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                       {evento.luogo}
                     </span>
                     {rimasti !== null && (
-                      <span className={`flex items-center gap-1 font-medium ${esaurito ? "text-danger" : "text-gray-600"}`}>
+                      <span className={`flex items-center gap-1 font-medium ${esaurito ? "text-danger" : "text-foreground/70"}`}>
                         <Users className="w-3.5 h-3.5" />
                         {esaurito ? t("postiEsauriti") : t("postiRimasti", { posti: rimasti })}
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-600 mt-3 text-sm leading-relaxed">
+                  <p className="text-foreground/70 mt-3 text-sm leading-relaxed">
                     {evento.descrizione}
                   </p>
                   <button

@@ -60,7 +60,7 @@ export default function Navbar({ locale }: Props) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none ${
+      className={`fixed top-0 left-0 right-0 z-50 border-b border-accent/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3 pointer-events-none"
       } ${isAtTop ? "shadow-sm" : "shadow-md"}`}
     >

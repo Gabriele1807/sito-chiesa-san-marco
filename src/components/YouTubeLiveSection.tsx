@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@SanMarco-Milano";
-const YOUTUBE_CHANNEL_ID = "UC-dfc8zOfM7eBPMB7kvXkug";
 
 interface YouTubeVideo {
   id: string;
@@ -71,14 +70,13 @@ export default function YouTubeLiveSection() {
 
   const featuredVideo =
     data?.isLive && data.liveVideo ? data.liveVideo : data?.latestVideo;
-  const channelId = data?.channel.id || YOUTUBE_CHANNEL_ID;
 
   const videoUrl = featuredVideo
     ? `https://www.youtube.com/watch?v=${featuredVideo.id}`
     : YOUTUBE_CHANNEL_URL;
-  const embedUrl = featuredVideo
-    ? `https://www.youtube.com/embed/${featuredVideo.id}?rel=0`
-    : `https://www.youtube.com/embed/live_stream?channel=${channelId}&rel=0`;
+  // No embed fallback to "live_stream?channel=..." here: when the channel
+  // isn't currently live that embed renders as a broken/error preview
+  // instead of silently doing nothing, which is worse than showing no video.
 
   return (
     <section>
@@ -110,13 +108,29 @@ export default function YouTubeLiveSection() {
             <div className="min-w-0 space-y-4">
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
                 <div className="aspect-video">
-                  <iframe
-                    src={embedUrl}
-                    title={featuredVideo?.title || t("youtubeUltima")}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
+                  {featuredVideo ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${featuredVideo.id}?rel=0`}
+                      title={featuredVideo.title || t("youtubeUltima")}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <a
+                      href={YOUTUBE_CHANNEL_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-white/5 to-transparent text-center transition-colors hover:bg-white/5"
+                    >
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-red-600/90">
+                        <Play className="h-6 w-6 fill-white text-white" />
+                      </span>
+                      <span className="max-w-[80%] text-sm text-gray-300">
+                        {t("youtubeGuardaTutti")}
+                      </span>
+                    </a>
+                  )}
                 </div>
 
                 <div className="border-t border-white/10 bg-black/70 px-4 py-4 sm:px-5">

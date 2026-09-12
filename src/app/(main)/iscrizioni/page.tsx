@@ -100,7 +100,8 @@ export default function IscrizioniPage() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 animate-fade-in-up">
+          <p className="eyebrow mb-2 animate-fade-in-up">{t("titolo")}</p>
+          <h1 className="font-display text-3xl sm:text-4xl text-foreground mb-3 animate-fade-in-up">
             {t("titolo")}
           </h1>
           <p className="text-foreground/60 leading-relaxed max-w-2xl animate-fade-in-up [animation-delay:100ms]">
@@ -130,7 +131,8 @@ export default function IscrizioniPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 animate-fade-in-up">
+        <p className="eyebrow mb-2 animate-fade-in-up">{t("titolo")}</p>
+        <h1 className="font-display text-3xl sm:text-4xl text-foreground mb-3 animate-fade-in-up">
           {t("titolo")}
         </h1>
         <p className="text-foreground/60 leading-relaxed max-w-2xl animate-fade-in-up [animation-delay:100ms]">
@@ -180,7 +182,7 @@ export default function IscrizioniPage() {
             return (
               <div
                 key={isc._id ?? index}
-                className="bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
+                className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
               >
                 {/* Header card evento */}
                 <div className="bg-primary px-5 py-3 flex items-center justify-between flex-wrap gap-3">

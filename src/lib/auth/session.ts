@@ -5,13 +5,54 @@
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
+import { getRedis } from "@/lib/redis/client";
 
-// LIMITE NOTO: come rate-limit.ts, questo Set vive in memoria di processo.
-// Su Vercel (serverless) non è condiviso tra istanze/regioni: un token
-// "revocato" (es. dopo logout) può restare valido su un'istanza diversa
-// finché non scade naturalmente. Fuori scopo risolverlo in questo
-// intervento: vedi PROJECT_CONTEXT.md sezione sicurezza.
+// Fallback in memoria di processo, usato solo quando Redis non è
+// configurato (es. sviluppo locale): il limite noto in PROJECT_CONTEXT.md
+// (token "revocato" valido su un'istanza diversa) si applica solo in
+// questo caso — con Redis configurato la revoca è condivisa tra istanze.
 const revokedAdminTokens = new Set<string>();
+
+function revokedKey(token: string): string {
+  return `admin_revoked:${token}`;
+}
+
+/** Decodifica il campo `exp` di un JWT senza verificarne la firma: usato
+ * solo per calcolare la TTL della chiave di revoca in Redis, non per
+ * fidarsi del contenuto del token. */
+function decodeJwtExpUnsafe(token: string): number | null {
+  try {
+    const payloadSegment = token.split(".")[1];
+    if (!payloadSegment) return null;
+    const padded = payloadSegment
+      .replace(/-/g, "+")
+      .replace(/_/g, "/")
+      .padEnd(Math.ceil(payloadSegment.length / 4) * 4, "=");
+    const payload = JSON.parse(atob(padded)) as { exp?: number };
+    return typeof payload.exp === "number" ? payload.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+async function revokeToken(token: string): Promise<void> {
+  const redis = getRedis();
+  if (redis) {
+    const exp = decodeJwtExpUnsafe(token);
+    const ttlSeconds = exp ? Math.max(1, exp - Math.floor(Date.now() / 1000)) : 7 * 24 * 60 * 60;
+    await redis.set(revokedKey(token), "1", { ex: ttlSeconds });
+    return;
+  }
+  revokedAdminTokens.add(token);
+}
+
+async function isTokenRevoked(token: string): Promise<boolean> {
+  const redis = getRedis();
+  if (redis) {
+    return (await redis.get(revokedKey(token))) !== null;
+  }
+  return revokedAdminTokens.has(token);
+}
 
 export interface AdminUser {
   id: string;
@@ -65,10 +106,8 @@ export async function createSession(
  * Valida un token di sessione.
  * Ritorna i dati admin se la sessione è valida, null altrimenti.
  */
-export async function validateSession(
-  token: string
-): Promise<AdminUser | null> {
-  if (!token || revokedAdminTokens.has(token)) return null;
+export async function validateSession(token: string): Promise<AdminUser | null> {
+  if (!token || (await isTokenRevoked(token))) return null;
 
   const payload = await verifyJwt<{
     sub: string;
@@ -82,7 +121,13 @@ export async function validateSession(
     ultimo_accesso?: string;
   }>(token);
 
-  if (!payload || payload.sessionType !== "admin" || !payload.sub || !payload.username || !payload.ruolo) {
+  if (
+    !payload ||
+    payload.sessionType !== "admin" ||
+    !payload.sub ||
+    !payload.username ||
+    !payload.ruolo
+  ) {
     return null;
   }
 
@@ -128,7 +173,7 @@ export async function requireSuperAdminSession(): Promise<AdminUser | null> {
  */
 export async function deleteSession(token: string): Promise<void> {
   if (token) {
-    revokedAdminTokens.add(token);
+    await revokeToken(token);
   }
 }
 

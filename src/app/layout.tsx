@@ -29,10 +29,56 @@ const arabicFont = Noto_Naskh_Arabic({
   weight: ["400", "600", "700"],
 });
 
+const SITE_NAME = "Chiesa Copta Ortodossa di San Marco – Milano";
+const SITE_DESCRIPTION =
+  "Sito ufficiale della Chiesa Copta Ortodossa di San Marco di Milano. Scopri le nostre icone sacre, testi liturgici, preghiere e gli eventi della comunità.";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.sanmarcocopti.it";
+
 export const metadata: Metadata = {
-  title: "Chiesa Copta Ortodossa di San Marco – Milano",
-  description:
-    "Sito ufficiale della Chiesa Copta Ortodossa di San Marco di Milano. Scopri le nostre icone sacre, testi liturgici, preghiere e gli eventi della comunità.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s – ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+// JSON-LD (schema.org) per la scheda locale/religiosa: aiuta i motori di
+// ricerca a mostrare indirizzo e orari nella ricerca senza dover fare
+// scraping del testo della pagina.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "PlaceOfWorship",
+  name: SITE_NAME,
+  url: SITE_URL,
+  image: `${SITE_URL}/logo-san-marco.png`,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Via Senato, 4",
+    addressLocality: "Milano",
+    postalCode: "20121",
+    addressCountry: "IT",
+  },
+  sameAs: [
+    "https://www.facebook.com/people/Chiesa-di-San-Marco/61556571205312/",
+    "https://www.youtube.com/@SanMarco-Milano",
+  ],
 };
 
 export default async function RootLayout({
@@ -46,9 +92,13 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir="ltr" data-locale={locale} suppressHydrationWarning>
       <body
-        className={`${bodyFont.variable} ${displayFont.variable} ${arabicFont.variable} antialiased force-motion`}
+        className={`${bodyFont.variable} ${displayFont.variable} ${arabicFont.variable} force-motion antialiased`}
         suppressHydrationWarning
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             {children}

@@ -42,8 +42,13 @@ async function fetchYouTubeData(): Promise<YouTubeChannelData | null> {
     const channelId = channel.id;
 
     const [searchRes, liveRes, upcomingRes] = await Promise.all([
+      // videoEmbeddable=true excludes videos that would render as a broken
+      // "video unavailable" preview in the embed player. maxResults=5 (not 1)
+      // lets us skip past any live/upcoming broadcast that "order=date" can
+      // surface at the top of a normal search, so "latest" always resolves
+      // to a real, finished video rather than a scheduled-stream placeholder.
       fetch(
-        `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&order=date&maxResults=1&type=video&part=snippet&key=${YOUTUBE_API_KEY}`
+        `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&order=date&maxResults=5&type=video&videoEmbeddable=true&part=snippet&key=${YOUTUBE_API_KEY}`
       ),
       fetch(
         `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&eventType=live&type=video&part=snippet&key=${YOUTUBE_API_KEY}`
@@ -59,9 +64,18 @@ async function fetchYouTubeData(): Promise<YouTubeChannelData | null> {
       upcomingRes.json(),
     ]);
 
-    const latestVideo = searchData.items?.[0];
     const activeLive = liveData.items?.[0];
     const upcomingItems = upcomingData.items || [];
+    const excludedIds = new Set(
+      [activeLive, ...upcomingItems]
+        .filter(Boolean)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((item: any) => item.id.videoId)
+    );
+    const searchItems = searchData.items || [];
+    const latestVideo =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      searchItems.find((item: any) => !excludedIds.has(item.id.videoId)) ?? searchItems[0];
 
     return {
       channel: {
@@ -114,13 +128,13 @@ async function fetchYouTubeData(): Promise<YouTubeChannelData | null> {
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
-  if (isIpRateLimited(ip)) {
+  if (await isIpRateLimited(ip)) {
     return NextResponse.json({
       success: false,
       error: "Too many requests, please try again later.",
     }, { status: 429 });
   }
-  recordIpRequest(ip);
+  await recordIpRequest(ip);
 
   if (!YOUTUBE_API_KEY) {
     return NextResponse.json({

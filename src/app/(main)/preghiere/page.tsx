@@ -1,11 +1,17 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { BookOpen, Download } from "lucide-react";
 import { getPreghiere } from "@/lib/db";
 import PreghieraExpand from "@/components/PreghieraExpand";
 import SectionVisibilityGate from "@/components/SectionVisibilityGate";
 import { isGDriveUrl, toGDrivePreviewUrl } from "@/lib/gdrive";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("preghiere", "titolo", "sottotitolo", "/preghiere");
+}
 
 export default async function PreghierePage() {
   const [t, locale, preghiere] = await Promise.all([
@@ -31,37 +37,38 @@ export default async function PreghierePage() {
   const content = (
     <div className="space-y-8">
       <div>
-        <h1 className="mb-3 animate-fade-in-up text-3xl font-bold text-gray-900 sm:text-4xl">{t("titolo")}</h1>
-        <p className="max-w-2xl animate-fade-in-up text-gray-600 [animation-delay:100ms]">{t("sottotitolo")}</p>
+        <p className="eyebrow mb-2 animate-fade-in-up">{t("titolo")}</p>
+        <h1 className="mb-3 animate-fade-in-up font-display text-3xl text-foreground sm:text-4xl">{t("titolo")}</h1>
+        <p className="max-w-2xl animate-fade-in-up text-foreground/60 [animation-delay:100ms]">{t("sottotitolo")}</p>
       </div>
 
-      <section className="space-y-5 rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
-              {t("sezionePreghiereTitolo")}
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-gray-900">
-              {t("sezionePreghiereTitolo")}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">
-              {t("sezionePreghiereDescrizione")}
-            </p>
-          </div>
-          <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
-            <BookOpen className="h-5 w-5" />
-          </div>
+      <section className="space-y-5">
+        <div className="max-w-2xl border-l-2 border-accent/30 pl-4">
+          <h2 className="font-display text-2xl text-foreground">
+            {t("sezionePreghiereTitolo")}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-foreground/70">
+            {t("sezionePreghiereDescrizione")}
+          </p>
         </div>
 
         <div className="grid gap-4">
-          {preghiere.map((preghiera, index) => (
+          {preghiere.map((preghiera, index) => {
+            const isSquareIcon = index % 2 === 0;
+            return (
             <article
               key={preghiera.id}
-              className="card-hover rounded-xl border border-gray-100 bg-white p-6 shadow-sm"
+              className="card-hover rounded-xl border border-border/70 bg-surface p-6 shadow-sm"
               style={{ animationDelay: `${index * 60}ms` }}
             >
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div
+                  className={
+                    isSquareIcon
+                      ? "flex h-12 w-12 shrink-0 items-center justify-center border border-primary/30 text-primary"
+                      : "flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+                  }
+                >
                   <BookOpen className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -70,11 +77,11 @@ export default async function PreghierePage() {
                       <span className="text-xs font-semibold uppercase tracking-wider text-accent">
                         {localizeCategoria(preghiera.categoria)}
                       </span>
-                      <h3 className="mt-1 text-lg font-bold text-gray-900">
+                      <h3 className="mt-1 font-display text-lg text-foreground">
                         {preghiera.titolo}
                       </h3>
                       {preghiera.descrizione ? (
-                        <p className="mt-1 text-sm text-gray-600">{preghiera.descrizione}</p>
+                        <p className="mt-1 text-sm text-foreground/60">{preghiera.descrizione}</p>
                       ) : null}
                     </div>
 
@@ -97,10 +104,11 @@ export default async function PreghierePage() {
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
 
           {preghiere.length === 0 && (
-            <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center text-sm text-gray-500">
+            <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center text-sm text-foreground/60">
               Nessuna preghiera disponibile al momento.
             </div>
           )}

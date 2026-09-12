@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
+import HashLink from "@/components/HashLink";
 import { useTranslations } from "next-intl";
 import type { SidebarItem } from "./nav-config";
 import { mobileDockItems } from "./nav-config";
 import { useSidebar } from "./SidebarContext";
+import { useActiveHashSection } from "./useActiveHashSection";
 
 export default function MobileDock() {
   const pathname = usePathname();
@@ -13,10 +15,28 @@ export default function MobileDock() {
   const tSidebar = useTranslations("sidebar");
   const { toggleMobile } = useSidebar();
 
+  const hashSectionIds = useMemo(
+    () =>
+      mobileDockItems
+        .map((item) => item.href)
+        .filter((href): href is string => !!href && href.includes("#"))
+        .map((href) => href.split("#")[1]),
+    []
+  );
+  const activeHashSection = useActiveHashSection(hashSectionIds);
+
   function isActive(item: SidebarItem) {
     if (!item.href) return false;
+
+    const hashIndex = item.href.indexOf("#");
+    if (hashIndex !== -1) {
+      const targetPath = item.href.slice(0, hashIndex) || "/";
+      const targetHash = item.href.slice(hashIndex + 1);
+      return pathname === targetPath && activeHashSection === targetHash;
+    }
+
     if (item.activeMatch === "exact" || item.href === "/") {
-      return pathname === item.href;
+      return pathname === item.href && !activeHashSection;
     }
     return pathname === item.href || pathname.startsWith(item.href + "/");
   }
@@ -61,10 +81,10 @@ export default function MobileDock() {
           if (!item.href) return null;
 
           return (
-            <Link key={item.id} href={item.href} aria-label={label} className={baseClass}>
+            <HashLink key={item.id} href={item.href} aria-label={label} className={baseClass}>
               <Icon className="h-4.5 w-4.5" />
               <span className="sr-only">{label}</span>
-            </Link>
+            </HashLink>
           );
         })}
       </div>

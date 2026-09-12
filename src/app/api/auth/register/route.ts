@@ -11,13 +11,13 @@ const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65"
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
-    if (isIpRateLimited(ip)) {
+    if (await isIpRateLimited(ip)) {
       return NextResponse.json(
         { success: false, error: "Too many requests, please try again later." },
         { status: 429 }
       );
     }
-    recordIpRequest(ip);
+    await recordIpRequest(ip);
 
     const body = await request.json();
     const { email, username, password, nome, cognome, role, ageGroup, chiesa, requestAdmin } = body;

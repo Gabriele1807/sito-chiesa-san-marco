@@ -6,13 +6,20 @@ import {
   BookOpen,
   MapPin,
 } from "lucide-react";
+import type { Metadata } from "next";
 import ScrollDownHint from "@/components/ScrollDownHint";
+import HashLink from "@/components/HashLink";
 import { getTestiSacri, getPreghiere, getEventi, getOrari } from "@/lib/db";
 import NextCelebrationCard from "@/components/NextCelebrationCard";
 import OrariTable from "@/components/OrariTable";
 import YouTubeLiveSection from "@/components/YouTubeLiveSection";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("home", "heroTitle", "heroSubtitle", "/");
+}
 
 export default async function HomePage() {
   const [t, tOrari, tContatti, locale, testiSacri, preghiere, eventi, orari] = await Promise.all([
@@ -41,17 +48,19 @@ export default async function HomePage() {
       <section className="relative animate-fade-in-up">
         <div className="relative lg:min-h-[560px]">
           <div className="relative overflow-hidden rounded-[1.75rem] border border-border bg-surface shadow-sm sm:rounded-3xl">
-            <div className="absolute -top-24 right-0 h-64 w-64 rounded-full bg-accent/15 blur-3xl" />
-            <div className="absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+            {/* Identity texture: faint cross-lattice, not a decorative blob */}
+            <div className="texture-lattice pointer-events-none absolute inset-0 text-primary/[0.035]" />
+            {/* Vertical gold rule marking the composition split on desktop */}
+            <div className="pointer-events-none absolute inset-y-10 left-[calc(53%-1px)] hidden w-px bg-gradient-to-b from-transparent via-accent/30 to-transparent lg:block" />
 
             <div className="relative flex min-w-0 flex-col gap-3 px-4 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-10 lg:min-h-[560px] lg:grid lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-10 lg:px-10 lg:pt-16 lg:pb-10">
               <div className="flex min-w-0 flex-col space-y-2.5 lg:justify-center">
                 <div className="space-y-2.5 sm:space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-accent">
+                  <p className="eyebrow">
                     {t("heroEyebrow")}
                   </p>
 
-                  <h1 className="font-display text-2xl leading-tight text-foreground sm:text-4xl">
+                  <h1 className="font-display text-3xl leading-[1.1] text-foreground sm:text-5xl">
                     {t("heroTitle")}
                   </h1>
 
@@ -61,9 +70,9 @@ export default async function HomePage() {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <Link href="/#orari" className="btn-primary">
+                  <HashLink href="/#orari" className="btn-primary">
                     {t("heroCtaPrimary")}
-                  </Link>
+                  </HashLink>
 
                   <Link href="/eventi" className="btn-secondary" aria-label={t("eventiOverviewCta")}>
                     {t("eventiOverviewCta")}
@@ -72,13 +81,13 @@ export default async function HomePage() {
               </div>
 
               <div className="flex min-w-0 flex-col gap-3 pt-1 sm:gap-4 lg:justify-end lg:pt-0">
-                <div className="mb-4 flex flex-wrap items-center gap-2.5 text-xs text-foreground/60 sm:mb-6 sm:gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/70 px-3 py-1.5">
+                <div className="mb-4 flex flex-col gap-1.5 border-l-2 border-accent/30 pl-3 text-xs text-foreground/60 sm:mb-6">
+                  <span className="inline-flex items-center gap-2">
                     <CalendarDays className="h-3.5 w-3.5 text-accent" />
                     {dateStr}
                   </span>
 
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white/70 px-3 py-1.5">
+                  <span className="inline-flex items-center gap-2">
                     <MapPin className="h-3.5 w-3.5 text-accent" />
                     {t("heroMetaLocation")}
                   </span>
@@ -155,10 +164,10 @@ export default async function HomePage() {
       >
         <div className="mb-4 flex flex-col items-start gap-3 sm:mb-5 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+            <p className="eyebrow">
               {t("viviChiesa")}
             </p>
-            <h2 className="mt-2 text-2xl font-bold text-foreground">
+            <h2 className="mt-2 font-display text-2xl text-foreground sm:text-3xl">
               {tOrari("titolo")}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/70">
@@ -204,13 +213,13 @@ export default async function HomePage() {
 
       {/* ZONA 4 - FEATURED CONTENT */}
       <section className="mt-12 animate-fade-in-up animation-delay-[300ms] sm:mt-14">
-        <h2 className="mb-4 text-lg font-bold uppercase tracking-wide text-foreground">
+        <p className="eyebrow mb-4">
           {t("featuredTitle")}
-        </h2>
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <Link href="/eventi" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
-            <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
-              <h3 className="text-base font-bold uppercase tracking-wide text-foreground">
+        </p>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.2fr_1fr]">
+          <Link href="/eventi" className="overflow-hidden rounded-2xl border border-accent/25 bg-surface shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+            <div className="flex items-center justify-between border-b border-accent/20 bg-surface-alt/60 px-5 py-4 sm:px-6">
+              <h3 className="font-display text-lg text-foreground">
                 {t("prossimiEventi")}
               </h3>
               <span className="text-sm font-semibold text-accent transition hover:text-accent/80">
@@ -240,9 +249,9 @@ export default async function HomePage() {
             </div>
           </Link>
 
-          <Link href="/preghiere" className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+          <Link href="/preghiere" className="overflow-hidden rounded-2xl border border-border bg-surface-alt/40 shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
-              <h3 className="text-base font-bold uppercase tracking-wide text-foreground">
+              <h3 className="font-display text-base text-foreground">
                 {t("ultimePreghiere")}
               </h3>
               <span className="text-sm font-semibold text-accent transition hover:text-accent/80">
