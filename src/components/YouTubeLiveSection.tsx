@@ -83,7 +83,7 @@ export default function YouTubeLiveSection() {
         <div className="min-w-0 max-w-full p-4 sm:p-6 lg:p-8">
           {/* Spans the full card width (both columns below), centered with
               the card's own padding acting as the left/right margin. */}
-          <div className="mx-auto mb-6 flex w-fit items-center gap-3 rounded-full bg-red-600 px-8 py-2.5 text-base font-bold text-white shadow-lg">
+          <div className="mx-auto mb-6 flex w-full max-w-2xl items-center justify-center gap-3 rounded-full bg-red-600 px-8 py-2.5 text-base font-bold text-white shadow-lg">
             <Youtube className="h-5 w-5" />
             YouTube
           </div>
