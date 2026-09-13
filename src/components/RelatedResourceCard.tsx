@@ -14,15 +14,15 @@ export default function RelatedResourceCard({ href, tag, tagColor, title, subtit
 
   return (
     <Link href={href} className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
-      <div className="card-hover bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+      <div className="card-hover bg-surface rounded-xl p-5 shadow-sm border border-border">
         <span className={`text-xs font-semibold uppercase tracking-wider ${tagColorClass}`}>
           {tag}
         </span>
-        <h4 className={`font-bold text-gray-900 mt-1 ${hoverColor} transition-colors`}>
+        <h4 className={`font-bold text-foreground mt-1 ${hoverColor} transition-colors`}>
           {title}
         </h4>
         {subtitle && (
-          <p className="text-sm text-gray-500 mt-1 line-clamp-2">{subtitle}</p>
+          <p className="text-sm text-foreground/60 mt-1 line-clamp-2">{subtitle}</p>
         )}
       </div>
     </Link>

@@ -13,7 +13,7 @@ export default function ScrollDownHint({ targetId = "quick-access" }: { targetId
   }
 
   return (
-    <button onClick={handleClick} aria-label="Scroll to next section" className="flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-white/80 shadow-sm">
+    <button onClick={handleClick} aria-label="Scroll to next section" className="flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-white/80 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
       <ChevronDown className="h-4 w-4 text-accent animate-scroll-hint" />
     </button>
   );

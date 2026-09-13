@@ -30,8 +30,8 @@ export default async function LibreriaPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {testi.map((testo, index) => (
-          <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group animate-fade-in-up block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2" style={{ animationDelay: `${index * 60}ms` }}>
-            <div className="card-hover bg-surface rounded-xl overflow-hidden shadow-sm border border-border/70 h-full flex flex-col">
+          <Link key={testo.id} href={`/libreria/${testo.slug}`} className="group animate-fade-in-up block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2" style={{ animationDelay: `${index * 60}ms` }}>
+            <div className="card-hover bg-surface rounded-2xl overflow-hidden shadow-sm border border-border/70 h-full flex flex-col">
               <div className="h-44 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center overflow-hidden">
                 {testo.copertina ? (
                   <img
@@ -44,7 +44,7 @@ export default async function LibreriaPage() {
                 )}
               </div>
               <div className="p-5 flex-1 flex flex-col">
-                <span className="text-xs font-semibold text-accent uppercase tracking-wider">
+                <span className="badge-tag self-start">
                   {testo.tipo}
                 </span>
                 <h3 className="font-display text-lg text-foreground mt-1 group-hover:text-gold transition-colors">
@@ -65,9 +65,7 @@ export default async function LibreriaPage() {
       </div>
 
       {testi.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-10 text-center text-sm text-foreground/60">
-          Nessun contenuto disponibile al momento.
-        </div>
+        <div className="empty-state">{t("statoVuoto")}</div>
       )}
     </div>
   );

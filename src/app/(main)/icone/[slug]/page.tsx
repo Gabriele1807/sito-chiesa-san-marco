@@ -54,18 +54,18 @@ export default async function IconaDetailPage({ params }: Props) {
             <span className="text-xs font-semibold text-accent uppercase tracking-wider">
               {icona.categoria}
             </span>
-            <h1 className="text-3xl font-bold text-gray-900 mt-1">
+            <h1 className="text-3xl font-bold text-foreground mt-1">
               {icona.nomeSanto}
             </h1>
             {/* FIX [17] — Removed redundant subtitle "Icona di [nome]", position already shown below */}
           </div>
 
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-foreground/70">
             <MapPin className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">{t("posizione")}: {icona.posizione}</span>
           </div>
 
-          <p className="text-gray-600 leading-relaxed">
+          <p className="text-foreground/70 leading-relaxed">
             {icona.descrizione}
           </p>
 
@@ -75,18 +75,18 @@ export default async function IconaDetailPage({ params }: Props) {
       </div>
 
       {/* Story section */}
-      <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+      <section className="bg-surface rounded-2xl p-8 shadow-sm border border-border">
+        <h2 className="text-2xl font-bold text-foreground mb-4">
           {t("storiaSanto")}
         </h2>
-        <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+        <p className="text-foreground/70 leading-relaxed whitespace-pre-line">
           {icona.descrizioneEstesa}
         </p>
       </section>
 
       {/* Technical details */}
-      <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+      <section className="bg-surface rounded-2xl p-8 shadow-sm border border-border">
+        <h2 className="text-2xl font-bold text-foreground mb-6">
           {t("dettagliTecnici")}
         </h2>
         <div className="grid sm:grid-cols-3 gap-6">
@@ -95,8 +95,8 @@ export default async function IconaDetailPage({ params }: Props) {
               <Palette className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{t("tecnica")}</p>
-              <p className="text-sm font-medium text-gray-900 mt-0.5">{icona.tecnica}</p>
+              <p className="text-xs text-foreground/60 uppercase tracking-wider font-semibold">{t("tecnica")}</p>
+              <p className="text-sm font-medium text-foreground mt-0.5">{icona.tecnica}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -104,8 +104,8 @@ export default async function IconaDetailPage({ params }: Props) {
               <User className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{t("autore")}</p>
-              <p className="text-sm font-medium text-gray-900 mt-0.5">{icona.autore}</p>
+              <p className="text-xs text-foreground/60 uppercase tracking-wider font-semibold">{t("autore")}</p>
+              <p className="text-sm font-medium text-foreground mt-0.5">{icona.autore}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -113,8 +113,8 @@ export default async function IconaDetailPage({ params }: Props) {
               <CalendarDays className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{t("anno")}</p>
-              <p className="text-sm font-medium text-gray-900 mt-0.5">{icona.anno}</p>
+              <p className="text-xs text-foreground/60 uppercase tracking-wider font-semibold">{t("anno")}</p>
+              <p className="text-sm font-medium text-foreground mt-0.5">{icona.anno}</p>
             </div>
           </div>
         </div>
@@ -123,7 +123,7 @@ export default async function IconaDetailPage({ params }: Props) {
       {/* Related resources */}
       {(tCorrelati.length > 0 || iconeCorrelate.length > 0) && (
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-6">
             {t("risorseCollegate")}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

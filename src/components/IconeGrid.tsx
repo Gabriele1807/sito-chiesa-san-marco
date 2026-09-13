@@ -76,8 +76,8 @@ export default function IconeGrid({ icone }: Props) {
                 ) : (
                   <span className="text-5xl opacity-30">🖼️</span>
                 )}
-                <div className="absolute top-3 right-3 bg-surface/90 backdrop-blur-sm px-2 py-1 rounded-md border border-border/60">
-                  <span className="text-xs font-medium text-accent">{icona.categoria}</span>
+                <div className="badge-tag absolute top-3 right-3">
+                  {icona.categoria}
                 </div>
               </div>
               <div className="p-5">

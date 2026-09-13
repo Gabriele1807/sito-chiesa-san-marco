@@ -349,7 +349,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
 
   if (!isAuthenticated) {
     return (
-      <div className="animate-fade-in-up rounded-2xl border border-border bg-white px-6 py-10 text-center shadow-sm sm:px-10">
+      <div className="animate-fade-in-up rounded-2xl border border-border bg-surface px-6 py-10 text-center shadow-sm sm:px-10">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <Lock className="h-8 w-8 text-primary" />
         </div>
@@ -364,18 +364,10 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
           <span>{t("guestDescription")}</span>
         </div>
         <div className="mx-auto mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button
-            type="button"
-            onClick={() => setShowLoginModal(true)}
-            className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90"
-          >
+          <button type="button" onClick={() => setShowLoginModal(true)} className="btn-primary">
             {tAuth("loginButton")}
           </button>
-          <button
-            type="button"
-            onClick={() => setShowRegisterModal(true)}
-            className="rounded-full border border-primary/20 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:border-primary hover:bg-primary/5"
-          >
+          <button type="button" onClick={() => setShowRegisterModal(true)} className="btn-secondary">
             {tAuth("registerTitle")}
           </button>
         </div>
@@ -466,36 +458,36 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
       {/* Registration modal */}
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+          <div className="bg-surface rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-in">
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-              <h3 className="text-base font-semibold text-gray-900">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-surface z-10">
+              <h3 className="text-base font-semibold text-foreground">
                 {enrollmentFor === null ? t("perChiIscrizione") : t("formTitolo")}
               </h3>
               <button
                 onClick={closeForm}
-                className="p-1 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                className="p-1 rounded-lg hover:bg-surface-2 transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-foreground/60" />
               </button>
             </div>
 
             {/* Step 1: Scelta per chi iscriversi (solo se loggato e non selezionato) */}
             {/* Step 1: Scelta per chi iscriversi (solo se loggato e non selezionato) */}
             {isAuthenticated && enrollmentFor === null && (
-              <div className="p-6 space-y-5 bg-white">
+              <div className="p-6 space-y-5 bg-surface">
                 <div className="rounded-xl border border-primary/10 bg-primary/5 px-4 py-3">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/60">
                         {t("stepIndicator", { current: 1, total: 2 })}
                       </p>
-                      <p className="mt-1 text-sm font-medium text-gray-800">
+                      <p className="mt-1 text-sm font-medium text-foreground">
                         {selectedEvento?.titolo}
                       </p>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-white sm:max-w-[180px]">
+                    <div className="h-2 w-full rounded-full bg-surface sm:max-w-[180px]">
                       <div className="h-full w-1/2 rounded-full bg-primary" />
                     </div>
                   </div>
@@ -503,8 +495,8 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
 
                 {/* Titolo + descrizione */}
                 <div className="text-center">
-                  <h2 className="text-lg font-semibold text-gray-900">{t("perChiIscrizione")}</h2>
-                  <p className="text-sm text-gray-500 mt-1">{t("perChiIscrizioneDesc")}</p>
+                  <h2 className="text-lg font-semibold text-foreground">{t("perChiIscrizione")}</h2>
+                  <p className="text-sm text-foreground/60 mt-1">{t("perChiIscrizioneDesc")}</p>
                 </div>
 
                 {/* Cards */}
@@ -515,48 +507,48 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   <button
                     type="button"
                     onClick={() => selectEnrollmentType("me")}
-                    className="card-hover rounded-lg border border-gray-200 bg-white px-4 py-4 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="btn-option-card px-4 py-4 text-left"
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-foreground">
                         {t("perMe")}
                       </span>
-                      <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                      <span className="rounded-full border border-border bg-surface-2 px-2 py-0.5 text-[10px] font-medium text-foreground/60">
                         Profilo
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">{t("perMeDesc")}</p>
+                    <p className="text-xs text-foreground/60 leading-relaxed">{t("perMeDesc")}</p>
                   </button>
 
                   {/* Card "Per un'altra persona" */}
                   <button
                     type="button"
                     onClick={() => selectEnrollmentType("other")}
-                    className="card-hover rounded-lg border border-gray-200 bg-white px-4 py-4 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="btn-option-card px-4 py-4 text-left"
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-foreground">
                         {t("perAltro")}
                       </span>
                       <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
                         Nuovo
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">{t("perAltroDesc")}</p>
+                    <p className="text-xs text-foreground/60 leading-relaxed">{t("perAltroDesc")}</p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => selectEnrollmentType("family")}
-                    className="card-hover rounded-lg border border-gray-200 bg-white px-4 py-4 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:col-span-2"
+                    className="btn-option-card px-4 py-4 text-left sm:col-span-2"
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-semibold text-gray-900">{t("perFamiglia")}</span>
-                      <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                      <span className="text-sm font-semibold text-foreground">{t("perFamiglia")}</span>
+                      <span className="rounded-full border border-border bg-surface-2 px-2 py-0.5 text-[10px] font-medium text-foreground/60">
                         {t("famiglia")}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">{t("perFamigliaDesc")}</p>
+                    <p className="text-xs text-foreground/60 leading-relaxed">{t("perFamigliaDesc")}</p>
                   </button>
 
                 </div>
@@ -573,20 +565,20 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/60">
                           {t("stepIndicator", { current: 2, total: 2 })}
                         </p>
-                        <p className="mt-1 text-sm font-medium text-gray-800">
+                        <p className="mt-1 text-sm font-medium text-foreground">
                           {selectedEvento?.titolo}
                         </p>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-white sm:max-w-[180px]">
+                      <div className="h-2 w-full rounded-full bg-surface sm:max-w-[180px]">
                         <div className="h-full w-full rounded-full bg-primary" />
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div className="flex gap-2 items-start bg-amber-50 border border-amber-200 rounded-lg p-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-800 leading-relaxed">{t("formAvviso")}</p>
+                <div className="flex gap-2 items-start bg-warning/10 border border-warning/30 rounded-lg p-3">
+                  <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                  <p className="text-xs text-warning leading-relaxed">{t("formAvviso")}</p>
                 </div>
 
                 {selectedEvento?.referente && (
@@ -596,10 +588,10 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                       <p className="text-xs font-semibold uppercase tracking-wide text-primary/70">
                         {t("referenteLabel")}
                       </p>
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="text-sm font-semibold text-foreground">
                         {selectedEvento.referente}
                       </p>
-                      <p className="text-xs leading-relaxed text-gray-600">
+                      <p className="text-xs leading-relaxed text-foreground/70">
                         {t("referentePagamentoInfo", { referente: selectedEvento.referente })}
                       </p>
                     </div>
@@ -607,16 +599,16 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 )}
 
                 {serverError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="bg-danger/10 border border-danger/20 rounded-lg p-3">
                     <p className="text-sm text-danger">{serverError}</p>
                   </div>
                 )}
 
                 {selectedEvento?.paymentDeadline && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
                     <div className="flex items-start gap-2">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                      <p className="text-sm font-medium text-amber-900">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                      <p className="text-sm font-medium text-warning">
                         {t("paymentDeadlineBanner", { date: formatPaymentDeadline(selectedEvento.paymentDeadline) })}
                       </p>
                     </div>
@@ -627,7 +619,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 {enrollmentFor !== "family" && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("sezionePartecipante")}</h4>
+                    <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">{t("sezionePartecipante")}</h4>
                     {enrollmentFor === "me" && (
                       <span className="flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-full">
                         <Lock className="w-2.5 h-2.5" />
@@ -637,9 +629,9 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("nome")} <span className="text-red-500 ml-0.5">*</span></label>
+                      <label className="block text-sm font-medium text-foreground/80 mb-1">{t("nome")} <span className="text-danger ml-0.5">*</span></label>
                       {enrollmentFor === "me" ? (
-                        <div className="w-full px-3 py-2 border border-primary/20 bg-primary/5 rounded-lg text-sm text-gray-800 font-medium">
+                        <div className="w-full px-3 py-2 border border-primary/20 bg-primary/5 rounded-lg text-sm text-foreground font-medium">
                           {formData.nome}
                         </div>
                       ) : (
@@ -648,7 +640,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                             type="text"
                             value={formData.nome}
                             onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none"
                             placeholder="Mario"
                           />
                           {errors.nome && <p className="text-xs text-danger mt-1">{errors.nome}</p>}
@@ -656,9 +648,9 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("cognome")} <span className="text-red-500 ml-0.5">*</span></label>
+                      <label className="block text-sm font-medium text-foreground/80 mb-1">{t("cognome")} <span className="text-danger ml-0.5">*</span></label>
                       {enrollmentFor === "me" ? (
-                        <div className="w-full px-3 py-2 border border-primary/20 bg-primary/5 rounded-lg text-sm text-gray-800 font-medium">
+                        <div className="w-full px-3 py-2 border border-primary/20 bg-primary/5 rounded-lg text-sm text-foreground font-medium">
                           {formData.cognome}
                         </div>
                       ) : (
@@ -667,7 +659,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                             type="text"
                             value={formData.cognome}
                             onChange={(e) => setFormData({ ...formData, cognome: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none"
                             placeholder="Rossi"
                           />
                           {errors.cognome && <p className="text-xs text-danger mt-1">{errors.cognome}</p>}
@@ -681,38 +673,38 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 {/* Sezione padre */}
                 {enrollmentFor !== "family" && (
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("sezionePadre")}</h4>
+                  <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">{t("sezionePadre")}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreNome")} <span className="text-red-500 ml-0.5">*</span></label>
+                      <label className="block text-sm font-medium text-foreground/80 mb-1">{t("padreNome")} <span className="text-danger ml-0.5">*</span></label>
                       <input
                         type="text"
                         value={formData.padreNome}
                         onChange={(e) => setFormData({ ...formData, padreNome: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                        className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none"
                         placeholder="Giuseppe"
                       />
                       {errors.padreNome && <p className="text-xs text-danger mt-1">{errors.padreNome}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreCognome")} <span className="text-red-500 ml-0.5">*</span></label>
+                      <label className="block text-sm font-medium text-foreground/80 mb-1">{t("padreCognome")} <span className="text-danger ml-0.5">*</span></label>
                       <input
                         type="text"
                         value={formData.padreCognome}
                         onChange={(e) => setFormData({ ...formData, padreCognome: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                        className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none"
                         placeholder="Rossi"
                       />
                       {errors.padreCognome && <p className="text-xs text-danger mt-1">{errors.padreCognome}</p>}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1.5">{t("padreHelper")}</p>
+                  <p className="text-xs text-foreground/40 mt-1.5">{t("padreHelper")}</p>
                 </div>
                 )}
 
                 {selectedEvento?.showRaccoglimento && raccoglimentoPoints.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("sezioneRaccoglimento")}</h4>
+                    <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">{t("sezioneRaccoglimento")}</h4>
                     <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
                       <div className="space-y-3">
                         {raccoglimentoPoints.map((point) => {
@@ -721,7 +713,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                             <label
                               key={`${point.label}-${point.orario}`}
                               className={`flex items-start gap-3 rounded-lg border px-3 py-3 text-sm font-medium transition-colors ${
-                                isSelected ? "border-primary bg-white" : "border-gray-200 bg-white/80 hover:border-primary/30"
+                                isSelected ? "border-primary bg-surface" : "border-border bg-surface/80 hover:border-primary/30"
                               }`}
                             >
                               <input
@@ -729,11 +721,11 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                                 name="raccoglimento"
                                 checked={isSelected}
                                 onChange={() => setRaccoglimentoPunto(point)}
-                                className="mt-0.5 h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                                className="mt-0.5 h-4 w-4 border-border text-primary focus:ring-primary"
                               />
-                              <span className="flex-1 text-gray-700">
-                                <span className="block font-semibold text-gray-900">{point.label}</span>
-                                <span className="block text-xs text-gray-500">{formatRaccoglimentoTime(point.orario)}</span>
+                              <span className="flex-1 text-foreground/80">
+                                <span className="block font-semibold text-foreground">{point.label}</span>
+                                <span className="block text-xs text-foreground/60">{formatRaccoglimentoTime(point.orario)}</span>
                               </span>
                             </label>
                           );
@@ -741,9 +733,9 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                       </div>
                       {errors.raccoglimentoPunto && <p className="mt-2 text-xs text-danger">{errors.raccoglimentoPunto}</p>}
                       {formData.raccoglimentoPunto && (
-                        <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3">
-                          <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                          <p className="text-xs leading-relaxed text-amber-800">
+                        <div className="mt-3 flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3">
+                          <Info className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                          <p className="text-xs leading-relaxed text-warning">
                             {t("raccoglimentoNote", {
                               punto: formData.raccoglimentoPunto.label,
                               orario: formatRaccoglimentoTime(formData.raccoglimentoPunto.orario),
@@ -759,27 +751,27 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                 {enrollmentFor === "family" && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("sezioneFamiglia")}</h4>
+                      <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">{t("sezioneFamiglia")}</h4>
                       <button type="button" onClick={addFamilyMember} className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
                         <Plus className="h-3.5 w-3.5" /> {t("aggiungiMembro")}
                       </button>
                     </div>
                     <div className="space-y-2">
                       {familyMembers.map((member, index) => (
-                        <div key={index} className="rounded-lg border border-gray-200 p-3">
+                        <div key={index} className="rounded-lg border border-border p-3">
                           <div className="flex items-center justify-between gap-3 mb-2">
-                            <span className="text-sm font-medium text-gray-700">{t("membro")} {index + 1}</span>
-                            <button type="button" onClick={() => removeFamilyMember(index)} className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                            <span className="text-sm font-medium text-foreground/80">{t("membro")} {index + 1}</span>
+                            <button type="button" onClick={() => removeFamilyMember(index)} className="inline-flex items-center gap-1 text-xs font-medium text-danger">
                               <Trash2 className="h-3.5 w-3.5" /> {t("rimuoviMembro")}
                             </button>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] gap-3">
                             <div>
-                              <label className="block text-xs font-medium text-gray-600 mb-1">{t("ruolo")}</label>
+                              <label className="block text-xs font-medium text-foreground/70 mb-1">{t("ruolo")}</label>
                               <select
                                 value={member.role}
                                 onChange={(e) => updateFamilyMember(index, "role", e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-gold"
                               >
                                 {availableRolesFor(index).map((option) => (
                                   <option key={option.value} value={option.value}>
@@ -789,12 +781,12 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-gray-600 mb-1">{t("nomeCognome")}</label>
+                              <label className="block text-xs font-medium text-foreground/70 mb-1">{t("nomeCognome")}</label>
                               <input
                                 type="text"
                                 value={member.fullName}
                                 onChange={(e) => updateFamilyMember(index, "fullName", e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-gold"
                                 placeholder={t("nomeCognomePlaceholder")}
                               />
                             </div>
@@ -802,36 +794,36 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                         </div>
                       ))}
                     </div>
-                    {familyRoleWarning && <p className="text-xs text-amber-700 mt-2">{familyRoleWarning}</p>}
+                    {familyRoleWarning && <p className="text-xs text-warning mt-2">{familyRoleWarning}</p>}
                     {errors.familyMembers && <p className="text-xs text-danger mt-2">{errors.familyMembers}</p>}
 
                     {!padreInMembers && (
                       <div className="mt-4 space-y-2">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreNome")} <span className="text-red-500 ml-0.5">*</span></label>
+                            <label className="block text-sm font-medium text-foreground/80 mb-1">{t("padreNome")} <span className="text-danger ml-0.5">*</span></label>
                             <input
                               type="text"
                               value={formData.padreNome}
                               onChange={(e) => setFormData({ ...formData, padreNome: e.target.value })}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none"
                               placeholder="Giuseppe"
                             />
                             {errors.padreNome && <p className="text-xs text-danger mt-1">{errors.padreNome}</p>}
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">{t("padreCognome")} <span className="text-red-500 ml-0.5">*</span></label>
+                            <label className="block text-sm font-medium text-foreground/80 mb-1">{t("padreCognome")} <span className="text-danger ml-0.5">*</span></label>
                             <input
                               type="text"
                               value={formData.padreCognome}
                               onChange={(e) => setFormData({ ...formData, padreCognome: e.target.value })}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none"
                               placeholder="Rossi"
                             />
                             {errors.padreCognome && <p className="text-xs text-danger mt-1">{errors.padreCognome}</p>}
                           </div>
                         </div>
-                        <p className="text-xs text-gray-400">{t("padreHelper")}</p>
+                        <p className="text-xs text-foreground/40">{t("padreHelper")}</p>
                       </div>
                     )}
                   </div>
@@ -839,39 +831,39 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
 
                 {/* Sezione contatti */}
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t("sezioneContatti")}</h4>
+                  <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">{t("sezioneContatti")}</h4>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("telefono")} <span className="text-red-500 ml-0.5">*</span></label>
+                      <label className="block text-sm font-medium text-foreground/80 mb-1">{t("telefono")} <span className="text-danger ml-0.5">*</span></label>
                       <input
                         type="tel"
                         value={formData.telefono}
                         onChange={(e) => handlePhoneChange(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 ${
-                          errors.telefono ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                        className={`w-full px-3 py-2 border rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-gold/20 ${
+                          errors.telefono ? "border-danger/40 focus:border-danger" : "border-border focus:border-gold"
                         }`}
                         placeholder="+39 000 000 0000"
                       />
                       {errors.telefono && <p className="text-xs text-danger mt-1 animate-fade-in">{errors.telefono}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("email")}{' '}<span className="text-gray-400 font-normal text-xs">{t("emailOpzionale")}</span></label>
+                      <label className="block text-sm font-medium text-foreground/80 mb-1">{t("email")}{' '}<span className="text-foreground/40 font-normal text-xs">{t("emailOpzionale")}</span></label>
                       <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                        className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none"
                         placeholder="mario@email.com"
                       />
                       {errors.email && <p className="text-xs text-danger mt-1">{errors.email}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("note")}</label>
+                      <label className="block text-sm font-medium text-foreground/80 mb-1">{t("note")}</label>
                       <textarea
                         value={formData.note}
                         onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                         rows={2}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+                        className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none resize-none"
                         placeholder="Note aggiuntive..."
                       />
                     </div>
@@ -890,7 +882,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   <button
                     type="button"
                     onClick={() => setEnrollmentFor(null)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                    className="w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                   >
                     {t("tornaSceltaIscrizione")}
                   </button>
@@ -901,14 +893,14 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
             {/* Success message */}
             {submitted && (
               <div className="p-8 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">✓</span>
                 </div>
-                <p className="text-lg font-semibold text-gray-900">
+                <p className="text-lg font-semibold text-foreground">
                   {t("successMessage")}
                 </p>
                 {successFamily && (
-                  <p className="text-sm text-gray-500 mt-2">{t("successFamiglia")}</p>
+                  <p className="text-sm text-foreground/60 mt-2">{t("successFamiglia")}</p>
                 )}
                 <div className="flex gap-3 mt-6">
                   <Link

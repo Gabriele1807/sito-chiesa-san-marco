@@ -30,7 +30,7 @@ export default async function TestoSacroDetailPage({ params }: Props) {
       <BackLink href="/libreria" label={t("tornaLibreria")} />
 
       {/* Header */}
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+      <div className="bg-surface rounded-2xl p-8 shadow-sm border border-border">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Cover */}
           <div className="w-full md:w-56 h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
@@ -51,15 +51,15 @@ export default async function TestoSacroDetailPage({ params }: Props) {
               <span className="text-xs font-semibold text-accent uppercase tracking-wider">
                 {testo.tipo}
               </span>
-              <h1 className="text-3xl font-bold text-gray-900 mt-1">{testo.titolo}</h1>
+              <h1 className="text-3xl font-bold text-foreground mt-1">{testo.titolo}</h1>
             </div>
 
-            <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex items-center gap-2 text-foreground/70">
               <User className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">{t("autore")}: {testo.autore}</span>
             </div>
 
-            <p className="text-gray-600 leading-relaxed">{testo.descrizione}</p>
+            <p className="text-foreground/70 leading-relaxed">{testo.descrizione}</p>
 
             <div className="flex flex-wrap gap-3 pt-2">
               {testo.urlPDF && (
@@ -78,7 +78,7 @@ export default async function TestoSacroDetailPage({ params }: Props) {
                     href={isGDriveUrl(testo.urlPDF) ? toGDriveDownloadUrl(testo.urlPDF) : testo.urlPDF}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface text-primary
                                font-semibold rounded-lg border border-primary/20 btn-hover"
                   >
                     <Download className="w-4 h-4" />
@@ -93,10 +93,10 @@ export default async function TestoSacroDetailPage({ params }: Props) {
 
       {/* PDF Viewer */}
       {testo.urlPDF && (
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="bg-gray-900 px-6 py-3 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-300">PDF Viewer</span>
+        <section className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
+          <div className="bg-primary px-6 py-3 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-foreground/40" />
+            <span className="text-sm text-foreground/30">PDF Viewer</span>
           </div>
           <div className="aspect-[3/4] max-h-[700px]">
             <iframe
@@ -112,7 +112,7 @@ export default async function TestoSacroDetailPage({ params }: Props) {
       {/* Related icons */}
       {iconeCorrelate.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("iconeCorrelate")}</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-4">{t("iconeCorrelate")}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {iconeCorrelate.map((icona) => (
               <RelatedResourceCard

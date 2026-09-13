@@ -37,11 +37,11 @@ export default function IscrizioniPage() {
   ): { label: string; icon: string; classes: string } {
     switch (type) {
       case "other":
-        return { label: t("iscrizionePerAltro"), icon: "👤", classes: "bg-amber-100 text-amber-700" };
+        return { label: t("iscrizionePerAltro"), icon: "👤", classes: "bg-primary/10 text-primary" };
       case "family":
-        return { label: t("iscrizionePerFamiglia"), icon: "👨‍👩‍👧", classes: "bg-sky-100 text-sky-700" };
+        return { label: t("iscrizionePerFamiglia"), icon: "👨‍👩‍👧", classes: "bg-surface-2 text-foreground/70" };
       default:
-        return { label: t("iscrizionePerMe"), icon: "🙋", classes: "bg-emerald-100 text-emerald-700" };
+        return { label: t("iscrizionePerMe"), icon: "🙋", classes: "bg-accent/15 text-accent" };
     }
   }
   const { type, loading: authLoading } = useAuth();
@@ -152,7 +152,7 @@ export default function IscrizioniPage() {
 
       {/* Errore */}
       {!loading && error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center animate-fade-in">
+        <div className="bg-danger/10 border border-danger/20 rounded-xl p-6 text-center animate-fade-in">
           <p className="text-danger text-sm">{error}</p>
         </div>
       )}
@@ -240,14 +240,14 @@ export default function IscrizioniPage() {
                   </div>
 
                   {isc.eventoReferente && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/70">
+                    <div className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-warning/80">
                         {t("referenteLabel")}
                       </p>
-                      <p className="mt-1 text-sm font-semibold text-amber-950">
+                      <p className="mt-1 text-sm font-semibold text-foreground">
                         {isc.eventoReferente}
                       </p>
-                      <p className="mt-1 text-xs leading-relaxed text-amber-900/80">
+                      <p className="mt-1 text-xs leading-relaxed text-foreground/80">
                         {t("referentePagamentoInfo", { referente: isc.eventoReferente })}
                       </p>
                     </div>

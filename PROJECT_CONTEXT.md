@@ -1020,6 +1020,120 @@ rischio/alto impatto senza bisogno di credenziali o decisioni esterne
 
 ---
 
+## 10.8 Unificazione stili cross-pagina (2026-09-12)
+
+Audit dedicato (richiesto esplicitamente dall'utente) per catalogare e
+unificare ogni incoerenza di stile tra pagine diverse per elementi simili
+(bottoni, badge, card, input, stati vuoti). Ambito: solo pagine pubbliche
+e componenti pubblici condivisi — `src/app/admin/**` non toccato (già
+consolidato in un audit precedente, §6.4.2).
+
+### Nuove classi condivise in `src/app/globals.css`
+
+| Classe | Uso |
+|---|---|
+| `.input-field` | Standard unico per input/select/textarea: bordo `border-border`, focus **sempre oro** (`ring-gold/30`, `border-gold`) |
+| `.empty-state` | Stato vuoto standard: `rounded-2xl border-dashed border-border bg-surface px-6 py-12` |
+| `.badge-success` / `.badge-danger` / `.badge-neutral` | Badge di stato, usano i token `--color-success`/`--color-danger` già esistenti ma prima mai usati fuori da un paio di punti isolati |
+| `.badge-tag` | Badge "categoria contenuto" (icone/libreria/preghiere/video-corsi), stile box preso da `IconeGrid.tsx` (`bg-surface/90 border-border/60 rounded-md text-accent`) |
+| `.badge-tipo-self` / `.badge-tipo-altro` / `.badge-tipo-famiglia` | Badge tipo-iscrizione — **decisione utente**: sostituire ambra/cielo/smeraldo (fuori palette) con tonalità di accent/primary/surface-2 già esistenti, non con un badge neutro unico |
+| `.icon-box` / `.icon-box-circle` | Pattern "icona con bordo/sfondo accent", riutilizzabile invece di riscrivere `border border-accent/40`/`rounded-full bg-accent/10` a mano ad ogni pagina |
+| `.btn-option-card` | Card cliccabile stile bottone (usata nel modale iscrizioni per "Per me/Per un altro/Per famiglia") |
+
+**Bug introdotto e corretto durante l'implementazione**: il commento CSS
+per `.icon-box` conteneva la sequenza `*/` al suo interno
+(`(h-*/w-*)`), chiudendo il commento CSS prematuramente e rompendo il
+parsing dell'intero `globals.css` in dev (`next dev` restituiva 500 su
+ogni pagina — build di produzione non lo segnalava, solo Turbopack dev
+in modalità strict). Scoperto e corretto rileggendo il log del dev
+server dopo la prima verifica visiva; riavviato il dev server e
+riconfermato 200 su tutte le pagine testate.
+
+### Decisioni di design prese dall'utente (vincolanti per questo intervento)
+
+- Badge tipo-iscrizione: varianti della palette esistente (non un badge
+  neutro unico) — vedi tabella sopra.
+- Bottoni sezione YouTube (rosso, brand legittimo): allineato il
+  `border-radius` a `rounded-xl` come `.btn-primary`; il colore rosso non
+  è stato toccato.
+
+### Fix del problema più visibile: focus ring input in `profilo/page.tsx`
+
+La sezione "modifica profilo admin" usava `focus:ring-gold`, la sezione
+"modifica profilo utente normale" (stessi campi: nome, cognome, email,
+username) usava `focus:ring-primary` (blu) — unica incoerenza
+riscontrata **dentro la stessa pagina**. Tutti gli `<input>` del file
+sono stati portati a `focus:ring-gold/20 focus:border-gold`: le due
+sezioni ora si comportano in modo identico. Stesso fix applicato a tutti
+gli input del modale iscrizioni in `EventiList.tsx` (che usava
+`ring-primary/20` ovunque) e ai due `<select>`/radio non testuali dove
+pertinente.
+
+### File modificati per categoria
+
+- **Bottoni**: `Footer.tsx` (era `rounded-full` custom → `.btn-primary`/`.btn-secondary`), `ComingSoonPage.tsx` e `auth/AdminGate.tsx` (componenti duplicati con bottone "torna home" identico, entrambi → `.btn-primary`, mancava anche il focus-visible ring), `EventiList.tsx` (guest-gate login/registrati: era `bg-primary` blu → `.btn-primary`/`.btn-secondary` oro; le 3 card "Per me/Altro/Famiglia" → `.btn-option-card`; bottone "torna a scelta" → aggiunto focus-visible ring mancante), `YouTubeLiveSection.tsx` (border-radius allineato, colore rosso invariato), `ScrollDownHint.tsx` (aggiunto focus-visible ring mancante).
+- **Badge categoria contenuto**: `IconeGrid.tsx`, `libreria/page.tsx`, `preghiere/page.tsx`, `video-corsi/page.tsx` → tutti su `.badge-tag`.
+- **Badge tipo-iscrizione**: `iscrizioni/page.tsx` e `profilo/page.tsx` (funzione `getRegistrationTypeInfo`) → tonalità accent/primary/surface-2.
+- **Stati vuoti + i18n**: `libreria/page.tsx`, `preghiere/page.tsx`, `video-corsi/page.tsx` → `.empty-state` + nuove chiavi i18n (sotto); `page.tsx` (home) → testo hardcoded sostituito con chiave i18n esistente/nuova, nessun cambio di markup (contesto diverso, dentro una card già esistente).
+- **Card griglia libreria**: `rounded-xl` → `rounded-2xl` per allinearsi a eventi/icone (stessa struttura di card).
+- **Refactor esteso `profilo/page.tsx` (~1220 righe)**: migrati tutti i colori hardcoded (`bg-white`, `text-gray-*`, `border-gray-*`, `bg-blue-50`, `bg-green-50`, `bg-red-50`, `bg-purple-50`, `bg-teal-50`, `bg-indigo-50`, `bg-violet-50`) ai token semantici (`bg-surface`, `text-foreground/*`, `border-border`, `bg-accent/10`, `.badge-success`/`.badge-danger`, `bg-primary/10`). La lista "azioni rapide sito" (4 link con 4 hue diverse senza significato semantico) unificata a due sole tonalità alternate (accent/primary).
+- **Refactor esteso `EventiList.tsx` modale (~500 righe)**: stessa migrazione di colori (gray/red/green/amber → foreground/danger/success/warning), tutti gli input unificati su focus oro.
+- **Componenti auth**: `UserMenu.tsx`, `RegisterModal.tsx`, `LoginModal.tsx` — colori hardcoded (incluse istanze scritte come hex letterali `bg-[#D97706]`/`bg-[#0F1A2E]`, numericamente già identiche ai token `gold-light`/`primary` ma scritte a mano) migrate ai token; aggiunto focus-visible ring mancante sul bottone menu utente.
+- **Altri componenti con colori fuori palette non esplicitamente elencati nella richiesta iniziale ma trovati durante lo sweep finale**: `icone/[slug]/page.tsx`, `libreria/[slug]/page.tsx` (pagine di dettaglio, dimenticate nel primo giro), `loading.tsx` (skeleton), `BackLink.tsx`, `IconaQRSection.tsx`, `RelatedResourceCard.tsx` — tutti migrati con lo stesso mapping gray→foreground/border/surface. `PreghiereTabs.tsx` migrato anch'esso, ma **risulta non importato/non usato da nessuna pagina** (componente morto, probabilmente superato da `preghiere/page.tsx` + `video-corsi/page.tsx` separate) — segnalato qui, non rimosso perché rimuovere codice non richiesto era fuori scope di un intervento di solo styling.
+- `PreghieraExpand.tsx`: `bg-gray-50`/`border-gray-100`/`text-gray-700` → `bg-surface-2`/`border-border`/`text-foreground/80`.
+
+### Chiavi i18n aggiunte (it.json + ar.json)
+
+- `libreria.statoVuoto`
+- `preghiere.statoVuoto`
+- `preghiere.sezioneVideoStatoVuoto` (usata da `video-corsi/page.tsx`, che riusa il namespace `preghiere` per coerenza con `sezioneVideoTitolo` già esistente)
+- `home.nessunaPreghiera`
+
+### Cosa NON è stato toccato (intenzionale)
+
+- Alternanza quadrato/cerchio in `preghiere/page.tsx` (`isSquareIcon = index % 2 === 0`, colore primary non accent) e pillar primario/secondario in `chi-siamo/page.tsx`: variazione compositiva intenzionale confermata dall'audit, lasciata invariata.
+- Icone-in-box `rounded-lg` (non circolari) in `profilo/page.tsx`: erano già strutturalmente coerenti tra loro (stessa forma/dimensione), l'unico problema era il colore — corretto senza forzarle in `.icon-box-circle` (che avrebbe cambiato la forma da quadrata a circolare, una modifica visiva non richiesta).
+- Radio button "punto di raccoglimento" in `EventiList.tsx` (usa `border-primary`/`text-primary` per lo stato selezionato): pattern di selezione, non un campo di testo — lasciato con l'accento primary come colore di stato "selezionato", distinto dal focus-ring oro standard.
+- Spaziatura tra sezioni (`space-y-8` vs `space-y-12`/`14`): l'audit ha concluso che la variazione è già coerente con la complessità di ciascuna pagina (pagine-lista vs pagine editoriali multi-sezione), nessuna azione necessaria.
+- Diff completo delle traduzioni it/ar oltre alle 4 chiavi aggiunte qui: non eseguito, resta lavoro futuro.
+
+### Verifiche eseguite
+
+- `npx tsc --noEmit` pulito
+- `npx eslint` su tutti i file toccati: 0 errori, solo warning preesistenti non introdotti in questo intervento (uso di `<img>` invece di `next/image`, variabili non usate già presenti prima)
+- `node -e "JSON.parse(...)"` su `it.json`/`ar.json`: entrambi validi
+- `npm run build`: completa senza errori (dopo il fix del bug `*/` descritto sopra)
+- Verifica visiva in browser (Chrome via MCP) su home, eventi (guest-gate), icone e libreria (entrambe attualmente in stato "coming soon" lato pubblico) — tutte renderizzano correttamente coi nuovi stili, nessun errore runtime
+- **Non verificato visivamente**: profilo (richiede sessione utente autenticata, non disponibile in questa sessione), il modale di iscrizione eventi (richiede login), le pagine in lingua araba con i nuovi stili
+
+### 10.8.1 Verifica indipendente aggiuntiva (2026-09-12)
+
+Dopo il completamento del punto precedente, eseguita una seconda verifica
+indipendente per coprire proprio i due limiti segnalati sopra (`/profilo`
+e stato autenticato):
+
+- `tsc --noEmit`, `eslint` (su `src/app` e `src/components` per intero) e
+  `npm run build` ri-eseguiti da zero: puliti. I 3 errori/warning residui
+  (`registrations-utils.ts`, `api/admin/iscrizioni/route.ts`,
+  `SidebarContext.tsx`) sono confermati pre-esistenti e non toccati in
+  questo intervento (verificato con `git status` sui singoli file).
+- Creato un utente di test temporaneo via `POST /api/auth/register`,
+  login via `POST /api/auth/login`, verifica visiva di `/profilo` in
+  browser reale: il fix più importante dell'audit (focus ring oro nella
+  sezione admin vs blu nella sezione utente normale, sugli stessi campi)
+  è confermato risolto — letto `className` reale degli `<input>` via
+  JS: tutti riportano `focus:ring-gold/20 focus:border-gold`, nessuna
+  occorrenza di `ring-primary` rimasta.
+- L'utente di test è stato eliminato subito dopo la verifica (script
+  temporaneo one-off con `deleteUser()`, poi rimosso) per non lasciare
+  dati fittizi nella collezione MongoDB reale, coerente con la policy
+  "nessun seed demo" del progetto (§11).
+- **Ancora non verificato**: il modale di iscrizione evento (richiede
+  un evento pubblicato e superare il gate `SectionVisibilityGate`, non
+  praticabile rapidamente in questa sessione) e la resa in arabo.
+
+---
+
 ## 11. Note operative
 
 - L'area admin è la fonte primaria per creare contenuti iniziali.

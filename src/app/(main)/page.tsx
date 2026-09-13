@@ -272,7 +272,7 @@ export default async function HomePage() {
               ))}
               {preghiere.length === 0 && (
                 <div className="py-6 text-sm text-foreground/60">
-                  Nessuna preghiera disponibile al momento.
+                  {t("nessunaPreghiera")}
                 </div>
               )}
             </div>

@@ -58,9 +58,9 @@ export default function IconaQRSection({ slug }: Props) {
 
   return (
     <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-xl border border-accent/20 p-5">
-      <h3 className="font-bold text-gray-900 mb-3">{t("qrIcona")}</h3>
+      <h3 className="font-bold text-foreground mb-3">{t("qrIcona")}</h3>
       <div className="flex items-start gap-4">
-        <div className="bg-white p-3 rounded-lg shadow-sm">
+        <div className="bg-surface p-3 rounded-lg shadow-sm">
           <QRCode
             id="qr-code-svg"
             value={iconUrl}
@@ -97,7 +97,7 @@ export default function IconaQRSection({ slug }: Props) {
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? t("linkCopiato") : t("copiaLink")}
           </button>
-          <p className="text-xs text-gray-500 break-all mt-1">{iconUrl}</p>
+          <p className="text-xs text-foreground/60 break-all mt-1">{iconUrl}</p>
         </div>
       </div>
     </div>

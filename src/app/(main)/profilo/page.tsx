@@ -46,11 +46,11 @@ export default function ProfiloPage() {
   ): { label: string; icon: string; classes: string } {
     switch (type) {
       case "other":
-        return { label: tIscrizioni("iscrizionePerAltro"), icon: "👤", classes: "bg-amber-100 text-amber-700" };
+        return { label: tIscrizioni("iscrizionePerAltro"), icon: "👤", classes: "bg-primary/10 text-primary" };
       case "family":
-        return { label: tIscrizioni("iscrizionePerFamiglia"), icon: "👨‍👩‍👧", classes: "bg-sky-100 text-sky-700" };
+        return { label: tIscrizioni("iscrizionePerFamiglia"), icon: "👨‍👩‍👧", classes: "bg-surface-2 text-foreground/70" };
       default:
-        return { label: tIscrizioni("iscrizionePerMe"), icon: "🙋", classes: "bg-emerald-100 text-emerald-700" };
+        return { label: tIscrizioni("iscrizionePerMe"), icon: "🙋", classes: "bg-accent/15 text-accent" };
     }
   }
 
@@ -160,12 +160,12 @@ export default function ProfiloPage() {
 
   const adminRequestTone =
     user?.adminRequest === "approved"
-      ? "border-green-200 bg-green-50 text-green-700"
+      ? "border-success/20 bg-success/10 text-success"
       : user?.adminRequest === "pending"
         ? "border-gold/30 bg-gold/5 text-gold"
         : user?.adminRequest === "rejected"
-          ? "border-red-200 bg-red-50 text-red-700"
-          : "border-gray-200 bg-gray-50 text-gray-600";
+          ? "border-danger/20 bg-danger/10 text-danger"
+          : "border-border bg-surface-2 text-foreground/70";
 
   const adminRequestSummary =
     user?.adminRequest === "approved"
@@ -177,10 +177,10 @@ export default function ProfiloPage() {
           : t("nessunaRichiestaAdmin");
 
   const siteQuickActions = [
-    { href: "/eventi", label: t("azioneSitoEventi"), icon: CalendarDays, tone: "bg-blue-50 text-blue-700" },
-    { href: "/icone", label: t("azioneSitoIcone"), icon: ImageIcon, tone: "bg-indigo-50 text-indigo-700" },
-    { href: "/preghiere", label: t("azioneSitoPreghiere"), icon: BookOpen, tone: "bg-violet-50 text-violet-700" },
-    { href: "/libreria", label: t("azioneSitoLibreria"), icon: Library, tone: "bg-emerald-50 text-emerald-700" },
+    { href: "/eventi", label: t("azioneSitoEventi"), icon: CalendarDays, tone: "bg-accent/10 text-accent" },
+    { href: "/icone", label: t("azioneSitoIcone"), icon: ImageIcon, tone: "bg-primary/10 text-primary" },
+    { href: "/preghiere", label: t("azioneSitoPreghiere"), icon: BookOpen, tone: "bg-accent/10 text-accent" },
+    { href: "/libreria", label: t("azioneSitoLibreria"), icon: Library, tone: "bg-primary/10 text-primary" },
   ];
 
   const adminQuickActions = isSuperAdmin
@@ -200,12 +200,12 @@ export default function ProfiloPage() {
   const superAdminRequest = admin?.superAdminRequest ?? "none";
   const superAdminRequestTone =
     superAdminRequest === "approved"
-      ? "border-green-200 bg-green-50 text-green-700"
+      ? "border-success/20 bg-success/10 text-success"
       : superAdminRequest === "pending"
         ? "border-gold/20 bg-gold/10 text-gold"
         : superAdminRequest === "rejected"
-          ? "border-red-200 bg-red-50 text-red-700"
-          : "border-gray-200 bg-gray-50 text-gray-600";
+          ? "border-danger/20 bg-danger/10 text-danger"
+          : "border-border bg-surface-2 text-foreground/70";
 
   const superAdminRequestSummary =
     superAdminRequest === "approved"
@@ -410,7 +410,7 @@ export default function ProfiloPage() {
       >
         <div aria-hidden className="texture-lattice pointer-events-none absolute inset-0 text-white/[0.06]" />
         <div className="relative flex items-center gap-4 sm:gap-5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0 border border-white/30 bg-white/10 text-white">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0 border border-white/30 bg-surface/10 text-white">
             {initials || <User className="w-8 h-8" />}
           </div>
           <div className="min-w-0">
@@ -419,7 +419,7 @@ export default function ProfiloPage() {
               <h1 className="font-display text-xl truncate">{fullName || "Utente"}</h1>
             </div>
             {username && <p className="text-white/70 text-sm mb-2">@{username}</p>}
-            <span className="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-white/15 border-white/25 text-white">
+            <span className="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-surface/15 border-white/25 text-white">
               {roleDisplay}
             </span>
           </div>
@@ -427,47 +427,47 @@ export default function ProfiloPage() {
       </div>
 
       {/* â”€â”€ Info rows â”€â”€ */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border">
         {email && (
           <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
-            <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-4 h-4 text-blue-500" />
+            <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-4 h-4 text-accent" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("email")}</p>
-              <p className="text-sm font-medium text-gray-900 truncate">{email}</p>
+              <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("email")}</p>
+              <p className="text-sm font-medium text-foreground truncate">{email}</p>
             </div>
           </div>
         )}
         <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
-          <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
-            <Shield className="w-4 h-4 text-purple-500" />
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Shield className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("ruolo")}</p>
-            <p className="text-sm font-medium text-gray-900">{roleDisplay}</p>
+            <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("ruolo")}</p>
+            <p className="text-sm font-medium text-foreground">{roleDisplay}</p>
           </div>
         </div>
         {username && (
           <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
-            <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <User className="w-4 h-4 text-gray-500" />
+            <div className="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-foreground/60" />
             </div>
             <div>
-              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("username")}</p>
-              <p className="text-sm font-medium text-gray-900">@{username}</p>
+              <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("username")}</p>
+              <p className="text-sm font-medium text-foreground">@{username}</p>
             </div>
           </div>
         )}
 
         {!isAdmin && user?.chiesa && user.role === "ospite_chiesa" && (
           <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
-            <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-4 h-4 text-green-500" />
+            <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-4 h-4 text-success" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("chiesaProvenienza")}</p>
-              <p className="text-sm font-medium text-gray-900 truncate">{user.chiesa}</p>
+              <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("chiesaProvenienza")}</p>
+              <p className="text-sm font-medium text-foreground truncate">{user.chiesa}</p>
             </div>
           </div>
         )}
@@ -478,10 +478,10 @@ export default function ProfiloPage() {
             <div
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
                 user.adminRequest === "approved"
-                  ? "bg-green-50 text-green-700 border border-green-200"
+                  ? "bg-success/10 text-success border border-success/20"
                   : user.adminRequest === "pending"
                     ? "bg-gold/10 text-gold border border-gold/20"
-                    : "bg-red-50 text-red-700 border border-red-200"
+                    : "bg-danger/10 text-danger border border-danger/20"
               }`}
             >
               {user.adminRequest === "approved" && <Check className="w-3.5 h-3.5" />}
@@ -496,25 +496,25 @@ export default function ProfiloPage() {
         {isAdmin && (
           <Link
             href="/admin"
-            className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group"
+            className="flex items-center justify-between px-5 py-4 hover:bg-surface-2 transition-colors group"
           >
             <div className="flex items-center gap-4">
               <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
                 <Settings className="w-4 h-4 text-gold" />
               </div>
               <div>
-                <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("visitaAdmin")}</p>
-                <p className="text-sm font-medium text-gray-900">{t("pannelloAdmin")}</p>
+                <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("visitaAdmin")}</p>
+                <p className="text-sm font-medium text-foreground">{t("pannelloAdmin")}</p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            <ArrowRight className="w-4 h-4 text-foreground/40 group-hover:text-foreground transition-colors" />
           </Link>
         )}
       </div>
 
       {/* ── Admin edit profile section ── */}
       {isAdmin && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
           <button
             onClick={() => {
               if (showAdminEditSection) {
@@ -523,7 +523,7 @@ export default function ProfiloPage() {
                 openAdminEdit();
               }
             }}
-            className="flex items-center justify-between w-full px-5 py-4 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between w-full px-5 py-4 hover:bg-surface-2 transition-colors"
             aria-expanded={showAdminEditSection}
           >
             <div className="flex items-center gap-4">
@@ -531,55 +531,55 @@ export default function ProfiloPage() {
                 <Pencil className="w-4 h-4 text-gold" />
               </div>
               <div className="text-left">
-                <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("account")}</p>
-                <p className="text-sm font-medium text-gray-900">{t("modificaProfilo")}</p>
+                <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("account")}</p>
+                <p className="text-sm font-medium text-foreground">{t("modificaProfilo")}</p>
               </div>
             </div>
             <ChevronDown
-              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showAdminEditSection ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-foreground/40 transition-transform duration-200 ${showAdminEditSection ? "rotate-180" : ""}`}
             />
           </button>
 
           {showAdminEditSection && (
-            <div className="border-t border-gray-100 px-5 py-5">
+            <div className="border-t border-border px-5 py-5">
               <form onSubmit={handleAdminEditSubmit} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("nome")}</label>
+                    <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("nome")}</label>
                     <input
                       type="text"
                       value={adminEditForm.nome}
                       onChange={(e) => setAdminEditForm({ ...adminEditForm, nome: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("cognome")}</label>
+                    <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("cognome")}</label>
                     <input
                       type="text"
                       value={adminEditForm.cognome}
                       onChange={(e) => setAdminEditForm({ ...adminEditForm, cognome: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("email")}</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("email")}</label>
                   <input
                     type="email"
                     value={adminEditForm.email}
                     onChange={(e) => setAdminEditForm({ ...adminEditForm, email: e.target.value })}
                     autoComplete="email"
                     placeholder={t("emailPlaceholderAdmin")}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
+                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("username")}</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("username")}</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 text-sm">@</span>
                     <input
                       type="text"
                       value={adminEditForm.username}
@@ -588,7 +588,7 @@ export default function ProfiloPage() {
                       minLength={3}
                       maxLength={30}
                       pattern="[a-zA-Z0-9_.\-]+"
-                      className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
+                      className="w-full pl-8 pr-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -597,8 +597,8 @@ export default function ProfiloPage() {
                   <div
                     className={`flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm ${
                       adminEditMessage.type === "success"
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-700 border border-red-200"
+                        ? "bg-success/10 text-success border border-success/20"
+                        : "bg-danger/10 text-danger border border-danger/20"
                     }`}
                   >
                     {adminEditMessage.type === "success" ? (
@@ -621,7 +621,7 @@ export default function ProfiloPage() {
                   <button
                     type="button"
                     onClick={closeAdminEdit}
-                    className="w-full sm:w-auto px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
                   >
                     {t("annulla")}
                   </button>
@@ -634,7 +634,7 @@ export default function ProfiloPage() {
 
       {/* ── Edit profile section (regular users only) ── */}
       {!isAdmin && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
           <button
             onClick={() => {
               if (showEditSection) {
@@ -643,63 +643,63 @@ export default function ProfiloPage() {
                 openEdit();
               }
             }}
-            className="flex items-center justify-between w-full px-5 py-4 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between w-full px-5 py-4 hover:bg-surface-2 transition-colors"
             aria-expanded={showEditSection}
           >
             <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Pencil className="w-4 h-4 text-blue-500" />
+              <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <Pencil className="w-4 h-4 text-accent" />
               </div>
               <div className="text-left">
-                <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("account")}</p>
-                <p className="text-sm font-medium text-gray-900">{t("modificaProfilo")}</p>
+                <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("account")}</p>
+                <p className="text-sm font-medium text-foreground">{t("modificaProfilo")}</p>
               </div>
             </div>
             <ChevronDown
-              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showEditSection ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-foreground/40 transition-transform duration-200 ${showEditSection ? "rotate-180" : ""}`}
             />
           </button>
 
           {showEditSection && (
-            <div className="border-t border-gray-100 px-5 py-5">
+            <div className="border-t border-border px-5 py-5">
               <form onSubmit={handleEditSubmit} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("nome")}</label>
+                    <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("nome")}</label>
                     <input
                       type="text"
                       value={editForm.nome}
                       onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("cognome")}</label>
+                    <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("cognome")}</label>
                     <input
                       type="text"
                       value={editForm.cognome}
                       onChange={(e) => setEditForm({ ...editForm, cognome: e.target.value })}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("email")}</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("email")}</label>
                   <input
                     type="email"
                     value={editForm.email}
                     onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                     required
                     autoComplete="email"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("username")}</label>
+                  <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("username")}</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 text-sm">@</span>
                     <input
                       type="text"
                       value={editForm.username}
@@ -708,13 +708,13 @@ export default function ProfiloPage() {
                       minLength={3}
                       maxLength={30}
                       pattern="[a-zA-Z0-9_.\-]+"
-                      className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full pl-8 pr-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("ruoloComunita")}</label>
+                    <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("ruoloComunita")}</label>
                     <select
                       value={editForm.role}
                       onChange={(e) => setEditForm({
@@ -722,7 +722,7 @@ export default function ProfiloPage() {
                         role: e.target.value,
                         chiesa: e.target.value === "ospite_chiesa" ? editForm.chiesa : "",
                       })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     >
                       <option value="credente">{t("ruoloCredente")}</option>
                       <option value="madre">{t("ruoloMadre")}</option>
@@ -731,11 +731,11 @@ export default function ProfiloPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("fasciaEta")}</label>
+                    <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("fasciaEta")}</label>
                     <select
                       value={editForm.ageGroup}
                       onChange={(e) => setEditForm({ ...editForm, ageGroup: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     >
                       <option value="0-11">0–11</option>
                       <option value="12-18">12–18</option>
@@ -749,11 +749,11 @@ export default function ProfiloPage() {
 
                 {editForm.role === "ospite_chiesa" && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("chiesaProvenienza")}</label>
+                    <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1.5">{t("chiesaProvenienza")}</label>
                     <select
                       value={editForm.chiesa}
                       onChange={(e) => setEditForm({ ...editForm, chiesa: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     >
                       <option value="">Seleziona una chiesa...</option>
                       {CHIESE_LIST.map((chiesa) => (
@@ -769,8 +769,8 @@ export default function ProfiloPage() {
                   <div
                     className={`flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm ${
                       editMessage.type === "success"
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-700 border border-red-200"
+                        ? "bg-success/10 text-success border border-success/20"
+                        : "bg-danger/10 text-danger border border-danger/20"
                     }`}
                   >
                     {editMessage.type === "success" ? (
@@ -793,7 +793,7 @@ export default function ProfiloPage() {
                   <button
                     type="button"
                     onClick={closeEdit}
-                    className="w-full sm:w-auto px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
                   >
                     {t("annulla")}
                   </button>
@@ -802,11 +802,11 @@ export default function ProfiloPage() {
 
               {/* Request admin section (only if not pending/approved) */}
               {(!user?.adminRequest || user.adminRequest === "none" || user.adminRequest === "rejected") && (
-                <div className="mt-5 pt-5 border-t border-gray-100">
+                <div className="mt-5 pt-5 border-t border-border">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{t("richiediAdmin")}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{t("richiediAdminDesc")}</p>
+                      <p className="text-sm font-semibold text-foreground">{t("richiediAdmin")}</p>
+                      <p className="text-xs text-foreground/60 mt-0.5">{t("richiediAdminDesc")}</p>
                     </div>
                     <button
                       onClick={handleRequestAdmin}
@@ -821,8 +821,8 @@ export default function ProfiloPage() {
                     <div
                       className={`mt-3 flex items-start gap-2 px-4 py-3 rounded-xl text-sm ${
                         adminReqMessage.type === "success"
-                          ? "bg-green-50 text-green-700 border border-green-200"
-                          : "bg-red-50 text-red-700 border border-red-200"
+                          ? "bg-success/10 text-success border border-success/20"
+                          : "bg-danger/10 text-danger border border-danger/20"
                       }`}
                     >
                       {adminReqMessage.type === "success"
@@ -836,7 +836,7 @@ export default function ProfiloPage() {
 
               {/* Already has pending request */}
               {user?.adminRequest === "pending" && (
-                <div className="mt-5 pt-5 border-t border-gray-100">
+                <div className="mt-5 pt-5 border-t border-border">
                   <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-gold/10 text-gold border border-gold/20">
                     <UserCheck className="w-4 h-4" />
                     {t("adminGiaRichiesto")}
@@ -846,8 +846,8 @@ export default function ProfiloPage() {
 
               {/* Approved */}
               {user?.adminRequest === "approved" && (
-                <div className="mt-5 pt-5 border-t border-gray-100">
-                  <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200">
+                <div className="mt-5 pt-5 border-t border-border">
+                  <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-success/10 text-success border border-success/20">
                     <Check className="w-4 h-4" />
                     {t("adminApprovato")}
                   </div>
@@ -859,34 +859,34 @@ export default function ProfiloPage() {
       )}
 
       {/* â”€â”€ Security / Password section â”€â”€ */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
         <button
           onClick={() => { setShowPasswordSection((prev) => !prev); if (showPasswordSection) closePasswordSection(); }}
-          className="flex items-center justify-between w-full px-5 py-4 hover:bg-gray-50 transition-colors"
+          className="flex items-center justify-between w-full px-5 py-4 hover:bg-surface-2 transition-colors"
           aria-expanded={showPasswordSection}
         >
           <div className="flex items-center gap-4">
-            <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <Lock className="w-4 h-4 text-gray-500" />
+            <div className="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center flex-shrink-0">
+              <Lock className="w-4 h-4 text-foreground/60" />
             </div>
             <div className="text-left">
-              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("sicurezza")}</p>
-              <p className="text-sm font-medium text-gray-900">{t("cambiaPassword")}</p>
+              <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("sicurezza")}</p>
+              <p className="text-sm font-medium text-foreground">{t("cambiaPassword")}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-sm text-gray-400 tracking-[0.25em]">••••••••</span>
-            <Key className={`w-4 h-4 transition-colors ${showPasswordSection ? "text-primary" : "text-gray-400"}`} />
+            <span className="hidden sm:block text-sm text-foreground/40 tracking-[0.25em]">••••••••</span>
+            <Key className={`w-4 h-4 transition-colors ${showPasswordSection ? "text-primary" : "text-foreground/40"}`} />
             <ChevronDown
-              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showPasswordSection ? "rotate-180" : ""}`}
+              className={`w-4 h-4 text-foreground/40 transition-transform duration-200 ${showPasswordSection ? "rotate-180" : ""}`}
             />
           </div>
         </button>
 
         {showPasswordSection && (
-          <div className="border-t border-gray-100 px-5 py-5">
+          <div className="border-t border-border px-5 py-5">
             <form onSubmit={handlePasswordChange} className="space-y-4">
-              <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
                 <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1.5">
                   {t("passwordAttuale")}
                 </label>
@@ -897,7 +897,7 @@ export default function ProfiloPage() {
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
                     autoComplete="current-password"
-                    className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
+                    className="w-full px-3 py-2 rounded-2xl border border-border bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
                   />
                   <button
                     type="button"
@@ -911,12 +911,12 @@ export default function ProfiloPage() {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                       {tAuth("registerFieldPassword")}
                     </label>
-                    <span className="text-[11px] text-gray-500">{tAuth("registerPasswordRequirementsTitle")}</span>
+                    <span className="text-[11px] text-foreground/60">{tAuth("registerPasswordRequirementsTitle")}</span>
                   </div>
                   <div className="relative">
                     <input
@@ -929,7 +929,7 @@ export default function ProfiloPage() {
                       required
                       minLength={8}
                       autoComplete="new-password"
-                      className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
+                      className="w-full px-3 py-2 rounded-2xl border border-border bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
                     />
                     <button
                       type="button"
@@ -940,14 +940,14 @@ export default function ProfiloPage() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <div className="mt-3 text-xs text-gray-500">{tAuth("registerPasswordHintSpecial")}</div>
-                  <div className="mt-3 grid gap-2 text-sm text-gray-500">
+                  <div className="mt-3 text-xs text-foreground/60">{tAuth("registerPasswordHintSpecial")}</div>
+                  <div className="mt-3 grid gap-2 text-sm text-foreground/60">
                     {passwordRequirementItems.map((rule) => {
                       const Icon = rule.ok ? CheckCircle : XCircle;
                       return (
                         <div key={rule.key} className="flex items-center gap-2" style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
-                          <Icon className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-green-500 scale-100 opacity-100" : "text-red-500 scale-95 opacity-80"}`} />
-                          <span className={`text-xs ${rule.ok ? "text-green-700" : "text-red-600"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                          <Icon className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-success scale-100 opacity-100" : "text-danger scale-95 opacity-80"}`} />
+                          <span className={`text-xs ${rule.ok ? "text-success" : "text-danger"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
                             {rule.label}
                           </span>
                         </div>
@@ -956,7 +956,7 @@ export default function ProfiloPage() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
                   <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">
                     {tAuth("registerFieldPasswordConfirm")}
                   </label>
@@ -968,7 +968,7 @@ export default function ProfiloPage() {
                       required
                       minLength={8}
                       autoComplete="new-password"
-                      className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
+                      className="w-full px-3 py-2 rounded-2xl border border-border bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
                     />
                     <button
                       type="button"
@@ -983,13 +983,13 @@ export default function ProfiloPage() {
                     <div className="mt-2 flex items-center gap-2 text-sm">
                       {newPassword === confirmPassword ? (
                         <>
-                          <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
-                          <span className="text-green-700">{tAuth("registerPasswordMatchOk")}</span>
+                          <CheckCircle className="h-4 w-4 shrink-0 text-success" />
+                          <span className="text-success">{tAuth("registerPasswordMatchOk")}</span>
                         </>
                       ) : (
                         <>
-                          <XCircle className="h-4 w-4 shrink-0 text-red-500" />
-                          <span className="text-red-600">{tAuth("registerPasswordMatchMismatch")}</span>
+                          <XCircle className="h-4 w-4 shrink-0 text-danger" />
+                          <span className="text-danger">{tAuth("registerPasswordMatchMismatch")}</span>
                         </>
                       )}
                     </div>
@@ -1001,8 +1001,8 @@ export default function ProfiloPage() {
                 <div
                   className={`flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm ${
                     passwordMessage.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
+                      ? "bg-success/10 text-success border border-success/20"
+                      : "bg-danger/10 text-danger border border-danger/20"
                   }`}
                 >
                   {passwordMessage.type === "success" ? (
@@ -1025,7 +1025,7 @@ export default function ProfiloPage() {
                 <button
                   type="button"
                   onClick={closePasswordSection}
-                  className="w-full sm:w-auto px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
                 >
                   {t("annulla")}
                 </button>
@@ -1036,23 +1036,23 @@ export default function ProfiloPage() {
       </div>
 
       {/* ── Iscrizioni section ── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex items-center gap-4 px-5 py-4 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-            <CalendarDays className="w-4 h-4 text-teal-500" />
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="flex items-center gap-4 px-5 py-4 border-b border-border">
+          <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+            <CalendarDays className="w-4 h-4 text-accent" />
             </div>
             <div className="text-left">
-              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-0.5">{t("azioniSitoTitle")}</p>
-              <p className="text-sm font-medium text-gray-900">{t("leTueIscrizioni")}</p>
+              <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("azioniSitoTitle")}</p>
+              <p className="text-sm font-medium text-foreground">{t("leTueIscrizioni")}</p>
             </div>
           </div>
           <div className="px-5 py-5">
             {iscrizioniLoading ? (
-              <p className="text-sm text-gray-500">{t("loadingIscrizioni")}</p>
+              <p className="text-sm text-foreground/60">{t("loadingIscrizioni")}</p>
             ) : iscrizioniError ? (
-              <p className="text-sm text-red-500">{t("erroreIscrizioni")}</p>
+              <p className="text-sm text-danger">{t("erroreIscrizioni")}</p>
             ) : iscrizioni.length === 0 ? (
-              <p className="text-sm text-gray-500">{t("nessunaIscrizione")}</p>
+              <p className="text-sm text-foreground/60">{t("nessunaIscrizione")}</p>
             ) : (
               <ul className="space-y-3">
                 {iscrizioni.map((isc, idx) => {
@@ -1060,29 +1060,29 @@ export default function ProfiloPage() {
                   const registrationTypeInfo = getRegistrationTypeInfo(registrationType);
 
                   return (
-                    <li key={idx} className="p-3 border border-gray-100 rounded-xl bg-gray-50/50">
+                    <li key={idx} className="p-3 border border-border rounded-xl bg-surface-2/50">
                       <div className="flex items-start justify-between gap-2 mb-1 flex-wrap">
-                        <p className="text-sm font-semibold text-gray-900">{isc.eventoTitolo}</p>
+                        <p className="text-sm font-semibold text-foreground">{isc.eventoTitolo}</p>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg ${registrationTypeInfo.classes} text-xs font-semibold flex-shrink-0`}>
                           {registrationTypeInfo.icon} {registrationTypeInfo.label}
                         </span>
                       </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                      <div className="mt-1 flex flex-wrap items-center gap-4 text-xs text-foreground/60">
                         <span>{isc.eventoData ? new Date(isc.eventoData).toLocaleDateString() : ""}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                        <span className="w-1 h-1 rounded-full bg-border"></span>
                         <span>{tIscrizioni("partecipante")}:{" "}{isc.nome} {isc.cognome}</span>
                       </div>
                       
                       {registrationType === "family" && isc.familyMembers && isc.familyMembers.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-gray-200 space-y-1">
-                          <p className="text-xs font-semibold text-gray-600">{tIscrizioni("componentiFamiglia")}:</p>
-                          <div className="text-xs text-gray-600 space-y-0.5">
+                        <div className="mt-2 pt-2 border-t border-border space-y-1">
+                          <p className="text-xs font-semibold text-foreground/70">{tIscrizioni("componentiFamiglia")}:</p>
+                          <div className="text-xs text-foreground/70 space-y-0.5">
                             {isc.familyMembers.map((member: { role: string; fullName: string }, memberIdx: number) => (
                               <div key={memberIdx} className="flex items-center gap-2">
-                                <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
+                                <span className="w-4 h-4 rounded-full bg-accent/15 text-accent flex items-center justify-center text-xs font-semibold">
                                   {member.role === "madre" ? "👩" : member.role === "padre" ? "👨" : "👧"}
                                 </span>
-                                <span>{member.fullName} <span className="text-gray-400">({member.role})</span></span>
+                                <span>{member.fullName} <span className="text-foreground/40">({member.role})</span></span>
                               </div>
                             ))}
                           </div>
@@ -1096,11 +1096,11 @@ export default function ProfiloPage() {
           </div>
         </div>
 
-      <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-danger/20 bg-surface p-5 shadow-sm">
         <button
           type="button"
           onClick={handleLogoutFromProfile}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm font-semibold text-danger hover:bg-danger/15 transition-colors"
         >
           <LogOut className="h-4 w-4" />
           {tAuth("userMenuLogout")}
@@ -1110,11 +1110,11 @@ export default function ProfiloPage() {
 
         <aside className="space-y-4 xl:sticky xl:top-20">
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{t("azioniRapide")}</p>
+          <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/60">{t("azioniRapide")}</p>
 
             <div className="mt-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{t("azioniSitoTitle")}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/40">{t("azioniSitoTitle")}</p>
               <div className="mt-2 space-y-2">
                 {siteQuickActions.map((action) => {
                   const Icon = action.icon;
@@ -1122,23 +1122,23 @@ export default function ProfiloPage() {
                     <Link
                       key={action.href}
                       href={action.href}
-                      className="group flex w-full items-center justify-between rounded-xl border border-gray-200 px-3.5 py-3 text-left transition-colors hover:bg-gray-50"
+                      className="group flex w-full items-center justify-between rounded-xl border border-border px-3.5 py-3 text-left transition-colors hover:bg-surface-2"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${action.tone}`}>
                           <Icon className="h-4 w-4" />
                         </div>
-                        <span className="text-sm font-medium text-gray-900">{action.label}</span>
+                        <span className="text-sm font-medium text-foreground">{action.label}</span>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-gray-400 transition-colors group-hover:text-gray-600" />
+                      <ArrowRight className="h-4 w-4 text-foreground/40 transition-colors group-hover:text-foreground" />
                     </Link>
                   );
                 })}
               </div>
 
               {isAdmin && (
-                <div className="mt-4 border-t border-gray-100 pt-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                <div className="mt-4 border-t border-border pt-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/40">
                     {isSuperAdmin ? t("azioniSuperAdminTitle") : t("azioniAdminTitle")}
                   </p>
 
@@ -1148,7 +1148,7 @@ export default function ProfiloPage() {
                       className="group flex w-full items-center justify-between rounded-xl border border-gold/20 bg-gold/5 px-3.5 py-3 text-left transition-colors hover:bg-gold/10"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface">
                           <Crown className="h-4 w-4 text-gold" />
                         </div>
                         <span className="text-sm font-medium text-burgundy">{t("pannelloAdmin")}</span>
@@ -1165,25 +1165,25 @@ export default function ProfiloPage() {
                           href={action.href}
                           className={`group flex w-full items-center justify-between rounded-xl border px-3.5 py-3 text-left transition-colors ${
                             highlighted
-                              ? "border-sky-200 bg-sky-50/80 hover:bg-sky-100"
+                              ? "border-primary/20 bg-primary/5 hover:bg-primary/10"
                               : "border-gold/20 bg-gold/5 hover:bg-gold/10"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <div
                               className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                                highlighted ? "bg-white text-sky-700" : "bg-white text-gold"
+                                highlighted ? "bg-surface text-primary" : "bg-surface text-gold"
                               }`}
                             >
                               <Icon className="h-4 w-4" />
                             </div>
-                            <span className={`text-sm font-medium ${highlighted ? "text-sky-900" : "text-burgundy"}`}>
+                            <span className={`text-sm font-medium ${highlighted ? "text-primary" : "text-burgundy"}`}>
                               {action.label}
                             </span>
                           </div>
                           <ArrowRight
                             className={`h-4 w-4 transition-colors ${
-                              highlighted ? "text-sky-500 group-hover:text-sky-700" : "text-gold group-hover:text-gold-light"
+                              highlighted ? "text-primary/70 group-hover:text-primary" : "text-gold group-hover:text-gold-light"
                             }`}
                           />
                         </Link>
@@ -1196,19 +1196,19 @@ export default function ProfiloPage() {
           </div>
 
           {!isAdmin && (
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
-                  <Shield className="h-4 w-4 text-gray-600" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2">
+                  <Shield className="h-4 w-4 text-foreground/70" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{t("richiediAdmin")}</p>
+                <p className="text-sm font-semibold text-foreground">{t("richiediAdmin")}</p>
               </div>
 
               <div className={`rounded-xl border px-3 py-2.5 text-sm ${adminRequestTone}`}>
                 {adminRequestSummary}
               </div>
 
-              <p className="mt-3 text-xs text-gray-500">{t("suggerimentoSicurezza")}</p>
+              <p className="mt-3 text-xs text-foreground/60">{t("suggerimentoSicurezza")}</p>
             </div>
           )}
 

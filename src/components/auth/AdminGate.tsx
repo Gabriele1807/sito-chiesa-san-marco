@@ -38,12 +38,12 @@ export default function AdminGate({
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center space-y-6 px-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent/20">
+        <div className="icon-box mx-auto h-16 w-16">
           <Rocket className="w-8 h-8 text-accent" />
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+          <h1 className="font-display text-3xl sm:text-4xl text-foreground">
             {title}
           </h1>
           <p className="text-foreground/60 text-lg max-w-md mx-auto">
@@ -57,10 +57,7 @@ export default function AdminGate({
         </div>
 
         <div className="pt-4">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-accent text-white font-semibold hover:bg-accent/90 transition-colors"
-          >
+          <Link href="/" className="btn-primary">
             {t("backHome")}
           </Link>
         </div>

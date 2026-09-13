@@ -173,6 +173,57 @@ html {
   .btn-link {
     @apply inline-flex items-center gap-1.5 text-accent font-semibold text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
+
+  .btn-option-card {
+    @apply rounded-xl border border-border bg-surface transition-all hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2;
+  }
+
+  /* Single focus-ring standard (gold) for every form control on the public site */
+  .input-field {
+    @apply w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold;
+  }
+
+  .empty-state {
+    @apply rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-foreground/60;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success/10 px-3 py-1 text-xs font-semibold text-success;
+  }
+
+  .badge-danger {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-danger/20 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger;
+  }
+
+  .badge-neutral {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-semibold text-foreground/70;
+  }
+
+  .badge-tag {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-surface/90 px-2 py-1 text-xs font-medium text-accent backdrop-blur-sm;
+  }
+
+  /* Registration-type badges: variety via existing palette tones, not new hues */
+  .badge-tipo-self {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent;
+  }
+
+  .badge-tipo-altro {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary;
+  }
+
+  .badge-tipo-famiglia {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold text-foreground/70;
+  }
+
+  /* Icon-in-box patterns: caller still sets size (h-N w-N) alongside these */
+  .icon-box {
+    @apply flex shrink-0 items-center justify-center border border-accent/40 text-accent;
+  }
+
+  .icon-box-circle {
+    @apply flex shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent;
+  }
 }
 
 /* ====== Entry animations ====== */

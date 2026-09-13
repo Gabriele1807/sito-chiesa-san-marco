@@ -41,9 +41,7 @@ export default async function VideoCorsiPage() {
           </div>
 
           {videoCorsi.length === 0 && (
-            <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center text-sm text-foreground/60">
-              Nessun video corso disponibile al momento.
-            </div>
+            <div className="empty-state">{t("sezioneVideoStatoVuoto")}</div>
           )}
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -75,7 +73,7 @@ export default async function VideoCorsiPage() {
 
                 <div className="space-y-2 bg-surface p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-accent">
+                    <span className="badge-tag">
                       {video.categoria}
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/60 transition-colors group-hover:text-accent">

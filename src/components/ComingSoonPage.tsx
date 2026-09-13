@@ -25,7 +25,7 @@ export default function ComingSoonPage({ title, description, children }: ComingS
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center space-y-6 px-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 border border-accent/40">
+        <div className="icon-box mx-auto h-16 w-16">
           <Rocket className="w-8 h-8 text-accent" />
         </div>
 
@@ -44,10 +44,7 @@ export default function ComingSoonPage({ title, description, children }: ComingS
         </div>
 
         <div className="pt-4">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-accent text-white font-semibold hover:bg-accent/90 transition-colors"
-          >
+          <Link href="/" className="btn-primary">
             {t("backHome")}
           </Link>
         </div>

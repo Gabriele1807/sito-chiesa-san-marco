@@ -36,16 +36,10 @@ export default async function Footer() {
               {tFooter("aboutText")}
             </p>
             <div className="flex flex-wrap gap-2">
-              <HashLink
-                href="/#orari"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-surface-alt"
-              >
+              <HashLink href="/#orari" className="btn-primary">
                 {tFooter("orariCta")}
               </HashLink>
-              <Link
-                href="/contatti"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white text-foreground/80 px-4 py-2 text-xs font-semibold border border-border shadow-sm transition hover:text-foreground hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-surface-alt"
-              >
+              <Link href="/contatti" className="btn-secondary">
                 {tNav("contatti")}
               </Link>
             </div>
@@ -156,16 +150,10 @@ export default async function Footer() {
               {tFooter("aboutText")}
             </p>
             <div className="flex flex-wrap gap-2">
-              <HashLink
-                href="/#orari"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-xs font-semibold shadow-sm transition hover:bg-accent-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
-              >
+              <HashLink href="/#orari" className="btn-primary">
                 {tFooter("orariCta")}
               </HashLink>
-              <Link
-                href="/contatti"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white text-foreground/80 px-4 py-2 text-xs font-semibold border border-border shadow-sm transition hover:text-foreground hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
-              >
+              <Link href="/contatti" className="btn-secondary">
                 {tNav("contatti")}
               </Link>
             </div>

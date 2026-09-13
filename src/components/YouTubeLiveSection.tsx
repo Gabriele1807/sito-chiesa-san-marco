@@ -8,10 +8,6 @@ import {
   ExternalLink,
   Play,
   Bell,
-  Video,
-  Cross,
-  Radio,
-  Calendar,
 } from "lucide-react";
 
 const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@SanMarco-Milano";
@@ -85,14 +81,16 @@ export default function YouTubeLiveSection() {
         <div className="h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
 
         <div className="min-w-0 max-w-full p-4 sm:p-6 lg:p-8">
+          {/* Spans the full card width (both columns below), centered with
+              the card's own padding acting as the left/right margin. */}
+          <div className="mx-auto mb-6 flex w-fit items-center gap-3 rounded-full bg-red-600 px-8 py-2.5 text-base font-bold text-white shadow-lg">
+            <Youtube className="h-5 w-5" />
+            YouTube
+          </div>
+
           <div className="grid gap-6 lg:grid-cols-[1.25fr_minmax(18rem,1fr)]">
             <div className="flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2.5 bg-red-600 text-white px-3.5 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                <Youtube className="w-4.5 h-4.5" />
-                YouTube
-              </div>
-
-              <h2 className="mt-5 text-2xl font-bold text-white sm:text-3xl lg:text-3xl leading-tight">
+              <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-3xl leading-tight">
                 {t("youtubeSezione")}
               </h2>
 
@@ -212,7 +210,7 @@ export default function YouTubeLiveSection() {
                     href={YOUTUBE_CHANNEL_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
                   >
                     <Bell className="w-4 h-4" />
                     {t("youtubeIscriviti")}
@@ -221,7 +219,7 @@ export default function YouTubeLiveSection() {
                     href={`${YOUTUBE_CHANNEL_URL}/videos`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
                   >
                     <Play className="w-4 h-4" />
                     {t("youtubeGuardaTutti")}

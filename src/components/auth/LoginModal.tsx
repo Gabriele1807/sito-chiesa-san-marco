@@ -142,9 +142,9 @@ export default function LoginModal() {
 
           {/* Errore */}
           {error && (
-            <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/30 rounded-xl px-4 py-3 mb-4">
-              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-              <p className="text-red-300 text-sm">{error}</p>
+            <div className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-xl px-4 py-3 mb-4">
+              <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
+              <p className="text-danger text-sm">{error}</p>
             </div>
           )}
 

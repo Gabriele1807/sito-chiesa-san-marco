@@ -70,7 +70,8 @@
     "eventiActionCta": "Iscriviti ora",
     "eventiOverviewCta": "Esplora gli eventi",
     "nessunEvento": "Nessun evento in programma",
-    "controllaPiuTardi": "Controlla più tardi"
+    "controllaPiuTardi": "Controlla più tardi",
+    "nessunaPreghiera": "Nessuna preghiera disponibile al momento."
   },
   "chiSiamo": {
     "titolo": "Chi siamo",
@@ -120,7 +121,9 @@
     "video2Descrizione": "Un percorso video introduttivo alla struttura e all'uso dell'Agpeya.",
     "video3Categoria": "Meditazioni",
     "video3Titolo": "Preghiera e silenzio",
-    "video3Descrizione": "Una breve guida video per coltivare il raccoglimento personale e la preghiera quotidiana."
+    "video3Descrizione": "Una breve guida video per coltivare il raccoglimento personale e la preghiera quotidiana.",
+    "statoVuoto": "Nessuna preghiera disponibile al momento.",
+    "sezioneVideoStatoVuoto": "Nessun video corso disponibile al momento."
   },
   "icone": {
     "titolo": "Galleria delle icone sacre",
@@ -151,7 +154,8 @@
     "tipo": "Tipo",
     "autore": "Autore",
     "iconeCorrelate": "Icone correlate",
-    "tornaLibreria": "Torna alla libreria"
+    "tornaLibreria": "Torna alla libreria",
+    "statoVuoto": "Nessun contenuto disponibile al momento."
   },
   "eventi": {
     "titolo": "Eventi e attività",

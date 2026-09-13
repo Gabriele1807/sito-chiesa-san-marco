@@ -32,8 +32,8 @@ function PasswordMatchIndicator({ password, confirm }: { password: string; confi
 
   return (
     <div className="mt-2 flex items-center gap-2 text-sm">
-      <Icon className={`h-4 w-4 shrink-0 ${matches ? "text-green-500" : "text-red-500"}`} />
-      <span className={matches ? "text-green-700" : "text-red-600"}>
+      <Icon className={`h-4 w-4 shrink-0 ${matches ? "text-success" : "text-danger"}`} />
+      <span className={matches ? "text-success" : "text-danger"}>
         {matches ? t("registerPasswordMatchOk") : t("registerPasswordMatchMismatch")}
       </span>
     </div>
@@ -376,18 +376,18 @@ export default function RegisterModal() {
           {/* Success */}
           {success && (
             <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-3">
                 <span className="text-3xl">✓</span>
               </div>
-              <p className="text-green-400 text-sm">{t("registerSuccess")}</p>
+              <p className="text-success text-sm">{t("registerSuccess")}</p>
             </div>
           )}
 
           {/* Error */}
           {error && !success && (
-            <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/30 rounded-xl px-4 py-3 mb-4">
-              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-              <p className="text-red-300 text-sm">{error}</p>
+            <div className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-xl px-4 py-3 mb-4">
+              <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
+              <p className="text-danger text-sm">{error}</p>
             </div>
           )}
 
@@ -457,21 +457,21 @@ export default function RegisterModal() {
                   autoComplete="username"
                   className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
-                <div className="mt-2 rounded-2xl border border-amber-300/50 bg-amber-50/80 p-3 shadow-sm">
-                  <div className="flex items-center gap-2 text-amber-700 mb-2">
+                <div className="mt-2 rounded-2xl border border-warning/30 bg-warning/10 p-3 shadow-sm">
+                  <div className="flex items-center gap-2 text-warning mb-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <p className="text-sm font-semibold">{t("registerUsernameHintTitle")}</p>
                   </div>
-                  <p className="text-xs text-amber-800/90 mb-2">{t("registerUsernameHintText")}</p>
+                  <p className="text-xs text-warning/90 mb-2">{t("registerUsernameHintText")}</p>
                   <div className="grid gap-1.5 text-sm">
                     {usernameRequirementItems.map((rule) => {
                       const Icon = rule.ok ? CheckCircle : XCircle;
                       return (
                         <div key={rule.key} className="flex items-center gap-2" style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
                           <Icon
-                            className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-green-500 scale-100 opacity-100" : "text-red-500 scale-95 opacity-80"}`}
+                            className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-success scale-100 opacity-100" : "text-danger scale-95 opacity-80"}`}
                           />
-                          <span className={`text-xs ${rule.ok ? "text-green-700" : "text-red-600"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                          <span className={`text-xs ${rule.ok ? "text-success" : "text-danger"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
                             {rule.label}
                           </span>
                         </div>
@@ -481,12 +481,12 @@ export default function RegisterModal() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                     {t("registerFieldPassword")}
                   </label>
-                  <span className="text-[11px] text-gray-500">{t("registerPasswordRequirementsTitle")}</span>
+                  <span className="text-[11px] text-foreground/60">{t("registerPasswordRequirementsTitle")}</span>
                 </div>
                 <div className="relative">
                   <input
@@ -501,7 +501,7 @@ export default function RegisterModal() {
                     placeholder={t("registerPlaceholderPassword")}
                     required
                     autoComplete="new-password"
-                    className="w-full px-3 py-2 rounded-2xl border border-gray-300 bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
+                    className="w-full px-3 py-2 rounded-2xl border border-border bg-background/50 text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors pr-10"
                   />
                   <button
                     type="button"
@@ -512,18 +512,18 @@ export default function RegisterModal() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <div className="mt-3 text-xs text-gray-500">
+                <div className="mt-3 text-xs text-foreground/60">
                   {t("registerPasswordHintSpecial")}
                 </div>
-                <div className="mt-3 grid gap-2 text-sm text-gray-500">
+                <div className="mt-3 grid gap-2 text-sm text-foreground/60">
                   {passwordRequirementItems.map((rule) => {
                     const Icon = rule.ok ? CheckCircle : XCircle;
                     return (
                       <div key={rule.key} className="flex items-center gap-2" style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
                         <Icon
-                          className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-green-500 scale-100 opacity-100" : "text-red-500 scale-95 opacity-80"}`}
+                          className={`w-4 h-4 shrink-0 transition-all duration-200 ${rule.ok ? "text-success scale-100 opacity-100" : "text-danger scale-95 opacity-80"}`}
                         />
-                        <span className={`text-xs ${rule.ok ? "text-green-700" : "text-red-600"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
+                        <span className={`text-xs ${rule.ok ? "text-success" : "text-danger"}`} style={{ transition: "color 200ms ease, opacity 200ms ease" }}>
                           {rule.label}
                         </span>
                       </div>
@@ -571,7 +571,7 @@ export default function RegisterModal() {
                 <button
                   type="button"
                   onClick={() => setStep("credentials")}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-foreground/60 hover:text-foreground"
                 >
                   {t("registerBack")}
                 </button>

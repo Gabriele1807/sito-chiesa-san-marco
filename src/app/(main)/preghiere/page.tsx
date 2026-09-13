@@ -74,7 +74,7 @@ export default async function PreghierePage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <span className="text-xs font-semibold uppercase tracking-wider text-accent">
+                      <span className="badge-tag">
                         {localizeCategoria(preghiera.categoria)}
                       </span>
                       <h3 className="mt-1 font-display text-lg text-foreground">
@@ -108,9 +108,7 @@ export default async function PreghierePage() {
           })}
 
           {preghiere.length === 0 && (
-            <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-10 text-center text-sm text-foreground/60">
-              Nessuna preghiera disponibile al momento.
-            </div>
+            <div className="empty-state">{t("statoVuoto")}</div>
           )}
         </div>
       </section>
