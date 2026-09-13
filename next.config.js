@@ -31,6 +31,8 @@ const imgSrc = [
   "blob:",
   "https://i.ytimg.com",
   "https://img.youtube.com",
+  "https://yt3.ggpht.com",
+  "https://yt3.googleusercontent.com",
   "https://lh3.googleusercontent.com",
   "https://drive.google.com",
 ];
@@ -93,6 +95,14 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "drive.google.com",
+      },
+      {
+        protocol: "https",
+        hostname: "yt3.ggpht.com",
+      },
+      {
+        protocol: "https",
+        hostname: "yt3.googleusercontent.com",
       },
     ],
   },

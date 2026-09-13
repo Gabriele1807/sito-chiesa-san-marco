@@ -81,7 +81,10 @@ async function fetchYouTubeData(): Promise<YouTubeChannelData | null> {
       channel: {
         id: channelId,
         title: channel.snippet.title,
-        thumbnail: channel.snippet.thumbnails.default?.url || "",
+        thumbnail:
+          channel.snippet.thumbnails.high?.url ||
+          channel.snippet.thumbnails.default?.url ||
+          "",
         subscriberCount: channel.statistics.subscriberCount || "0",
         videoCount: channel.statistics.videoCount || "0",
       },

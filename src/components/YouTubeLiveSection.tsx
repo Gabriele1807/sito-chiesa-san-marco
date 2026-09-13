@@ -189,7 +189,9 @@ export default function YouTubeLiveSection() {
                 <div className="mt-5 grid gap-4 border-t border-white/10 pt-5 sm:grid-cols-2">
                   <div className="rounded-3xl bg-white/5 p-4 text-center">
                     <p className="text-2xl font-bold text-white">
-                      {data ? formatCount(data.channel.subscriberCount) : "—"}
+                      {data
+                        ? Number(data.channel.subscriberCount).toLocaleString("it-IT")
+                        : "—"}
                     </p>
                     <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-gray-400">
                       {t("youtubeIscritti")}
