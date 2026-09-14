@@ -39,6 +39,7 @@ describe("oauth-identities", () => {
       provider: "google",
       providerAccountId: "g-123",
       userId: "user-1",
+      accountType: "user",
       providerEmail: "a@b.com",
       providerEmailVerified: true,
     });
@@ -48,6 +49,7 @@ describe("oauth-identities", () => {
     expect(inserted.provider).toBe("google");
     expect(inserted.providerAccountId).toBe("g-123");
     expect(inserted.userId).toBe("user-1");
+    expect(inserted.accountType).toBe("user");
     expect(result._id).toBe("id-1");
   });
 
@@ -58,17 +60,38 @@ describe("oauth-identities", () => {
     expect(findOne).toHaveBeenCalledWith({ provider: "google", providerAccountId: "missing" });
   });
 
-  it("deleteOAuthIdentity scopes deletion to the given userId and provider", async () => {
+  it("deleteOAuthIdentity scopes deletion to the given userId, provider and accountType 'user' (including legacy docs without accountType)", async () => {
     deleteOne.mockResolvedValue({ deletedCount: 1 });
     const result = await deleteOAuthIdentity("user-1", "facebook");
-    expect(deleteOne).toHaveBeenCalledWith({ userId: "user-1", provider: "facebook" });
+    expect(deleteOne).toHaveBeenCalledWith({
+      userId: "user-1",
+      provider: "facebook",
+      $or: [{ accountType: "user" }, { accountType: { $exists: false } }],
+    });
     expect(result).toBe(true);
   });
 
-  it("countOAuthIdentitiesByUserId returns the count", async () => {
+  it("deleteOAuthIdentity scopes deletion to accountType 'admin' when specified", async () => {
+    deleteOne.mockResolvedValue({ deletedCount: 1 });
+    const result = await deleteOAuthIdentity("admin-1", "google", "admin");
+    expect(deleteOne).toHaveBeenCalledWith({ userId: "admin-1", provider: "google", accountType: "admin" });
+    expect(result).toBe(true);
+  });
+
+  it("countOAuthIdentitiesByUserId defaults to accountType 'user' (including legacy docs)", async () => {
     countDocuments.mockResolvedValue(2);
     const result = await countOAuthIdentitiesByUserId("user-1");
-    expect(countDocuments).toHaveBeenCalledWith({ userId: "user-1" });
+    expect(countDocuments).toHaveBeenCalledWith({
+      userId: "user-1",
+      $or: [{ accountType: "user" }, { accountType: { $exists: false } }],
+    });
     expect(result).toBe(2);
+  });
+
+  it("countOAuthIdentitiesByUserId scopes to accountType 'admin' when specified", async () => {
+    countDocuments.mockResolvedValue(1);
+    const result = await countOAuthIdentitiesByUserId("admin-1", "admin");
+    expect(countDocuments).toHaveBeenCalledWith({ userId: "admin-1", accountType: "admin" });
+    expect(result).toBe(1);
   });
 });

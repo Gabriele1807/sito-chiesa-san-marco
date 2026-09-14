@@ -76,6 +76,7 @@ export async function POST(request: Request) {
     provider: pending.provider,
     providerAccountId: pending.providerAccountId,
     userId: user._id!,
+    accountType: "user",
     providerEmail: pending.providerEmail,
     providerEmailVerified: pending.providerEmailVerified,
   });

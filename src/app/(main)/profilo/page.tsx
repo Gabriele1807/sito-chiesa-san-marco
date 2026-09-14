@@ -1087,8 +1087,8 @@ export default function ProfiloPage() {
         )}
       </div>
 
-      {/* ── Linked accounts section (regular users only) ── */}
-      {type === "user" && <LinkedAccountsSection />}
+      {/* ── Linked accounts section (regular users and admins) ── */}
+      {(type === "user" || type === "admin") && <LinkedAccountsSection />}
 
       {/* ── Iscrizioni section ── */}
       <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
