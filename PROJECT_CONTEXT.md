@@ -129,6 +129,10 @@ NEXT_PUBLIC_SITE_URL=
 YOUTUBE_API_KEY=
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
 # Alternative names created by the Vercel Marketplace integration
 KV_REST_API_URL=
 KV_REST_API_TOKEN=
@@ -145,6 +149,12 @@ Note operative:
   alimentano `src/lib/redis/client.ts` (rate limiting e revoca token admin,
   vedi §6.4.3). Se assenti, l'app funziona comunque con un fallback in
   memoria di processo (comportamento pre-esistente).
+- `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` e `FACEBOOK_CLIENT_ID`/`FACEBOOK_CLIENT_SECRET`
+  alimentano il login/registrazione tramite provider esterni (`src/lib/oauth/*`,
+  `src/app/api/auth/oauth/**`). Nessun fallback: se assenti, il rispettivo
+  provider è disabilitato lato UI (vedi §7 nuova sezione autenticazione OAuth
+  se presente, altrimenti PROJECT_CONTEXT.md non richiede aggiornamenti
+  ulteriori per questo task).
 
 ---
 
