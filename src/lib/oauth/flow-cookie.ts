@@ -29,7 +29,13 @@ export async function signOAuthFlowCookie(payload: OAuthFlowPayload): Promise<st
 }
 
 export async function verifyOAuthFlowCookie(token: string): Promise<OAuthFlowPayload | null> {
-  const payload = await verifyJwt<OAuthFlowPayload & { sessionType?: string }>(token);
+  const payload = await verifyJwt<
+    OAuthFlowPayload & {
+      sub: string;
+      sessionType?: string;
+      [key: string]: string | number | boolean | undefined;
+    }
+  >(token);
   if (!payload || payload.sessionType !== "oauth_flow") return null;
   const { state, provider, intent, returnTo, codeVerifier, linkedSessionHash } = payload;
   if (!state || !provider || !intent || !returnTo) return null;
