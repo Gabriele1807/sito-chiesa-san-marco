@@ -16,6 +16,10 @@ export interface OAuthFlowPayload {
   returnTo: string;
   codeVerifier?: string;
   linkedSessionHash?: string;
+  /** Presente solo per intent === "link": quale tipo di sessione ha avviato
+   * il collegamento (utente normale o admin) — necessario perché le due
+   * sessioni usano cookie e spazi di ID completamente distinti. */
+  linkedAccountType?: "user" | "admin";
 }
 
 const FLOW_TTL_SECONDS = 10 * 60;
@@ -37,9 +41,17 @@ export async function verifyOAuthFlowCookie(token: string): Promise<OAuthFlowPay
     }
   >(token);
   if (!payload || payload.sessionType !== "oauth_flow") return null;
-  const { state, provider, intent, returnTo, codeVerifier, linkedSessionHash } = payload;
+  const { state, provider, intent, returnTo, codeVerifier, linkedSessionHash, linkedAccountType } = payload;
   if (!state || !provider || !intent || !returnTo) return null;
-  return { state, provider, intent, returnTo, codeVerifier, linkedSessionHash };
+  return {
+    state,
+    provider,
+    intent,
+    returnTo,
+    codeVerifier,
+    linkedSessionHash,
+    linkedAccountType: linkedAccountType === "admin" ? "admin" : linkedAccountType === "user" ? "user" : undefined,
+  };
 }
 
 export async function signOAuthPendingCookie(pendingId: string): Promise<string> {

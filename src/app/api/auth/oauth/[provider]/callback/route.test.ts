@@ -25,6 +25,11 @@ vi.mock("@/lib/mongo/sessions", () => ({
   createUserSession: vi.fn(async () => ({ token: "session-token", expiresAt: new Date(Date.now() + 1000) })),
   validateUserSession: vi.fn(async () => ({ userId: "user-1" })),
 }));
+vi.mock("@/lib/auth/session", () => ({
+  createSession: vi.fn(async () => ({ token: "admin-session-token", expiresAt: new Date(Date.now() + 1000) })),
+  getAdminUserById: vi.fn(),
+  validateSession: vi.fn(async () => ({ id: "admin-1" })),
+}));
 
 import { GET } from "./route";
 import { verifyOAuthFlowCookie } from "@/lib/oauth/flow-cookie";
@@ -32,6 +37,7 @@ import { getProviderAdapter } from "@/lib/oauth/providers";
 import { findOAuthIdentity, createOAuthIdentity } from "@/lib/mongo/oauth-identities";
 import { createPendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
 import { findUserById } from "@/lib/mongo/users";
+import { getAdminUserById } from "@/lib/auth/session";
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -185,5 +191,65 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("identity_taken");
     expect(createOAuthIdentity).not.toHaveBeenCalled();
+  });
+
+  it("logs in an admin session when the identity is already linked with accountType 'admin' (intent=login)", async () => {
+    (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+      state: "s",
+      provider: "google",
+      intent: "login",
+      returnTo: "/",
+    });
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      validateCallback: vi.fn(async () => ({ providerAccountId: "g-admin", email: "admin@b.com" })),
+    });
+    (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "id-3",
+      provider: "google",
+      providerAccountId: "g-admin",
+      userId: "admin-1",
+      accountType: "admin",
+      linkedAt: "now",
+    });
+    (getAdminUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "admin-1", attivo: true });
+
+    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
+      params: Promise.resolve({ provider: "google" }),
+    });
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).not.toContain("oauthError");
+    expect(res.headers.get("set-cookie")).toContain("admin_session=");
+  });
+
+  it("links the identity to the current admin session when intent=link and the flow was started as admin", async () => {
+    (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+      state: "s",
+      provider: "google",
+      intent: "link",
+      returnTo: "/profilo",
+      linkedSessionHash: "hash:admin-session-token",
+      linkedAccountType: "admin",
+    });
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      validateCallback: vi.fn(async () => ({ providerAccountId: "g-admin-link", email: "a@b.com" })),
+    });
+    (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const res = await GET(
+      req(
+        "https://example.org/api/auth/oauth/google/callback?state=s&code=c",
+        "oauth_flow=flow-token; admin_session=admin-session-token"
+      ),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+
+    expect(createOAuthIdentity).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: "google", providerAccountId: "g-admin-link", accountType: "admin", userId: "admin-1" })
+    );
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("/profilo");
   });
 });

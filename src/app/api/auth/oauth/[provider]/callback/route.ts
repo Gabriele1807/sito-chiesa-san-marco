@@ -5,10 +5,12 @@ import {
   findOAuthIdentity,
   createOAuthIdentity,
   touchOAuthIdentityLogin,
+  type OAuthAccountType,
 } from "@/lib/mongo/oauth-identities";
 import { createPendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
 import { findUserById, updateUserLastAccess } from "@/lib/mongo/users";
 import { createUserSession } from "@/lib/mongo/sessions";
+import { createSession as createAdminSession, getAdminUserById } from "@/lib/auth/session";
 
 function isSupportedProvider(value: string): value is SupportedProvider {
   return (SUPPORTED_PROVIDERS as readonly string[]).includes(value);
@@ -69,15 +71,22 @@ export async function GET(
 
   // --- intent = link ---
   if (flow.intent === "link") {
-    const sessionMatch = cookieHeader.match(/(?:^|;\s*)user_session=([^;]+)/);
+    const accountType: OAuthAccountType = flow.linkedAccountType === "admin" ? "admin" : "user";
+    const cookieName = accountType === "admin" ? "admin_session" : "user_session";
+    const sessionMatch = cookieHeader.match(
+      new RegExp(`(?:^|;\\s*)${cookieName}=([^;]+)`)
+    );
     const sessionToken = sessionMatch?.[1] ? decodeURIComponent(sessionMatch[1]) : "";
     const currentHash = sessionToken ? await hashSessionToken(sessionToken) : "";
     if (!sessionToken || currentHash !== flow.linkedSessionHash) {
       return errorRedirect(siteBase, "/profilo", "session_expired");
     }
-    const userId = await resolveUserIdFromSession(sessionToken);
+    const userId =
+      accountType === "admin"
+        ? await resolveAdminIdFromSession(sessionToken)
+        : await resolveUserIdFromSession(sessionToken);
     if (existing) {
-      const sameUser = existing.userId === userId;
+      const sameUser = existing.userId === userId && existing.accountType === accountType;
       return errorRedirect(siteBase, "/profilo", sameUser ? "already_linked" : "identity_taken");
     }
     if (!userId) {
@@ -87,6 +96,7 @@ export async function GET(
       provider,
       providerAccountId: profile.providerAccountId,
       userId,
+      accountType,
       providerEmail: profile.email,
       providerEmailVerified: profile.emailVerified,
     });
@@ -95,6 +105,24 @@ export async function GET(
 
   // --- intent = login | register, identity already linked ---
   if (existing) {
+    if (existing.accountType === "admin") {
+      const adminUser = await getAdminUserById(existing.userId);
+      if (!adminUser || !adminUser.attivo) {
+        return errorRedirect(siteBase, flow.returnTo, "account_disabled");
+      }
+      await touchOAuthIdentityLogin(provider, profile.providerAccountId);
+      const { token, expiresAt } = await createAdminSession(existing.userId, request, false);
+      const res = successRedirect(siteBase, flow.returnTo, {});
+      res.cookies.set("admin_session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        expires: expiresAt,
+      });
+      return res;
+    }
+
     const user = await findUserById(existing.userId);
     if (!user || !user.attivo) {
       return errorRedirect(siteBase, flow.returnTo, "account_disabled");
@@ -149,4 +177,10 @@ async function resolveUserIdFromSession(sessionToken: string): Promise<string | 
   const { validateUserSession } = await import("@/lib/mongo/sessions");
   const session = await validateUserSession(sessionToken);
   return session?.userId ?? null;
+}
+
+async function resolveAdminIdFromSession(sessionToken: string): Promise<string | null> {
+  const { validateSession } = await import("@/lib/auth/session");
+  const admin = await validateSession(sessionToken);
+  return admin?.id ?? null;
 }

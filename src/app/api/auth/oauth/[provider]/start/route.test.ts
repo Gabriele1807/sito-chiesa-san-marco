@@ -20,9 +20,14 @@ vi.mock("@/lib/mongo/sessions", () => ({
   validateUserSession: vi.fn(),
 }));
 
+vi.mock("@/lib/auth/session", () => ({
+  validateSession: vi.fn(),
+}));
+
 import { GET } from "./route";
 import { getProviderAdapter } from "@/lib/oauth/providers";
 import { validateUserSession } from "@/lib/mongo/sessions";
+import { validateSession as validateAdminSession } from "@/lib/auth/session";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -53,12 +58,31 @@ describe("GET /api/auth/oauth/[provider]/start", () => {
       usesPkce: true,
       createAuthorizationURL: () => new URL("https://accounts.google.com/authorize"),
     });
+    (validateAdminSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
     (validateUserSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
     const res = await GET(
       req("https://example.org/api/auth/oauth/google/start?intent=link"),
       { params: Promise.resolve({ provider: "google" }) }
     );
     expect(res.status).toBe(401);
+  });
+
+  it("allows intent=link with a valid admin session (checked before user session)", async () => {
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      createAuthorizationURL: (state: string) =>
+        new URL(`https://accounts.google.com/authorize?state=${state}`),
+    });
+    (validateAdminSession as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "admin-1", attivo: true });
+    const res = await GET(
+      req(
+        "https://example.org/api/auth/oauth/google/start?intent=link",
+        "admin_session=admin-token"
+      ),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+    expect(res.status).toBe(307);
+    expect(validateUserSession).not.toHaveBeenCalled();
   });
 
   it("redirects to the provider authorization URL and sets the oauth_flow cookie for intent=login", async () => {
