@@ -49,6 +49,7 @@ export async function createUser(data: {
   ageGroup: UserProfile["ageGroup"];
   chiesa?: string;
   adminRequest?: boolean;
+  hasPassword?: boolean;
 }): Promise<UserPublic> {
   await ensureIndexes();
   const c = await col();
@@ -64,6 +65,7 @@ export async function createUser(data: {
     chiesa: data.chiesa,
     attivo: true,
     emailVerificata: false,
+    hasPassword: data.hasPassword ?? true,
     adminRequest: data.adminRequest ? "pending" : "none",
     adminRequestDate: data.adminRequest ? now : undefined,
     superAdminRequest: "none",
@@ -74,6 +76,40 @@ export async function createUser(data: {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordHash: _, ...pub } = doc;
   return { ...pub, _id: result.insertedId.toString() } as UserPublic;
+}
+
+/**
+ * Crea un utente registrato solo tramite provider esterno. Nessuna password
+ * reale è utilizzabile: passwordHash è l'hash di un token casuale che nessuna
+ * password inserita da un utente potrà mai produrre.
+ */
+export async function createOAuthUser(data: {
+  email: string;
+  username: string;
+  nome: string;
+  cognome: string;
+  role: UserProfile["role"];
+  ageGroup: UserProfile["ageGroup"];
+  chiesa?: string;
+}): Promise<UserPublic> {
+  const { hashPassword } = await import("@/lib/auth/password");
+  const randomToken =
+    globalThis.crypto.randomUUID() + globalThis.crypto.randomUUID();
+  const passwordHash = await hashPassword(randomToken);
+  return createUser({
+    ...data,
+    passwordHash,
+    hasPassword: false,
+  });
+}
+
+export async function setHasPassword(id: string, value: boolean): Promise<void> {
+  const c = await col();
+  if (!ObjectId.isValid(id)) return;
+  await c.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { hasPassword: value, updatedAt: new Date().toISOString() } }
+  );
 }
 
 // --------------- Read ---------------

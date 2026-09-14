@@ -2,20 +2,31 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { X, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "./AuthContext";
+import { GoogleIcon, FacebookIcon } from "./ProviderIcons";
+import { OAUTH_ERROR_KEYS } from "@/lib/oauth/error-messages";
 
 export default function LoginModal() {
   const t = useTranslations("auth");
   const tc = useTranslations("common");
   const { showLoginModal, setShowLoginModal, setShowRegisterModal, setIsExplicitGuest, refresh } = useAuth();
+  const pathname = usePathname();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null);
+
+  function startOAuth(provider: "google" | "facebook") {
+    setOauthLoading(provider);
+    const returnTo = encodeURIComponent(pathname || "/");
+    window.location.href = `/api/auth/oauth/${provider}/start?intent=login&returnTo=${returnTo}`;
+  }
 
   const errorMap: Record<string, string> = {
     "Credenziali non valide": t("loginErrorInvalid"),
@@ -43,8 +54,24 @@ export default function LoginModal() {
       setShowPassword(false);
       setError("");
       setLoading(false);
+      setOauthLoading(null);
     }
   }, [showLoginModal]);
+
+  // Mostra errori OAuth provenienti dal redirect (?oauthError=<code>)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("oauthError");
+    if (!code) return;
+    const key = OAUTH_ERROR_KEYS[code] ?? "oauthErrorGeneric";
+    setError(t(key));
+    setShowLoginModal(true);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("oauthError");
+    window.history.replaceState({}, "", url.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Chiudi con Escape
   useEffect(() => {
@@ -147,6 +174,41 @@ export default function LoginModal() {
               <p className="text-danger text-sm">{error}</p>
             </div>
           )}
+
+          {/* Provider buttons */}
+          <div className="space-y-2 mb-4">
+            <button
+              type="button"
+              onClick={() => startOAuth("google")}
+              disabled={oauthLoading !== null}
+              className="w-full flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors disabled:opacity-60"
+            >
+              {oauthLoading === "google" ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" />
+              ) : (
+                <GoogleIcon className="h-4 w-4" />
+              )}
+              {t("oauthContinueWithGoogle")}
+            </button>
+            <button
+              type="button"
+              onClick={() => startOAuth("facebook")}
+              disabled={oauthLoading !== null}
+              className="w-full flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors disabled:opacity-60"
+            >
+              {oauthLoading === "facebook" ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" />
+              ) : (
+                <FacebookIcon className="h-4 w-4" />
+              )}
+              {t("oauthContinueWithFacebook")}
+            </button>
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-foreground/50">{t("oauthDivider")}</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">

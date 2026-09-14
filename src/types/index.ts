@@ -156,6 +156,8 @@ export interface UserProfile {
   email: string;
   username: string;
   passwordHash: string;
+  /** false per account creati solo via provider esterno (nessuna password reale impostata) */
+  hasPassword?: boolean;
   nome: string;
   cognome: string;
 
