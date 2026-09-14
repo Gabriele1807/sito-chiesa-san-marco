@@ -75,11 +75,11 @@ export async function GET(
     if (!sessionToken || currentHash !== flow.linkedSessionHash) {
       return errorRedirect(siteBase, "/profilo", "session_expired");
     }
+    const userId = await resolveUserIdFromSession(sessionToken);
     if (existing) {
-      const sameUser = existing.userId === (await resolveUserIdFromSession(sessionToken));
+      const sameUser = existing.userId === userId;
       return errorRedirect(siteBase, "/profilo", sameUser ? "already_linked" : "identity_taken");
     }
-    const userId = await resolveUserIdFromSession(sessionToken);
     if (!userId) {
       return errorRedirect(siteBase, "/profilo", "session_expired");
     }

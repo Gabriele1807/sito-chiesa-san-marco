@@ -153,4 +153,37 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("/profilo");
   });
+
+  it("redirects with identity_taken when the identity is already linked to a different user (intent=link)", async () => {
+    (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+      state: "s",
+      provider: "google",
+      intent: "link",
+      returnTo: "/profilo",
+      linkedSessionHash: "hash:session-token",
+    });
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      validateCallback: vi.fn(async () => ({ providerAccountId: "g-taken", email: "t@b.com" })),
+    });
+    (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "id-2",
+      provider: "google",
+      providerAccountId: "g-taken",
+      userId: "user-other",
+      linkedAt: "now",
+    });
+
+    const res = await GET(
+      req(
+        "https://example.org/api/auth/oauth/google/callback?state=s&code=c",
+        "oauth_flow=flow-token; user_session=session-token"
+      ),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("identity_taken");
+    expect(createOAuthIdentity).not.toHaveBeenCalled();
+  });
 });

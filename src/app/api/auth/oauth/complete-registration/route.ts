@@ -8,9 +8,7 @@ import { findUserByEmail, createOAuthUser } from "@/lib/mongo/users";
 import { createOAuthIdentity } from "@/lib/mongo/oauth-identities";
 import { createUserSession } from "@/lib/mongo/sessions";
 import type { UserRole, AgeGroup } from "@/types";
-
-const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "ospite_chiesa"];
-const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
+import { VALID_ROLES, VALID_AGE_GROUPS } from "@/lib/auth/registration-constants";
 
 function usernameFromEmail(email: string): string {
   const local = email.split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 15) || "utente";
