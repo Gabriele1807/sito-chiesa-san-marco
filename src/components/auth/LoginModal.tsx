@@ -7,6 +7,7 @@ import { X, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "./AuthContext";
 import { GoogleIcon, FacebookIcon } from "./ProviderIcons";
+import { OAUTH_ERROR_KEYS } from "@/lib/oauth/error-messages";
 
 export default function LoginModal() {
   const t = useTranslations("auth");
@@ -56,6 +57,21 @@ export default function LoginModal() {
       setOauthLoading(null);
     }
   }, [showLoginModal]);
+
+  // Mostra errori OAuth provenienti dal redirect (?oauthError=<code>)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("oauthError");
+    if (!code) return;
+    const key = OAUTH_ERROR_KEYS[code] ?? "oauthErrorGeneric";
+    setError(t(key));
+    setShowLoginModal(true);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("oauthError");
+    window.history.replaceState({}, "", url.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Chiudi con Escape
   useEffect(() => {

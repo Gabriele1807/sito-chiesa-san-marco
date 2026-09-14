@@ -33,6 +33,7 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { CHIESE_LIST } from "@/lib/churches";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
 import LinkedAccountsSection from "@/components/profile/LinkedAccountsSection";
+import { OAUTH_ERROR_KEYS } from "@/lib/oauth/error-messages";
 
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
@@ -74,6 +75,22 @@ export default function ProfiloPage() {
 
     const url = new URL(window.location.href);
     url.searchParams.delete("linked");
+    window.history.replaceState({}, "", url.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ── OAuth link failure banner (?oauthError=<code>) ── */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("oauthError");
+    if (!code) return;
+
+    const key = OAUTH_ERROR_KEYS[code] ?? "oauthErrorGeneric";
+    setLinkedMessage({ type: "error", text: tAuth(key) });
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("oauthError");
     window.history.replaceState({}, "", url.toString());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
