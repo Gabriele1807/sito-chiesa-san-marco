@@ -1,0 +1,98 @@
+import { NextResponse } from "next/server";
+import { verifyOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
+import {
+  findPendingOAuthRegistrationById,
+  deletePendingOAuthRegistration,
+} from "@/lib/mongo/pending-oauth-registrations";
+import { findUserByEmail, createOAuthUser } from "@/lib/mongo/users";
+import { createOAuthIdentity } from "@/lib/mongo/oauth-identities";
+import { createUserSession } from "@/lib/mongo/sessions";
+import type { UserRole, AgeGroup } from "@/types";
+
+const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "ospite_chiesa"];
+const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
+
+function usernameFromEmail(email: string): string {
+  const local = email.split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 15) || "utente";
+  const suffix = Math.random().toString(36).slice(2, 6);
+  return `${local}_${suffix}`;
+}
+
+export async function POST(request: Request) {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const match = cookieHeader.match(/(?:^|;\s*)oauth_pending=([^;]+)/);
+  const token = match?.[1] ? decodeURIComponent(match[1]) : "";
+  const parsed = token ? await verifyOAuthPendingCookie(token) : null;
+  if (!parsed) {
+    return NextResponse.json({ success: false, error: "Sessione OAuth scaduta" }, { status: 401 });
+  }
+
+  const pending = await findPendingOAuthRegistrationById(parsed.pendingId);
+  if (!pending) {
+    return NextResponse.json({ success: false, error: "Sessione OAuth scaduta" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => ({}));
+  const { role, ageGroup, chiesa, email: manualEmail } = body as {
+    role?: string;
+    ageGroup?: string;
+    chiesa?: string;
+    email?: string;
+  };
+
+  if (!role || !VALID_ROLES.includes(role as UserRole)) {
+    return NextResponse.json({ success: false, error: "Ruolo non valido" }, { status: 400 });
+  }
+  if (!ageGroup || !VALID_AGE_GROUPS.includes(ageGroup as AgeGroup)) {
+    return NextResponse.json({ success: false, error: "Fascia d'età non valida" }, { status: 400 });
+  }
+
+  const email = (pending.providerEmail ?? manualEmail ?? "").toLowerCase().trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ success: false, error: "Email non valida" }, { status: 400 });
+  }
+
+  const existingEmail = await findUserByEmail(email);
+  if (existingEmail) {
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          "Email già registrata. Accedi con email e password, poi collega questo provider dal tuo profilo.",
+      },
+      { status: 409 }
+    );
+  }
+
+  const user = await createOAuthUser({
+    email,
+    username: usernameFromEmail(email),
+    nome: pending.nome?.trim() || "Utente",
+    cognome: pending.cognome?.trim() || "",
+    role: role as UserRole,
+    ageGroup: ageGroup as AgeGroup,
+    chiesa: role === "ospite_chiesa" ? chiesa?.trim() : undefined,
+  });
+
+  await createOAuthIdentity({
+    provider: pending.provider,
+    providerAccountId: pending.providerAccountId,
+    userId: user._id!,
+    providerEmail: pending.providerEmail,
+    providerEmailVerified: pending.providerEmailVerified,
+  });
+
+  await deletePendingOAuthRegistration(pending._id);
+
+  const { token: sessionToken, expiresAt } = await createUserSession(user._id!, request, false);
+  const res = NextResponse.json({ success: true, user }, { status: 201 });
+  res.cookies.set("user_session", sessionToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: expiresAt,
+  });
+  res.cookies.delete("oauth_pending");
+  return res;
+}
