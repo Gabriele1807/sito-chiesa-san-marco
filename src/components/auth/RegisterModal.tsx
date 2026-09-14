@@ -8,6 +8,7 @@ import { useAuth } from "./AuthContext";
 import type { UserRole, AgeGroup } from "@/types";
 import { CHIESE_LIST } from "@/lib/churches";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
+import { GoogleIcon, FacebookIcon } from "./ProviderIcons";
 
 type Step = "credentials" | "quiz" | "confirm";
 
@@ -82,6 +83,15 @@ export default function RegisterModal() {
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "">("");
   const [chiesa, setChiesa] = useState("");
   const [requestAdmin, setRequestAdmin] = useState(false);
+
+  const [oauthPending, setOauthPending] = useState<{
+    provider: "google" | "facebook";
+    nome?: string;
+    cognome?: string;
+    providerEmail?: string;
+  } | null>(null);
+  const [oauthManualEmail, setOauthManualEmail] = useState("");
+  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -161,12 +171,47 @@ export default function RegisterModal() {
       setAgeGroup("");
       setChiesa("");
       setRequestAdmin(false);
+      if (!oauthPending) {
+        setOauthManualEmail("");
+      }
       setError("");
       setFieldErrors({});
       setLoading(false);
       setSuccess(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showRegisterModal]);
+
+  // Rilevamento completamento registrazione OAuth (?completeRegistration=1)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("completeRegistration") !== "1") return;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/oauth/pending");
+        const data = await res.json();
+        if (data.success && data.pending) {
+          setOauthPending(data.pending);
+          setNome(data.pending.nome ?? "");
+          setCognome(data.pending.cognome ?? "");
+          setShowRegisterModal(true);
+          setStep("quiz");
+        } else {
+          setError(t("registerOauthExpired"));
+          setShowRegisterModal(true);
+        }
+      } catch {
+        // rete non disponibile: nessuna azione, l'utente può riprovare manualmente
+      } finally {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("completeRegistration");
+        window.history.replaceState({}, "", url.toString());
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Escape
   useEffect(() => {
@@ -254,6 +299,40 @@ export default function RegisterModal() {
       nextFieldErrors.chiesa = t("registerErrorChurch");
       setFieldErrors(nextFieldErrors);
       scrollToFirstError(nextFieldErrors);
+      return;
+    }
+
+    if (oauthPending) {
+      if (!oauthPending.providerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(oauthManualEmail)) {
+        setError(t("registerErrorEmailInvalid"));
+        setFieldErrors({ email: t("registerErrorEmailInvalid") });
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await fetch("/api/auth/oauth/complete-registration", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            role,
+            ageGroup,
+            chiesa: role === "ospite_chiesa" ? chiesa : undefined,
+            email: oauthPending.providerEmail ? undefined : oauthManualEmail.trim().toLowerCase(),
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setSuccess(true);
+          await refresh();
+          setTimeout(() => setShowRegisterModal(false), 1500);
+        } else {
+          setError(mapRegisterError(data.error) || data.error || t("registerErrorGeneric"));
+        }
+      } catch {
+        setError(t("registerErrorConnection"));
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
@@ -394,6 +473,47 @@ export default function RegisterModal() {
           {/* Step 1: Credentials */}
           {step === "credentials" && !success && (
             <div className="space-y-3">
+              {!oauthPending && (
+                <div className="space-y-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOauthLoading("google");
+                      window.location.href = "/api/auth/oauth/google/start?intent=register";
+                    }}
+                    disabled={oauthLoading !== null}
+                    className="w-full flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors disabled:opacity-60"
+                  >
+                    {oauthLoading === "google" ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" />
+                    ) : (
+                      <GoogleIcon className="h-4 w-4" />
+                    )}
+                    {t("oauthContinueWithGoogle")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOauthLoading("facebook");
+                      window.location.href = "/api/auth/oauth/facebook/start?intent=register";
+                    }}
+                    disabled={oauthLoading !== null}
+                    className="w-full flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors disabled:opacity-60"
+                  >
+                    {oauthLoading === "facebook" ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground" />
+                    ) : (
+                      <FacebookIcon className="h-4 w-4" />
+                    )}
+                    {t("oauthContinueWithFacebook")}
+                  </button>
+                  <div className="flex items-center gap-3 py-1">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-xs text-foreground/50">{t("oauthDivider")}</span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">{t("registerFieldNome")}</label>
@@ -565,16 +685,44 @@ export default function RegisterModal() {
           {/* Step 2: Quiz */}
           {step === "quiz" && !success && (
             <div className="space-y-4">
+              {oauthPending && (
+                <div className="rounded-xl border border-accent/20 bg-accent/10 px-4 py-3 mb-2">
+                  <p className="text-sm text-foreground/80">
+                    {t("registerOauthBanner", {
+                      nome: oauthPending.nome || "",
+                      provider: oauthPending.provider === "google" ? "Google" : "Facebook",
+                    })}
+                  </p>
+                </div>
+              )}
+              {oauthPending && !oauthPending.providerEmail && (
+                <div>
+                  <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-1">
+                    {t("registerFieldEmail")}
+                  </label>
+                  <input
+                    type="email"
+                    value={oauthManualEmail}
+                    onChange={(e) => setOauthManualEmail(e.target.value)}
+                    placeholder={t("registerPlaceholderEmail")}
+                    required
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-border text-foreground placeholder-foreground/40 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  />
+                  <p className="text-xs text-foreground/50 mt-1">{t("registerOauthEmailMissing")}</p>
+                </div>
+              )}
               {/* Ruolo */}
               <div className="flex items-center justify-between gap-3">
                 <label className="block text-xs font-semibold text-foreground/70 uppercase tracking-wider mb-2">{t("registerRoleTitle")}</label>
-                <button
-                  type="button"
-                  onClick={() => setStep("credentials")}
-                  className="text-sm text-foreground/60 hover:text-foreground"
-                >
-                  {t("registerBack")}
-                </button>
+                {!oauthPending && (
+                  <button
+                    type="button"
+                    onClick={() => setStep("credentials")}
+                    className="text-sm text-foreground/60 hover:text-foreground"
+                  >
+                    {t("registerBack")}
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-2">
                   {roles.map((r) => (
@@ -663,13 +811,15 @@ export default function RegisterModal() {
 
               {/* Bottoni */}
               <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep("credentials")}
-                  className="btn-secondary flex-1 justify-center gap-2"
-                >
-                  <ChevronLeft className="w-4 h-4" /> {t("registerBack")}
-                </button>
+                {!oauthPending && (
+                  <button
+                    type="button"
+                    onClick={() => setStep("credentials")}
+                    className="btn-secondary flex-1 justify-center gap-2"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> {t("registerBack")}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleSubmit}
