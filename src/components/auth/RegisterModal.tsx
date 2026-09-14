@@ -92,6 +92,11 @@ export default function RegisterModal() {
   } | null>(null);
   const [oauthManualEmail, setOauthManualEmail] = useState("");
   const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null);
+  // true quando l'apertura del modale in corso è stata causata dal flusso di
+  // completamento registrazione OAuth: l'effetto di reset del form (sotto)
+  // deve saltare il proprio reset in quel caso, altrimenti sovrascrive lo
+  // step "quiz" e nome/cognome appena precompilati con lo stato iniziale.
+  const openedViaOAuthRef = useRef(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -159,6 +164,13 @@ export default function RegisterModal() {
   // Reset form quando si apre
   useEffect(() => {
     if (showRegisterModal) {
+      if (openedViaOAuthRef.current) {
+        // L'apertura è stata guidata dal flusso di completamento OAuth
+        // (vedi l'effetto sotto): step "quiz" e nome/cognome sono già stati
+        // impostati intenzionalmente, non vanno azzerati qui.
+        openedViaOAuthRef.current = false;
+        return;
+      }
       setStep("credentials");
       setNome("");
       setCognome("");
@@ -193,6 +205,7 @@ export default function RegisterModal() {
         const res = await fetch("/api/auth/oauth/pending");
         const data = await res.json();
         if (data.success && data.pending) {
+          openedViaOAuthRef.current = true;
           setOauthPending(data.pending);
           setNome(data.pending.nome ?? "");
           setCognome(data.pending.cognome ?? "");

@@ -4,8 +4,12 @@ import { generateState, generateCodeVerifier } from "arctic";
 import { getProviderAdapter, SUPPORTED_PROVIDERS, type SupportedProvider } from "@/lib/oauth/providers";
 import { signOAuthFlowCookie, hashSessionToken, type OAuthIntent } from "@/lib/oauth/flow-cookie";
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
-import { validateUserSession } from "@/lib/mongo/sessions";
-import { validateSession as validateAdminSession } from "@/lib/auth/session";
+import { sanitizeReturnTo } from "@/lib/oauth/safe-redirect";
+import {
+  readSessionCookie,
+  resolveAdminSessionToken,
+  resolveUserSessionToken,
+} from "@/lib/oauth/session-resolver";
 
 function isSupportedProvider(value: string): value is SupportedProvider {
   return (SUPPORTED_PROVIDERS as readonly string[]).includes(value);
@@ -38,24 +42,23 @@ export async function GET(
   const intentParam = url.searchParams.get("intent");
   const intent: OAuthIntent =
     intentParam === "link" || intentParam === "register" ? intentParam : "login";
-  const returnTo = url.searchParams.get("returnTo") || (intent === "link" ? "/profilo" : "/");
+  const returnTo = sanitizeReturnTo(
+    url.searchParams.get("returnTo"),
+    intent === "link" ? "/profilo" : "/"
+  );
 
   let linkedSessionHash: string | undefined;
   let linkedAccountType: "user" | "admin" | undefined;
   if (intent === "link") {
-    const cookieHeader = request.headers.get("cookie") ?? "";
-    const adminMatch = cookieHeader.match(/(?:^|;\s*)admin_session=([^;]+)/);
-    const userMatch = cookieHeader.match(/(?:^|;\s*)user_session=([^;]+)/);
-
-    const adminToken = adminMatch?.[1] ? decodeURIComponent(adminMatch[1]) : null;
-    const adminSession = adminToken ? await validateAdminSession(adminToken) : null;
+    const adminToken = readSessionCookie(request, "admin");
+    const adminSession = adminToken ? await resolveAdminSessionToken(adminToken) : null;
 
     if (adminSession) {
       linkedAccountType = "admin";
       linkedSessionHash = await hashSessionToken(adminToken!);
     } else {
-      const userToken = userMatch?.[1] ? decodeURIComponent(userMatch[1]) : null;
-      const userSession = userToken ? await validateUserSession(userToken) : null;
+      const userToken = readSessionCookie(request, "user");
+      const userSession = userToken ? await resolveUserSessionToken(userToken) : null;
       if (!userSession) {
         return NextResponse.json({ success: false, error: "Sessione richiesta" }, { status: 401 });
       }

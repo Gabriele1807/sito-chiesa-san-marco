@@ -24,10 +24,16 @@ vi.mock("@/lib/auth/session", () => ({
   validateSession: vi.fn(),
 }));
 
+vi.mock("@/lib/oauth/flow-cookie", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/oauth/flow-cookie")>("@/lib/oauth/flow-cookie");
+  return { ...actual, signOAuthFlowCookie: vi.fn(actual.signOAuthFlowCookie) };
+});
+
 import { GET } from "./route";
 import { getProviderAdapter } from "@/lib/oauth/providers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import { validateSession as validateAdminSession } from "@/lib/auth/session";
+import { signOAuthFlowCookie } from "@/lib/oauth/flow-cookie";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -97,5 +103,54 @@ describe("GET /api/auth/oauth/[provider]/start", () => {
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("accounts.google.com");
     expect(res.headers.get("set-cookie")).toContain("oauth_flow=");
+  });
+
+  it("rejects an absolute-URL returnTo and falls back to a safe default (open-redirect guard)", async () => {
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      createAuthorizationURL: (state: string) =>
+        new URL(`https://accounts.google.com/authorize?state=${state}`),
+    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/start?returnTo=https://evil.example"),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+    expect(res.status).toBe(307);
+    const signedPayload = (signOAuthFlowCookie as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(signedPayload.returnTo).toBe("/");
+  });
+
+  it("rejects a protocol-relative returnTo and falls back to a safe default", async () => {
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      createAuthorizationURL: (state: string) =>
+        new URL(`https://accounts.google.com/authorize?state=${state}`),
+    });
+    (validateAdminSession as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "admin-1", attivo: true });
+    const res = await GET(
+      req(
+        "https://example.org/api/auth/oauth/google/start?intent=link&returnTo=//evil.example",
+        "admin_session=admin-token"
+      ),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+    expect(res.status).toBe(307);
+    const signedPayload = (signOAuthFlowCookie as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(signedPayload.returnTo).toBe("/profilo");
+  });
+
+  it("accepts a genuine same-origin relative returnTo", async () => {
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      createAuthorizationURL: (state: string) =>
+        new URL(`https://accounts.google.com/authorize?state=${state}`),
+    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/start?returnTo=/eventi"),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+    expect(res.status).toBe(307);
+    const signedPayload = (signOAuthFlowCookie as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(signedPayload.returnTo).toBe("/eventi");
   });
 });

@@ -64,6 +64,7 @@ export default function LoginModal() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("oauthError");
     if (!code) return;
+    if (pathname === "/profilo") return;
     const key = OAUTH_ERROR_KEYS[code] ?? "oauthErrorGeneric";
     setError(t(key));
     setShowLoginModal(true);

@@ -1,27 +1,66 @@
 import { NextResponse } from "next/server";
 import { getProviderAdapter, SUPPORTED_PROVIDERS, type SupportedProvider } from "@/lib/oauth/providers";
 import { verifyOAuthFlowCookie, hashSessionToken, signOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
+import { sanitizeReturnTo } from "@/lib/oauth/safe-redirect";
+import {
+  readSessionCookie,
+  resolveAdminSessionToken,
+  resolveUserSessionToken,
+} from "@/lib/oauth/session-resolver";
 import {
   findOAuthIdentity,
   createOAuthIdentity,
+  deleteOAuthIdentityById,
   touchOAuthIdentityLogin,
   type OAuthAccountType,
 } from "@/lib/mongo/oauth-identities";
 import { createPendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
 import { findUserById, updateUserLastAccess } from "@/lib/mongo/users";
 import { createUserSession } from "@/lib/mongo/sessions";
-import { createSession as createAdminSession, getAdminUserById } from "@/lib/auth/session";
+import { createSession as createAdminSession, getAdminUserById, adminUserExists } from "@/lib/auth/session";
 
 function isSupportedProvider(value: string): value is SupportedProvider {
   return (SUPPORTED_PROVIDERS as readonly string[]).includes(value);
 }
 
 function errorRedirect(base: string, returnTo: string, code: string) {
-  const url = new URL(returnTo, base);
+  const url = new URL(sanitizeReturnTo(returnTo, "/"), base);
   url.searchParams.set("oauthError", code);
   const res = NextResponse.redirect(url, { status: 307 });
   res.cookies.delete("oauth_flow");
   return res;
+}
+
+function successRedirect(base: string, returnTo: string, params: Record<string, string>) {
+  const url = new URL(sanitizeReturnTo(returnTo, "/"), base);
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+  const res = NextResponse.redirect(url, { status: 307 });
+  res.cookies.delete("oauth_flow");
+  return res;
+}
+
+/**
+ * Un'identità collegata il cui proprietario non esiste più (utente/admin
+ * eliminato) è un'identità orfana: va cancellata prima di essere trattata
+ * come "già collegata", altrimenti bloccherebbe per sempre sia un nuovo
+ * collegamento sia un nuovo tentativo di accesso con quel provider.
+ * Per gli admin l'esistenza è verificata ignorando `attivo` (un admin
+ * disattivato non è "eliminato": la sua identità va preservata, solo il
+ * login resta bloccato altrove da quel controllo).
+ */
+async function purgeIfOrphaned<T extends { _id: string; userId: string; accountType: OAuthAccountType }>(
+  identity: T | null
+): Promise<T | null> {
+  if (!identity) return null;
+  const ownerExists =
+    identity.accountType === "admin"
+      ? await adminUserExists(identity.userId)
+      : Boolean(await findUserById(identity.userId));
+  if (ownerExists) return identity;
+  await deleteOAuthIdentityById(identity._id);
+  return null;
 }
 
 export async function GET(
@@ -67,35 +106,31 @@ export async function GET(
     return errorRedirect(siteBase, flow.returnTo, "provider_error");
   }
 
-  const existing = await findOAuthIdentity(provider, profile.providerAccountId);
+  const existing = await purgeIfOrphaned(await findOAuthIdentity(provider, profile.providerAccountId));
 
   // --- intent = link ---
   if (flow.intent === "link") {
     const accountType: OAuthAccountType = flow.linkedAccountType === "admin" ? "admin" : "user";
-    const cookieName = accountType === "admin" ? "admin_session" : "user_session";
-    const sessionMatch = cookieHeader.match(
-      new RegExp(`(?:^|;\\s*)${cookieName}=([^;]+)`)
-    );
-    const sessionToken = sessionMatch?.[1] ? decodeURIComponent(sessionMatch[1]) : "";
+    const sessionToken = readSessionCookie(request, accountType);
     const currentHash = sessionToken ? await hashSessionToken(sessionToken) : "";
     if (!sessionToken || currentHash !== flow.linkedSessionHash) {
       return errorRedirect(siteBase, "/profilo", "session_expired");
     }
-    const userId =
+    const resolved =
       accountType === "admin"
-        ? await resolveAdminIdFromSession(sessionToken)
-        : await resolveUserIdFromSession(sessionToken);
-    if (existing) {
-      const sameUser = existing.userId === userId && existing.accountType === accountType;
-      return errorRedirect(siteBase, "/profilo", sameUser ? "already_linked" : "identity_taken");
-    }
-    if (!userId) {
+        ? await resolveAdminSessionToken(sessionToken)
+        : await resolveUserSessionToken(sessionToken);
+    if (!resolved) {
       return errorRedirect(siteBase, "/profilo", "session_expired");
+    }
+    if (existing) {
+      const sameUser = existing.userId === resolved.id && existing.accountType === accountType;
+      return errorRedirect(siteBase, "/profilo", sameUser ? "already_linked" : "identity_taken");
     }
     await createOAuthIdentity({
       provider,
       providerAccountId: profile.providerAccountId,
-      userId,
+      userId: resolved.id,
       accountType,
       providerEmail: profile.email,
       providerEmailVerified: profile.emailVerified,
@@ -161,26 +196,4 @@ export async function GET(
     maxAge: 30 * 60,
   });
   return res;
-}
-
-function successRedirect(base: string, returnTo: string, params: Record<string, string>) {
-  const url = new URL(returnTo, base);
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, value);
-  }
-  const res = NextResponse.redirect(url, { status: 307 });
-  res.cookies.delete("oauth_flow");
-  return res;
-}
-
-async function resolveUserIdFromSession(sessionToken: string): Promise<string | null> {
-  const { validateUserSession } = await import("@/lib/mongo/sessions");
-  const session = await validateUserSession(sessionToken);
-  return session?.userId ?? null;
-}
-
-async function resolveAdminIdFromSession(sessionToken: string): Promise<string | null> {
-  const { validateSession } = await import("@/lib/auth/session");
-  const admin = await validateSession(sessionToken);
-  return admin?.id ?? null;
 }

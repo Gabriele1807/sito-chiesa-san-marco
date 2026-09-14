@@ -128,6 +128,25 @@ export async function deleteOAuthIdentity(
   return result.deletedCount === 1;
 }
 
+export async function deleteOAuthIdentityById(identityId: string): Promise<boolean> {
+  if (!ObjectId.isValid(identityId)) return false;
+  const c = await col();
+  const result = await c.deleteOne({ _id: new ObjectId(identityId) });
+  return result.deletedCount === 1;
+}
+
+export async function deleteOAuthIdentitiesByUserId(
+  userId: string,
+  accountType: OAuthAccountType = "user"
+): Promise<void> {
+  const c = await col();
+  const filter =
+    accountType === "user"
+      ? { userId, $or: [{ accountType: "user" }, { accountType: { $exists: false } }] }
+      : { userId, accountType };
+  await c.deleteMany(filter);
+}
+
 export async function countOAuthIdentitiesByUserId(
   userId: string,
   accountType: OAuthAccountType = "user"

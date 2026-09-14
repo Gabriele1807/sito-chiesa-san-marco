@@ -206,3 +206,20 @@ export async function getAdminUserById(id: string): Promise<AdminUser | null> {
     ultimo_accesso: data.ultimo_accesso,
   };
 }
+
+/**
+ * Verifica se un admin esiste ancora nel DB, indipendentemente da `attivo`.
+ * A differenza di `getAdminUserById` (che filtra sugli admin attivi, per il
+ * login), questa serve a distinguere "account eliminato" da "account
+ * disattivato" — usata per la pulizia delle identità OAuth orfane, dove un
+ * admin disattivato non deve perdere il collegamento provider.
+ */
+export async function adminUserExists(id: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("admin_users")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+
+  return !error && Boolean(data);
+}

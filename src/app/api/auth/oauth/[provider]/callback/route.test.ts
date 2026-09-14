@@ -12,6 +12,7 @@ vi.mock("@/lib/oauth/providers", () => ({
 vi.mock("@/lib/mongo/oauth-identities", () => ({
   findOAuthIdentity: vi.fn(),
   createOAuthIdentity: vi.fn(),
+  deleteOAuthIdentityById: vi.fn(),
   touchOAuthIdentityLogin: vi.fn(),
 }));
 vi.mock("@/lib/mongo/pending-oauth-registrations", () => ({
@@ -28,16 +29,17 @@ vi.mock("@/lib/mongo/sessions", () => ({
 vi.mock("@/lib/auth/session", () => ({
   createSession: vi.fn(async () => ({ token: "admin-session-token", expiresAt: new Date(Date.now() + 1000) })),
   getAdminUserById: vi.fn(),
-  validateSession: vi.fn(async () => ({ id: "admin-1" })),
+  adminUserExists: vi.fn(),
+  validateSession: vi.fn(async () => ({ id: "admin-1", attivo: true })),
 }));
 
 import { GET } from "./route";
 import { verifyOAuthFlowCookie } from "@/lib/oauth/flow-cookie";
 import { getProviderAdapter } from "@/lib/oauth/providers";
-import { findOAuthIdentity, createOAuthIdentity } from "@/lib/mongo/oauth-identities";
+import { findOAuthIdentity, createOAuthIdentity, deleteOAuthIdentityById } from "@/lib/mongo/oauth-identities";
 import { createPendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
 import { findUserById } from "@/lib/mongo/users";
-import { getAdminUserById } from "@/lib/auth/session";
+import { getAdminUserById, adminUserExists } from "@/lib/auth/session";
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -70,6 +72,22 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     expect(res.headers.get("location")).toContain("oauthError=");
   });
 
+  it("ignores an absolute-URL returnTo from a stale/tampered flow cookie (defense-in-depth open-redirect guard)", async () => {
+    (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+      state: "expected-state",
+      provider: "google",
+      intent: "login",
+      returnTo: "https://evil.example",
+    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=wrong-state&code=y"),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).not.toContain("evil.example");
+    expect(res.headers.get("location")).toContain("example.org");
+  });
+
   it("logs in directly when the identity is already linked (intent=login)", async () => {
     (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
       state: "s",
@@ -86,6 +104,7 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
       provider: "google",
       providerAccountId: "g-1",
       userId: "user-1",
+      accountType: "user",
       linkedAt: "now",
     });
     (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "user-1", attivo: true });
@@ -97,6 +116,75 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).not.toContain("oauthError");
     expect(res.headers.get("set-cookie")).toContain("user_session=");
+    expect(deleteOAuthIdentityById).not.toHaveBeenCalled();
+  });
+
+  it("purges an orphaned identity (owner deleted) and creates a fresh pending registration instead of blocking with account_disabled forever", async () => {
+    (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+      state: "s",
+      provider: "google",
+      intent: "login",
+      returnTo: "/",
+    });
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      validateCallback: vi.fn(async () => ({
+        providerAccountId: "g-orphan",
+        email: "orphan@b.com",
+        givenName: "Orfano",
+      })),
+    });
+    (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "id-orphan",
+      provider: "google",
+      providerAccountId: "g-orphan",
+      userId: "deleted-user",
+      accountType: "user",
+      linkedAt: "now",
+    });
+    (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue(null); // utente eliminato
+
+    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
+      params: Promise.resolve({ provider: "google" }),
+    });
+
+    expect(deleteOAuthIdentityById).toHaveBeenCalledWith("id-orphan");
+    expect(createPendingOAuthRegistration).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: "google", providerAccountId: "g-orphan" })
+    );
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("completeRegistration=1");
+  });
+
+  it("does NOT purge an identity whose admin owner is merely deactivated, not deleted", async () => {
+    (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+      state: "s",
+      provider: "google",
+      intent: "login",
+      returnTo: "/",
+    });
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      validateCallback: vi.fn(async () => ({ providerAccountId: "g-disabled-admin", email: "a@b.com" })),
+    });
+    (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "id-disabled",
+      provider: "google",
+      providerAccountId: "g-disabled-admin",
+      userId: "admin-disabled",
+      accountType: "admin",
+      linkedAt: "now",
+    });
+    (adminUserExists as ReturnType<typeof vi.fn>).mockResolvedValue(true); // esiste ancora
+    (getAdminUserById as ReturnType<typeof vi.fn>).mockResolvedValue(null); // ma non è attivo -> getAdminUserById non lo trova
+
+    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
+      params: Promise.resolve({ provider: "google" }),
+    });
+
+    expect(deleteOAuthIdentityById).not.toHaveBeenCalled();
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("account_disabled");
   });
 
   it("creates a pending registration and redirects to completeRegistration when the identity is new (intent=register)", async () => {
@@ -177,8 +265,10 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
       provider: "google",
       providerAccountId: "g-taken",
       userId: "user-other",
+      accountType: "user",
       linkedAt: "now",
     });
+    (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "user-other", attivo: true });
 
     const res = await GET(
       req(
@@ -191,6 +281,7 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("identity_taken");
     expect(createOAuthIdentity).not.toHaveBeenCalled();
+    expect(deleteOAuthIdentityById).not.toHaveBeenCalled();
   });
 
   it("logs in an admin session when the identity is already linked with accountType 'admin' (intent=login)", async () => {
@@ -212,6 +303,7 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
       accountType: "admin",
       linkedAt: "now",
     });
+    (adminUserExists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
     (getAdminUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "admin-1", attivo: true });
 
     const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {

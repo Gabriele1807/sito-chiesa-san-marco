@@ -6,6 +6,7 @@
  */
 
 import { getDb } from "./client";
+import { deleteOAuthIdentitiesByUserId } from "./oauth-identities";
 import type { UserProfile, UserPublic, AdminRequestStatus, SuperAdminRequestStatus } from "@/types";
 import { ObjectId, type WithId, type Document } from "mongodb";
 
@@ -50,6 +51,7 @@ export async function createUser(data: {
   chiesa?: string;
   adminRequest?: boolean;
   hasPassword?: boolean;
+  emailVerificata?: boolean;
 }): Promise<UserPublic> {
   await ensureIndexes();
   const c = await col();
@@ -64,7 +66,7 @@ export async function createUser(data: {
     ageGroup: data.ageGroup,
     chiesa: data.chiesa,
     attivo: true,
-    emailVerificata: false,
+    emailVerificata: data.emailVerificata ?? false,
     hasPassword: data.hasPassword ?? true,
     adminRequest: data.adminRequest ? "pending" : "none",
     adminRequestDate: data.adminRequest ? now : undefined,
@@ -91,6 +93,11 @@ export async function createOAuthUser(data: {
   role: UserProfile["role"];
   ageGroup: UserProfile["ageGroup"];
   chiesa?: string;
+  /** true solo se l'email proviene dal provider e questo l'ha dichiarata
+   * verificata (es. Google `email_verified`) — mai true per un'email
+   * inserita manualmente dall'utente, che resta non verificata come per
+   * la registrazione classica. */
+  emailVerificata?: boolean;
 }): Promise<UserPublic> {
   const { hashPassword } = await import("@/lib/auth/password");
   const randomToken =
@@ -348,5 +355,18 @@ export async function deleteUser(id: string): Promise<boolean> {
   const c = await col();
   if (!ObjectId.isValid(id)) return false;
   const result = await c.deleteOne({ _id: new ObjectId(id) });
+  if (result.deletedCount === 1) {
+    // Pulizia best-effort: se fallisce, l'utente è comunque già stato
+    // eliminato con successo — non propagare l'errore, altrimenti il
+    // chiamante crederebbe che l'eliminazione sia fallita e potrebbe
+    // ritentarla contro un utente che non esiste più. Un'identità OAuth
+    // orfana rimasta verrebbe comunque ripulita al prossimo tentativo di
+    // accesso tramite quel provider (vedi il callback OAuth).
+    try {
+      await deleteOAuthIdentitiesByUserId(id, "user");
+    } catch (err) {
+      console.error("Errore pulizia identità OAuth dopo eliminazione utente:", err);
+    }
+  }
   return result.deletedCount === 1;
 }
