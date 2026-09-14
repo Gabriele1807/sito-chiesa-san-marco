@@ -442,6 +442,184 @@ Eccezioni intenzionali non toccate dal consolidamento:
 - Se fallisce, prova l'utente normale su MongoDB usando email o username.
 - Se fallisce anche quello, incrementa i tentativi falliti e restituisce errore 401.
 
+### 7.4 Login/registrazione tramite Google e Facebook (2026-09-14)
+
+Aggiunto il supporto per accedere/registrarsi tramite Google e Facebook,
+oltre a collegare/scollegare questi provider a un account email+password
+già esistente. Nessun secondo sistema di autenticazione: tutto riusa
+`src/lib/auth/jwt.ts` (HMAC, `ADMIN_SESSION_SECRET`), il cookie
+`user_session` e la collezione MongoDB `users` già esistenti. Apple Sign In
+è predisposto nell'architettura ma non implementato in questa fase (richiede
+un Apple Developer Program a pagamento — vedi §7.4.7).
+
+Spec di riferimento:
+`docs/superpowers/specs/2026-09-14-oauth-providers-design.md`.
+Piano di implementazione:
+`docs/superpowers/plans/2026-09-14-oauth-providers.md`.
+
+#### 7.4.1 File creati/modificati
+
+Layer OAuth condiviso:
+- `src/lib/oauth/providers.ts` — adapter Google/Facebook costruiti su
+  `arctic` (nuova dipendenza); `getProviderAdapter()` ritorna `null` se le
+  env var del provider mancano (provider disabilitato lato UI, non un crash).
+- `src/lib/oauth/flow-cookie.ts` — cookie firmati `oauth_flow` (state/PKCE,
+  10 minuti, mono-uso) e `oauth_pending` (identità provvisoria, 30 minuti),
+  costruiti sopra `signJwt`/`verifyJwt` esistenti.
+- `src/lib/oauth/error-messages.ts` — mappa i codici di errore del callback
+  a chiavi di traduzione già esistenti in `it.json`/`ar.json`.
+
+Modello dati (`src/lib/mongo/`):
+- `oauth-identities.ts` — nuova collezione `oauth_identities` (identità
+  esterne collegate; indice unico su `(provider, providerAccountId)`).
+- `pending-oauth-registrations.ts` — nuova collezione
+  `pending_oauth_registrations` (registrazioni provvisorie; indice TTL 24h
+  su `expiresAt`).
+- `users.ts` / `src/types/index.ts` — nuovo campo opzionale
+  `hasPassword?: boolean` su `UserProfile` (assente = `true`, retrocompatibile);
+  `createOAuthUser()` crea account solo-provider con `hasPassword:false` e
+  un `passwordHash` derivato da un token casuale (nessuna password reale
+  può produrlo); `setHasPassword()`.
+
+Route API (`src/app/api/auth/oauth/`):
+- `GET /[provider]/start` — avvia il flusso OAuth (login/register/link).
+- `GET /[provider]/callback` — verifica `state`, scambia il code, decide
+  login diretto / registrazione provvisoria / collegamento.
+- `GET /pending` — dati non sensibili per pre-compilare il quiz dopo il
+  redirect dal provider.
+- `POST /complete-registration` — finalizza la registrazione dopo il quiz;
+  mai si fida di `provider`/`providerAccountId` dal body, solo dal cookie
+  firmato risolto via DB.
+- `POST /unlink` — scollega un provider, bloccato se è l'ultimo metodo di
+  accesso disponibile.
+- `GET /status` — stato dei collegamenti per la pagina profilo.
+
+UI:
+- `src/components/auth/ProviderIcons.tsx` — icone Google/Facebook condivise.
+- `src/components/auth/LoginModal.tsx` — bottoni "Continua con
+  Google/Facebook" sopra il form classico; gestisce anche `?oauthError=`.
+- `src/components/auth/RegisterModal.tsx` — stessi bottoni sullo step
+  credenziali; nuova "modalità OAuth" che, rilevato
+  `?completeRegistration=1`, salta direttamente allo step quiz esistente
+  (mai bypassabile: il guard `if (!role || !ageGroup)` resta il primo
+  controllo in `handleSubmit` per entrambe le modalità) e sottomette a
+  `complete-registration` invece che a `/api/auth/register`.
+- `src/components/profile/LinkedAccountsSection.tsx` +
+  `src/app/(main)/profilo/page.tsx` — sezione "Accessi collegati" nel
+  profilo (collega/scollega, conferma, stato non-scollegabile se unico
+  metodo, banner `?linked=`/`?oauthError=`).
+
+Script opzionale: `src/scripts/backfill-has-password.ts` (idempotente,
+imposta `hasPassword:true` esplicito sui documenti `users` che ne sono
+privi — non necessario per il funzionamento).
+
+#### 7.4.2 Flusso di nuova registrazione tramite provider
+
+1. L'utente clicca "Continua con Google/Facebook" in `RegisterModal`
+   (`intent=register`) → redirect al provider con `state` + PKCE (Google)
+   firmati in un cookie `oauth_flow` mono-uso (10 min).
+2. Il callback verifica `state`, scambia il code, legge il profilo
+   verificato **solo lato server** (Google: ID token OIDC; Facebook: Graph
+   API `/me` con l'access token, mai esposto al client).
+3. Se `(provider, providerAccountId)` non esiste ancora in
+   `oauth_identities`: crea un documento `pending_oauth_registrations`,
+   setta il cookie `oauth_pending` (30 min), redirect a
+   `/?completeRegistration=1`. **Nessun account viene creato a questo
+   punto.**
+4. Il frontend rileva il parametro, chiama `GET /api/auth/oauth/pending`,
+   apre `RegisterModal` direttamente sullo step quiz (nome/cognome
+   pre-compilati; email richiesta manualmente solo se il provider non
+   l'ha fornita).
+5. Al submit del quiz, `POST /api/auth/oauth/complete-registration`
+   ri-verifica il cookie `oauth_pending` lato server (mai il body della
+   richiesta), valida ruolo/età, rifiuta con 409 se l'email risulta già
+   registrata (**nessun merge automatico**), crea l'utente
+   (`hasPassword:false`), crea `oauth_identities`, cancella il pending,
+   crea `user_session` e reindirizza come una registrazione classica
+   riuscita.
+6. Se l'utente abbandona dopo l'autenticazione ma prima del quiz: nessun
+   account creato, il pending sopravvive fino a 24h (TTL Mongo) e riprende
+   dal cookie `oauth_pending` al rientro — nessun duplicato, nessun dato
+   perso.
+
+#### 7.4.3 Flusso di accesso tramite provider
+
+Stesso `start`/`callback`, ma `findOAuthIdentity(provider, providerAccountId)`
+trova già un collegamento: si verifica che l'utente sia attivo, si aggiorna
+`ultimoAccesso`, si crea `user_session` con lo stesso meccanismo del login
+classico. Nessun quiz mostrato, nessuna modifica a profilo/ruolo/permessi.
+
+#### 7.4.4 Flusso di collegamento a un account esistente
+
+Dal profilo, bottone "Collega" (`intent=link`, richiede `user_session`
+valido). Il cookie `oauth_flow` include l'hash della sessione corrente; il
+callback ri-verifica che la sessione al ritorno sia la stessa (protezione
+CSRF/hijack), risolve l'utente dalla sessione (mai dal cookie di flusso),
+e crea `oauth_identities` collegata a quell'utente. Se l'identità è già
+collegata a **un altro** account: 409, nessuna riassegnazione. Nessuna
+creazione di utente, nessuna modifica a dati/ruolo/quiz esistenti, nessun
+nuovo quiz richiesto.
+
+#### 7.4.5 Variabili d'ambiente
+
+```env
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+```
+
+Riusa `NEXT_PUBLIC_SITE_URL` già esistente per costruire le callback URL.
+Vedi `.env.example` per il blocco completo con commenti.
+
+#### 7.4.6 Configurazioni esterne necessarie (passaggi manuali dell'utente)
+
+- **Google Cloud Console**: OAuth consent screen + OAuth client ID (Web
+  application), redirect URI autorizzato:
+  `${NEXT_PUBLIC_SITE_URL}/api/auth/oauth/google/callback`.
+- **Facebook Developers**: app con prodotto "Facebook Login", Valid OAuth
+  Redirect URI: `${NEXT_PUBLIC_SITE_URL}/api/auth/oauth/facebook/callback`,
+  permessi `email` + `public_profile` (default, nessuna App Review
+  necessaria in development mode con utenti di test).
+- **Vercel**: impostare le quattro env var sopra in Production/Preview.
+
+#### 7.4.7 Migrazioni database
+
+Nessuna migrazione obbligatoria (MongoDB è schema-less; `hasPassword`
+assente è trattato come `true` a runtime). Script di backfill opzionale
+e idempotente: `npm run backfill-has-password`.
+
+#### 7.4.8 Verifiche eseguite in questa sessione
+
+- `npm test`: 54/54 test passati (13 nuovi file di test aggiunti dalla
+  feature, copertura di tutte le route API e del layer dati).
+- `npm run lint`: 16 errori/35 warning preesistenti, **tutti** in file mai
+  toccati da questa feature (verificato file per file contro il branch
+  `main` pre-feature); nessun nuovo errore o warning introdotto.
+- `npx tsc --noEmit`: 0 errori.
+- `npm run build`: completata con successo, tutte le 6 nuove route
+  `/api/auth/oauth/*` presenti nell'output.
+- Ogni singolo task del piano è stato revisionato da un agente dedicato
+  (spec compliance + qualità), con particolare attenzione di sicurezza
+  sulle route `callback` (walkthrough dello scenario di dirottamento
+  sessione durante il collegamento) e `complete-registration` (verifica
+  che il body della richiesta non possa mai determinare l'identità
+  collegata).
+
+**Non verificato in questa sessione** (richiede credenziali OAuth reali
+che non erano disponibili): l'intero flusso end-to-end in browser con
+Google/Facebook reali — primo accesso, ripristino di una registrazione
+abbandonata, collegamento/scollegamento con provider reali, gestione di un
+utente Facebook senza email, annullamento del consenso, verifica visiva
+desktop/tablet/mobile e in arabo. Prima del prossimo deploy in produzione,
+seguire la checklist completa in
+`docs/superpowers/plans/2026-09-14-oauth-providers.md` (Task 16) con
+credenziali reali configurate in un ambiente di test.
+
+**Nessun segreto è stato aggiunto al repository**: `.env.example` contiene
+solo nomi di variabili con valori vuoti; verificato leggendo per intero
+ogni file nuovo di questa feature prima di questo commit.
+
 ---
 
 ## 8. Visibilità sezioni
