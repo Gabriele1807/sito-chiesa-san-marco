@@ -565,7 +565,18 @@
     "azioneAdminLibreria": "إضافة أو تحديث المكتبة",
     "azioneSuperAdminGestioneAdmin": "إدارة المشرفين",
     "azioneSuperAdminUtenti": "إدارة المستخدمين",
-    "suggerimentoSicurezza": "نصيحة أمان: حدّث كلمة المرور دورياً وتأكد من بيانات الحساب."
+    "suggerimentoSicurezza": "نصيحة أمان: حدّث كلمة المرور دورياً وتأكد من بيانات الحساب.",
+    "linkedAccountsTitle": "حسابات مرتبطة",
+    "linkedAccountsSubtitle": "اربط Google أو Facebook لتسجيل الدخول بسرعة أكبر، بالإضافة إلى البريد الإلكتروني وكلمة المرور.",
+    "linkedAccountsConnect": "ربط",
+    "linkedAccountsDisconnect": "إلغاء الربط",
+    "linkedAccountsConnected": "مرتبط",
+    "linkedAccountsNotConnected": "غير مرتبط",
+    "linkedAccountsConfirmUnlink": "هل تريد إلغاء ربط هذا الحساب؟ يمكنك إعادة ربطه في أي وقت.",
+    "linkedAccountsLastMethod": "هذه هي طريقة الدخول الوحيدة لديك. عيّن كلمة مرور أو اربط مزوّدًا آخر قبل إلغاء الربط.",
+    "linkedAccountsLinkedOn": "تم الربط في {date}",
+    "linkedAccountsError": "تعذر إتمام العملية. حاول مرة أخرى.",
+    "linkedAccountsSuccess": "تم ربط حساب {provider} بنجاح!"
   },
   "iscrizioni": {
     "titolo": "تسجيلاتي",

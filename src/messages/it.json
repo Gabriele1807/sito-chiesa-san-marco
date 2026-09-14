@@ -566,7 +566,18 @@
     "azioneAdminLibreria": "Aggiungi o aggiorna libreria",
     "azioneSuperAdminGestioneAdmin": "Gestione amministratori",
     "azioneSuperAdminUtenti": "Gestione utenti",
-    "suggerimentoSicurezza": "Suggerimento: aggiorna la password periodicamente e verifica i tuoi dati account."
+    "suggerimentoSicurezza": "Suggerimento: aggiorna la password periodicamente e verifica i tuoi dati account.",
+    "linkedAccountsTitle": "Accessi collegati",
+    "linkedAccountsSubtitle": "Collega Google o Facebook per accedere più velocemente, oltre a email e password.",
+    "linkedAccountsConnect": "Collega",
+    "linkedAccountsDisconnect": "Scollega",
+    "linkedAccountsConnected": "Collegato",
+    "linkedAccountsNotConnected": "Non collegato",
+    "linkedAccountsConfirmUnlink": "Scollegare questo account? Potrai ricollegarlo in qualsiasi momento.",
+    "linkedAccountsLastMethod": "Questo è il tuo unico metodo di accesso. Imposta una password o collega un altro provider prima di scollegarlo.",
+    "linkedAccountsLinkedOn": "Collegato il {date}",
+    "linkedAccountsError": "Non è stato possibile completare l'operazione. Riprova.",
+    "linkedAccountsSuccess": "Account {provider} collegato con successo!"
   },
   "iscrizioni": {
     "titolo": "Le mie iscrizioni",

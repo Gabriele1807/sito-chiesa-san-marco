@@ -32,6 +32,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthContext";
 import { CHIESE_LIST } from "@/lib/churches";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
+import LinkedAccountsSection from "@/components/profile/LinkedAccountsSection";
 
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
@@ -58,6 +59,23 @@ export default function ProfiloPage() {
   useEffect(() => {
     refresh();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ── OAuth linked-account success banner (?linked=<provider>) ── */
+  const [linkedMessage, setLinkedMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const linkedProvider = params.get("linked");
+    if (!linkedProvider) return;
+
+    const providerLabel = linkedProvider.charAt(0).toUpperCase() + linkedProvider.slice(1);
+    setLinkedMessage({ type: "success", text: t("linkedAccountsSuccess", { provider: providerLabel }) });
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("linked");
+    window.history.replaceState({}, "", url.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* â”€â”€ Password change state â”€â”€ */
@@ -425,6 +443,23 @@ export default function ProfiloPage() {
           </div>
         </div>
       </div>
+
+      {linkedMessage && (
+        <div
+          className={`flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm ${
+            linkedMessage.type === "success"
+              ? "bg-success/10 text-success border border-success/20"
+              : "bg-danger/10 text-danger border border-danger/20"
+          }`}
+        >
+          {linkedMessage.type === "success" ? (
+            <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          )}
+          {linkedMessage.text}
+        </div>
+      )}
 
       {/* â”€â”€ Info rows â”€â”€ */}
       <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border">
@@ -1034,6 +1069,9 @@ export default function ProfiloPage() {
           </div>
         )}
       </div>
+
+      {/* ── Linked accounts section (regular users only) ── */}
+      {type === "user" && <LinkedAccountsSection />}
 
       {/* ── Iscrizioni section ── */}
       <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
