@@ -24,6 +24,7 @@ export default function SidebarDock() {
   const { isMobileOpen, closeMobile, toggleCompact, isCompact } = useSidebar();
   const [sectionVisibilities, setSectionVisibilities] = useState<SectionVisibility[]>([]);
   const [visibilitiesLoaded, setVisibilitiesLoaded] = useState(false);
+  const [hasLinkedProvider, setHasLinkedProvider] = useState<boolean | null>(null);
 
   const isAdmin = type === "admin";
 
@@ -56,6 +57,29 @@ export default function SidebarDock() {
     
     loadVisibilities();
   }, []);
+
+  // Suggerisce di collegare Google/Facebook agli utenti autenticati che non
+  // hanno ancora nessun provider collegato (vedi §7.4 PROJECT_CONTEXT.md).
+  useEffect(() => {
+    if (type === "guest") {
+      setHasLinkedProvider(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/auth/oauth/status")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data.success) {
+          setHasLinkedProvider(data.identities.length > 0);
+        }
+      })
+      .catch(() => {
+        // Ignora: senza risposta, nessun indizio visivo viene mostrato.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [type]);
 
   // Determina l'accesso di una sezione per il ruolo attuale
   function getAccessForSection(sectionId?: string): RoleAccessType {
@@ -209,6 +233,10 @@ export default function SidebarDock() {
     }
 
     const activeClass = isActiveState ? "bg-white text-sidebar shadow-sm" : "text-white/70 hover:text-white hover:bg-white/5";
+    // Contorno discreto sulla voce "Profilo" finché l'utente non ha collegato
+    // nessun provider esterno — sparisce da solo appena ne collega uno.
+    const needsOAuthNudge = item.id === "profilo" && hasLinkedProvider === false;
+    const nudgeClass = needsOAuthNudge && !isActiveState ? "ring-1 ring-inset ring-accent-light/60" : "";
 
     if (item.href) {
       return (
@@ -217,7 +245,7 @@ export default function SidebarDock() {
           href={item.href}
           onClick={closeMobile}
           aria-current={active ? "page" : undefined}
-          className={`${baseClass} ${activeClass}`}
+          className={`${baseClass} ${activeClass} ${nudgeClass}`}
           title={label}
         >
           <Icon className="h-4.5 w-4.5 shrink-0" />

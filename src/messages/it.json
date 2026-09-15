@@ -577,7 +577,10 @@
     "linkedAccountsLastMethod": "Questo è il tuo unico metodo di accesso. Imposta una password o collega un altro provider prima di scollegarlo.",
     "linkedAccountsLinkedOn": "Collegato il {date}",
     "linkedAccountsError": "Non è stato possibile completare l'operazione. Riprova.",
-    "linkedAccountsSuccess": "Account {provider} collegato con successo!"
+    "linkedAccountsSuccess": "Account {provider} collegato con successo!",
+    "oauthNudgeText": "Puoi accedere più velocemente collegando Google o Facebook al tuo account.",
+    "oauthNudgeAction": "Collega un account",
+    "oauthNudgeDismiss": "Chiudi questo avviso"
   },
   "iscrizioni": {
     "titolo": "Le mie iscrizioni",

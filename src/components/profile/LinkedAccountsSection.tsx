@@ -17,7 +17,14 @@ const PROVIDERS: { id: Provider; label: string; Icon: typeof GoogleIcon }[] = [
   { id: "facebook", label: "Facebook", Icon: FacebookIcon },
 ];
 
-export default function LinkedAccountsSection() {
+export default function LinkedAccountsSection({
+  onStatusChange,
+}: {
+  /** Chiamato dopo ogni caricamento riuscito, con true se almeno un
+   * provider è collegato — permette al genitore (es. il banner di invito
+   * nella pagina profilo) di riflettere lo stato senza una fetch duplicata. */
+  onStatusChange?: (hasLinkedProvider: boolean) => void;
+}) {
   const t = useTranslations("profilo");
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,12 +37,16 @@ export default function LinkedAccountsSection() {
     try {
       const res = await fetch("/api/auth/oauth/status");
       const data = await res.json();
-      if (data.success) setStatus(data);
+      if (data.success) {
+        setStatus(data);
+        onStatusChange?.(data.identities.length > 0);
+      }
     } catch {
       // silenzioso: la sezione mostra semplicemente "non disponibile"
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -72,29 +83,41 @@ export default function LinkedAccountsSection() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5 animate-pulse">
-        <div className="h-4 w-40 bg-surface-2 rounded mb-3" />
-        <div className="h-10 w-full bg-surface-2 rounded" />
+      <div id="accessi-collegati" className="scroll-mt-[calc(var(--topbar-height)+16px)] overflow-hidden rounded-2xl border border-border bg-surface shadow-sm animate-pulse">
+        <div className="border-b border-border px-5 py-4">
+          <div className="h-4 w-40 rounded bg-surface-2" />
+          <div className="mt-2 h-3 w-72 max-w-full rounded bg-surface-2" />
+        </div>
+        <div className="px-5 py-5">
+          <div className="h-10 w-full rounded-xl bg-surface-2" />
+        </div>
       </div>
     );
   }
 
   const totalMethods = (status?.hasPassword ? 1 : 0) + (status?.identities.length ?? 0);
+  const needsOAuthNudge = status?.identities.length === 0;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
-      <h3 className="font-display text-lg text-foreground mb-1">{t("linkedAccountsTitle")}</h3>
-      <p className="text-sm text-foreground/60 mb-4">{t("linkedAccountsSubtitle")}</p>
+    <div
+      id="accessi-collegati"
+      className={`scroll-mt-[calc(var(--topbar-height)+16px)] overflow-hidden rounded-2xl border border-border bg-surface shadow-sm divide-y divide-border ${
+        needsOAuthNudge ? "ring-1 ring-inset ring-accent-light/60" : ""
+      }`}
+    >
+      <div className="px-5 py-4">
+        <h3 className="font-display text-lg text-foreground">{t("linkedAccountsTitle")}</h3>
+        <p className="mt-0.5 text-sm text-foreground/60">{t("linkedAccountsSubtitle")}</p>
+      </div>
 
       {error && (
-        <div className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-xl px-4 py-3 mb-4">
+        <div className="flex items-center gap-2 bg-danger/10 px-5 py-3">
           <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
           <p className="text-danger text-sm">{error}</p>
         </div>
       )}
 
-      <div className="space-y-3">
-        {PROVIDERS.map(({ id, label, Icon }) => {
+      {PROVIDERS.map(({ id, label, Icon }) => {
           const identity = status?.identities.find((i) => i.provider === id);
           const isConnected = Boolean(identity);
           const isLast = isConnected && totalMethods <= 1;
@@ -102,7 +125,7 @@ export default function LinkedAccountsSection() {
           return (
             <div
               key={id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+              className="flex items-center justify-between gap-3 px-5 py-4"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Icon className="h-6 w-6 shrink-0" />
@@ -170,7 +193,6 @@ export default function LinkedAccountsSection() {
             </div>
           );
         })}
-      </div>
     </div>
   );
 }

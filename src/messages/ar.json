@@ -576,7 +576,10 @@
     "linkedAccountsLastMethod": "هذه هي طريقة الدخول الوحيدة لديك. عيّن كلمة مرور أو اربط مزوّدًا آخر قبل إلغاء الربط.",
     "linkedAccountsLinkedOn": "تم الربط في {date}",
     "linkedAccountsError": "تعذر إتمام العملية. حاول مرة أخرى.",
-    "linkedAccountsSuccess": "تم ربط حساب {provider} بنجاح!"
+    "linkedAccountsSuccess": "تم ربط حساب {provider} بنجاح!",
+    "oauthNudgeText": "يمكنك تسجيل الدخول بسرعة أكبر بربط حساب Google أو Facebook بحسابك.",
+    "oauthNudgeAction": "اربط حساب",
+    "oauthNudgeDismiss": "إغلاق هذا التنبيه"
   },
   "iscrizioni": {
     "titolo": "تسجيلاتي",

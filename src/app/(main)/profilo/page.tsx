@@ -27,6 +27,8 @@ import {
   Settings,
   Pencil,
   LogOut,
+  Link2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -95,7 +97,37 @@ export default function ProfiloPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* â”€â”€ Password change state â”€â”€ */
+  /* ── Invito a collegare Google/Facebook (solo utenti senza provider) ── */
+  const OAUTH_NUDGE_DISMISS_KEY = "oauth_nudge_dismissed_until";
+  const OAUTH_NUDGE_COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000; // 14 giorni
+  const [hasLinkedProvider, setHasLinkedProvider] = useState<boolean | null>(null);
+  const [oauthNudgeDismissed, setOauthNudgeDismissed] = useState(true);
+
+  useEffect(() => {
+    try {
+      const until = Number(window.localStorage.getItem(OAUTH_NUDGE_DISMISS_KEY) ?? 0);
+      setOauthNudgeDismissed(until > Date.now());
+    } catch {
+      setOauthNudgeDismissed(false);
+    }
+  }, []);
+
+  function dismissOauthNudge() {
+    setOauthNudgeDismissed(true);
+    try {
+      window.localStorage.setItem(OAUTH_NUDGE_DISMISS_KEY, String(Date.now() + OAUTH_NUDGE_COOLDOWN_MS));
+    } catch {
+      // localStorage non disponibile: il banner riapparirà al prossimo caricamento, non bloccante
+    }
+  }
+
+  function scrollToLinkedAccounts() {
+    document.getElementById("accessi-collegati")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  const showOauthNudge = (type === "user" || type === "admin") && hasLinkedProvider === false && !oauthNudgeDismissed;
+
+  /* ── Password change state ── */
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -478,7 +510,31 @@ export default function ProfiloPage() {
         </div>
       )}
 
-      {/* â”€â”€ Info rows â”€â”€ */}
+      {showOauthNudge && (
+        <div className="flex items-start gap-3 rounded-xl border border-accent/20 bg-accent/10 px-4 py-3">
+          <Link2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm text-foreground/80 leading-relaxed">{t("oauthNudgeText")}</p>
+            <button
+              type="button"
+              onClick={scrollToLinkedAccounts}
+              className="mt-2 text-sm font-semibold text-accent hover:underline"
+            >
+              {t("oauthNudgeAction")}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={dismissOauthNudge}
+            aria-label={t("oauthNudgeDismiss")}
+            className="shrink-0 text-foreground/40 hover:text-foreground/70 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* ── Info rows ── */}
       <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border">
         {email && (
           <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4">
@@ -1088,7 +1144,9 @@ export default function ProfiloPage() {
       </div>
 
       {/* ── Linked accounts section (regular users and admins) ── */}
-      {(type === "user" || type === "admin") && <LinkedAccountsSection />}
+      {(type === "user" || type === "admin") && (
+        <LinkedAccountsSection onStatusChange={setHasLinkedProvider} />
+      )}
 
       {/* ── Iscrizioni section ── */}
       <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
