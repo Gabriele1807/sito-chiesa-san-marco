@@ -6,7 +6,6 @@ vi.mock("@/lib/mongo/password-reset-tokens", () => ({
 }));
 vi.mock("@/lib/mongo/users", () => ({
   updateUserPassword: vi.fn(),
-  setPasswordChangedAt: vi.fn(),
   setHasPassword: vi.fn(),
 }));
 vi.mock("@/lib/mongo/sessions", () => ({ deleteAllUserSessions: vi.fn() }));
@@ -21,7 +20,7 @@ import {
   findValidPasswordResetToken,
   markPasswordResetTokenUsed,
 } from "@/lib/mongo/password-reset-tokens";
-import { updateUserPassword, setPasswordChangedAt, setHasPassword } from "@/lib/mongo/users";
+import { updateUserPassword, setHasPassword } from "@/lib/mongo/users";
 import { deleteAllUserSessions } from "@/lib/mongo/sessions";
 
 function mockRequest(body: unknown) {
@@ -69,8 +68,8 @@ describe("POST /api/auth/reset-password", () => {
     expect(json).toEqual({ success: true });
     expect(updateUserPassword).toHaveBeenCalledWith("u1", "newhash");
     expect(setHasPassword).toHaveBeenCalledWith("u1", true);
-    expect(setPasswordChangedAt).toHaveBeenCalledWith("u1");
     expect(markPasswordResetTokenUsed).toHaveBeenCalledWith("tok1");
+    // deleteAllUserSessions is what actually sets passwordChangedAt (see route.ts comment).
     expect(deleteAllUserSessions).toHaveBeenCalledWith("u1");
   });
 });

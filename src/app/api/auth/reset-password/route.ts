@@ -3,7 +3,7 @@ import {
   findValidPasswordResetToken,
   markPasswordResetTokenUsed,
 } from "@/lib/mongo/password-reset-tokens";
-import { updateUserPassword, setPasswordChangedAt, setHasPassword } from "@/lib/mongo/users";
+import { updateUserPassword, setHasPassword } from "@/lib/mongo/users";
 import { deleteAllUserSessions } from "@/lib/mongo/sessions";
 import { hashPassword } from "@/lib/auth/password";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
@@ -54,8 +54,10 @@ export async function POST(request: Request) {
     const newHash = await hashPassword(newPassword);
     await updateUserPassword(tokenDoc.userId, newHash);
     await setHasPassword(tokenDoc.userId, true);
-    await setPasswordChangedAt(tokenDoc.userId);
     await markPasswordResetTokenUsed(tokenDoc._id);
+    // deleteAllUserSessions sets passwordChangedAt internally (design spec §3);
+    // calling setPasswordChangedAt separately here would write it twice with
+    // two different timestamps.
     await deleteAllUserSessions(tokenDoc.userId);
 
     return NextResponse.json({ success: true });
