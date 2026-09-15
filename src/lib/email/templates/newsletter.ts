@@ -7,5 +7,6 @@ export interface NewsletterTemplateParams {
 export async function renderNewsletterEmail(
   _params: NewsletterTemplateParams
 ): Promise<{ subject: string; html: string; text: string }> {
+  void _params;
   throw new Error("not implemented");
 }

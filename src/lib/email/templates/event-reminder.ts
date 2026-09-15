@@ -7,5 +7,6 @@ export interface EventReminderTemplateParams {
 export async function renderEventReminderEmail(
   _params: EventReminderTemplateParams
 ): Promise<{ subject: string; html: string; text: string }> {
+  void _params;
   throw new Error("not implemented");
 }

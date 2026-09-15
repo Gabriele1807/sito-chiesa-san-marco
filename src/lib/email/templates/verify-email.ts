@@ -6,5 +6,6 @@ export interface VerifyEmailTemplateParams {
 export async function renderVerifyEmail(
   _params: VerifyEmailTemplateParams
 ): Promise<{ subject: string; html: string; text: string }> {
+  void _params;
   throw new Error("not implemented");
 }

@@ -7,5 +7,6 @@ export interface BookingConfirmationTemplateParams {
 export async function renderBookingConfirmationEmail(
   _params: BookingConfirmationTemplateParams
 ): Promise<{ subject: string; html: string; text: string }> {
+  void _params;
   throw new Error("not implemented");
 }
