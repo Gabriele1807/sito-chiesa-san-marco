@@ -249,7 +249,31 @@ Note operative:
 - I cookie in uso sono:
   - `admin_session` per admin
   - `user_session` per utenti normali
-- Non esiste un persistere delle sessioni in DB per il flusso attuale.
+- Entrambi sono JWT HMAC firmati da `src/lib/auth/jwt.ts` (`signJwt`/`verifyJwt`),
+  che include sempre `iat`/`exp` in secondi Unix.
+- I due meccanismi di invalidazione sono **volutamente diversi** e non unificati
+  (vedi design spec `docs/superpowers/specs/2026-09-15-password-reset-email-service-design.md` §3):
+  - **`admin_session`**: deny-list per-token in Redis (`getRedis()`, chiave
+    `admin_revoked:{token}`, TTL = scadenza residua del token; fallback a un
+    `Set` in memoria di processo se Redis non è configurato — in quel caso il
+    "revocato" vale solo per l'istanza serverless che ha eseguito la revoca).
+  - **`user_session`**: **non esiste** una deny-list per-token (a differenza
+    di quanto indicato in precedenza in questa sezione). Dal 2026-09-15,
+    `UserProfile.passwordChangedAt` (ISO string) viene impostato ad ogni
+    reset/cambio password riuscito; `validateUserSession` rifiuta un token il
+    cui `iat` sia `<=` al timestamp di `passwordChangedAt` (troncato al
+    secondo). Questo invalida retroattivamente **tutte** le sessioni esistenti
+    di un utente senza dover conoscere i loro token — utile perché al momento
+    di un reset password non si conoscono le sessioni attive su altri
+    dispositivi/browser. `deleteAllUserSessions(userId)` in
+    `src/lib/mongo/sessions.ts` è l'implementazione reale di questo logout
+    globale (imposta `passwordChangedAt = ora`), usata sia da
+    `POST /api/auth/reset-password` che da `POST /api/auth/change-password`.
+  - `deleteUserSession(token)` (logout di una singola sessione) resta uno
+    stub: non esiste uno store per-token per `user_session`, quindi questa
+    funzione pulisce solo il cookie del chiamante e non revoca il JWT lato
+    server. È un limite noto e documentato nel codice, non un tentativo di
+    revoca reale.
 
 #### 6.4.1 Stato sicurezza post-audit (2026-09-12)
 
@@ -619,6 +643,117 @@ credenziali reali configurate in un ambiente di test.
 **Nessun segreto è stato aggiunto al repository**: `.env.example` contiene
 solo nomi di variabili con valori vuoti; verificato leggendo per intero
 ogni file nuovo di questa feature prima di questo commit.
+
+### 7.5 Password dimenticata e servizio email (2026-09-15)
+
+Design spec: `docs/superpowers/specs/2026-09-15-password-reset-email-service-design.md`.
+Piano: `docs/superpowers/plans/2026-09-15-password-reset-email-service.md`.
+
+#### 7.5.1 Flusso "Password dimenticata?"
+
+- `LoginModal.tsx` include un link "Password dimenticata?" verso la pagina
+  standalone `/forgot-password` (non un modal: il flusso è guidato da un
+  link email, non da navigazione in-app).
+- `POST /api/auth/forgot-password`: valida/normalizza l'email, applica
+  rate limiting (per email e per IP, `src/lib/auth/password-reset-rate-limit.ts`),
+  cerca l'utente, e **restituisce sempre la stessa risposta generica**
+  indipendentemente dal fatto che l'utente esista, sia rate-limitato, o
+  l'invio fallisca — nessuna differenza osservabile dal client, per
+  proteggere da enumerazione account. Se l'utente esiste, genera un token e
+  invia l'email via Resend.
+- `/reset-password?token=...`: pagina standalone che legge il token dalla
+  query string, mostra i requisiti password in tempo reale (riusa
+  `validatePasswordRules` lato client), e gestisce token
+  mancante/invalido/scaduto/usato con lo stesso messaggio generico.
+- `POST /api/auth/reset-password`: valida token e nuova password, aggiorna
+  `passwordHash` e `hasPassword: true` (permette anche agli account
+  solo-OAuth di impostare una password), marca il token usato, e invalida
+  tutte le altre sessioni dell'utente (vedi §6.4). **Non crea una sessione**:
+  il client viene reindirizzato al login, garantendo che il primo JWT
+  successivo abbia `iat` strettamente posteriore a `passwordChangedAt`.
+
+#### 7.5.2 Collection `password_reset_tokens`
+
+`src/lib/mongo/password-reset-tokens.ts`. Documento:
+`{ userId, tokenHash (SHA-256 del token raw a 256 bit), expiresAt (indice
+TTL, expireAfterSeconds: 0), usedAt, createdAt, requestIp?, userAgent? }`.
+Il token raw non è mai salvato, solo il suo hash — è una chiave di lookup,
+non un segreto da verificare lentamente, per questo SHA-256 e non bcrypt
+(bcrypt resta riservato alla password vera, costo 12, invariato). Creare
+un nuovo token invalida (`usedAt = ora`) ogni token precedente non ancora
+usato dello stesso utente. Scadenza configurabile via
+`PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES` (default 60, clampata tra 5 e 60
+minuti indipendentemente dal valore in env).
+
+#### 7.5.3 Invalidazione sessioni: vedi §6.4
+
+La decisione `passwordChangedAt` + confronto con `iat` del JWT è descritta
+in dettaglio in §6.4. Sia `reset-password` che il preesistente
+`change-password` (che prima di questa modifica non invalidava nulla)
+chiamano `deleteAllUserSessions(userId)` dopo un cambio password riuscito.
+
+#### 7.5.4 Servizio email: Resend + Brevo
+
+`src/lib/email/`:
+- `resend.ts` — wrapper del client Resend (`RESEND_API_KEY`), usato per
+  auth/security. Non mette in cache l'istanza (costruzione economica,
+  evita di restituire un client "vecchio" se la chiave cambia a runtime).
+- `brevo.ts` — wrapper delle API HTTP Brevo (`BREVO_API_KEY`), usato per
+  eventi/comunicazioni. **Nessun chiamante reale in questa fase.**
+- `send-email.ts` — funzioni tipizzate per categoria: solo
+  `sendPasswordResetEmail()` è implementata; `sendVerificationEmail()`,
+  `sendBookingConfirmationEmail()`, `sendEventReminderEmail()`,
+  `sendNewsletter()` esistono con firma corretta ma lanciano
+  `Error("not implemented")` — predisposte, non collegate a
+  `src/lib/mongo/registrations.ts` o `content.ts`. Nessun campo
+  `emailPending`/`emailSent`/`emailFailed`/`emailSentAt`/`emailProvider`/
+  `emailMessageId` è stato aggiunto a `IscrizioneEvento`: verrebbero
+  aggiunti quando un chiamante reale esisterà (YAGNI), non prima.
+- `templates/` — `reset-password.ts` è l'unico template realmente
+  implementato; gli altri quattro sono stub con la stessa firma. I
+  template usano `createTranslator` da `"next-intl"` (non `getTranslations`
+  da `"next-intl/server"`): `getTranslations` risolve i messaggi tramite
+  `getRequestConfig`, che chiama `cookies()` e richiede un contesto di
+  request Next.js attivo — non disponibile quando si costruisce un'email
+  fuori da una request, e comunque userebbe la lingua del cookie della
+  richiesta che ha innescato l'invio invece della lingua salvata del
+  destinatario. `createTranslator` carica invece direttamente il file
+  messaggi per la lingua richiesta.
+- Un solo provider per categoria, nessun invio doppio, nessun fallback
+  automatico tra provider.
+- Errori del provider (chiave mancante, rete, timeout) non vengono mai
+  esposti al client: `forgot-password` restituisce comunque la risposta
+  generica; solo il log server-side riporta categoria/provider/esito/
+  message-id (mai token, password, API key o corpo email).
+
+#### 7.5.5 Variabili d'ambiente
+
+```env
+RESEND_API_KEY=
+EMAIL_FROM_AUTH=
+EMAIL_REPLY_TO=
+PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES=60
+
+BREVO_API_KEY=
+EMAIL_FROM_EVENTS=
+EMAIL_FROM_NEWSLETTER=
+```
+
+Riusa `NEXT_PUBLIC_SITE_URL` già esistente per il link di reset (nessuna
+nuova `NEXT_PUBLIC_APP_URL`). Vedi `.env.example` per il blocco completo
+con commenti e il README per la checklist SPF/DKIM/DMARC del dominio
+mittente in produzione.
+
+#### 7.5.6 Fuori scope di questa feature
+
+- Wiring di Brevo nei flussi reali di prenotazione/evento — solo il modulo
+  e i template stub sono stati costruiti.
+- Revoca di una singola sessione (`deleteUserSession`) — non realizzabile
+  senza uno store per-token per `user_session`; resta uno stub con
+  commento esplicito invece di un no-op silenzioso.
+- Nessuna libreria di validazione nuova (niente zod): stesso stile manuale
+  `if`/`typeof` del resto delle route esistenti.
+- Nessuna localizzazione copta: il progetto supporta solo `it`/`ar`.
 
 ---
 
