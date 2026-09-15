@@ -5,6 +5,7 @@ import { getProviderAdapter, SUPPORTED_PROVIDERS, type SupportedProvider } from 
 import { signOAuthFlowCookie, hashSessionToken, type OAuthIntent } from "@/lib/oauth/flow-cookie";
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
 import { sanitizeReturnTo } from "@/lib/oauth/safe-redirect";
+import { applyNoStore } from "@/lib/oauth/http";
 import {
   readSessionCookie,
   resolveAdminSessionToken,
@@ -17,8 +18,15 @@ function isSupportedProvider(value: string): value is SupportedProvider {
 
 export async function GET(
   request: Request,
+  context: { params: Promise<{ provider: string }> }
+): Promise<NextResponse> {
+  return applyNoStore(await handleGet(request, context));
+}
+
+async function handleGet(
+  request: Request,
   { params }: { params: Promise<{ provider: string }> }
-) {
+): Promise<NextResponse> {
   const { provider } = await params;
   if (!isSupportedProvider(provider)) {
     return NextResponse.json({ success: false, error: "Provider non supportato" }, { status: 404 });

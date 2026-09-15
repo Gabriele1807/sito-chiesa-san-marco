@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { verifyOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
 import { findPendingOAuthRegistrationById } from "@/lib/mongo/pending-oauth-registrations";
+import { applyNoStore } from "@/lib/oauth/http";
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse> {
+  return applyNoStore(await handleGet(request));
+}
+
+async function handleGet(request: Request): Promise<NextResponse> {
   const cookieHeader = request.headers.get("cookie") ?? "";
   const match = cookieHeader.match(/(?:^|;\s*)oauth_pending=([^;]+)/);
   const token = match?.[1] ? decodeURIComponent(match[1]) : "";

@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 import { resolveAccountSession } from "@/lib/oauth/session-resolver";
 import { findUserByIdFull } from "@/lib/mongo/users";
 import { findOAuthIdentitiesByUserId } from "@/lib/mongo/oauth-identities";
+import { applyNoStore } from "@/lib/oauth/http";
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse> {
+  return applyNoStore(await handleGet(request));
+}
+
+async function handleGet(request: Request): Promise<NextResponse> {
   const session = await resolveAccountSession(request);
   if (!session) {
     return NextResponse.json({ success: false, error: "Sessione richiesta" }, { status: 401 });

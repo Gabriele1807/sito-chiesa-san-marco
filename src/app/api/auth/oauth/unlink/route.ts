@@ -3,10 +3,15 @@ import { resolveAccountSession } from "@/lib/oauth/session-resolver";
 import { findUserByIdFull } from "@/lib/mongo/users";
 import { countOAuthIdentitiesByUserId, deleteOAuthIdentity } from "@/lib/mongo/oauth-identities";
 import type { OAuthProvider } from "@/lib/mongo/oauth-identities";
+import { applyNoStore } from "@/lib/oauth/http";
 
 const VALID_PROVIDERS: OAuthProvider[] = ["google", "facebook"];
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
+  return applyNoStore(await handlePost(request));
+}
+
+async function handlePost(request: Request): Promise<NextResponse> {
   const session = await resolveAccountSession(request);
   if (!session) {
     return NextResponse.json({ success: false, error: "Sessione richiesta" }, { status: 401 });

@@ -57,6 +57,14 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     expect(res.headers.get("location")).toContain("oauthError=");
   });
 
+  it("always sets Cache-Control: no-store, so browser back/forward never replays a used code/state (bfcache hardening)", async () => {
+    (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=x&code=y"), {
+      params: Promise.resolve({ provider: "google" }),
+    });
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+  });
+
   it("redirects with oauthError when the query state does not match the cookie state", async () => {
     (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
       state: "expected-state",

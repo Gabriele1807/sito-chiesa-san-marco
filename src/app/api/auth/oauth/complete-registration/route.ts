@@ -9,6 +9,7 @@ import { createOAuthIdentity } from "@/lib/mongo/oauth-identities";
 import { createUserSession } from "@/lib/mongo/sessions";
 import type { UserRole, AgeGroup } from "@/types";
 import { VALID_ROLES, VALID_AGE_GROUPS } from "@/lib/auth/registration-constants";
+import { applyNoStore } from "@/lib/oauth/http";
 
 function usernameFromEmail(email: string): string {
   const local = email.split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 15) || "utente";
@@ -16,7 +17,11 @@ function usernameFromEmail(email: string): string {
   return `${local}_${suffix}`;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
+  return applyNoStore(await handlePost(request));
+}
+
+async function handlePost(request: Request): Promise<NextResponse> {
   try {
     const cookieHeader = request.headers.get("cookie") ?? "";
     const match = cookieHeader.match(/(?:^|;\s*)oauth_pending=([^;]+)/);

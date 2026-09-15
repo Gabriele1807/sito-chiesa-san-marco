@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getProviderAdapter, SUPPORTED_PROVIDERS, type SupportedProvider } from "@/lib/oauth/providers";
 import { verifyOAuthFlowCookie, hashSessionToken, signOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
 import { sanitizeReturnTo } from "@/lib/oauth/safe-redirect";
+import { applyNoStore } from "@/lib/oauth/http";
 import {
   readSessionCookie,
   resolveAdminSessionToken,
@@ -65,8 +66,15 @@ async function purgeIfOrphaned<T extends { _id: string; userId: string; accountT
 
 export async function GET(
   request: Request,
+  context: { params: Promise<{ provider: string }> }
+): Promise<NextResponse> {
+  return applyNoStore(await handleGet(request, context));
+}
+
+async function handleGet(
+  request: Request,
   { params }: { params: Promise<{ provider: string }> }
-) {
+): Promise<NextResponse> {
   const { provider } = await params;
   const siteBase = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
 

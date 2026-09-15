@@ -117,6 +117,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    // Quando il browser ripristina la pagina dalla bfcache (es. dopo aver
+    // premuto "Indietro" tornando da un provider OAuth esterno), lo stato
+    // React resta quello congelato prima della navigazione — può mostrare
+    // per un istante un tipo di sessione non più corrente. `pageshow` con
+    // `persisted: true` segnala esattamente questo ripristino: forziamo
+    // subito una nuova verifica reale col server invece di lasciare che
+    // la correzione avvenga solo alla prossima azione dell'utente.
+    function handlePageShow(event: PageTransitionEvent) {
+      if (event.persisted) {
+        refresh();
+      }
+    }
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, [refresh]);
+
   const logout = useCallback(async () => {
     try {
       if (state.type === "admin") {

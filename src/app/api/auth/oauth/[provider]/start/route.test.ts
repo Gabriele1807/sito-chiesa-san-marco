@@ -105,6 +105,23 @@ describe("GET /api/auth/oauth/[provider]/start", () => {
     expect(res.headers.get("set-cookie")).toContain("oauth_flow=");
   });
 
+  it("always sets Cache-Control: no-store, including on error responses (bfcache/back-button hardening)", async () => {
+    const notFound = await GET(req("https://example.org/api/auth/oauth/apple/start"), {
+      params: Promise.resolve({ provider: "apple" }),
+    });
+    expect(notFound.headers.get("Cache-Control")).toBe("no-store");
+
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+      usesPkce: true,
+      createAuthorizationURL: (state: string) =>
+        new URL(`https://accounts.google.com/authorize?state=${state}`),
+    });
+    const redirect = await GET(req("https://example.org/api/auth/oauth/google/start"), {
+      params: Promise.resolve({ provider: "google" }),
+    });
+    expect(redirect.headers.get("Cache-Control")).toBe("no-store");
+  });
+
   it("rejects an absolute-URL returnTo and falls back to a safe default (open-redirect guard)", async () => {
     (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
       usesPkce: true,
