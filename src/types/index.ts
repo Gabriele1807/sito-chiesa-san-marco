@@ -158,6 +158,10 @@ export interface UserProfile {
   passwordHash: string;
   /** false per account creati solo via provider esterno (nessuna password reale impostata) */
   hasPassword?: boolean;
+  /** ISO date, impostata ad ogni reset/cambio password. Usata da validateUserSession
+   * per invalidare retroattivamente le sessioni JWT precedenti (vedi design spec §3):
+   * un token con iat <= a questo timestamp (troncato al secondo) viene rifiutato. */
+  passwordChangedAt?: string;
   nome: string;
   cognome: string;
 

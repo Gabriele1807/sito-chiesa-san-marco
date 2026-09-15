@@ -280,6 +280,21 @@ export async function updateUserPassword(id: string, passwordHash: string): Prom
   return result.modifiedCount === 1;
 }
 
+export async function setPasswordChangedAt(id: string): Promise<void> {
+  const c = await col();
+  if (!ObjectId.isValid(id)) return;
+  await c.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { passwordChangedAt: new Date().toISOString() } }
+  );
+}
+
+export async function setHasPassword(id: string, value: boolean): Promise<void> {
+  const c = await col();
+  if (!ObjectId.isValid(id)) return;
+  await c.updateOne({ _id: new ObjectId(id) }, { $set: { hasPassword: value } });
+}
+
 // --------------- Admin Request ---------------
 
 export async function updateAdminRequest(
