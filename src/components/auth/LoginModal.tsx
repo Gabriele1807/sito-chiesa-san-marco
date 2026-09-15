@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -265,6 +266,16 @@ export default function LoginModal() {
               <label htmlFor="login-remember" className="text-sm text-foreground/60 select-none cursor-pointer">
                 {t("loginRemember")}
               </label>
+            </div>
+
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                onClick={() => setShowLoginModal(false)}
+                className="text-sm text-foreground/60 hover:text-accent transition-colors"
+              >
+                {t("loginForgotPassword")}
+              </Link>
             </div>
 
             <button

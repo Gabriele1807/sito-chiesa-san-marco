@@ -289,12 +289,6 @@ export async function setPasswordChangedAt(id: string): Promise<void> {
   );
 }
 
-export async function setHasPassword(id: string, value: boolean): Promise<void> {
-  const c = await col();
-  if (!ObjectId.isValid(id)) return;
-  await c.updateOne({ _id: new ObjectId(id) }, { $set: { hasPassword: value } });
-}
-
 // --------------- Admin Request ---------------
 
 export async function updateAdminRequest(

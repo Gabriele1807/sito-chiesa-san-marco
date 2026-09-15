@@ -335,6 +335,7 @@
     "loginIdentifierPlaceholder": "email@esempio.it",
     "loginPasswordLabel": "Password",
     "loginRemember": "Ricordami per 7 giorni",
+    "loginForgotPassword": "Password dimenticata?",
     "loginButton": "Accedi",
     "loginLoading": "Accesso in corso...",
     "loginNoAccount": "Non hai un account?",

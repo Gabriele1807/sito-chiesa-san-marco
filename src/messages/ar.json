@@ -335,6 +335,7 @@
     "loginIdentifierPlaceholder": "email@esempio.it",
     "loginPasswordLabel": "كلمة المرور",
     "loginRemember": "تذكّرني لمدة 7 أيام",
+    "loginForgotPassword": "هل نسيت كلمة المرور؟",
     "loginButton": "تسجيل الدخول",
     "loginLoading": "جارٍ تسجيل الدخول...",
     "loginNoAccount": "ليس لديك حساب؟",
