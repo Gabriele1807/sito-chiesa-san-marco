@@ -7,6 +7,7 @@ import { validatePasswordRules } from "@/lib/auth/password-rules";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types";
 import { validateSession } from "@/lib/auth/session";
+import { deleteAllUserSessions } from "@/lib/mongo/sessions";
 
 export async function POST(request: Request) {
   try {
@@ -109,6 +110,11 @@ export async function POST(request: Request) {
 
     // Aggiorna password su MongoDB
     await updateUserPassword(mongoUser._id, newHash);
+
+    // Invalida tutte le altre sessioni attive dopo il cambio password
+    // (design spec §3): non tocca la richiesta corrente, che non si
+    // ri-valida da sola dopo la scrittura.
+    await deleteAllUserSessions(mongoUser._id);
 
     // Sincronizza su Supabase se è un admin
     if (needsSupabaseSync) {
