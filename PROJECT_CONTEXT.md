@@ -461,6 +461,58 @@ Eccezioni intenzionali non toccate dal consolidamento:
 - Gli utenti normali sono letti da MongoDB nella collezione `users`.
 - Il login pubblico unificato in `/api/auth/login` tenta prima l'admin Supabase e poi l'utente MongoDB.
 - La route `/api/admin/login` rimane disponibile per il login diretto dell'area amministrativa.
+- **Collegamento admin ↔ utente tramite username.** Un utente promosso admin
+  (`richieste-admin`) ha un record in `users` e uno in `admin_users` con lo
+  **stesso username**: è l'unico legame tra i due (usato da `me`,
+  `iscrizioni`, `eventi/iscrizione`, `change-password`, revoca admin,
+  sincronizzazione password in `admin/utenti`). Per questo lo username deve
+  essere univoco su entrambi gli archivi.
+
+#### 6.5.1 Unicità degli username (2026-09-26)
+
+Modulo condiviso `src/lib/auth/username.ts`:
+
+- `normalizeUsername()` — trim + regole 3–30 caratteri, `[a-zA-Z0-9_.-]`
+  (profilo e creazione admin). La registrazione classica mantiene le sue
+  regole più strette (3–20, senza punto), coerenti con `RegisterModal`.
+- `isUsernameTaken(username, { userId?, adminId? })` — verifica **senza
+  distinguere maiuscole/minuscole** sia `users` (MongoDB, collation
+  `{ locale: "en", strength: 2 }` via `findUsersByUsernameInsensitive`) sia
+  `admin_users` (Supabase, `ilike` con escape di `_`/`%`), escludendo gli
+  account che già possiedono lo username (se stessi e l'account collegato).
+  Se la query Supabase fallisce ritorna `true` (mai concedere un possibile
+  duplicato).
+- `findLinkedAdminId(username)` — id admin collegato a un utente promosso.
+
+Applicato in:
+
+| Percorso | Prima | Ora |
+|---|---|---|
+| `POST /api/auth/register` | controllo esatto solo su MongoDB | case-insensitive su utenti + admin |
+| `POST /api/auth/oauth/complete-registration` | username generato (`localpart_xxxx`) senza controllo; collisione → "Email già registrata" | candidato verificato con fino a 5 tentativi; collisione → messaggio corretto, nessun account creato |
+| `POST /api/auth/update-profile` (utente) | controllo esatto solo su MongoDB; email salvata anche se lo username era rifiutato; admin collegato non rinominato | validazione e unicità **prima** di ogni scrittura; se l'utente è admin approvato viene rinominato anche il record `admin_users` |
+| `POST /api/auth/update-profile` (admin) | controllo solo su `admin_users`; utente MongoDB collegato non rinominato (collegamento rotto) | unicità su utenti + admin; rinomina anche l'utente MongoDB collegato |
+| `POST /api/admin/users` (creazione admin) | controllo esatto solo su `admin_users` | normalizzazione + unicità su utenti + admin |
+| `POST /api/admin/richieste-admin` (approvazione) | se l'insert Supabase falliva per duplicato, l'utente veniva comunque "approvato" e legato all'admin esistente, anche di un'altra persona | approvato solo se l'admin esistente ha la stessa email; altrimenti 409 |
+
+Database: oltre all'indice unico `username_1` (esatto), `ensureIndexes()`
+crea `username_ci_unique` (unico, collation case-insensitive) contro le race
+tra controllo e insert. Se esistono già duplicati storici che differiscono
+solo per maiuscole la creazione fallisce: viene loggato
+`[users] indice username case-insensitive non creato` e l'app continua con i
+soli controlli applicativi — in quel caso i duplicati vanno risolti a mano
+(rinominando uno dei due account) e l'indice verrà creato al riavvio.
+
+Login: la ricerca per username resta **esatta** (invariata), per non
+cambiare il comportamento degli account storici.
+
+UI: la modifica dello username era già presente in `/profilo` (utente e
+admin). Aggiunto il suggerimento `profilo.usernameHint` sotto il campo e la
+traduzione IT/AR degli errori "già in uso" (`profilo.usernameGiaUsato`) e
+"non valido". Verifiche: unit test su tutti i percorsi sopra (153 test
+totali), typecheck, lint invariato, build ok; la pagina `/profilo` non è
+stata verificata in browser (richiede un utente autenticato su MongoDB, non
+disponibile in questa sessione).
 
 ---
 
@@ -790,7 +842,7 @@ poi ulteriormente esteso dalla feature password reset (§7.5) con altri 7
 file di test (`change-password`, `forgot-password`, `reset-password`,
 `password-reset-rate-limit`, `send-email`, `password-reset-tokens`,
 `sessions`), per un totale di 22 file `*.test.ts` al 2026-09-15 (dopo
-l'audit del 2026-09-26: 25 file, 130 test — vedi §7.5.8).
+l'audit del 2026-09-26: 25 file, 130 test — vedi §7.5.8; dopo l'unicità username §6.5.1: 29 file, 153 test).
 
 #### 7.4.11 Audit OAuth/email (2026-09-26)
 

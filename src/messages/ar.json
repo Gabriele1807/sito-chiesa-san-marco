@@ -611,7 +611,8 @@
     "linkedAccountsSuccess": "تم ربط حساب {provider} بنجاح!",
     "oauthNudgeText": "يمكنك تسجيل الدخول بسرعة أكبر بربط حساب Google أو Facebook بحسابك.",
     "oauthNudgeAction": "اربط حساب",
-    "oauthNudgeDismiss": "إغلاق هذا التنبيه"
+    "oauthNudgeDismiss": "إغلاق هذا التنبيه",
+    "usernameHint": "من 3 إلى 30 حرفًا: أحرف وأرقام ونقطة وشرطة وشرطة سفلية. يجب ألا يطابق اسم مستخدم أي حساب آخر."
   },
   "iscrizioni": {
     "titolo": "تسجيلاتي",

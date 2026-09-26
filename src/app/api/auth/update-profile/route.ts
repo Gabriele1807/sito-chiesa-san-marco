@@ -13,6 +13,13 @@ import {
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserRole, AgeGroup, AdminRequestStatus } from "@/types";
 import { validateSession } from "@/lib/auth/session";
+import {
+  normalizeUsername,
+  isUsernameTaken,
+  findLinkedAdminId,
+  USERNAME_INVALID_ERROR,
+  USERNAME_TAKEN_ERROR,
+} from "@/lib/auth/username";
 
 const VALID_ROLES: UserRole[] = ["credente", "madre", "padre", "ospite_chiesa"];
 const VALID_AGE_GROUPS: AgeGroup[] = ["0-11", "12-18", "19-29", "30-45", "46-65", "65+"];
@@ -87,29 +94,23 @@ export async function POST(request: Request) {
         }
       }
 
-      if (username !== undefined) {
-        if (
-          typeof username !== "string" ||
-          username.length < 3 ||
-          username.length > 30 ||
-          !/^[a-zA-Z0-9_.-]+$/.test(username)
-        ) {
-          return NextResponse.json(
-            { success: false, error: "Username non valido (3–30 caratteri, solo lettere, numeri, . _ -)" },
-            { status: 400 }
-          );
+      let newAdminUsername: string | undefined;
+      if (username !== undefined && username !== currentAdmin.username) {
+        const normalized = normalizeUsername(username);
+        if (!normalized) {
+          return NextResponse.json({ success: false, error: USERNAME_INVALID_ERROR }, { status: 400 });
         }
-        // Check username uniqueness
-        if (username !== currentAdmin.username) {
-          const { data: existing } = await supabaseAdmin
-            .from("admin_users")
-            .select("id")
-            .eq("username", username)
-            .neq("id", adminUserId)
-            .maybeSingle();
-          if (existing) {
-            return NextResponse.json({ success: false, error: "Username già in uso da un altro account" }, { status: 409 });
+        if (normalized !== currentAdmin.username) {
+          // Unicità su admin E utenti, escludendo questo admin e il suo
+          // utente MongoDB collegato (stesso username).
+          const taken = await isUsernameTaken(normalized, {
+            adminId: adminUserId,
+            userId: mongoUser?._id,
+          });
+          if (taken) {
+            return NextResponse.json({ success: false, error: USERNAME_TAKEN_ERROR }, { status: 409 });
           }
+          newAdminUsername = normalized;
         }
       }
 
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
       if (nome !== undefined && typeof nome === "string" && nome.trim()) adminUpdate.nome = nome.trim();
       if (cognome !== undefined && typeof cognome === "string" && cognome.trim()) adminUpdate.cognome = cognome.trim();
       if (email !== undefined && typeof email === "string") adminUpdate.email = email.trim();
-      if (username !== undefined && typeof username === "string") adminUpdate.username = username.trim();
+      if (newAdminUsername) adminUpdate.username = newAdminUsername;
 
       if (requestSuperAdmin === true && currentAdmin.ruolo === "admin" && mongoUser) {
         const currentStatus = mongoUser.superAdminRequest ?? "none";
@@ -150,6 +151,16 @@ export async function POST(request: Request) {
       if (updateError || !updated) {
         console.error("Errore aggiornamento admin:", updateError);
         return NextResponse.json({ success: false, error: "Errore durante il salvataggio" }, { status: 500 });
+      }
+
+      // Admin e utente MongoDB sono collegati tramite username: rinominiamo
+      // anche l'utente, altrimenti me/iscrizioni/change-password perdono il
+      // collegamento.
+      if (newAdminUsername && mongoUser) {
+        const renamed = await updateUserUsername(mongoUser._id, newAdminUsername);
+        if (!renamed.success) {
+          console.error("[update-profile] rinomina utente collegato all'admin fallita:", renamed.error);
+        }
       }
 
       const refreshedMongoUser = await findUserByUsername(updated.username);
@@ -188,20 +199,6 @@ export async function POST(request: Request) {
       }
     }
 
-    if (username !== undefined) {
-      if (
-        typeof username !== "string" ||
-        username.length < 3 ||
-        username.length > 30 ||
-        !/^[a-zA-Z0-9_.-]+$/.test(username)
-      ) {
-        return NextResponse.json(
-          { success: false, error: "Username non valido (3–30 caratteri, solo lettere, numeri, . _ -)" },
-          { status: 400 }
-        );
-      }
-    }
-
     if (role !== undefined && !VALID_ROLES.includes(role)) {
       return NextResponse.json({ success: false, error: "Ruolo non valido" }, { status: 400 });
     }
@@ -220,6 +217,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Utente non trovato" }, { status: 404 });
     }
 
+    // ── Username: validazione e unicità prima di qualunque scrittura ──
+    let newUsername: string | null = null;
+    let linkedAdminId: string | null = null;
+    if (username !== undefined && username !== currentUser.username) {
+      const normalized = normalizeUsername(username);
+      if (!normalized) {
+        return NextResponse.json({ success: false, error: USERNAME_INVALID_ERROR }, { status: 400 });
+      }
+      if (normalized !== currentUser.username) {
+        // Un utente promosso admin ha un record admin_users con lo stesso
+        // username: va escluso dal controllo e rinominato insieme.
+        linkedAdminId =
+          currentUser.adminRequest === "approved"
+            ? await findLinkedAdminId(currentUser.username)
+            : null;
+        const taken = await isUsernameTaken(normalized, {
+          userId,
+          adminId: linkedAdminId ?? undefined,
+        });
+        if (taken) {
+          return NextResponse.json({ success: false, error: USERNAME_TAKEN_ERROR }, { status: 409 });
+        }
+        newUsername = normalized;
+      }
+    }
+
     // ── Apply email change (with uniqueness check) ──────────────
     if (email !== undefined && email !== currentUser.email) {
       const result = await updateUserEmail(userId, email);
@@ -228,11 +251,20 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Apply username change (with uniqueness check) ────────────
-    if (username !== undefined && username !== currentUser.username) {
-      const result = await updateUserUsername(userId, username);
+    // ── Apply username change (checks done above, before any write) ──
+    if (newUsername) {
+      const result = await updateUserUsername(userId, newUsername);
       if (!result.success) {
         return NextResponse.json({ success: false, error: result.error }, { status: 409 });
+      }
+      if (linkedAdminId) {
+        const { error: adminRenameError } = await supabaseAdmin
+          .from("admin_users")
+          .update({ username: newUsername })
+          .eq("id", linkedAdminId);
+        if (adminRenameError) {
+          console.error("[update-profile] rinomina admin collegato fallita:", adminRenameError.message);
+        }
       }
     }
 

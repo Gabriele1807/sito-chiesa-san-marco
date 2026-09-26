@@ -10,6 +10,8 @@ import { createUserSession } from "@/lib/mongo/sessions";
 import type { UserRole, AgeGroup } from "@/types";
 import { VALID_ROLES, VALID_AGE_GROUPS } from "@/lib/auth/registration-constants";
 import { applyNoStore } from "@/lib/oauth/http";
+import { isUsernameTaken } from "@/lib/auth/username";
+import { randomBytes } from "node:crypto";
 
 const IDENTITY_TAKEN_ERROR =
   "Questo account Google/Facebook è già collegato a un altro profilo. Accedi con quel profilo.";
@@ -20,9 +22,25 @@ function isDuplicateKeyError(err: unknown): boolean {
 
 function usernameFromEmail(email: string): string {
   const local = email.split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 15) || "utente";
-  const suffix = Math.random().toString(36).slice(2, 6);
+  const suffix = randomBytes(3).toString("hex").slice(0, 4);
   return `${local}_${suffix}`;
 }
+
+/**
+ * Username generato automaticamente (l'utente può cambiarlo dal profilo),
+ * verificato libero su utenti e admin prima dell'uso: senza controllo una
+ * collisione faceva fallire la registrazione con un messaggio sbagliato.
+ */
+async function generateAvailableUsername(email: string): Promise<string | null> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = usernameFromEmail(email);
+    if (!(await isUsernameTaken(candidate))) return candidate;
+  }
+  return null;
+}
+
+const USERNAME_UNAVAILABLE_ERROR =
+  "Non è stato possibile assegnare un nome utente. Riprova tra qualche istante.";
 
 export async function POST(request: Request): Promise<NextResponse> {
   return applyNoStore(await handlePost(request));
@@ -80,9 +98,14 @@ async function handlePost(request: Request): Promise<NextResponse> {
       );
     }
 
+    const username = await generateAvailableUsername(email);
+    if (!username) {
+      return NextResponse.json({ success: false, error: USERNAME_UNAVAILABLE_ERROR }, { status: 409 });
+    }
+
     const user = await createOAuthUser({
       email,
-      username: usernameFromEmail(email),
+      username,
       nome: pending.nome?.trim() || "Utente",
       cognome: pending.cognome?.trim() || "",
       role: role as UserRole,
@@ -133,6 +156,10 @@ async function handlePost(request: Request): Promise<NextResponse> {
     return res;
   } catch (err) {
     console.error("Errore completamento registrazione OAuth:", err);
+    if (isDuplicateKeyError(err) && err instanceof Error && err.message.includes("username")) {
+      // Username preso da un'altra registrazione tra il controllo e l'insert.
+      return NextResponse.json({ success: false, error: USERNAME_UNAVAILABLE_ERROR }, { status: 409 });
+    }
     if (isDuplicateKeyError(err)) {
       return NextResponse.json(
         {

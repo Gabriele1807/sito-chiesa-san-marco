@@ -28,11 +28,29 @@ function col() {
 
 let indexesEnsured = false;
 
+/** Confronto username senza maiuscole/minuscole (strength 2 = ignora il case). */
+const USERNAME_COLLATION = { locale: "en", strength: 2 } as const;
+
 export async function ensureIndexes(): Promise<void> {
   if (indexesEnsured) return;
   const c = await col();
   await c.createIndex({ email: 1 }, { unique: true });
   await c.createIndex({ username: 1 }, { unique: true });
+  // Unicità senza distinzione maiuscole/minuscole ("Mario" = "mario") anche
+  // a livello di database, contro le race tra controllo e insert. Se il DB
+  // contiene già duplicati storici la creazione fallisce: lo segnaliamo
+  // senza bloccare l'app (i controlli applicativi restano attivi).
+  try {
+    await c.createIndex(
+      { username: 1 },
+      { unique: true, name: "username_ci_unique", collation: USERNAME_COLLATION }
+    );
+  } catch (err) {
+    console.error(
+      "[users] indice username case-insensitive non creato (duplicati esistenti?):",
+      err instanceof Error ? err.message : err
+    );
+  }
   await c.createIndex({ adminRequest: 1 });
   await c.createIndex({ superAdminRequest: 1 });
   indexesEnsured = true;
@@ -133,6 +151,18 @@ export async function findUserByUsername(username: string): Promise<(UserProfile
   const doc = await c.findOne({ username });
   if (!doc) return null;
   return { ...doc, _id: doc._id.toString() } as unknown as UserProfile & { _id: string };
+}
+
+/** Tutti gli utenti il cui username coincide ignorando maiuscole/minuscole. */
+export async function findUsersByUsernameInsensitive(
+  username: string
+): Promise<{ _id: string; username: string }[]> {
+  const c = await col();
+  const docs = await c
+    .find({ username }, { collation: USERNAME_COLLATION, projection: { username: 1 } })
+    .limit(5)
+    .toArray();
+  return docs.map((d) => ({ _id: d._id.toString(), username: d.username as string }));
 }
 
 export async function findUserById(id: string): Promise<UserPublic | null> {

@@ -612,7 +612,8 @@
     "linkedAccountsSuccess": "Account {provider} collegato con successo!",
     "oauthNudgeText": "Puoi accedere più velocemente collegando Google o Facebook al tuo account.",
     "oauthNudgeAction": "Collega un account",
-    "oauthNudgeDismiss": "Chiudi questo avviso"
+    "oauthNudgeDismiss": "Chiudi questo avviso",
+    "usernameHint": "Da 3 a 30 caratteri: lettere, numeri, punto, trattino e underscore. Deve essere diverso da quello di ogni altro account."
   },
   "iscrizioni": {
     "titolo": "Le mie iscrizioni",

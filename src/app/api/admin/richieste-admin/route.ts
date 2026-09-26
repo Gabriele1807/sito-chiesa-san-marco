@@ -127,6 +127,28 @@ export async function POST(request: Request) {
     if (insertError) {
       // Se l'utente esiste già su Supabase (username o email duplicati)
       if (insertError.message.includes("duplicate") || insertError.code === "23505") {
+        // Il collegamento admin ↔ utente passa dallo username: accettiamo il
+        // record esistente solo se è davvero di questa persona (stessa
+        // email), altrimenti l'utente verrebbe legato all'account admin di
+        // qualcun altro (password sincronizzate, revoca sull'account sbagliato).
+        const { data: existingAdmin } = await supabaseAdmin
+          .from("admin_users")
+          .select("email")
+          .eq("username", user.username)
+          .maybeSingle();
+        const sameOwner =
+          existingAdmin?.email &&
+          String(existingAdmin.email).trim().toLowerCase() === user.email.trim().toLowerCase();
+        if (!sameOwner) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Esiste già un amministratore con questo username o email che non corrisponde all'utente. L'utente deve cambiare username prima dell'approvazione.",
+            },
+            { status: 409 }
+          );
+        }
         // Aggiorna solo lo status su MongoDB
         await updateAdminRequest(userId, "approved");
         return NextResponse.json({

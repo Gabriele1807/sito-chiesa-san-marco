@@ -19,7 +19,10 @@ vi.mock("@/lib/mongo/sessions", () => ({
   createUserSession: vi.fn(async () => ({ token: "t", expiresAt: new Date(Date.now() + 1000) })),
 }));
 
+vi.mock("@/lib/auth/username", () => ({ isUsernameTaken: vi.fn(async () => false) }));
+
 import { POST } from "./route";
+import { isUsernameTaken } from "@/lib/auth/username";
 import { verifyOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
 import { findPendingOAuthRegistrationById, deletePendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
 import { findUserByEmail, createOAuthUser, deleteUser } from "@/lib/mongo/users";
@@ -132,5 +135,40 @@ describe("POST /api/auth/oauth/complete-registration", () => {
     expect(deleteUser).toHaveBeenCalledWith("user-1");
     expect(deletePendingOAuthRegistration).toHaveBeenCalledWith("p1");
     expect(res.headers.get("set-cookie") ?? "").not.toContain("user_session=");
+  });
+
+  it("generates a username that is free across users and admins, retrying on collisions", async () => {
+    (verifyOAuthPendingCookie as ReturnType<typeof vi.fn>).mockResolvedValue({ pendingId: "p1" });
+    (findPendingOAuthRegistrationById as ReturnType<typeof vi.fn>).mockResolvedValue(validPending);
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (createOAuthUser as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "user-1", email: "a@b.com" });
+    (createOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (isUsernameTaken as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false);
+
+    const res = await POST(req({ role: "credente", ageGroup: "19-29" }));
+
+    expect(res.status).toBe(201);
+    expect(isUsernameTaken).toHaveBeenCalledTimes(2);
+    const createdWith = (createOAuthUser as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const secondCandidate = (isUsernameTaken as ReturnType<typeof vi.fn>).mock.calls[1][0];
+    expect(createdWith.username).toBe(secondCandidate);
+    expect(createdWith.username).toMatch(/^a_[a-f0-9]{4}$/);
+  });
+
+  it("does not create the account when no free username can be found", async () => {
+    (verifyOAuthPendingCookie as ReturnType<typeof vi.fn>).mockResolvedValue({ pendingId: "p1" });
+    (findPendingOAuthRegistrationById as ReturnType<typeof vi.fn>).mockResolvedValue(validPending);
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (isUsernameTaken as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+
+    const res = await POST(req({ role: "credente", ageGroup: "19-29" }));
+    const json = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(json.error).not.toMatch(/Email già registrata/);
+    expect(createOAuthUser).not.toHaveBeenCalled();
+    (isUsernameTaken as ReturnType<typeof vi.fn>).mockResolvedValue(false);
   });
 });

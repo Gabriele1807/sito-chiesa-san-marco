@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { hashPassword } from "@/lib/auth/password";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
-import { createUser, findUserByEmail, findUserByUsername } from "@/lib/mongo/users";
+import { createUser, findUserByEmail } from "@/lib/mongo/users";
+import { isUsernameTaken } from "@/lib/auth/username";
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
 import { VALID_ROLES, VALID_AGE_GROUPS } from "@/lib/auth/registration-constants";
 
@@ -93,8 +94,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingUsername = await findUserByUsername(username.trim());
-    if (existingUsername) {
+    // Unicità su utenti MongoDB e admin Supabase, senza distinguere maiuscole/minuscole.
+    if (await isUsernameTaken(username.trim())) {
       return NextResponse.json(
         { success: false, error: "Username già in uso" },
         { status: 409 }
