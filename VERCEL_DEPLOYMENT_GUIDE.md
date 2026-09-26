@@ -1,231 +1,204 @@
-# MongoDB Cold Start Fix - Guida Vercel Deployment
+# Guida al deploy su Vercel
 
-## ❌ Problema Riscontrato
+Checklist operativa per pubblicare il sito su Vercel. Aggiornata al 2026-09-26
+(branch `claude/eager-bardeen-h13079`). Nessun valore segreto in questo file:
+i nomi delle variabili sono descritti in `.env.example`.
 
-**Errore in Vercel al primo accesso:**
-```
-MongoServerSelectionError: Server selection timed out after 30000 ms
-```
-
-**Root Cause:**
-- Timeout di 30 secondi insufficiente per Vercel cold start
-- Connessione MongoDB non riutilizzata tra richieste
-- Mancanza di retry logic con backoff esponenziale
-- Pool size non ottimizzato per ambiente serverless
+Per i dettagli tecnici del retry MongoDB vedi `MONGODB_COLD_START_FIX.md`;
+per OAuth `docs/OAUTH_SETUP.md`; per l'email `docs/EMAIL_SETUP.md`; per il
+primo admin `ADMIN_SETUP.md`.
 
 ---
 
-## ✅ Soluzione Implementata
+## 0. Da fare subito, prima di qualsiasi deploy (sicurezza)
 
-### 1. **Configurazione Ottimizzata MongoDB** (`src/lib/mongo/connection-utils.ts`)
+Il repository GitHub è **pubblico**. Fino al 2026-09-26 `test-mongodb.js`
+conteneva la stringa di connessione MongoDB Atlas dell'utente `admin` con la
+password in chiaro. È stata rimossa dal codice, ma **resta nella cronologia
+Git** e va considerata compromessa.
 
-- ✓ `serverSelectionTimeoutMS: 60000` (doppio il default)
-- ✓ `connectTimeoutMS: 30000`
-- ✓ `socketTimeoutMS: 45000`
-- ✓ `maxPoolSize: 5` (ottimale per serverless)
-- ✓ `retryWrites: true` e `retryReads: true`
-- ✓ `keepAlive: true` (mantiene connessione viva)
-
-### 2. **Retry Logic con Backoff Esponenziale** (`src/lib/mongo/connection-utils.ts`)
-
-```
-Tentativo 1: immediatamente
-Tentativo 2: dopo 1 secondo
-Tentativo 3: dopo 2 secondi
-Max ritardo: 5 secondi (evita timeouts)
-```
-
-### 3. **Health Check Periodico** (`src/lib/mongo/client.ts`)
-
-- Verifica connessione ogni 30 secondi
-- Utilizza `db.admin().command({ ping: 1 })`
-- Continua operazioni anche se health check fallisce
-
-### 4. **Configurazione Vercel** (`vercel.json`)
-
-```json
-{
-  "functions": {
-    "src/app/api/**": {
-      "maxDuration": 60
-    }
-  }
-}
-```
-
-- API route timeout: 60 secondi (vs default 30)
-- Consente connessione completarsi durante cold start
+1. **MongoDB Atlas → Database Access**: cambia la password dell'utente
+   `admin` (o eliminalo) e crea un utente dedicato all'app con il solo ruolo
+   `readWrite` sul database dell'app (non `atlasAdmin`).
+2. **Atlas → Network Access**: su Vercel gli IP in uscita non sono fissi, per
+   questo spesso si usa `0.0.0.0/0`. È accettabile solo con una password nuova,
+   lunga e casuale e con un utente a privilegi minimi.
+3. **Atlas → Project → Activity Feed / log di accesso**: controlla accessi o
+   operazioni anomale dal luglio 2026 in poi.
+4. Aggiorna `MONGODB_URI` ovunque sia configurata (Vercel, `.env.local`).
+5. Se il superadmin è stato creato con la password d'esempio che compariva
+   nello schema (`sanmarco2026`), cambiala subito dal profilo.
+6. (Facoltativo) Rimuovere la password anche dalla cronologia richiede una
+   riscrittura della history (`git filter-repo`) e un force push su `main`:
+   operazione distruttiva, da valutare a parte. La rotazione del punto 1 è
+   sufficiente a neutralizzare il rischio.
 
 ---
 
-## 🚀 Come Deployare
+## 1. Impostazioni del progetto Vercel
 
-### Prerequisites
+| Voce | Valore |
+|---|---|
+| Framework preset | Next.js (anche `vercel.json` → `"framework": "nextjs"`) |
+| Build command | `next build` (da `vercel.json`) |
+| Install command | default (`npm install`); `package-lock.json` è sincronizzato e `npm ci` funziona |
+| Output directory | default di Next.js (non impostarla) |
+| Node.js version | 22.x (verificato in locale con Node 22 + npm 10; Next 16 richiede ≥ 20.9) |
+| Root directory | radice del repository |
+| Function max duration | 60 s per `src/app/api/**` (da `vercel.json`) |
 
-1. **MongoDB Atlas** con IP whitelist:
-   - Dashboard → Network Access
-   - Aggiungi `0.0.0.0/0` (Vercel usa IP dinamici)
-   - Oppure: aggiorna ogni volta che Vercel cambia IP
+Nessun cron job, webhook o storage di file locale è richiesto dall'app.
 
-2. **Vercel Environment Variables:**
+---
+
+## 2. Variabili d'ambiente su Vercel
+
+Project → Settings → Environment Variables. Marca come **Sensitive** tutte le
+chiavi/segreti. Dopo ogni modifica serve un **nuovo deploy** (le
+`NEXT_PUBLIC_*` sono incorporate al momento della build).
+
+| Variabile | Production | Preview | Scopo |
+|---|---|---|---|
+| `MONGODB_URI` | ✅ obbligatoria | ✅ obbligatoria (build) — meglio un cluster/DB separato | Database contenuti, utenti, iscrizioni |
+| `MONGODB_DB` | ✅ | ✅ (es. nome diverso per i preview) | Nome database |
+| `ADMIN_SESSION_SECRET` | ✅ obbligatoria | ✅ (valore diverso) | Firma JWT sessioni e cookie OAuth |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ obbligatoria | ✅ | Progetto Supabase (admin) |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ obbligatoria | ✅ | Accesso server a `admin_users` |
+| `NEXT_PUBLIC_SITE_URL` | ✅ obbligatoria (`https://dominio-definitivo`, senza `/` finale) | ❌ lasciare vuota | Link email e redirect OAuth |
+| `UPSTASH_REDIS_REST_URL` / `_TOKEN` (oppure `KV_REST_API_URL` / `_TOKEN`) | ✅ consigliata | facoltativa | Rate limit e revoca sessioni admin condivisi |
+| `RESEND_API_KEY` | ✅ per il reset password | ❌ | Invio email |
+| `EMAIL_FROM_AUTH` | ✅ obbligatoria se c'è Resend | ❌ | Mittente (dominio verificato) |
+| `EMAIL_REPLY_TO` | facoltativa | ❌ | Indirizzo di risposta |
+| `PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES` | facoltativa (default 60) | — | Validità link reset |
+| `GOOGLE_CLIENT_ID` / `_SECRET` | facoltative | ❌ | Login con Google |
+| `FACEBOOK_CLIENT_ID` / `_SECRET` | facoltative | ❌ | Login con Facebook |
+| `YOUTUBE_API_KEY` | facoltativa | facoltativa | Video in home |
+| `BREVO_*`, `EMAIL_FROM_EVENTS`, `EMAIL_FROM_NEWSLETTER`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ❌ non usate dal codice | ❌ | — |
+
+Perché i Preview senza `NEXT_PUBLIC_SITE_URL`, OAuth e Resend: gli URL dei
+preview cambiano a ogni deploy, quindi non corrispondono alle callback
+registrate sui provider, e i link di reset punterebbero al dominio sbagliato.
+Senza queste variabili, in produzione (i preview girano con
+`NODE_ENV=production`) OAuth risulta "non disponibile" e il reset password
+non invia email: entrambi i casi sono segnalati nei log, senza errori per
+l'utente. Se i preview usano lo **stesso** database di produzione, ogni prova
+su un preview modifica dati reali.
+
+---
+
+## 3. Servizi esterni (in quest'ordine)
+
+1. **Dominio**: aggiungi il dominio definitivo in Vercel → Domains e
+   configura il DNS come indicato da Vercel. Poi imposta
+   `NEXT_PUBLIC_SITE_URL` su quel dominio (con `https://`, senza `/` finale).
+2. **Supabase → SQL Editor**, sul database esistente:
+   ```sql
+   ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+   ALTER TABLE admin_sessions ENABLE ROW LEVEL SECURITY;
    ```
-   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/?retryWrites=true&w=majority
-   MONGODB_DB=chiesa_san_marco
-   ```
-
-### Deploy Steps
-
-```bash
-# 1. Testa localmente
-npm run dev
-# Verifica che la connessione funzioni
-
-# 2. Commit changes
-git add .
-git commit -m "fix: optimize MongoDB cold start for Vercel"
-
-# 3. Push
-git push origin main
-
-# 4. Vercel auto-deploy
-# ✓ Attendi build e deployment
-
-# 5. Test sul sito live
-# Apri: https://sito-chiesa-san-marco.vercel.app
-# Refresh pagina più volte (verifica non fallisce più)
-```
-
----
-
-## 🔍 Debugging
-
-### Verificare Logs Vercel
-
-```bash
-# Visualizza deployment logs
-vercel logs --prod
-
-# Cerca pattern:
-# ✓ "[MongoDB] Connection attempt" → tentava connessione
-# ✓ "[MongoDB] ✓ Connected successfully" → riuscito
-# ✗ "[MongoDB] ✗ Connection attempt" → fallito
-```
-
-### Test Locale
-
-```bash
-# Test connessione MongoDB
-node test-mongodb.js
-
-# Dovrebbe stampare:
-# Connected to MongoDB
-# Database: chiesa_san_marco
-# Collections: [...]
-```
-
-### Verificare connection pool
-
-```bash
-# Nel browser console (dopo reload):
-# Apri DevTools → Network → Preview della richiesta API
-# Verifica response time durante primo accesso vs. successivi
-```
+   (già inclusi in `src/lib/supabase/schema.sql` per le nuove installazioni;
+   l'app usa la service role e non ne è influenzata). Verifica che esista
+   almeno un superadmin attivo con password robusta.
+3. **Upstash Redis**: collega un database (Vercel → Storage/Marketplace
+   crea automaticamente `KV_REST_API_URL`/`KV_REST_API_TOKEN`).
+4. **Resend**: verifica il dominio mittente (record SPF, DKIM, DMARC:
+   `docs/EMAIL_SETUP.md`), crea una API key con permesso "Sending access",
+   imposta `EMAIL_FROM_AUTH` su un indirizzo di quel dominio.
+5. **Google Cloud Console** → Credentials → OAuth client (Web):
+   - Authorized redirect URI: `https://<dominio>/api/auth/oauth/google/callback`
+   - OAuth consent screen: link a Home, **Privacy** (`https://<dominio>/privacy`)
+     e **Termini** (`https://<dominio>/termini`); pubblica l'app ("In
+     production"), altrimenti accedono solo gli utenti di test.
+6. **Meta for Developers** (Facebook Login):
+   - Valid OAuth Redirect URI: `https://<dominio>/api/auth/oauth/facebook/callback`
+   - App settings → Basic: Privacy Policy URL `https://<dominio>/privacy`,
+     Terms of Service URL `https://<dominio>/termini`, "User data deletion" →
+     istruzioni: `https://<dominio>/privacy#diritti` (richiesto da Meta per
+     andare Live).
+   - Passa l'app in modalità **Live**. Se è attivo "Require App Secret" va
+     bene: il codice invia `appsecret_proof`.
+7. **YouTube Data API** (facoltativa): limita la API key alla sola "YouTube
+   Data API v3".
+8. **MongoDB**: nessuna migrazione da eseguire. Gli indici vengono creati
+   dall'app al primo uso (incluso `username_ci_unique`). Script facoltativo e
+   idempotente: `npm run backfill-has-password` (con `MONGODB_URI` di
+   produzione, solo se vuoi rendere esplicito `hasPassword`).
 
 ---
 
-## 📊 Metriche Attese
+## 4. Pubblicazione
 
-| Scenario | Prima | Dopo | Miglioramento |
-|----------|-------|------|--------------|
-| First load (cold) | ❌ Timeout | ✓ ~2-5s | Fixed |
-| Subsequent loads | ✓ ~500ms | ✓ ~300ms | +40% |
-| Health check | - | Every 30s | Proattivo |
-| Max retry delay | - | 5s | Boundsato |
+1. Rivedi e unisci la PR su `main`: Vercel crea il deploy di produzione.
+   In alternativa verifica prima il deploy di Preview della PR.
+2. Se hai cambiato variabili dopo l'ultimo build: Deployments → ultimo
+   deploy → **Redeploy** (senza cache se hai cambiato `NEXT_PUBLIC_*`).
 
 ---
 
-## ⚠️ Configurazioni Critiche
+## 5. Verifiche subito dopo il primo deploy (sul dominio pubblico)
 
-### ❌ NÃO fare:
+| # | Verifica | Esito atteso |
+|---|---|---|
+| 1 | Apri `/`, `/chi-siamo`, `/privacy`, `/termini` in IT e AR | Pagine visibili, arabo da destra a sinistra |
+| 2 | `curl -sI https://<dominio>/` | Header `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options: DENY`; nessun `X-Powered-By` |
+| 3 | `curl -s -o /dev/null -w "%{http_code}" https://<dominio>/api/admin/eventi` | `401` |
+| 4 | Registrazione classica + login + logout | Funzionano; sessione mantenuta tra le pagine |
+| 5 | Profilo → cambio password | Resti connesso; su un altro browser la vecchia sessione non vale più |
+| 6 | "Password dimenticata?" con un tuo account | Email ricevuta (controlla anche lo spam) nella lingua del sito; link apre `/reset-password`, reset riuscito, login con la nuova password |
+| 7 | Login con Google e con Facebook (account nuovo e già collegato) | Redirect al provider e ritorno sul sito loggati; collegamento/scollegamento dal profilo |
+| 8 | Admin: login, dashboard, export PDF iscrizioni (anche con nomi in arabo) | PDF scaricato; eventuali caratteri non latini mostrati come `?` con nota |
+| 9 | Cambio username dal profilo (libero / già usato) | Salvato / errore "già in uso" |
+| 10 | Vercel → Logs (Runtime) | Nessuna delle righe della tabella seguente |
 
-```typescript
-// ✗ SBAGLIATO: Timeout di default
-const client = new MongoClient(uri);
+Righe di log che indicano un problema di configurazione:
 
-// ✗ SBAGLIATO: Nessun retry
-await client.connect();
-
-// ✗ SBAGLIATO: Connessione nuova ogni richiesta
-new MongoClient(uri).connect();
-```
-
-### ✅ CORRETTO:
-
-```typescript
-// ✓ Con timeout ottimizzato e retry
-await connectWithRetry(uri, {
-  maxAttempts: 3,
-  initialDelayMs: 1000,
-  maxDelayMs: 5000,
-});
-```
-
----
-
-## 🔗 Risorse
-
-- [MongoDB Connection String Options](https://www.mongodb.com/docs/manual/reference/connection-string/#connection-string-options)
-- [Vercel Functions Configuration](https://vercel.com/docs/functions/serverless-functions/edge-middleware)
-- [Serverless MongoDB Best Practices](https://www.mongodb.com/docs/atlas/manage-connections/)
+| Log | Causa |
+|---|---|
+| `Variabile d'ambiente MONGODB_URI mancante` | `MONGODB_URI` non impostata |
+| `[MongoDB] Connection promise failed` ripetuto | Credenziali o Network Access Atlas |
+| `ADMIN_SESSION_SECRET non è impostata` | Variabile mancante |
+| `Variabili d'ambiente Supabase server mancanti` | `NEXT_PUBLIC_SUPABASE_URL` o `SUPABASE_SERVICE_ROLE_KEY` |
+| `[oauth] … disabilitato: NEXT_PUBLIC_SITE_URL mancante` | `NEXT_PUBLIC_SITE_URL` assente al build |
+| `[forgot-password] NEXT_PUBLIC_SITE_URL mancante` | Idem, per il reset password |
+| `[email] reset-password send skipped: RESEND_API_KEY not configured` | Resend non configurato |
+| `[email] reset-password send skipped: EMAIL_FROM_AUTH not configured` | Mittente mancante in produzione |
+| `[email] reset-password send failed` | Chiave Resend errata o dominio non verificato |
+| `[redis] … non configurate` | Redis assente (funziona, ma protezioni per singola istanza) |
+| `[users] indice username case-insensitive non creato` | Username storici duplicati per maiuscole: rinominarne uno |
+| Errore OAuth `redirect_uri_mismatch` (Google) / "URL bloccato" (Facebook) | Callback non registrata o dominio diverso da `NEXT_PUBLIC_SITE_URL` |
 
 ---
 
-## 📝 Checklist Post-Deploy
+## 6. Come tornare indietro
 
-- [ ] Deployment completato su Vercel
-- [ ] Logs mostrano "✓ Connected successfully"
-- [ ] Primo accesso al sito non fallisce
-- [ ] API `/api/admin/iscrizioni/export` funziona
-- [ ] Refresh non cambia comportamento
-- [ ] Monitorare Vercel Analytics per 24h
-
----
-
-## 🆘 Se Ancora Fallisce
-
-### 1. Controlla IPv4/IPv6 in MongoDB Atlas
-
-```
-Network Access → add IP → 0.0.0.0/0
-```
-
-### 2. Aumenta timeout in vercel.json
-
-```json
-{
-  "functions": {
-    "src/app/api/**": {
-      "maxDuration": 120
-    }
-  }
-}
-```
-
-### 3. Verifica MONGODB_URI
-
-```bash
-# Non deve contenere spazi extra
-# Format: mongodb+srv://username:password@cluster.mongodb.net/database?options
-```
-
-### 4. Contatta MongoDB Support
-
-Se problema persiste, fornire:
-- Connection logs from Vercel
-- MONGODB_URI (senza password!)
-- Vercel logs digest
+- **Codice**: Vercel → Deployments → deploy precedente funzionante →
+  **Instant Rollback** (o "Promote to Production"). Non richiede rebuild.
+- **Variabili d'ambiente**: ripristina il valore precedente e fai Redeploy.
+  Cambiare `ADMIN_SESSION_SECRET` disconnette tutti gli utenti.
+- **Database**: questa versione non esegue migrazioni distruttive. L'unica
+  modifica automatica è l'indice aggiuntivo `username_ci_unique` su `users`
+  (rimovibile con `db.users.dropIndex("username_ci_unique")`, non necessario
+  per il rollback). RLS su Supabase è reversibile con `DISABLE ROW LEVEL
+  SECURITY`, ma non serve disattivarlo: il codice precedente usa anch'esso la
+  service role.
+- **OAuth/Resend**: le configurazioni sui portali sono additive (nuove
+  callback/domini) e non interferiscono con un rollback.
 
 ---
 
-**Ultimo aggiornamento:** 2026-07-06
-**Versione:** 1.0 (Retry Logic v1)
+## 7. Limiti noti al momento del deploy
+
+- Con MongoDB irraggiungibile, `getDb()` ritenta con timeout lunghi
+  (vedi `MONGODB_COLD_START_FIX.md`): in locale una richiesta ha impiegato
+  ~110 s prima dell'errore, oltre i 60 s di `maxDuration`, quindi su Vercel
+  diventa un timeout 504. Con Atlas raggiungibile non si presenta; se accade,
+  controllare credenziali/Network Access prima di toccare i timeout.
+- Export PDF iscrizioni: i font standard non supportano arabo/copto; quei
+  caratteri appaiono come `?` (nota nel PDF). Il supporto completo richiede
+  un font Unicode con shaping arabo.
+- Senza Redis, rate limit e revoca sessioni admin non sono condivisi tra
+  istanze serverless.
+- `arctic` (libreria OAuth) e le dipendenze `@oslojs/*` risultano deprecate
+  su npm: funzionano, ma vanno sostituite in un intervento dedicato.
+- La mappa Google Maps in `/contatti` può impostare cookie di terze parti
+  senza consenso preventivo.

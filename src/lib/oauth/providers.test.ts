@@ -83,4 +83,34 @@ describe("provider adapters", () => {
       fetchSpy.mockRestore();
     }
   });
+
+  it("disables providers in production when NEXT_PUBLIC_SITE_URL is missing (no localhost fallback)", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.GOOGLE_CLIENT_ID = "client-id";
+    process.env.GOOGLE_CLIENT_SECRET = "client-secret";
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(getProviderAdapter("google")).toBeNull();
+      expect(error).toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("keeps the localhost callback in development when NEXT_PUBLIC_SITE_URL is missing", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.GOOGLE_CLIENT_ID = "client-id";
+    process.env.GOOGLE_CLIENT_SECRET = "client-secret";
+    try {
+      const url = getProviderAdapter("google")!.createAuthorizationURL("s", "v");
+      expect(url.searchParams.get("redirect_uri")).toBe(
+        "http://localhost:3000/api/auth/oauth/google/callback"
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });

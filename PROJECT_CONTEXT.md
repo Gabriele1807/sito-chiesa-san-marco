@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto (ultimo allineamento col codice: 2026-09-26, audit OAuth/email §7.4.11 e §7.5.7–7.5.9). Riflette lo stato reale del repository: contenuti pubblici letti da MongoDB, area admin protetta, supporto bilingue italiano/arabo e nessun seed demo automatico nei layer dati.
+> Documento di contesto operativo del progetto (ultimo allineamento col codice: 2026-09-26, audit OAuth/email §7.4.11 e §7.5.7–7.5.9, preparazione deploy Vercel §13). Riflette lo stato reale del repository: contenuti pubblici letti da MongoDB, area admin protetta, supporto bilingue italiano/arabo e nessun seed demo automatico nei layer dati.
 
 ---
 
@@ -101,9 +101,13 @@ npm run generate-hash -- "password"
     senza introdurre una CSP a nonce (cambio architetturale più ampio)
 
 - `vercel.json`
-  - build command: `next build`
-  - route API con `maxDuration` maggiore
+  - build command: `next build`, framework `nextjs`
+  - route API (`src/app/api/**`) con `maxDuration` 60 s
   - cache-control disattivato sulle API
+  - (2026-09-26) rimosso il rewrite `/api/:path*` → `/api/:path*`, che non
+    faceva nulla
+- Deploy: procedura, variabili per ambiente, servizi esterni, verifiche
+  post-deploy e rollback in `VERCEL_DEPLOYMENT_GUIDE.md` (§13)
 
 - `eslint.config.mjs`
   - configurazione lint del progetto
@@ -147,7 +151,7 @@ EMAIL_FROM_NEWSLETTER=
 
 Note operative:
 
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` alimentano il layer admin Supabase.
+- `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` alimentano il layer admin Supabase (solo server). `NEXT_PUBLIC_SUPABASE_ANON_KEY` non è usata: `src/lib/supabase/client.ts` non è importato da nessuna parte.
 - `ADMIN_SESSION_SECRET` firma la sessione admin JWT.
 - `MONGODB_URI` e `MONGODB_DB` alimentano MongoDB per contenuti, utenti e iscrizioni.
 - `NEXT_PUBLIC_SITE_URL` è la base degli URL assoluti che escono dal sito
@@ -1110,11 +1114,9 @@ Verifiche eseguite:
 - `src/lib/mongo/client.ts` ritenta la connessione per ~70 s prima di
   fallire e produce `unhandledRejection` nei log quando MongoDB non è
   raggiungibile (preesistente, fuori scope).
-- In questo ambiente `npm ci` fallisce ("Missing: @swc/helpers@0.5.23 from
-  lock file", dipendenza peer opzionale di `next-intl`) con npm 10; il
-  lockfile non è stato rigenerato per non introdurre differenze legate
-  alla versione di npm. Verificare con la versione di npm usata in
-  sviluppo/CI e, se serve, rigenerarlo con `npm install`.
+- ~~`npm ci` fallisce per lockfile non sincronizzato~~ — risolto il
+  2026-09-26 (§13): lockfile rigenerato con npm 10 (quello di Node 22,
+  usato su Vercel); `npm ci` verificato da zero sia con npm 10 sia con npm 11.
 
 ---
 
@@ -1629,7 +1631,9 @@ rischio/alto impatto senza bisogno di credenziali o decisioni esterne
 
 ### 10.7.2 Middleware di sicurezza per le route admin
 
-- Nuovo `src/middleware.ts` con `matcher: ["/api/admin/:path*"]`: verifica
+- Nuovo `src/middleware.ts` (dal 2026-09-26 `src/proxy.ts` con funzione
+  `proxy()`, convenzione di Next.js 16; il nome `middleware` è deprecato)
+  con `matcher: ["/api/admin/:path*"]`: verifica
   JWT (`verifyJwt`, Edge-compatibile via Web Crypto) e, quando Redis è
   configurato, la revoca token, **prima** che la richiesta raggiunga
   l'handler. Escluse esplicitamente `/api/admin/login` (deve restare
@@ -1881,6 +1885,7 @@ npm install
 npm run dev
 npm run build          # richiede MONGODB_URI (anche segnaposto) per "Collecting page data"
 npm run lint           # baseline: 16 errori / 35 warning preesistenti, fuori dai flussi auth/email
+npm ci                 # installazione pulita come su CI/Vercel (lockfile generato con npm 10)
 npm test               # vitest; nessun test invia email reali o contatta provider esterni
 npx tsc --noEmit
 npx prettier --check <file toccati>   # formattare solo i file modificati, non tutto il repo (§10.7.3)
@@ -1891,3 +1896,65 @@ Per l'hash bcrypt iniziale di un admin:
 ```bash
 npm run generate-hash -- "la-tua-password"
 ```
+
+---
+
+## 13. Preparazione al deploy su Vercel (2026-09-26)
+
+Guida operativa completa: `VERCEL_DEPLOYMENT_GUIDE.md` (variabili per
+ambiente, ordine delle configurazioni su Supabase/Upstash/Resend/Google/Meta,
+verifiche post-deploy, righe di log da riconoscere, rollback). Qui solo lo
+stato del codice e le decisioni.
+
+**Sicurezza — azione manuale urgente.** Il repository GitHub è pubblico e
+`test-mongodb.js` conteneva come fallback la connessione MongoDB Atlas
+dell'utente `admin` con password in chiaro (introdotta nel commit iniziale
+di luglio). Rimossa dal codice (lo script ora richiede `MONGODB_URI`), ma
+resta nella cronologia: **va ruotata su Atlas** (guida §0). Nessun'altra
+credenziale reale trovata nella cronologia (controllati URI MongoDB, JWT
+Supabase, chiavi Resend/Google/Brevo). `.dbg/export-iscrizioni-vercel.env`
+(sessione di debug, nessuna credenziale) era tracciato nonostante
+`.gitignore`: rimosso dall'indice. Esempio di password `sanmarco2026` tolto
+da `schema.sql`/`generate-hash.ts`; `schema.sql` abilita RLS su
+`admin_users`/`admin_sessions` (da applicare a mano sul DB esistente).
+
+**Correzioni nel codice**
+
+| Problema | Correzione |
+|---|---|
+| `src/lib/mongo/client.ts`: la catena `.then().catch()` "di servizio" rilanciava l'errore in una promise non attesa → `unhandledRejection` a ogni connessione fallita (può terminare la funzione); connessione avviata all'import del modulo, anche durante `next build` | La catena non rilancia più (il chiamante riceve comunque l'errore); connessione **pigra** alla prima `getDb()`; rimosso l'export `clientPromise` non usato. Test `client.test.ts` (falliscono col codice precedente). Verificato con `next start` e MongoDB irraggiungibile: 0 `unhandledRejection`, server vivo |
+| Export PDF iscrizioni: 500 con un solo carattere non WinAnsi (arabo, copto, emoji, "Ğ") — bug aperto in `debug-export-iscrizioni-vercel.md` | `src/lib/pdf/winansi.ts` (`createPdfTextSanitizer`): diacritici ridotti, resto → `?` con nota nel PDF. Test di route con dati arabi (fallisce senza fix) |
+| `middleware.ts` deprecato in Next 16 (warning in build) | Rinominato `src/proxy.ts` / `proxy()` (verificato sul template di Next 16.1.6); test `proxy.test.ts` |
+| OAuth: senza `NEXT_PUBLIC_SITE_URL` la `redirect_uri` ripiegava su `http://localhost:3000` anche in produzione | In produzione il provider risulta non configurato con errore `[oauth] … disabilitato` nei log; fallback localhost solo fuori produzione |
+| Redis assente in produzione: fallback in memoria silenzioso | Avviso `[redis] …` una volta per istanza in produzione (comportamento invariato) |
+| `vercel.json` con rewrite inutile | Rimosso |
+| `package-lock.json` non sincronizzato (`npm ci` falliva) | Rigenerato con npm 10 (vedi sopra) |
+| `.env.example` senza distinzione obbligatorie/opzionali | Riorganizzato: obbligatorie, consigliate, opzionali, predisposte non usate |
+
+**Decisioni**
+- I Preview **non** dovrebbero avere `NEXT_PUBLIC_SITE_URL`, OAuth e Resend
+  (URL variabili ≠ callback registrate; link email verso il dominio
+  sbagliato). Senza, il codice li disattiva in modo esplicito e loggato.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `src/lib/supabase/client.ts` non sono
+  usati da nessuna parte: la chiave non serve e non finisce nel bundle.
+- Nessun segreto server nel bundle client (scansione di `.next/static` dopo
+  la build con valori segnaposto riconoscibili).
+- Timeout MongoDB non modificati: con DB irraggiungibile una richiesta ha
+  impiegato ~110 s (> `maxDuration` 60 s → 504 su Vercel). Da rivedere solo
+  con dati reali di produzione (`MONGODB_COLD_START_FIX.md`).
+
+**Verifiche eseguite (2026-09-26)**: `npm ci` da zero (npm 10 e npm 11),
+`npx eslint` (16 errori / 35 warning preesistenti, quasi tutti negli script
+di audit i18n alla radice; 0 nei file toccati; `next build` non esegue il
+lint), `npx tsc --noEmit` (0), `npx vitest run` (34 file, 167 test),
+`next build` (ok, nessun warning di deprecazione, nessuna connessione DB in
+build), smoke test con `next start`: header di sicurezza, `401` su
+`/api/admin/*` senza sessione, redirect OAuth con `oauthError`, MongoDB
+giù senza crash. **Non verificabile senza account reali**: invio email
+Resend, OAuth Google/Facebook, connessione ad Atlas/Supabase/Upstash di
+produzione, comportamento sul dominio pubblico. `vercel build` non eseguito
+(richiede login e collegamento al progetto Vercel).
+
+**Limiti aperti**: `arctic` e `@oslojs/*` deprecati su npm; PDF senza
+supporto arabo reale; mappa Google Maps senza consenso preventivo;
+`src/lib/mongo/connection-utils.ts` con timeout più lunghi di `maxDuration`.

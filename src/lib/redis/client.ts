@@ -24,5 +24,14 @@ export function getRedis(): Redis | null {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
 
   client = url && token ? new Redis({ url, token }) : null;
+  if (!client && process.env.NODE_ENV === "production") {
+    // Su Vercel ogni istanza serverless ha la propria memoria: senza Redis il
+    // rate limiting e la revoca delle sessioni admin al logout valgono solo
+    // per l'istanza che gestisce la richiesta. Non blocca l'app, ma va visto.
+    console.warn(
+      "[redis] UPSTASH_REDIS_REST_URL/TOKEN (o KV_REST_API_URL/TOKEN) non configurate: " +
+        "rate limiting e revoca sessioni admin usano la memoria della singola istanza."
+    );
+  }
   return client;
 }

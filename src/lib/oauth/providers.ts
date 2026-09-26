@@ -25,8 +25,21 @@ export interface ProviderAdapter {
   validateCallback(code: string, codeVerifier?: string): Promise<OAuthProfile>;
 }
 
-function callbackUrl(provider: SupportedProvider): string {
-  const base = getSiteUrl() ?? "http://localhost:3000";
+/**
+ * Callback registrata sui portali provider. In produzione deve derivare da
+ * NEXT_PUBLIC_SITE_URL: senza, ritorna null e il provider risulta non
+ * configurato (errore nei log), invece di mandare al provider una
+ * redirect_uri "localhost" che fallirebbe solo dopo il consenso dell'utente.
+ */
+function callbackUrl(provider: SupportedProvider): string | null {
+  const base =
+    getSiteUrl() ?? (process.env.NODE_ENV === "production" ? null : "http://localhost:3000");
+  if (!base) {
+    console.error(
+      `[oauth] ${provider} disabilitato: NEXT_PUBLIC_SITE_URL mancante o non valida in produzione`
+    );
+    return null;
+  }
   return `${base}/api/auth/oauth/${provider}/callback`;
 }
 
@@ -34,8 +47,10 @@ function buildGoogleAdapter(): ProviderAdapter | null {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) return null;
+  const redirectUri = callbackUrl("google");
+  if (!redirectUri) return null;
 
-  const google = new Google(clientId, clientSecret, callbackUrl("google"));
+  const google = new Google(clientId, clientSecret, redirectUri);
 
   return {
     usesPkce: true,
@@ -72,8 +87,10 @@ function buildFacebookAdapter(): ProviderAdapter | null {
   const clientId = process.env.FACEBOOK_CLIENT_ID;
   const clientSecret = process.env.FACEBOOK_CLIENT_SECRET;
   if (!clientId || !clientSecret) return null;
+  const redirectUri = callbackUrl("facebook");
+  if (!redirectUri) return null;
 
-  const facebook = new Facebook(clientId, clientSecret, callbackUrl("facebook"));
+  const facebook = new Facebook(clientId, clientSecret, redirectUri);
 
   return {
     usesPkce: false,
