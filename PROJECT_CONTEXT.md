@@ -1168,6 +1168,8 @@ Verifiche eseguite:
 - `src/app/(main)/profilo/page.tsx`
 - `src/app/(main)/forgot-password/page.tsx`, `src/app/(main)/reset-password/page.tsx`
   (client component tradotti, §7.5.1)
+- `src/app/(main)/privacy/page.tsx`, `src/app/(main)/termini/page.tsx` — Informativa
+  privacy e Termini di servizio (§10.9)
 
 ### 9.3 App admin
 
@@ -1823,6 +1825,43 @@ e stato autenticato):
 - **Ancora non verificato**: il modale di iscrizione evento (richiede
   un evento pubblicato e superare il gate `SectionVisibilityGate`, non
   praticabile rapidamente in questa sessione) e la resa in arabo.
+
+## 10.9 Informativa privacy e Termini di servizio (2026-09-26)
+
+- Pagine `/privacy` e `/termini` (server component), testi IT/AR in costanti
+  nella pagina (stessa convenzione di `chi-siamo`), layout condiviso
+  `src/components/legal/LegalDocument.tsx` con indice ad ancore. Il
+  contenitore imposta `dir="rtl"`/`lang="ar"` per l'arabo (il layout radice
+  resta `dir="ltr"`, §6.4.1). La versione araba dichiara che fa fede
+  l'italiano.
+- Contenuto basato sul trattamento **reale** del codice: dati di account,
+  OAuth, iscrizioni eventi, reset password, IP per rate limiting; fornitori
+  Vercel, MongoDB, Supabase, Upstash, Resend, Google/Facebook, YouTube,
+  Google Maps, Google Drive; tempi di conservazione tecnici (sessione 24h/7gg,
+  token reset 60 min, pending OAuth 24h); solo cookie tecnici; art. 9.2.d GDPR
+  per i dati che rivelano l'appartenenza religiosa; minori di 14 anni.
+  **Quando cambia il trattamento (nuovi dati, fornitori, cookie, invii
+  email) vanno aggiornate queste pagine e la costante `UPDATED_AT`.**
+- Metadati/SEO via namespace `legal` (`privacyTitle`, `termsTitle`, …);
+  pagine aggiunte a `sitemap.ts`; link nel footer (`legal.footerPrivacy`,
+  `legal.footerTerms`); avviso con link (nuova scheda) nell'ultimo step di
+  `RegisterModal` (`legal.registerNotice`, comune a registrazione classica e
+  OAuth). Nota ICU: in `it.json` usare l'apostrofo tipografico `’` prima di
+  un tag rich-text (`l’<privacy>`): `'` seguito da `<` fa da escape e il tag
+  viene mostrato come testo.
+- Video YouTube incorporati da `youtube-nocookie.com` (modalità privacy
+  avanzata, già consentita dalla CSP), coerentemente con l'informativa.
+- Verifiche: typecheck, lint invariato, build, browser (IT mobile 390px senza
+  scroll orizzontale, AR desktop RTL, ancore dell'indice, link footer,
+  avviso in registrazione).
+- **Da completare a cura della comunità** (non inventato nel testo): eventuali
+  dati identificativi dell'ente (denominazione legale, codice fiscale),
+  eventuale DPO, tempi di conservazione effettivi delle iscrizioni agli
+  eventi. La mappa Google Maps in `/contatti` è un iframe che può impostare
+  cookie di terze parti senza consenso preventivo: per piena conformità alle
+  linee guida del Garante andrebbe caricata solo dopo un clic (o sostituita
+  con un link). Il testo non è una consulenza legale: farlo rivedere prima
+  di considerarlo definitivo.
 
 ---
 

@@ -636,5 +636,14 @@
     "iscrizionePerAltro": "Per un'altra persona",
     "iscrizionePerFamiglia": "Famiglia",
     "componentiFamiglia": "Componenti famiglia"
+  },
+  "legal": {
+    "privacyTitle": "Informativa sulla privacy",
+    "privacyDescription": "Come la Chiesa Copta Ortodossa di San Marco – Milano tratta i dati personali di visitatori, utenti registrati e iscritti agli eventi.",
+    "termsTitle": "Termini di servizio",
+    "termsDescription": "Condizioni d'uso del sito e dei servizi per gli utenti registrati della Chiesa Copta Ortodossa di San Marco – Milano.",
+    "footerPrivacy": "Privacy",
+    "footerTerms": "Termini di servizio",
+    "registerNotice": "Registrandoti accetti i <terms>Termini di servizio</terms> e dichiari di aver letto l’<privacy>Informativa sulla privacy</privacy>."
   }
 }
