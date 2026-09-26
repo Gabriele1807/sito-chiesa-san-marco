@@ -65,21 +65,34 @@ export async function createPasswordResetToken(
   return { rawToken, expiresAt };
 }
 
-export async function findValidPasswordResetToken(
+/**
+ * Valida e consuma il token in un'unica operazione atomica: il token viene
+ * marcato usato nello stesso `findOneAndUpdate` che lo trova. Due richieste
+ * concorrenti con lo stesso link non possono quindi reimpostare la password
+ * entrambe (con find + update separati, entrambe avrebbero visto
+ * `usedAt: null` prima che l'altra lo scrivesse).
+ */
+export async function consumePasswordResetToken(
   rawToken: string
-): Promise<{ _id: string; userId: string } | null> {
+): Promise<{ _id: string; userId: string; consumedAt: Date } | null> {
   const c = await col();
-  const doc = await c.findOne({
-    tokenHash: hashToken(rawToken),
-    usedAt: null,
-    expiresAt: { $gt: new Date() },
-  });
+  const now = new Date();
+  const doc = await c.findOneAndUpdate(
+    { tokenHash: hashToken(rawToken), usedAt: null, expiresAt: { $gt: now } },
+    { $set: { usedAt: now } }
+  );
   if (!doc) return null;
-  return { _id: doc._id.toString(), userId: doc.userId as string };
+  return { _id: doc._id.toString(), userId: doc.userId as string, consumedAt: now };
 }
 
-export async function markPasswordResetTokenUsed(id: string): Promise<void> {
+/**
+ * Annulla un consumo se il cambio password che lo seguiva è fallito, così
+ * il link dell'email resta utilizzabile. Il filtro sul timestamp esatto di
+ * consumo evita di riattivare un token invalidato nel frattempo da una
+ * nuova richiesta (createPasswordResetToken imposta un usedAt diverso).
+ */
+export async function releasePasswordResetToken(id: string, consumedAt: Date): Promise<void> {
   if (!ObjectId.isValid(id)) return;
   const c = await col();
-  await c.updateOne({ _id: new ObjectId(id) }, { $set: { usedAt: new Date() } });
+  await c.updateOne({ _id: new ObjectId(id), usedAt: consumedAt }, { $set: { usedAt: null } });
 }

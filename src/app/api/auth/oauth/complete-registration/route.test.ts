@@ -10,6 +10,7 @@ vi.mock("@/lib/mongo/pending-oauth-registrations", () => ({
 vi.mock("@/lib/mongo/users", () => ({
   findUserByEmail: vi.fn(),
   createOAuthUser: vi.fn(),
+  deleteUser: vi.fn(async () => true),
 }));
 vi.mock("@/lib/mongo/oauth-identities", () => ({
   createOAuthIdentity: vi.fn(),
@@ -21,7 +22,7 @@ vi.mock("@/lib/mongo/sessions", () => ({
 import { POST } from "./route";
 import { verifyOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
 import { findPendingOAuthRegistrationById, deletePendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
-import { findUserByEmail, createOAuthUser } from "@/lib/mongo/users";
+import { findUserByEmail, createOAuthUser, deleteUser } from "@/lib/mongo/users";
 import { createOAuthIdentity } from "@/lib/mongo/oauth-identities";
 
 beforeEach(() => vi.clearAllMocks());
@@ -112,5 +113,24 @@ describe("POST /api/auth/oauth/complete-registration", () => {
     });
     const res = await POST(req({ role: "credente", ageGroup: "19-29" }));
     expect(res.status).toBe(400);
+  });
+
+  it("rolls back the new user when the identity was linked concurrently (no orphan account)", async () => {
+    (verifyOAuthPendingCookie as ReturnType<typeof vi.fn>).mockResolvedValue({ pendingId: "p1" });
+    (findPendingOAuthRegistrationById as ReturnType<typeof vi.fn>).mockResolvedValue(validPending);
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (createOAuthUser as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "user-1", email: "a@b.com" });
+    (createOAuthIdentity as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error("E11000 duplicate key error collection: oauth_identities")
+    );
+
+    const res = await POST(req({ role: "credente", ageGroup: "19-29" }));
+    const json = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(json.error).toMatch(/già collegato/);
+    expect(deleteUser).toHaveBeenCalledWith("user-1");
+    expect(deletePendingOAuthRegistration).toHaveBeenCalledWith("p1");
+    expect(res.headers.get("set-cookie") ?? "").not.toContain("user_session=");
   });
 });

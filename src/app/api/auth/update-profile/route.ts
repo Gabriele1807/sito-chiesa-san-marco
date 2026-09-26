@@ -175,11 +175,15 @@ export async function POST(request: Request) {
     }
 
     const userId = session.userId;
-    const { nome, cognome, email, username, role, ageGroup, chiesa, requestAdmin } = body;
+    const { nome, cognome, email: rawEmail, username, role, ageGroup, chiesa, requestAdmin } = body;
 
     // ── Validation ─────────────────────────────────────────────
+    // Stessa normalizzazione di register/login/forgot-password: un'email
+    // salvata con maiuscole o spazi non verrebbe più trovata da quei flussi
+    // (lookup esatto), e l'unicità sarebbe aggirabile cambiando le maiuscole.
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : rawEmail;
     if (email !== undefined) {
-      if (typeof email !== "string" || !email.includes("@") || email.length > 254) {
+      if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
         return NextResponse.json({ success: false, error: "Email non valida" }, { status: 400 });
       }
     }

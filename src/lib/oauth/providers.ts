@@ -3,7 +3,9 @@
  * è nella whitelist attiva finché non implementato — vedi design spec §8.
  */
 
+import { createHmac } from "node:crypto";
 import { Google, Facebook, decodeIdToken } from "arctic";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const SUPPORTED_PROVIDERS = ["google", "facebook"] as const;
 export type SupportedProvider = (typeof SUPPORTED_PROVIDERS)[number];
@@ -24,7 +26,7 @@ export interface ProviderAdapter {
 }
 
 function callbackUrl(provider: SupportedProvider): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const base = getSiteUrl() ?? "http://localhost:3000";
   return `${base}/api/auth/oauth/${provider}/callback`;
 }
 
@@ -80,11 +82,18 @@ function buildFacebookAdapter(): ProviderAdapter | null {
     },
     async validateCallback(code) {
       const tokens = await facebook.validateAuthorizationCode(code);
-      const res = await fetch(
-        `https://graph.facebook.com/me?fields=id,first_name,last_name,email,picture&access_token=${encodeURIComponent(
-          tokens.accessToken()
-        )}`
+      const accessToken = tokens.accessToken();
+      // appsecret_proof lega la chiamata Graph al nostro app secret: un access
+      // token sottratto non è riutilizzabile da altre app, e le chiamate non
+      // falliscono se nell'app Meta è attivo "Require App Secret".
+      const graphUrl = new URL("https://graph.facebook.com/me");
+      graphUrl.searchParams.set("fields", "id,first_name,last_name,email,picture");
+      graphUrl.searchParams.set("access_token", accessToken);
+      graphUrl.searchParams.set(
+        "appsecret_proof",
+        createHmac("sha256", clientSecret).update(accessToken).digest("hex")
       );
+      const res = await fetch(graphUrl);
       if (!res.ok) {
         throw new Error("Impossibile recuperare il profilo Facebook");
       }

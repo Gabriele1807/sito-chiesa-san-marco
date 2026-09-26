@@ -6,6 +6,15 @@ export interface ResetPasswordTemplateParams {
   expirationMinutes: number;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export interface RenderedEmail {
   subject: string;
   html: string;
@@ -30,6 +39,7 @@ export async function renderResetPasswordEmail(
     namespace: "email.resetPassword",
   });
   const dir = params.locale === "ar" ? "rtl" : "ltr";
+  const safeUrl = escapeHtml(params.resetUrl);
 
   const subject = t("subject");
   const expiry = t("expiry", { minutes: params.expirationMinutes });
@@ -45,10 +55,10 @@ export async function renderResetPasswordEmail(
               <h1 style="font-size:20px;color:#1a1a1a;margin:0 0 16px;">${t("title")}</h1>
               <p style="font-size:15px;color:#333;line-height:1.5;">${t("intro")}</p>
               <p style="text-align:center;margin:28px 0;">
-                <a href="${params.resetUrl}" style="background:#b8860b;color:#ffffff;padding:12px 24px;border-radius:6px;text-decoration:none;font-size:15px;">${t("button")}</a>
+                <a href="${safeUrl}" style="background:#b8860b;color:#ffffff;padding:12px 24px;border-radius:6px;text-decoration:none;font-size:15px;">${t("button")}</a>
               </p>
               <p style="font-size:13px;color:#666;">${t("altLinkLabel")}</p>
-              <p style="font-size:13px;color:#b8860b;word-break:break-all;">${params.resetUrl}</p>
+              <p style="font-size:13px;color:#b8860b;word-break:break-all;">${safeUrl}</p>
               <p style="font-size:13px;color:#666;">${expiry}</p>
               <p style="font-size:13px;color:#999;margin-top:24px;">${t("ignore")}</p>
             </td></tr>

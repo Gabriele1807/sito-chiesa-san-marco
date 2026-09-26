@@ -30,8 +30,17 @@ export async function sendPasswordResetEmail(
     return { ok: false, error: "provider_not_configured" };
   }
 
-  const from = process.env.EMAIL_FROM_AUTH || "onboarding@resend.dev";
-  const replyTo = process.env.EMAIL_REPLY_TO;
+  // Il mittente di prova di Resend consegna solo alla casella del titolare
+  // dell'account Resend: accettabile in sviluppo, in produzione farebbe
+  // "riuscire" l'invio senza che l'utente reale riceva nulla.
+  const from =
+    process.env.EMAIL_FROM_AUTH ||
+    (process.env.NODE_ENV === "production" ? "" : "onboarding@resend.dev");
+  if (!from) {
+    console.error("[email] reset-password send skipped: EMAIL_FROM_AUTH not configured");
+    return { ok: false, error: "provider_not_configured" };
+  }
+  const replyTo = process.env.EMAIL_REPLY_TO || undefined;
 
   try {
     const { subject, html, text } = await renderResetPasswordEmail({

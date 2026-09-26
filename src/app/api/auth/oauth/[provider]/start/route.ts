@@ -6,6 +6,7 @@ import { signOAuthFlowCookie, hashSessionToken, type OAuthIntent } from "@/lib/o
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
 import { sanitizeReturnTo } from "@/lib/oauth/safe-redirect";
 import { applyNoStore } from "@/lib/oauth/http";
+import { getSiteUrl } from "@/lib/site-url";
 import {
   readSessionCookie,
   resolveAdminSessionToken,
@@ -14,6 +15,19 @@ import {
 
 function isSupportedProvider(value: string): value is SupportedProvider {
   return (SUPPORTED_PROVIDERS as readonly string[]).includes(value);
+}
+
+/**
+ * `start` è raggiunto con una navigazione a pagina intera (window.location),
+ * non con fetch: un errore va quindi restituito come redirect verso una
+ * pagina del sito con `?oauthError=<codice>` (mostrato da LoginModal o da
+ * LinkedAccountsSection), mai come JSON grezzo mostrato al posto del sito.
+ */
+function errorRedirect(request: Request, returnTo: string, code: string): NextResponse {
+  const base = getSiteUrl() ?? new URL(request.url).origin;
+  const url = new URL(returnTo, base);
+  url.searchParams.set("oauthError", code);
+  return NextResponse.redirect(url, { status: 307 });
 }
 
 export async function GET(
@@ -32,20 +46,6 @@ async function handleGet(
     return NextResponse.json({ success: false, error: "Provider non supportato" }, { status: 404 });
   }
 
-  const ip = getClientIp(request);
-  if (await isIpRateLimited(ip)) {
-    return NextResponse.json({ success: false, error: "Troppe richieste" }, { status: 429 });
-  }
-  await recordIpRequest(ip);
-
-  const adapter = getProviderAdapter(provider);
-  if (!adapter) {
-    return NextResponse.json(
-      { success: false, error: "Provider non configurato" },
-      { status: 503 }
-    );
-  }
-
   const url = new URL(request.url);
   const intentParam = url.searchParams.get("intent");
   const intent: OAuthIntent =
@@ -54,6 +54,17 @@ async function handleGet(
     url.searchParams.get("returnTo"),
     intent === "link" ? "/profilo" : "/"
   );
+
+  const ip = getClientIp(request);
+  if (await isIpRateLimited(ip)) {
+    return errorRedirect(request, returnTo, "rate_limited");
+  }
+  await recordIpRequest(ip);
+
+  const adapter = getProviderAdapter(provider);
+  if (!adapter) {
+    return errorRedirect(request, returnTo, "provider_unavailable");
+  }
 
   let linkedSessionHash: string | undefined;
   let linkedAccountType: "user" | "admin" | undefined;
@@ -68,7 +79,7 @@ async function handleGet(
       const userToken = readSessionCookie(request, "user");
       const userSession = userToken ? await resolveUserSessionToken(userToken) : null;
       if (!userSession) {
-        return NextResponse.json({ success: false, error: "Sessione richiesta" }, { status: 401 });
+        return errorRedirect(request, "/profilo", "session_expired");
       }
       linkedAccountType = "user";
       linkedSessionHash = await hashSessionToken(userToken!);

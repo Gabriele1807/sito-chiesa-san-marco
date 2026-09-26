@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import {
-  findValidPasswordResetToken,
-  markPasswordResetTokenUsed,
+  consumePasswordResetToken,
+  releasePasswordResetToken,
 } from "@/lib/mongo/password-reset-tokens";
-import { updateUserPassword, setHasPassword } from "@/lib/mongo/users";
+import { findUserByIdFull, updateUserPassword, setHasPassword } from "@/lib/mongo/users";
 import { deleteAllUserSessions } from "@/lib/mongo/sessions";
 import { hashPassword } from "@/lib/auth/password";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
@@ -46,19 +46,33 @@ export async function POST(request: Request) {
       );
     }
 
-    const tokenDoc = await findValidPasswordResetToken(token);
+    // Validato dopo le regole password: un tentativo con password debole
+    // non deve consumare il link, che l'utente può ancora riusare.
+    const tokenDoc = await consumePasswordResetToken(token);
     if (!tokenDoc) {
       return NextResponse.json(INVALID_TOKEN_RESPONSE, { status: 400 });
     }
 
-    const newHash = await hashPassword(newPassword);
-    await updateUserPassword(tokenDoc.userId, newHash);
-    await setHasPassword(tokenDoc.userId, true);
-    await markPasswordResetTokenUsed(tokenDoc._id);
-    // deleteAllUserSessions sets passwordChangedAt internally (design spec §3);
-    // calling setPasswordChangedAt separately here would write it twice with
-    // two different timestamps.
-    await deleteAllUserSessions(tokenDoc.userId);
+    const user = await findUserByIdFull(tokenDoc.userId);
+    if (!user || !user.attivo) {
+      return NextResponse.json(INVALID_TOKEN_RESPONSE, { status: 400 });
+    }
+
+    try {
+      const newHash = await hashPassword(newPassword);
+      await updateUserPassword(tokenDoc.userId, newHash);
+      await setHasPassword(tokenDoc.userId, true);
+      // deleteAllUserSessions imposta passwordChangedAt (design spec §3):
+      // nessuna sessione viene creata qui, il client viene mandato al login.
+      await deleteAllUserSessions(tokenDoc.userId);
+    } catch (err) {
+      // Errore transitorio dopo il consumo: il link deve restare valido per
+      // un nuovo tentativo, invece di costringere a richiedere un'altra email.
+      await releasePasswordResetToken(tokenDoc._id, tokenDoc.consumedAt).catch((releaseErr) =>
+        console.error("Errore rilascio token reset password:", releaseErr)
+      );
+      throw err;
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

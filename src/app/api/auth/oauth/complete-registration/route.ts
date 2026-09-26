@@ -4,12 +4,19 @@ import {
   findPendingOAuthRegistrationById,
   deletePendingOAuthRegistration,
 } from "@/lib/mongo/pending-oauth-registrations";
-import { findUserByEmail, createOAuthUser } from "@/lib/mongo/users";
+import { findUserByEmail, createOAuthUser, deleteUser } from "@/lib/mongo/users";
 import { createOAuthIdentity } from "@/lib/mongo/oauth-identities";
 import { createUserSession } from "@/lib/mongo/sessions";
 import type { UserRole, AgeGroup } from "@/types";
 import { VALID_ROLES, VALID_AGE_GROUPS } from "@/lib/auth/registration-constants";
 import { applyNoStore } from "@/lib/oauth/http";
+
+const IDENTITY_TAKEN_ERROR =
+  "Questo account Google/Facebook è già collegato a un altro profilo. Accedi con quel profilo.";
+
+function isDuplicateKeyError(err: unknown): boolean {
+  return err instanceof Error && err.message.includes("duplicate key");
+}
 
 function usernameFromEmail(email: string): string {
   const local = email.split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 15) || "utente";
@@ -84,14 +91,32 @@ async function handlePost(request: Request): Promise<NextResponse> {
       emailVerificata: usingVerifiedProviderEmail,
     });
 
-    await createOAuthIdentity({
-      provider: pending.provider,
-      providerAccountId: pending.providerAccountId,
-      userId: user._id!,
-      accountType: "user",
-      providerEmail: pending.providerEmail,
-      providerEmailVerified: pending.providerEmailVerified,
-    });
+    try {
+      await createOAuthIdentity({
+        provider: pending.provider,
+        providerAccountId: pending.providerAccountId,
+        userId: user._id!,
+        accountType: "user",
+        providerEmail: pending.providerEmail,
+        providerEmailVerified: pending.providerEmailVerified,
+      });
+    } catch (err) {
+      // L'utente appena creato non ha password utilizzabile (hasPassword:false):
+      // senza l'identità collegata resterebbe un account irraggiungibile che
+      // occupa la sua email. Succede se la stessa identità esterna è stata
+      // collegata nel frattempo (altra scheda, doppio submit): annulliamo la
+      // creazione invece di lasciarlo orfano.
+      await deleteUser(user._id!).catch((cleanupErr) =>
+        console.error("Errore rollback utente OAuth senza identità:", cleanupErr)
+      );
+      if (isDuplicateKeyError(err)) {
+        await deletePendingOAuthRegistration(pending._id);
+        const res = NextResponse.json({ success: false, error: IDENTITY_TAKEN_ERROR }, { status: 409 });
+        res.cookies.delete("oauth_pending");
+        return res;
+      }
+      throw err;
+    }
 
     await deletePendingOAuthRegistration(pending._id);
 
@@ -108,7 +133,7 @@ async function handlePost(request: Request): Promise<NextResponse> {
     return res;
   } catch (err) {
     console.error("Errore completamento registrazione OAuth:", err);
-    if (err instanceof Error && err.message.includes("duplicate key")) {
+    if (isDuplicateKeyError(err)) {
       return NextResponse.json(
         {
           success: false,

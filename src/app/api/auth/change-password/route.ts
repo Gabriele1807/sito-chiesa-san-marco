@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { validateUserSession } from "@/lib/mongo/sessions";
+import { validateUserSession, createUserSession, deleteAllUserSessions } from "@/lib/mongo/sessions";
+import { verifyJwt } from "@/lib/auth/jwt";
 import { findUserByIdFull, findUserByUsername, updateUserPassword } from "@/lib/mongo/users";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types";
 import { validateSession } from "@/lib/auth/session";
-import { deleteAllUserSessions } from "@/lib/mongo/sessions";
 
 export async function POST(request: Request) {
   try {
@@ -111,10 +111,28 @@ export async function POST(request: Request) {
     // Aggiorna password su MongoDB
     await updateUserPassword(mongoUser._id, newHash);
 
-    // Invalida tutte le altre sessioni attive dopo il cambio password
-    // (design spec §3): non tocca la richiesta corrente, che non si
-    // ri-valida da sola dopo la scrittura.
-    await deleteAllUserSessions(mongoUser._id);
+    // Invalida tutte le sessioni utente esistenti (design spec §3), inclusa
+    // quella di questa richiesta: il suo iat precede passwordChangedAt.
+    const passwordChangedAt = await deleteAllUserSessions(mongoUser._id);
+
+    // Chi ha appena cambiato la password resta connesso su questo
+    // dispositivo: riemettiamo la sua sessione legandola al nuovo
+    // passwordChangedAt (claim `pca`), con la stessa durata di quella
+    // originale (24h o "ricordami" 7 giorni).
+    if (userToken) {
+      const previous = await verifyJwt(userToken);
+      const rememberMe = previous ? previous.exp - previous.iat > 24 * 60 * 60 : false;
+      const { token, expiresAt } = await createUserSession(mongoUser._id, request, rememberMe, {
+        passwordChangedAt,
+      });
+      cookieStore.set("user_session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        expires: expiresAt,
+      });
+    }
 
     // Sincronizza su Supabase se è un admin
     if (needsSupabaseSync) {

@@ -244,7 +244,9 @@ export async function updateUserEmail(
   if (!ObjectId.isValid(id)) return { success: false, error: "ID non valido" };
   const result = await c.findOneAndUpdate(
     { _id: new ObjectId(id) },
-    { $set: { email, updatedAt: new Date().toISOString() } },
+    // La nuova email non è stata verificata da nessuno: il flag ereditato
+    // (es. da un'email Google verificata) non vale per il nuovo indirizzo.
+    { $set: { email, emailVerificata: false, updatedAt: new Date().toISOString() } },
     { returnDocument: "after", projection: { passwordHash: 0 } }
   );
   if (!result) return { success: false, error: "Utente non trovato" };
@@ -280,13 +282,12 @@ export async function updateUserPassword(id: string, passwordHash: string): Prom
   return result.modifiedCount === 1;
 }
 
-export async function setPasswordChangedAt(id: string): Promise<void> {
+export async function setPasswordChangedAt(id: string): Promise<string> {
+  const passwordChangedAt = new Date().toISOString();
   const c = await col();
-  if (!ObjectId.isValid(id)) return;
-  await c.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: { passwordChangedAt: new Date().toISOString() } }
-  );
+  if (!ObjectId.isValid(id)) return passwordChangedAt;
+  await c.updateOne({ _id: new ObjectId(id) }, { $set: { passwordChangedAt } });
+  return passwordChangedAt;
 }
 
 // --------------- Admin Request ---------------
