@@ -492,6 +492,15 @@ Layer OAuth condiviso:
   costruiti sopra `signJwt`/`verifyJwt` esistenti.
 - `src/lib/oauth/error-messages.ts` — mappa i codici di errore del callback
   a chiavi di traduzione già esistenti in `it.json`/`ar.json`.
+- `src/lib/oauth/safe-redirect.ts` — `sanitizeReturnTo()`, aggiunto nel
+  hardening di sicurezza §7.4.9.
+- `src/lib/oauth/session-resolver.ts` — `readSessionCookie`/
+  `resolveAdminSessionToken`/`resolveUserSessionToken`, estratti da
+  `callback/route.ts` nello stesso hardening per validare le sessioni admin
+  e utente in modo identico in tutte le route OAuth (`start`, `callback`,
+  `unlink`, `status`) invece di copie che potevano divergere.
+- `src/lib/oauth/http.ts` — `applyNoStore()`, wrapper che forza
+  `Cache-Control: no-store` sulle risposte delle route OAuth (§7.4.10).
 
 Modello dati (`src/lib/mongo/`):
 - `oauth-identities.ts` — nuova collezione `oauth_identities` (identità
@@ -643,6 +652,107 @@ credenziali reali configurate in un ambiente di test.
 **Nessun segreto è stato aggiunto al repository**: `.env.example` contiene
 solo nomi di variabili con valori vuoti; verificato leggendo per intero
 ogni file nuovo di questa feature prima di questo commit.
+
+I conteggi di test sopra sono superati dagli hardening successivi in
+§7.4.9/§7.4.10 (76/76) e poi dalla feature password reset (§7.5): vedi
+§7.4.10 per il numero corrente.
+
+#### 7.4.9 Hardening di sicurezza post-review (2026-09-15)
+
+Una seconda review (security-review + code-review, più verifica manuale in
+browser) sul flusso OAuth appena introdotto ha trovato e corretto, oltre a
+fix già applicati manualmente dal proprietario del repository (pulizia
+identità orfane sul collegamento, cascata di eliminazione su
+`admin_session`, deduplicazione `LoginModal`/`profilo`):
+
+- **Open redirect su `returnTo`.** Il parametro `returnTo` di `GET
+  /api/auth/oauth/[provider]/start` veniva firmato nel cookie di flusso e
+  poi passato senza sanitizzazione a `new URL(returnTo, base)` nel
+  callback: un valore assoluto o protocol-relative (`https://evil.example`,
+  `//evil.example`) fa sì che `base` venga ignorato, reindirizzando la
+  vittima a un host attaccante subito dopo una schermata di consenso
+  Google/Facebook legittima. Aggiunto `src/lib/oauth/safe-redirect.ts`
+  (`sanitizeReturnTo()`), applicato sia quando `returnTo` viene accettato
+  in `start` sia di nuovo, difensivamente, su ogni redirect costruito in
+  `callback`.
+- **Email non verificata trattata come identità attendibile.**
+  `complete-registration` associava `pending.providerEmail` al nuovo
+  account senza mai controllare il flag `providerEmailVerified` (già
+  raccolto dal claim `email_verified` di Google). Ora `emailVerificata`
+  sull'utente creato riflette quel flag: `true` solo per un'email
+  confermata dal provider, `false` sia per un'email provider non
+  verificata sia per una inserita manualmente — coerente col modello di
+  fiducia già esistente della registrazione classica.
+- **Pulizia identità orfane estesa al login/registrazione** (prima solo sul
+  collegamento) e corretto un bug per cui un admin semplicemente
+  **disattivato** veniva trattato come **eliminato**:
+  `getAdminUserById` filtra `attivo=true`, quindi ritornava `null` in
+  entrambi i casi. Aggiunta `adminUserExists()` (verifica di esistenza che
+  ignora `attivo`) così il collegamento OAuth di un admin disabilitato
+  viene preservato invece di essere rimosso silenziosamente e reso
+  riassegnabile a chiunque si autentichi in futuro con quello stesso
+  account esterno.
+- **`complete-registration` senza `try/catch` di primo livello** (a
+  differenza di tutte le altre route auth): un doppio submit concorrente
+  che superasse il controllo email pre-insert avrebbe generato un errore
+  Mongo di chiave duplicata non gestito (500 grezzo) invece del JSON
+  amichevole atteso dal frontend. Avvolta seguendo lo stesso pattern di
+  `register/route.ts`.
+- **Cascata di pulizia identità OAuth in `deleteUser` senza `try/catch`**:
+  un fallimento transitorio in quella fase rigettava l'intera chiamata pur
+  con l'utente già eliminato. Resa best-effort: log e continua (un'identità
+  orfana residua si auto-ripara tramite la pulizia già presente nel
+  callback).
+- **`RegisterModal`: reset dello step al riapertura del modale.** L'effetto
+  che azzera il form resettava incondizionatamente `step` a
+  `"credentials"` e puliva nome/cognome a ogni transizione
+  `showRegisterModal` false→true, inclusa quella innescata dal flusso
+  stesso di completamento OAuth — cancellando lo step quiz pre-compilato
+  subito dopo un redirect da Google/Facebook. Corretto con un flag `ref`
+  impostato dall'effetto di completamento OAuth e consumato dall'effetto di
+  reset.
+- **Consolidamento risoluzione sessione**: `callback/route.ts` aveva una
+  propria copia duplicata di `resolveUserIdFromSession`/
+  `resolveAdminIdFromSession` accanto a `session-resolver.ts` già condiviso
+  da `unlink`/`status`. Estratte `readSessionCookie`/
+  `resolveAdminSessionToken`/`resolveUserSessionToken` in
+  `session-resolver.ts` e riusate ovunque (`start`, `callback`, `unlink`,
+  `status`), evitando la divergenza tra le due implementazioni.
+
+Verificato: 76/76 test (18 nuovi/aggiornati), `tsc` pulito, `eslint` pulito
+(nessun nuovo warning), build di produzione riuscita, fix dell'open
+redirect confermato su un dev server reale con credenziali Google OAuth
+vere configurate (il `returnTo` malevolo non sopravvive più nel cookie di
+flusso firmato).
+
+#### 7.4.10 Fix stato OAuth "stantio" su back/forward del browser (2026-09-15)
+
+Premendo "Indietro" dopo aver avviato (o completato) un login
+Google/Facebook poteva apparire brevemente uno stato di autenticazione
+stantio prima che il sito si autocorreggesse: il bfcache del browser
+(back-forward cache) ripristina la pagina esattamente come era congelata
+prima della navigazione, e nulla forzava un controllo fresco col server
+subito al ripristino.
+
+- `AuthContext` ora ascolta l'evento `pageshow` e chiama `refresh()` quando
+  `event.persisted` è `true`, così ogni ripristino da bfcache innesca una
+  riconciliazione verificata dal server invece di affidarsi a qualche altro
+  trigger incidentale.
+- Tutte e sei le route `/api/auth/oauth/**` impostano ora esplicitamente
+  `Cache-Control: no-store` nel codice (tramite il piccolo wrapper
+  `applyNoStore()` in `src/lib/oauth/http.ts`), non solo tramite
+  `vercel.json` (che si applica solo in produzione, non in `next dev`, e
+  non incide sull'idoneità al bfcache allo stesso modo). Garantisce che
+  tornare indietro su un URL `start`/`callback` che porta uno
+  state/code mono-uso colpisca sempre il server invece di rigiocare una
+  risposta cache.
+
+Conteggio test corrente dopo questi due hardening: 76/76 (vedi §7.4.9),
+poi ulteriormente esteso dalla feature password reset (§7.5) con altri 7
+file di test (`change-password`, `forgot-password`, `reset-password`,
+`password-reset-rate-limit`, `send-email`, `password-reset-tokens`,
+`sessions`), per un totale di 22 file `*.test.ts` nel repository allo
+stato attuale.
 
 ### 7.5 Password dimenticata e servizio email (2026-09-15)
 
