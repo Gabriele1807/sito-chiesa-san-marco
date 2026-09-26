@@ -83,7 +83,7 @@ FACEBOOK_CLIENT_ID=il-tuo-app-id-facebook
 FACEBOOK_CLIENT_SECRET=il-tuo-app-secret-facebook
 ```
 
-Poi riavvia `npm run dev`. Se una delle coppie client-id/secret manca, quel provider mostra automaticamente un errore 503 quando si prova ad accedere (non rompe il resto del sito): è il comportamento previsto quando un provider non è ancora configurato.
+Poi riavvia `npm run dev`. Se una delle coppie client-id/secret manca, il pulsante di quel provider resta visibile ma, al click, l'utente viene riportato alla pagina di partenza con il messaggio "Non è stato possibile completare l'accesso con il provider" (redirect con `?oauthError=provider_unavailable`), senza rompere il resto del sito: è il comportamento previsto quando un provider non è ancora configurato.
 
 ---
 
@@ -93,7 +93,7 @@ Poi riavvia `npm run dev`. Se una delle coppie client-id/secret manca, quel prov
 2. Aggiungi ciascuna variabile (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`) con il valore reale.
 3. Seleziona gli ambienti a cui applicarle:
    - **Production**: obbligatorio, con il dominio reale registrato nelle callback dei provider.
-   - **Preview**: opzionale — se la usi, ricorda che i deploy di preview hanno URL diversi ad ogni PR, quindi la callback URL non corrisponderebbe a meno di usare un dominio fisso di preview. Se non serve testare l'OAuth sui preview, puoi lasciare le variabili solo su Production (i preview mostreranno il 503 per i provider, senza rompere il resto).
+   - **Preview**: opzionale — se la usi, ricorda che i deploy di preview hanno URL diversi ad ogni PR, quindi la callback URL non corrisponderebbe a meno di usare un dominio fisso di preview. Se non serve testare l'OAuth sui preview, puoi lasciare le variabili solo su Production (sui preview i pulsanti provider mostreranno il messaggio di errore generico, senza rompere il resto).
 4. Verifica che `NEXT_PUBLIC_SITE_URL` sia impostata correttamente per Production con il dominio reale (deve combaciare esattamente con quanto registrato come redirect URI su Google/Facebook, protocollo incluso).
 5. Dopo aver salvato le variabili, fai un nuovo deploy (le env var non si applicano retroattivamente a deploy già buildati): `git push` oppure "Redeploy" dalla dashboard Vercel.
 
