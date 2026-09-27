@@ -14,6 +14,7 @@ import {
   Menu,
   PanelLeft,
   ClipboardList,
+  Megaphone,
 } from "lucide-react";
 
 export type SidebarItemType = "primary-nav" | "utility" | "mode-toggle";
@@ -115,6 +116,14 @@ export const infoSection: SidebarSection = {
   id: "info",
   labelKey: "informazioni",
   items: [
+    {
+      id: "avvisi",
+      type: "primary-nav",
+      labelKey: "avvisi",
+      subKey: "subAvvisi",
+      icon: Megaphone,
+      href: "/avvisi",
+    },
     {
       id: "chi-siamo",
       type: "primary-nav",

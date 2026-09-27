@@ -22,7 +22,8 @@
     "eventi": "Eventi",
     "videoCorsi": "Video e Corsi",
     "profilo": "Profilo",
-    "pannelloAdmin": "Pannello Admin"
+    "pannelloAdmin": "Pannello Admin",
+    "avvisi": "Avvisi"
   },
   "home": {
     "dashboardTitolo": "Le risorse della chiesa san marco",
@@ -311,7 +312,8 @@
     "seiInChiesa": "Sei in chiesa?",
     "scansionaQR": "Scansiona il QR",
     "menu": "Menu",
-    "dockCompatto": "Dock compatto"
+    "dockCompatto": "Dock compatto",
+    "subAvvisi": "Comunicazioni della parrocchia"
   },
   "topbar": {
     "dashboard": "HOME",
@@ -645,5 +647,19 @@
     "footerPrivacy": "Privacy",
     "footerTerms": "Termini di servizio",
     "registerNotice": "Registrandoti accetti i <terms>Termini di servizio</terms> e dichiari di aver letto l’<privacy>Informativa sulla privacy</privacy>."
+  },
+  "avvisi": {
+    "titolo": "Avvisi",
+    "sottotitolo": "Comunicazioni e variazioni di orario della comunità.",
+    "eyebrow": "Dalla parrocchia",
+    "vediTutti": "Tutti gli avvisi",
+    "nessuno": "Al momento non ci sono avvisi.",
+    "chiudi": "Nascondi avviso",
+    "apri": "Dettagli",
+    "validoFino": "Valido fino al {date}",
+    "pubblicatoIl": "Pubblicato il {date}",
+    "livello_info": "Avviso",
+    "livello_importante": "Importante",
+    "livello_urgente": "Urgente"
   }
 }

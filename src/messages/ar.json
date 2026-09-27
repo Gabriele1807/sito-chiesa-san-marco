@@ -22,7 +22,8 @@
     "eventi": "الفعاليات والمناسبات",
     "videoCorsi": "الفيديوهات والدورات",
     "profilo": "الملف الشخصي",
-    "pannelloAdmin": "لوحة الإدارة"
+    "pannelloAdmin": "لوحة الإدارة",
+    "avvisi": "الإعلانات"
   },
   "home": {
     "dashboardTitolo": "موارد الجالية القبطية",
@@ -311,7 +312,8 @@
     "seiInChiesa": "هل أنت في الكنيسة؟",
     "scansionaQR": "امسح رمز QR",
     "menu": "القائمة",
-    "dockCompatto": "وضع مضغوط"
+    "dockCompatto": "وضع مضغوط",
+    "subAvvisi": "بلاغات الكنيسة"
   },
   "topbar": {
     "dashboard": "الرئيسية",
@@ -644,5 +646,19 @@
     "footerPrivacy": "الخصوصية",
     "footerTerms": "شروط الخدمة",
     "registerNotice": "بتسجيلك فإنك توافق على <terms>شروط الخدمة</terms> وتقرّ بأنك قرأت <privacy>سياسة الخصوصية</privacy>."
+  },
+  "avvisi": {
+    "titolo": "الإعلانات",
+    "sottotitolo": "بلاغات الكنيسة وتغييرات مواعيد الصلوات.",
+    "eyebrow": "من الكنيسة",
+    "vediTutti": "كل الإعلانات",
+    "nessuno": "لا توجد إعلانات في الوقت الحالي.",
+    "chiudi": "إخفاء الإعلان",
+    "apri": "التفاصيل",
+    "validoFino": "ساري حتى {date}",
+    "pubblicatoIl": "نُشر في {date}",
+    "livello_info": "إعلان",
+    "livello_importante": "مهم",
+    "livello_urgente": "عاجل"
   }
 }

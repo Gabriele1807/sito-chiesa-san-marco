@@ -25,6 +25,7 @@ import {
   deleteIscrizione as regDeleteIscrizione,
   updateIscrizionePagamento as regUpdateIscrizionePagamento,
 } from "@/lib/mongo/registrations";
+import { listPublishedAvvisi, filterActiveAvvisi, type Avviso } from "@/lib/mongo/announcements";
 import type {
   Icona,
   TestoSacro,
@@ -165,4 +166,25 @@ export async function deleteIscrizione(id: string): Promise<boolean> {
 
 export async function updateIscrizionePagamento(id: string, ha_pagato: boolean): Promise<boolean> {
   return regUpdateIscrizionePagamento(id, ha_pagato);
+}
+
+// ============= AVVISI =============
+// In cache la lista degli avvisi pubblicati; il filtro su inizio/scadenza
+// si applica a ogni richiesta, così un avviso scade all'orario giusto
+// anche se la lista in cache è di qualche secondo prima.
+const getPublishedAvvisiCached = unstable_cache(
+  async () => listPublishedAvvisi(),
+  ["content-avvisi"],
+  { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "avvisi"] }
+);
+
+export async function getActiveAvvisi(): Promise<Avviso[]> {
+  try {
+    return filterActiveAvvisi(await getPublishedAvvisiCached());
+  } catch (err) {
+    // Gli avvisi sono un complemento: se il database non risponde la
+    // pagina deve comunque essere mostrata, senza bacheca.
+    console.error("[avvisi] lettura fallita:", err instanceof Error ? err.message : err);
+    return [];
+  }
 }
