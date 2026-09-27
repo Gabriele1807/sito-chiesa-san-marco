@@ -10,8 +10,10 @@ import {
 } from "@/lib/mongo/registrations";
 import { requireAdminSession } from "@/lib/auth/session";
 
-function countIscrittiInRegistrations(iscrizioni: Array<{ familyMembers?: Array<unknown> }>): number {
-  return iscrizioni.reduce((total, iscrizione: any) => {
+function countIscrittiInRegistrations(
+  iscrizioni: Array<{ registrationType?: string; familyMembers?: Array<unknown> }>
+): number {
+  return iscrizioni.reduce((total, iscrizione) => {
     if (iscrizione.registrationType === "family") {
       return total + (Array.isArray(iscrizione.familyMembers) ? iscrizione.familyMembers.length : 0);
     }
@@ -153,6 +155,12 @@ export async function PATCH(request: Request) {
 
     if (ha_pagato !== undefined && typeof ha_pagato !== "boolean") {
       return NextResponse.json({ success: false, error: "Valore ha_pagato non valido" }, { status: 400 });
+    }
+    const textFields = { nome, cognome, padreNome, padreCognome, telefono, email, note };
+    for (const [field, value] of Object.entries(textFields)) {
+      if (value !== undefined && (typeof value !== "string" || value.length > 1000)) {
+        return NextResponse.json({ success: false, error: `Valore ${field} non valido` }, { status: 400 });
+      }
     }
 
     const updated = await updateIscrizione(id, {

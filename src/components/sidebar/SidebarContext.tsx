@@ -28,6 +28,9 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("dock_compact") === "true";
+    // Letto dopo l'idratazione di proposito: leggerlo nello stato iniziale
+    // renderebbe il client diverso dall'HTML del server (hydration mismatch).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsCompact(stored);
   }, []);
 

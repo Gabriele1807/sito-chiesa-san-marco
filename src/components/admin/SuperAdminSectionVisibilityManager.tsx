@@ -46,7 +46,7 @@ export default function SuperAdminSectionVisibilityManager({
         } else {
           setError("Errore nel caricamento delle sezioni");
         }
-      } catch (err) {
+      } catch {
         setError("Errore di connessione");
       } finally {
         setLoading(false);

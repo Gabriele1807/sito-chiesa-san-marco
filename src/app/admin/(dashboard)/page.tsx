@@ -139,21 +139,6 @@ export default async function AdminDashboardPage() {
     (section) => !shortcutSections.some((shortcut) => shortcut.href === section.href)
   );
 
-  // Format event date nicely
-  function formatEventDate(isoDate: string): string {
-    const d = new Date(isoDate);
-    return d.toLocaleDateString("it-IT", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  }
-  function formatEventTime(isoDate: string): string {
-    const d = new Date(isoDate);
-    return d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-  }
-
   return (
     <div className="space-y-6">
       <section className="rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-6 text-white shadow-sm">

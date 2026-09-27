@@ -366,9 +366,6 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     return { success: false, errorCode: "validation" };
   }
 
-  const raccoglimento = data.raccoglimento === "chiesa" || data.raccoglimento === "luogo"
-    ? data.raccoglimento
-    : undefined;
 
   // L'evento deve esistere
   const raccoglimentoPunto = normalizeRaccoglimentoPunto(data.raccoglimentoPunto);
@@ -554,7 +551,8 @@ export async function updateIscrizione(
   // Non permettiamo di cambiare le chiavi univoche (nome, cognome, padre) tramite update semplice
   // per evitare di rompere la logica anti-duplicato senza ricalcolare i tasti.
   // Ma in questo caso l'admin ha il permesso di correggere errori.
-  const updateDoc: any = { ...data };
+  // I campi non inviati (undefined) non vanno scritti: il driver li salverebbe come null.
+  const updateDoc = Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined));
 
   // Se cambiano i nomi, ricalcoliamo le chiavi di indicizzazione
   if (data.nome || data.cognome || data.padreNome || data.padreCognome) {

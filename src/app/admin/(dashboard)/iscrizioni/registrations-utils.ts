@@ -23,6 +23,7 @@ export interface RegistrationLike {
   email?: string;
   ha_pagato: boolean;
   raccoglimento?: "chiesa" | "luogo";
+  raccoglimentoPunto?: { label?: string };
   createdAt?: string;
 }
 
@@ -49,9 +50,9 @@ export function filterAndSortRegistrations<T extends RegistrationLike>(
     if (filters.activeFilters.has("unpaid") && item.ha_pagato) return false;
     // Support both semantic `raccoglimento` and explicit `raccoglimentoPunto` labels.
     // If a specific `raccoglimentoPunto` is present, give it priority over the stored `raccoglimento` value
-    const punto = (item as any).raccoglimentoPunto;
+    const punto = item.raccoglimentoPunto;
     const hasPunto = Boolean(punto && (punto.label || "").toString().trim());
-    const puntoLabel = hasPunto ? normalize((punto.label || "").toString()) : "";
+    const puntoLabel = hasPunto ? normalize((punto?.label || "").toString()) : "";
 
     if (filters.activeFilters.has("chiesa")) {
       if (hasPunto) {

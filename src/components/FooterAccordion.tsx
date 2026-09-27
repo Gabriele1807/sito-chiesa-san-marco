@@ -23,7 +23,6 @@ export function FooterAccordion({
       // Delay per permettere all'animazione di partire
       setTimeout(() => {
         const contentEl = contentRef.current as HTMLElement;
-        const containerEl = containerRef.current as HTMLElement;
 
         const rect = contentEl.getBoundingClientRect();
         const padding = 10; // spazio extra

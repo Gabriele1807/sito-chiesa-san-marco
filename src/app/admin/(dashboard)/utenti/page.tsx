@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   ShieldOff,
   KeyRound,
-  SlidersHorizontal,
 } from "lucide-react";
 import { CHIESE_LIST } from "@/lib/churches";
 import { showToast } from "@/components/admin/AdminToast";

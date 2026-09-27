@@ -9,7 +9,7 @@ import {
 import type { Metadata } from "next";
 import ScrollDownHint from "@/components/ScrollDownHint";
 import HashLink from "@/components/HashLink";
-import { getTestiSacri, getPreghiere, getEventi, getOrari } from "@/lib/db";
+import { getPreghiere, getEventi, getOrari } from "@/lib/db";
 import NextCelebrationCard from "@/components/NextCelebrationCard";
 import OrariTable from "@/components/OrariTable";
 import YouTubeLiveSection from "@/components/YouTubeLiveSection";
@@ -22,12 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [t, tOrari, tContatti, locale, testiSacri, preghiere, eventi, orari] = await Promise.all([
+  const [t, tOrari, locale, preghiere, eventi, orari] = await Promise.all([
     getTranslations("home"),
     getTranslations("orari"),
-    getTranslations("contatti"),
     getLocale(),
-    getTestiSacri(),
     getPreghiere(),
     getEventi(),
     getOrari(),

@@ -4,10 +4,10 @@
  * Usato dal client per determinare quali sezioni renderizzare.
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getAllSectionVisibilities } from "@/lib/mongo/visibility";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const visibilities = await getAllSectionVisibilities();
     return NextResponse.json({ success: true, data: visibilities });
