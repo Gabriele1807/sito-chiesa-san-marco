@@ -4,6 +4,7 @@ import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById, findUserByUsername } from "@/lib/mongo/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { createSession, validateSession } from "@/lib/auth/session";
+import { logAdminAction } from "@/lib/mongo/audit-log";
 
 /**
  * GET /api/auth/me
@@ -89,6 +90,12 @@ export async function GET() {
         .single();
 
       if (adminUser) {
+        await logAdminAction(adminUser, {
+          action: "login",
+          entity: "accesso",
+          entityId: adminUser.id,
+          summary: "Accesso al pannello admin (account utente approvato)",
+        });
         const { token: sessionToken } = await createSession(adminUser.id, new Request(requestUrlFromHeaders()), false);
 
         const response = NextResponse.json({
@@ -133,6 +140,7 @@ export async function GET() {
         chiesa: user.chiesa,
         isAdmin: false,
         adminRequest: user.adminRequest,
+        emailVerificata: user.emailVerificata === true,
       },
     });
   } catch (err) {

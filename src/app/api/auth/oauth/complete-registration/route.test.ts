@@ -1,5 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const afterCallbacks: (() => Promise<void>)[] = [];
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (fn: () => Promise<void>) => afterCallbacks.push(fn),
+}));
+const startEmailVerification = vi.fn<(...args: unknown[]) => Promise<{ ok: boolean }>>(async () => ({ ok: true }));
+vi.mock("@/lib/auth/email-verification", () => ({
+  startEmailVerification: (...args: unknown[]) => startEmailVerification(...args),
+  localeFromRequest: () => "it",
+}));
 vi.mock("@/lib/oauth/flow-cookie", () => ({
   verifyOAuthPendingCookie: vi.fn(),
 }));

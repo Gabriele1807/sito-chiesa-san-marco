@@ -1,5 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const afterCallbacks: (() => Promise<void>)[] = [];
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (fn: () => Promise<void>) => afterCallbacks.push(fn),
+}));
+const startEmailVerification = vi.fn<(...args: unknown[]) => Promise<{ ok: boolean }>>(async () => ({ ok: true }));
+vi.mock("@/lib/auth/email-verification", () => ({
+  startEmailVerification: (...args: unknown[]) => startEmailVerification(...args),
+  localeFromRequest: () => "it",
+}));
 vi.mock("@/lib/auth/rate-limit", () => ({
   getClientIp: () => "1.2.3.4",
   isIpRateLimited: vi.fn(async () => false),
@@ -7,7 +17,7 @@ vi.mock("@/lib/auth/rate-limit", () => ({
 }));
 vi.mock("@/lib/auth/password", () => ({ hashPassword: vi.fn(async () => "hash") }));
 vi.mock("@/lib/mongo/users", () => ({
-  createUser: vi.fn(async () => ({ _id: "u1" })),
+  createUser: vi.fn(async () => ({ _id: "u1", email: "mario@example.com" })),
   findUserByEmail: vi.fn(async () => null),
 }));
 vi.mock("@/lib/auth/username", () => ({ isUsernameTaken: vi.fn(async () => false) }));
@@ -41,6 +51,9 @@ describe("POST /api/auth/register — unicità username", () => {
     expect(res.status).toBe(201);
     expect(isUsernameTaken).toHaveBeenCalledWith("Mario_1");
     expect(createUser).toHaveBeenCalledWith(expect.objectContaining({ username: "Mario_1" }));
+    // Link di verifica dell'email programmato dopo la risposta.
+    await Promise.all(afterCallbacks.splice(0).map((fn) => fn()));
+    expect(startEmailVerification).toHaveBeenCalledWith("u1", "mario@example.com", "it");
   });
 
   it("refuses a username already used (any casing, user or admin)", async () => {

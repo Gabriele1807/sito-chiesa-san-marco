@@ -496,6 +496,7 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     createdByEmail: data.createdByEmail?.trim() || undefined,
     createdByUserId: data.createdByUserId || undefined,
     createdByAccountType: data.createdByUserId ? data.createdByAccountType : undefined,
+    emailLocale: data.emailLocale === "ar" ? "ar" : "it",
     // campi tecnici per indici/lookup (non esposti al client)
     _familyKey: fKey,
     _personKey: pKey,
@@ -584,4 +585,35 @@ export async function updateIscrizionePagamento(id: string, ha_pagato: boolean):
   );
 
   return result.matchedCount > 0;
+}
+
+// ============= PROMEMORIA =============
+
+/** Iscrizioni di un evento a cui non è ancora stato inviato il promemoria. */
+export async function getIscrizioniWithoutReminder(eventoId: string): Promise<IscrizioneEvento[]> {
+  await ensureIndexes();
+  const c = await col();
+  const docs = await c.find({ eventoId, reminderSentAt: { $exists: false } }).toArray();
+  return docs.map(toIscrizione);
+}
+
+/**
+ * Prenota l'invio del promemoria in modo atomico: se due esecuzioni del job
+ * si sovrappongono, solo una ottiene `true` e invia l'email.
+ */
+export async function claimIscrizioneReminder(id: string): Promise<boolean> {
+  if (!ObjectId.isValid(id)) return false;
+  const c = await col();
+  const result = await c.updateOne(
+    { _id: new ObjectId(id), reminderSentAt: { $exists: false } },
+    { $set: { reminderSentAt: new Date().toISOString() } }
+  );
+  return result.modifiedCount === 1;
+}
+
+/** Annulla la prenotazione se l'invio è fallito, così una nuova esecuzione può riprovare. */
+export async function releaseIscrizioneReminder(id: string): Promise<void> {
+  if (!ObjectId.isValid(id)) return;
+  const c = await col();
+  await c.updateOne({ _id: new ObjectId(id) }, { $unset: { reminderSentAt: "" } });
 }

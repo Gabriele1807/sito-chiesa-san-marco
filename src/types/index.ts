@@ -111,12 +111,16 @@ export interface IscrizioneEvento {
    * profilo sono modificabili dall'utente. Assente nelle iscrizioni storiche. */
   createdByUserId?: string;
   createdByAccountType?: "user" | "admin";
+  /** Lingua delle email (conferma, promemoria), dal sito al momento dell'iscrizione. */
+  emailLocale?: "it" | "ar";
+  /** Promemoria del giorno prima già inviato (impostato dal job, mai dal client). */
+  reminderSentAt?: string;
   // Metadati
   createdAt?: string;      // ISO date
 }
 
 /** Dati inviati dal form pubblico per creare una nuova iscrizione */
-export type CreateIscrizioneData = Omit<IscrizioneEvento, "_id" | "id" | "createdAt" | "ha_pagato">;
+export type CreateIscrizioneData = Omit<IscrizioneEvento, "_id" | "id" | "createdAt" | "ha_pagato" | "reminderSentAt">;
 
 /** Esito della creazione di un'iscrizione */
 export interface CreateIscrizioneResult {
@@ -217,6 +221,8 @@ export interface UserSessionInfo {
   chiesa?: string;
   isAdmin: false;
   adminRequest?: AdminRequestStatus;
+  /** Indirizzo email confermato tramite il link inviato per email. */
+  emailVerificata?: boolean;
 }
 
 /** Info admin serializzata nel cookie/session client */

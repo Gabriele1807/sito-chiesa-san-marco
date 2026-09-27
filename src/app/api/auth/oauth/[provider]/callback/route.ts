@@ -20,6 +20,7 @@ import { createPendingOAuthRegistration } from "@/lib/mongo/pending-oauth-regist
 import { findUserById, updateUserLastAccess } from "@/lib/mongo/users";
 import { createUserSession } from "@/lib/mongo/sessions";
 import { createSession as createAdminSession, getAdminUserById, adminUserExists } from "@/lib/auth/session";
+import { logAdminAction } from "@/lib/mongo/audit-log";
 
 function isSupportedProvider(value: string): value is SupportedProvider {
   return (SUPPORTED_PROVIDERS as readonly string[]).includes(value);
@@ -155,6 +156,12 @@ async function handleGet(
         return errorRedirect(siteBase, flow.returnTo, "account_disabled");
       }
       await touchOAuthIdentityLogin(provider, profile.providerAccountId);
+      await logAdminAction(adminUser, {
+        action: "login",
+        entity: "accesso",
+        entityId: adminUser.id,
+        summary: `Accesso al pannello admin con ${provider}`,
+      });
       const { token, expiresAt } = await createAdminSession(existing.userId, request, false);
       const res = successRedirect(siteBase, flow.returnTo, {});
       res.cookies.set("admin_session", token, {

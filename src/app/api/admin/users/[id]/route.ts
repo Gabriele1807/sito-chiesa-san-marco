@@ -11,6 +11,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { passwordPolicyError } from "@/lib/auth/password-rules";
 import { requireSuperAdminSession, reissueAdminSessionCookie } from "@/lib/auth/session";
 import { markAdminPasswordChanged } from "@/lib/mongo/admin-password-changes";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 
 async function requireSuperAdmin() {
   const adminUser = await requireSuperAdminSession();
@@ -91,6 +92,12 @@ export async function PUT(
       if (data.id === currentUserId) await reissueAdminSessionCookie(request, data.id);
     }
 
+    await recordAdminAction({
+      action: "update",
+      entity: "admin",
+      entityId: data.id,
+      summary: `Account admin @${data.username}${updates.password_hash ? " (password cambiata)" : ""}`,
+    });
     return NextResponse.json({ success: true, data });
   } catch (err) {
     console.error("Errore modifica admin:", err);
@@ -139,6 +146,7 @@ export async function DELETE(
       );
     }
 
+    await recordAdminAction({ action: "delete", entity: "admin", entityId: id, summary: `Account admin n. ${id}` });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Errore eliminazione admin:", err);

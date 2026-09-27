@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import type { UserSessionInfo, AdminSessionInfo } from "@/types";
+import { clearOfflinePageCache } from "@/components/pwa/offline-cache";
 
 // --------------- Types ---------------
 
@@ -146,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignora errori di rete
     }
     localStorage.removeItem("user_info");
+    await clearOfflinePageCache();
     setState({
       type: "guest",
       loading: false,

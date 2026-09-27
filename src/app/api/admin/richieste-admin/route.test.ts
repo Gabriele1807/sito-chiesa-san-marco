@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 let existingAdminEmail: string | null = null;
 const adminUpdate = vi.fn();
+vi.mock("@/lib/mongo/audit-log", () => ({ recordAdminAction: vi.fn(), logAdminAction: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({
   supabaseAdmin: {
     from: vi.fn(() => ({

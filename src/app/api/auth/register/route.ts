@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { startEmailVerification, localeFromRequest } from "@/lib/auth/email-verification";
 import { hashPassword } from "@/lib/auth/password";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
 import { createUser, findUserByEmail } from "@/lib/mongo/users";
@@ -115,6 +116,17 @@ export async function POST(request: Request) {
       chiesa: chiesa?.trim() || undefined,
       adminRequest: requestAdmin === true,
     });
+
+    // Link di verifica dell'email, inviato dopo la risposta.
+    const userId = user._id;
+    if (userId) {
+      after(() =>
+        startEmailVerification(userId, user.email, localeFromRequest(request)).then(
+          () => undefined,
+          (err) => console.error("[register] link di verifica non inviato", err instanceof Error ? err.message : err)
+        )
+      );
+    }
 
     return NextResponse.json({ success: true, user }, { status: 201 });
   } catch (err) {

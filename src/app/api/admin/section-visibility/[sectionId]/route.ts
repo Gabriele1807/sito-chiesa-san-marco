@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/auth/session";
+import { logAdminAction } from "@/lib/mongo/audit-log";
 import {
   getSectionVisibility,
   updateSectionActive,
@@ -72,6 +73,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
           { status: 404 }
         );
       }
+      await logAdminAction(adminUser, { action: "update", entity: "sezioni", entityId: sectionId, summary: `Sezione "${sectionId}" ${body.isActive ? "attivata" : "disattivata"}` });
       return NextResponse.json({ success: true, data: updated });
     }
 
@@ -84,6 +86,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
           { status: 404 }
         );
       }
+      await logAdminAction(adminUser, { action: "update", entity: "sezioni", entityId: sectionId, summary: `Permessi della sezione "${sectionId}"` });
       return NextResponse.json({ success: true, data: updated });
     }
 
@@ -96,6 +99,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
           { status: 404 }
         );
       }
+      await logAdminAction(adminUser, { action: "update", entity: "sezioni", entityId: sectionId, summary: `Sezione "${sectionId}"` });
       return NextResponse.json({ success: true, data: updated });
     }
 

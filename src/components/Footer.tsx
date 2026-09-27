@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { FooterAccordion } from "./FooterAccordion";
 import HashLink from "./HashLink";
+import InstallAppButton from "./pwa/InstallAppButton";
 
 const ADDRESS_MAPS_URL = "https://maps.app.goo.gl/fUqwmy5ZGXMidqWf8";
 const FACEBOOK_URL = "https://www.facebook.com/people/Chiesa-di-San-Marco/61556571205312/";
@@ -248,6 +249,7 @@ export default async function Footer() {
             <Link href="/termini" className="hover:text-accent transition-colors">
               {tLegal("footerTerms")}
             </Link>
+            <InstallAppButton />
           </nav>
           <p>{tFooter("note")}</p>
         </div>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPreghiere, addPreghiera, updatePreghiera, deletePreghiera } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 import { validateContent, parseContentId } from "@/lib/admin/content-validation";
 import type { Preghiera } from "@/types";
 
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const preghiera = await addPreghiera(parsed.data as Omit<Preghiera, "id">);
     revalidatePublicContent("preghiere");
+    await recordAdminAction({
+      action: "create",
+      entity: "preghiere",
+      entityId: preghiera.id,
+      summary: `Preghiera "${preghiera.titolo}"`,
+    });
     return NextResponse.json(preghiera, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -43,6 +50,12 @@ export async function PUT(request: Request) {
     const updated = await updatePreghiera(id, parsed.data as Partial<Preghiera>);
     if (!updated) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("preghiere");
+    await recordAdminAction({
+      action: "update",
+      entity: "preghiere",
+      entityId: id,
+      summary: `Preghiera "${updated.titolo}"`,
+    });
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -61,6 +74,7 @@ export async function DELETE(request: Request) {
     const deleted = await deletePreghiera(id);
     if (!deleted) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("preghiere");
+    await recordAdminAction({ action: "delete", entity: "preghiere", entityId: id, summary: `Preghiera n. ${id}` });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Errore" }, { status: 500 });

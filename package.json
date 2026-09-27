@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "generate-hash": "npx tsx src/scripts/generate-hash.ts",
-    "backfill-has-password": "npx tsx src/scripts/backfill-has-password.ts"
+    "backfill-has-password": "npx tsx src/scripts/backfill-has-password.ts",
+    "generate-pwa-icons": "node src/scripts/generate-pwa-icons.mjs",
+    "generate-vapid-keys": "web-push generate-vapid-keys"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
@@ -33,7 +35,8 @@
     "react-dom": "19.2.3",
     "react-qr-code": "^2.0.18",
     "resend": "^6.28.0",
-    "thinking-orbs": "^0.3.1"
+    "thinking-orbs": "^0.3.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -41,6 +44,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "@vitest/coverage-v8": "^4.1.11",
     "babel-plugin-react-compiler": "1.0.0",
     "dotenv": "^17.3.1",

@@ -9,6 +9,7 @@ import {
   updateIscrizionePagamento,
 } from "@/lib/mongo/registrations";
 import { requireAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 
 function countIscrittiInRegistrations(
   iscrizioni: Array<{ registrationType?: string; familyMembers?: Array<unknown> }>
@@ -111,6 +112,7 @@ export async function DELETE(request: Request) {
     if (!deleted) {
       return NextResponse.json({ success: false, error: "Iscrizione non trovata" }, { status: 404 });
     }
+    await recordAdminAction({ action: "delete", entity: "iscrizioni", entityId: id, summary: `Iscrizione n. ${id}` });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Errore DELETE iscrizione:", err);
@@ -147,6 +149,12 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ success: false, error: "Iscrizione non trovata" }, { status: 404 });
       }
 
+      await recordAdminAction({
+        action: "update",
+        entity: "iscrizioni",
+        entityId: id,
+        summary: `Pagamento iscrizione n. ${id}: ${body.ha_pagato ? "pagato" : "non pagato"}`,
+      });
       return NextResponse.json({ success: true, ha_pagato: body.ha_pagato });
     }
 
@@ -178,6 +186,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, error: "Iscrizione non trovata" }, { status: 404 });
     }
 
+    await recordAdminAction({ action: "update", entity: "iscrizioni", entityId: id, summary: `Dati iscrizione n. ${id}` });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Errore PATCH iscrizione:", err);

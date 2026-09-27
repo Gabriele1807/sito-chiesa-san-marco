@@ -1,6 +1,6 @@
 import { revalidateTag } from "next/cache";
 
-export type PublicContentTag = "icone" | "libreria" | "preghiere" | "video-corsi" | "eventi" | "orari";
+export type PublicContentTag = "icone" | "libreria" | "preghiere" | "video-corsi" | "eventi" | "orari" | "avvisi";
 
 export function revalidatePublicContent(tag: PublicContentTag) {
   revalidateTag("content", "max");

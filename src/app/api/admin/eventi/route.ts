@@ -3,6 +3,7 @@ import { getEventi, addEvento, updateEvento, deleteEvento } from "@/lib/mongo/co
 import { deleteIscrizioniByEvento } from "@/lib/mongo/registrations";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 import { validateContent, parseContentId } from "@/lib/admin/content-validation";
 import type { Evento } from "@/types";
 
@@ -24,6 +25,12 @@ export async function POST(request: Request) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const evento = await addEvento(parsed.data as Omit<Evento, "id">);
     revalidatePublicContent("eventi");
+    await recordAdminAction({
+      action: "create",
+      entity: "eventi",
+      entityId: evento.id,
+      summary: `Evento "${evento.titolo}"`,
+    });
     return NextResponse.json(evento, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -44,6 +51,12 @@ export async function PUT(request: Request) {
     const updated = await updateEvento(id, parsed.data as Partial<Evento>);
     if (!updated) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("eventi");
+    await recordAdminAction({
+      action: "update",
+      entity: "eventi",
+      entityId: id,
+      summary: `Evento "${updated.titolo}"`,
+    });
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -64,6 +77,7 @@ export async function DELETE(request: Request) {
     // Rimuove a cascata tutte le iscrizioni associate all'evento
     await deleteIscrizioniByEvento(id);
     revalidatePublicContent("eventi");
+    await recordAdminAction({ action: "delete", entity: "eventi", entityId: id, summary: `Evento n. ${id}` });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Errore" }, { status: 500 });

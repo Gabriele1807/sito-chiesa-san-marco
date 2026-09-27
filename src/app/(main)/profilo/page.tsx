@@ -36,6 +36,7 @@ import { CHIESE_LIST } from "@/lib/churches";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
 import LinkedAccountsSection from "@/components/profile/LinkedAccountsSection";
 import { OAUTH_ERROR_KEYS } from "@/lib/oauth/error-messages";
+import EmailVerificationStatus from "@/components/profile/EmailVerificationStatus";
 
 export default function ProfiloPage() {
   const t = useTranslations("profilo");
@@ -551,6 +552,7 @@ export default function ProfiloPage() {
             <div className="min-w-0 flex-1">
               <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wide mb-0.5">{t("email")}</p>
               <p className="text-sm font-medium text-foreground truncate">{email}</p>
+              {user && <EmailVerificationStatus verified={user.emailVerificata === true} />}
             </div>
           </div>
         )}

@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import ScrollDownHint from "@/components/ScrollDownHint";
 import HashLink from "@/components/HashLink";
 import { getPreghiere, getEventi, getOrari } from "@/lib/db";
+import AvvisiHomeSection from "@/components/avvisi/AvvisiHomeSection";
 import NextCelebrationCard from "@/components/NextCelebrationCard";
 import OrariTable from "@/components/OrariTable";
 import YouTubeLiveSection from "@/components/YouTubeLiveSection";
@@ -154,6 +155,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ZONA 1b - AVVISI (solo se presenti) */}
+      <AvvisiHomeSection />
 
       {/* ZONA 2 - ORARI + LIVE */}
       <section

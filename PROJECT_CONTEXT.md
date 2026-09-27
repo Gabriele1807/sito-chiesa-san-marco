@@ -1095,9 +1095,9 @@ mittente in produzione.
 | `renderResetPasswordEmail` | `src/lib/email/templates/reset-password.ts` | **Usato**; rendering IT/AR e escaping testati. Prima dell'audit la lingua era sempre `it` (ora dal cookie `locale`). |
 | `getResendClient` | `src/lib/email/resend.ts` | Usato da `sendPasswordResetEmail`. |
 | Link nell'email (`NEXT_PUBLIC_SITE_URL`) | `forgot-password` | Prima: link relativo se la variabile mancava, `//reset-password` con slash finale. Ora: `getSiteUrl()`, nessun invio se assente. |
-| `sendVerificationEmail` + `renderVerifyEmail` | `send-email.ts`, `templates/verify-email.ts` | **Implementato come stub, mai usato** (restituisce `not_implemented`; il template lancia ancora `Error("not implemented")`). Nessun flusso di verifica email esiste: `emailVerificata` è impostato solo alla registrazione (`false`, o `true` per email Google/Facebook verificate) e ora azzerato quando l'utente cambia email (`updateUserEmail`). Lasciato non collegato: collegarlo richiede un flusso di conferma (token, pagina, UI) e una decisione su cosa sblocchi la verifica. |
-| `sendBookingConfirmationEmail` + template | idem | **Stub, mai usato.** Il flusso che lo giustificherebbe (iscrizione evento, `src/lib/mongo/registrations.ts`) esiste ma **non è stato collegato** deliberatamente: sarebbe un invio automatico nuovo verso indirizzi (anche di familiari/terzi iscritti) senza una decisione esplicita del proprietario, e richiede Brevo configurato. |
-| `sendEventReminderEmail` + template | idem | **Stub, mai usato.** Richiederebbe un job schedulato: non esiste alcuna coda/cron nel progetto. |
+| `sendVerificationEmail` + `renderVerifyEmail` | `send-email.ts`, `templates/verify-email.ts` | **Usato dal 2026-09-27** (registrazione, cambio email, profilo): vedi §14.5. |
+| `sendBookingConfirmationEmail` + template | idem | **Usato dal 2026-09-27** dopo ogni iscrizione a un evento: vedi §14.5. |
+| `sendEventReminderEmail` + template | idem | **Usato dal 2026-09-27** dal job Vercel Cron: vedi §14.5. |
 | `sendNewsletter` + template | idem | **Stub, mai usato.** Nessuna gestione iscritti/consenso newsletter nel progetto. |
 | `sendViaBrevo` | `src/lib/email/brevo.ts` (riesportato da `send-email.ts`) | **Implementato ma mai usato**, non testato. |
 | Code/job di invio | — | **Non esistono**: l'invio è sincrono nella request di `forgot-password`. |
@@ -1157,8 +1157,8 @@ Verifiche eseguite:
 
 #### 7.5.9 Limitazioni ancora aperte
 
-- Stub email non collegati (tabella §7.5.7); Brevo senza chiamanti.
-- Nessun flusso di verifica email: `emailVerificata` è informativo.
+- ~~Stub email non collegati~~: conferma iscrizione, promemoria e verifica email attivi dal 2026-09-27 (§14.5); resta non implementata solo la newsletter.
+- Verifica email attiva dal 2026-09-27 (§14.5); `emailVerificata` resta informativo (non blocca funzioni).
 - Invio email sincrono nella request (nessuna coda/retry); con Resend lento
   la risposta di `forgot-password` rallenta di conseguenza.
 - ~~Le altre sessioni admin restano valide dopo un cambio password~~ —
@@ -2010,3 +2010,117 @@ produzione, comportamento sul dominio pubblico. `vercel build` non eseguito
 **Limiti aperti**: `arctic` e `@oslojs/*` deprecati su npm; PDF senza
 supporto arabo reale; mappa Google Maps senza consenso preventivo;
 `src/lib/mongo/connection-utils.ts` con timeout più lunghi di `maxDuration`.
+
+---
+
+## 14. Nuove funzionalità (2026-09-27)
+
+Otto funzionalità scelte dal proprietario. Variabili d'ambiente in
+`.env.example` e `VERCEL_DEPLOYMENT_GUIDE.md` §2–§3; qui l'architettura.
+
+### 14.1 Registro attività admin (`admin_audit_log`)
+- `src/lib/mongo/audit-log.ts`: `logAdminAction(admin, entry)` e
+  `recordAdminAction(entry)` (legge l'admin dal cookie). Non lanciano mai:
+  un errore di scrittura non fa fallire l'operazione registrata. TTL 12 mesi.
+- Collegato a tutte le route admin che modificano dati (contenuti, iscrizioni,
+  utenti, account admin, richieste admin/superadmin, sezioni, avvisi,
+  richieste di preghiera, invio notifiche) e a login/logout admin (anche
+  OAuth e promozione automatica in `/api/auth/me`). Nel riepilogo solo
+  titoli/nomi, mai testo delle richieste di preghiera o dati degli iscritti.
+- Consultazione: `/admin/registro` + `GET /api/admin/registro`, solo superadmin.
+  **Ogni nuova route admin che modifica dati deve chiamare `recordAdminAction`.**
+
+### 14.2 Avvisi (`avvisi`)
+- `src/lib/mongo/announcements.ts`: livello `info|importante|urgente`,
+  `inizio`/`scadenza` facoltativi, testo arabo facoltativo (`titoloAr`,
+  `messaggioAr`, ripiego sull'italiano), `pubblicato`, `pushSentAt`.
+- Lettura pubblica: `getActiveAvvisi()` in `src/lib/db.ts` (cache 60 s, tag
+  `avvisi`; filtro inizio/scadenza applicato a ogni richiesta; in caso di
+  errore DB restituisce `[]` e logga). Bacheca in home
+  (`AvvisiHomeSection`), pagina `/avvisi`, striscia per gli urgenti in
+  `(main)/layout.tsx` (`UrgentAvvisiBanner`, nascondibile, scelta in
+  `localStorage` per id+updatedAt).
+- Admin: `/admin/avvisi`, `api/admin/avvisi` (validazione `validateAvviso`).
+
+### 14.3 PWA (manifest, service worker, installazione, push)
+- `src/app/manifest.ts` (→ `/manifest.webmanifest`), icone in `public/icons/`
+  generate da `npm run generate-pwa-icons` (script `src/scripts/generate-pwa-icons.mjs`).
+- `public/sw.js`: cache-first per `/_next/static`, stale-while-revalidate per
+  immagini/font (max 80), network-first per le **sole pagine pubbliche**
+  (regex `PUBLIC_PAGE`, max 40) con copia offline; `/api`, `/admin`, profilo,
+  iscrizioni, reset password ecc. mai in cache; RSC non in cache;
+  `/offline.html` bilingue. `ignoreVary` nelle ricerche in cache (Next.js
+  risponde con `Vary`). Cambiando la logica aumentare `CACHE_VERSION`.
+  Header in `next.config.js`: `/sw.js` senza cache HTTP.
+- `PwaManager` (layout radice): registra il SW solo in produzione (o con
+  `NEXT_PUBLIC_ENABLE_SW_IN_DEV=1`), mostra "Aggiorna" quando c'è una nuova
+  versione e **ricarica solo dopo il tocco dell'utente** (la prima
+  installazione non ricarica: perdeva i moduli in compilazione).
+- Installazione: `install-store.ts` (stato condiviso via
+  `useSyncExternalStore`; `beforeinstallprompt` catturato anche prima
+  dell'idratazione con lo script inline `early-install-script.ts`),
+  `InstallPrompt` (dalla seconda visita o dopo 30 s, "Non ora" = 30 giorni),
+  `InstallAppButton` nel footer, `IosInstallSteps` per Safari iOS.
+- Logout: `clearOfflinePageCache()` svuota le copie offline delle pagine.
+- Push: `push_subscriptions` (`src/lib/mongo/push-subscriptions.ts`,
+  endpoint accettati solo dei servizi push dei browser → niente SSRF),
+  `src/lib/push/{config,send}.ts` (`web-push`, VAPID, TTL 24 h, iscrizioni
+  404/410 eliminate), API `api/push/subscribe|unsubscribe`,
+  `api/admin/push` (stato), `api/admin/avvisi/push` (invio manuale di un
+  avviso visibile). UI: `PushToggle` su `/avvisi` (timeout di 20 s se il
+  servizio push non risponde; su iPhone richiede l'app installata),
+  `PushSendButton` nel pannello.
+
+### 14.4 Richieste di preghiera (`prayer_requests`)
+- Pagina pubblica `/richieste-preghiera` (link dal menu e da `/preghiere`),
+  `POST /api/richieste-preghiera`: consenso esplicito obbligatorio, nome ed
+  email facoltativi (precompilati per chi ha un account), campo trappola
+  `website`, rate limit IP.
+- Admin: `/admin/richieste-preghiera` (da leggere / lette / archiviate,
+  stampa delle intenzioni da leggere in liturgia). Archiviate eliminate dopo
+  90 giorni (TTL su `deleteAfter`).
+
+### 14.5 Email degli eventi e verifica email
+- `src/lib/email/send-email.ts`: `deliverEmail` comune. Categoria `auth`
+  (verifica email, reset) → Resend con `EMAIL_FROM_AUTH`; categoria `events`
+  → Brevo se `BREVO_API_KEY` + `EMAIL_FROM_EVENTS`, altrimenti Resend
+  (`EMAIL_FROM_EVENTS` o `EMAIL_FROM_AUTH`). In produzione nessun mittente
+  di prova. Template in `src/lib/email/templates/` con layout comune
+  (`layout.ts`), IT/AR, escape HTML, versione testo.
+- **Conferma iscrizione**: `src/lib/events/registration-emails.ts`, inviata
+  con `after()` dopo la risposta di `api/eventi/iscrizione`; destinatario
+  = email dell'account, altrimenti email del modulo. Lingua salvata
+  sull'iscrizione (`emailLocale`).
+- **Promemoria**: `src/lib/events/reminders.ts` + `GET /api/cron/event-reminders`
+  (Vercel Cron in `vercel.json`, 16:00 UTC; richiede `Authorization: Bearer
+  CRON_SECRET`, senza segreto risponde 503). Eventi di "domani" secondo il
+  calendario di Milano; `reminderSentAt` prenotato in modo atomico e
+  rilasciato se l'invio fallisce.
+- **Verifica email**: `email_verification_tokens` (hash SHA-256, 48 h, uno
+  valido per volta, legato all'indirizzo), invio alla registrazione, al
+  cambio email e alla registrazione OAuth con email scritta a mano;
+  `/verifica-email` conferma con **clic esplicito** (`POST
+  /api/auth/verify-email`, i filtri antispam aprono i link in GET);
+  reinvio dal profilo (`/api/auth/verify-email/resend`, max 1 al minuto).
+  `/api/auth/me` espone `emailVerificata`. La verifica è informativa: non
+  blocca nessuna funzione.
+- Newsletter: ancora non implementata (`sendNewsletter` restituisce `not_implemented`).
+
+### 14.6 Statistiche
+- `/admin/statistiche` + `GET /api/admin/statistiche`
+  (`src/lib/admin/statistics.ts`): solo conteggi aggregati. Grafici in
+  `src/components/admin/charts/` (SVG/HTML, colore accento `#B45309`
+  verificato per contrasto, tooltip, vista tabella).
+
+### 14.7 Verifiche eseguite
+- Test automatici: 320 (vitest), incluso il service worker reale eseguito in
+  un contesto simulato (`src/components/pwa/service-worker.test.ts`) e un
+  controllo di coerenza delle traduzioni (`src/i18n/messages.test.ts`).
+- Prova end-to-end in Chromium su build di produzione locale (MongoDB in
+  memoria, Supabase simulato, nessun servizio esterno): 28/29 controlli
+  superati; l'unico errore sono gli script di Vercel Analytics, assenti
+  fuori da Vercel. Chrome dichiara il sito installabile.
+- **Non verificati** (servono servizi reali): consegna delle email (nessun
+  provider configurato nel test), consegna delle notifiche push (il browser
+  di test non raggiunge i server push di Google), esecuzione del Vercel Cron,
+  installazione su dispositivi iOS/Android reali.

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+vi.mock("@/lib/mongo/audit-log", () => ({ recordAdminAction: vi.fn(), logAdminAction: vi.fn() }));
 vi.mock("@/lib/oauth/flow-cookie", () => ({
   verifyOAuthFlowCookie: vi.fn(),
   hashSessionToken: vi.fn(async (v: string) => `hash:${v}`),

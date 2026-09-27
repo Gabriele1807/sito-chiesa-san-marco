@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { startEmailVerification, localeFromRequest } from "@/lib/auth/email-verification";
 import { verifyOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
 import {
   findPendingOAuthRegistrationById,
@@ -142,6 +143,18 @@ async function handlePost(request: Request): Promise<NextResponse> {
     }
 
     await deletePendingOAuthRegistration(pending._id);
+
+    // Email scritta a mano (il provider non l'ha condivisa o non l'ha
+    // verificata): va confermata come per la registrazione classica.
+    if (!usingVerifiedProviderEmail) {
+      const newUserId = user._id!;
+      after(() =>
+        startEmailVerification(newUserId, email, localeFromRequest(request)).then(
+          () => undefined,
+          (err) => console.error("[oauth] link di verifica non inviato", err instanceof Error ? err.message : err)
+        )
+      );
+    }
 
     const { token: sessionToken, expiresAt } = await createUserSession(user._id!, request, false);
     const res = NextResponse.json({ success: true, user }, { status: 201 });

@@ -10,6 +10,7 @@ import { isSuperAdmin } from "@/lib/auth/permissions";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { hashPassword } from "@/lib/auth/password";
 import { requireSuperAdminSession } from "@/lib/auth/session";
+import { logAdminAction } from "@/lib/mongo/audit-log";
 
 /**
  * GET /api/admin/richieste-admin — Lista richieste admin pendenti
@@ -81,6 +82,12 @@ export async function POST(request: Request) {
         .eq("username", user.username);
       // Aggiorna MongoDB
       await updateUser(userId, { adminRequest: "none" });
+      await logAdminAction(adminUser, {
+        action: "revoke",
+        entity: "richieste-admin",
+        entityId: userId,
+        summary: `Accesso admin revocato a @${user.username}`,
+      });
       return NextResponse.json({ success: true, message: "Accesso admin revocato" });
     }
 
@@ -93,6 +100,12 @@ export async function POST(request: Request) {
         );
       }
       await updateAdminRequest(userId, "rejected");
+      await logAdminAction(adminUser, {
+        action: "reject",
+        entity: "richieste-admin",
+        entityId: userId,
+        summary: `Richiesta admin di @${user.username} rifiutata`,
+      });
       return NextResponse.json({ success: true, message: "Richiesta rifiutata" });
     }
 
@@ -165,6 +178,12 @@ export async function POST(request: Request) {
           );
         }
         await updateAdminRequest(userId, "approved");
+        await logAdminAction(adminUser, {
+          action: "approve",
+          entity: "richieste-admin",
+          entityId: userId,
+          summary: `@${user.username} riattivato come admin`,
+        });
         return NextResponse.json({
           success: true,
           message: "Richiesta approvata (account admin esistente riattivato)",
@@ -179,6 +198,12 @@ export async function POST(request: Request) {
 
     // Aggiorna status su MongoDB
     await updateAdminRequest(userId, "approved");
+    await logAdminAction(adminUser, {
+      action: "approve",
+      entity: "richieste-admin",
+      entityId: userId,
+      summary: `@${user.username} promosso a ${adminRuolo}`,
+    });
 
     return NextResponse.json({
       success: true,
