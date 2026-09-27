@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getFilePrivati, addFilePrivato, deleteFilePrivato } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { validateContent } from "@/lib/admin/content-validation";
+import type { FilePrivato } from "@/lib/data/store";
 
 export async function GET() {
   const adminUser = await requireAdminSession();
@@ -17,8 +19,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
   try {
-    const body = await request.json();
-    const file = await addFilePrivato(body);
+    const parsed = validateContent("libreria-privata", await request.json(), "create");
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    // Data di caricamento decisa dal server, non dal client.
+    const data = parsed.data as Partial<FilePrivato> & Pick<FilePrivato, "nome" | "url">;
+    const file = await addFilePrivato({
+      ...data,
+      descrizione: data.descrizione ?? "",
+      tipo: data.tipo ?? "Altro",
+      dataCaricamento: new Date().toISOString(),
+    });
     revalidatePublicContent("libreria");
     return NextResponse.json(file, { status: 201 });
   } catch {

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getIcone, addIcona, updateIcona, deleteIcona } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { validateContent, parseContentId } from "@/lib/admin/content-validation";
+import type { Icona } from "@/types";
 
 export async function GET() {
   const adminUser = await requireAdminSession();
@@ -17,8 +19,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
   try {
-    const body = await request.json();
-    const icona = await addIcona(body);
+    const parsed = validateContent("icone", await request.json(), "create");
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const icona = await addIcona(parsed.data as Omit<Icona, "id">);
     revalidatePublicContent("icone");
     return NextResponse.json(icona, { status: 201 });
   } catch {
@@ -33,8 +36,11 @@ export async function PUT(request: Request) {
   }
   try {
     const body = await request.json();
-    const { id, ...data } = body;
-    const updated = await updateIcona(id, data);
+    const id = parseContentId(body?.id);
+    if (!id) return NextResponse.json({ error: "ID mancante" }, { status: 400 });
+    const parsed = validateContent("icone", body, "update");
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const updated = await updateIcona(id, parsed.data as Partial<Icona>);
     if (!updated) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("icone");
     return NextResponse.json(updated);

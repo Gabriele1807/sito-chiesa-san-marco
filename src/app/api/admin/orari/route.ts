@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getOrari, addOrario, updateOrario, deleteOrario } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { validateContent } from "@/lib/admin/content-validation";
+import type { OrarioSettimanale } from "@/types";
 
 export async function GET() {
   const adminUser = await requireAdminSession();
@@ -17,8 +19,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
   try {
-    const body = await request.json();
-    const orario = await addOrario(body);
+    const parsed = validateContent("orari", await request.json(), "create");
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const orario = await addOrario(parsed.data as unknown as OrarioSettimanale);
     revalidatePublicContent("orari");
     return NextResponse.json(orario, { status: 201 });
   } catch {
@@ -32,9 +35,11 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
   try {
-    const body = await request.json();
-    const { giorno, ...data } = body;
-    const updated = await updateOrario(giorno, { giorno, ...data });
+    // Il giorno identifica il documento: entrambi i campi sono obbligatori.
+    const parsed = validateContent("orari", await request.json(), "create");
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const data = parsed.data as unknown as OrarioSettimanale;
+    const updated = await updateOrario(data.giorno, data);
     if (!updated) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("orari");
     return NextResponse.json(updated);
