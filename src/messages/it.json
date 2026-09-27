@@ -8,6 +8,41 @@
       "altLinkLabel": "Se il pulsante non funziona, copia e incolla questo link nel browser:",
       "expiry": "Questo link scade tra {minutes} minuti.",
       "ignore": "Se non hai richiesto tu questa operazione, puoi ignorare questa email: la tua password non verrà modificata."
+    },
+    "common": {
+      "signature": "Chiesa Copta Ortodossa di San Marco – Milano",
+      "labelEvento": "Evento",
+      "labelData": "Quando",
+      "labelLuogo": "Dove",
+      "labelPartecipanti": "Iscritti",
+      "labelRaccolta": "Punto di raccolta",
+      "labelPagamento": "Pagamento entro"
+    },
+    "bookingConfirmation": {
+      "subject": "Iscrizione confermata: {event}",
+      "preheader": "La tua iscrizione a {event} è stata registrata.",
+      "title": "Iscrizione confermata",
+      "intro": "Abbiamo registrato l'iscrizione all'evento «{event}». Ecco il riepilogo:",
+      "button": "Vedi le mie iscrizioni",
+      "reminderNote": "Il giorno prima dell'evento riceverai un promemoria a questo indirizzo.",
+      "footnote": "Hai ricevuto questa email perché questo indirizzo è stato indicato per un'iscrizione sul sito della parrocchia. Per modifiche o cancellazioni contatta la parrocchia."
+    },
+    "eventReminder": {
+      "subject": "Promemoria: domani {event}",
+      "preheader": "Ti aspettiamo domani a {event}.",
+      "title": "Ci vediamo domani",
+      "intro": "Ti ricordiamo che domani si terrà «{event}», a cui risulti iscritto.",
+      "button": "Dettagli dell'evento",
+      "footnote": "Hai ricevuto questo promemoria perché questo indirizzo è stato indicato per un'iscrizione sul sito della parrocchia."
+    },
+    "verifyEmail": {
+      "subject": "Conferma il tuo indirizzo email",
+      "preheader": "Un clic per confermare il tuo indirizzo email.",
+      "title": "Conferma il tuo indirizzo email",
+      "intro": "Per completare la configurazione del tuo account sul sito della Chiesa di San Marco, conferma che questo indirizzo email è tuo.",
+      "button": "Conferma email",
+      "expiry": "Il link scade tra {hours} ore. Se il pulsante non funziona, copia questo link nel browser: {url}",
+      "ignore": "Se non hai creato tu un account o cambiato l'email, puoi ignorare questo messaggio."
     }
   },
   "nav": {

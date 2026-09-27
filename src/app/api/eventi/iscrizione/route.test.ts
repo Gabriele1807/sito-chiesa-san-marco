@@ -6,7 +6,27 @@ vi.mock("@/lib/auth/rate-limit", () => ({
   recordIpRequest: vi.fn(),
 }));
 vi.mock("@/lib/db", () => ({
-  createIscrizione: vi.fn(async () => ({ success: true, iscrizione: { _id: "r1" } })),
+  createIscrizione: vi.fn(async () => ({
+    success: true,
+    iscrizione: {
+      _id: "r1",
+      eventoId: "e1",
+      nome: "Mario",
+      cognome: "Rossi",
+      createdByEmail: "mario@example.com",
+    },
+  })),
+  getEventoById: vi.fn(async () => ({ id: "e1", titolo: "Ritiro", data: "2026-10-04T09:30" })),
+}));
+const afterCallbacks: (() => Promise<void>)[] = [];
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (fn: () => Promise<void>) => afterCallbacks.push(fn),
+}));
+const sendRegistrationConfirmation = vi.fn(async () => ({ ok: true }));
+vi.mock("@/lib/events/registration-emails", () => ({
+  sendRegistrationConfirmation: (...args: unknown[]) =>
+    sendRegistrationConfirmation(...(args as [])),
 }));
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
 vi.mock("@/lib/mongo/sessions", () => ({ validateUserSession: vi.fn() }));
@@ -74,5 +94,24 @@ describe("POST /api/eventi/iscrizione — proprietà dell'iscrizione", () => {
     expect(saved.createdByUserId).toBe("u1");
     expect(saved.createdByAccountType).toBe("user");
     expect(saved.createdByEmail).toBe("mario@example.com");
+  });
+
+  it("sends the confirmation email after the response, in the visitor's language", async () => {
+    afterCallbacks.length = 0;
+    (cookies as ReturnType<typeof vi.fn>).mockResolvedValue({
+      get: (n: string) => (n === "locale" ? { value: "ar" } : undefined),
+    });
+
+    const res = await POST(req(forgedBody));
+    expect(res.status).toBe(201);
+    expect(lastSaved().emailLocale).toBe("ar");
+    // Nulla inviato prima che la risposta sia partita.
+    expect(sendRegistrationConfirmation).not.toHaveBeenCalled();
+
+    await Promise.all(afterCallbacks.map((fn) => fn()));
+    expect(sendRegistrationConfirmation).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "e1", titolo: "Ritiro" }),
+      expect.objectContaining({ _id: "r1", createdByEmail: "mario@example.com" })
+    );
   });
 });

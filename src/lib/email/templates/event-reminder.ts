@@ -1,12 +1,40 @@
-/** Stub: firma tipizzata, nessun invio reale in questa fase (design spec §7, §11). */
-export interface EventReminderTemplateParams {
-  eventName: string;
-  eventDate: string;
-  locale: "it" | "ar";
+import { createTranslator } from "next-intl";
+import {
+  loadMessages,
+  renderEmailLayout,
+  renderEmailText,
+  type EmailLayoutParams,
+  type RenderedEmail,
+} from "./layout";
+import { eventDetails, type EventEmailData } from "./booking-confirmation";
+
+export interface EventReminderTemplateParams extends EventEmailData {
+  /** Pagina dell'evento (assoluta). */
+  eventUrl: string;
 }
+
 export async function renderEventReminderEmail(
-  _params: EventReminderTemplateParams
-): Promise<{ subject: string; html: string; text: string }> {
-  void _params;
-  throw new Error("not implemented");
+  params: EventReminderTemplateParams
+): Promise<RenderedEmail> {
+  const messages = await loadMessages(params.locale);
+  const t = createTranslator({ locale: params.locale, messages, namespace: "email.eventReminder" });
+  const tc = createTranslator({ locale: params.locale, messages, namespace: "email.common" });
+  const event = params.eventTitle;
+
+  const layout: EmailLayoutParams = {
+    locale: params.locale,
+    preheader: t("preheader", { event }),
+    title: t("title"),
+    paragraphs: [t("intro", { event })],
+    details: eventDetails(params, tc),
+    button: { label: t("button"), url: params.eventUrl },
+    footnote: t("footnote"),
+    signature: tc("signature"),
+  };
+
+  return {
+    subject: t("subject", { event }),
+    html: renderEmailLayout(layout),
+    text: renderEmailText(layout),
+  };
 }

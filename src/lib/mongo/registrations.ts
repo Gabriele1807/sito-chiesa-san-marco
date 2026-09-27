@@ -496,6 +496,7 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     createdByEmail: data.createdByEmail?.trim() || undefined,
     createdByUserId: data.createdByUserId || undefined,
     createdByAccountType: data.createdByUserId ? data.createdByAccountType : undefined,
+    emailLocale: data.emailLocale === "ar" ? "ar" : "it",
     // campi tecnici per indici/lookup (non esposti al client)
     _familyKey: fKey,
     _personKey: pKey,

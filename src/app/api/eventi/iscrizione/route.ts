@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createIscrizione } from "@/lib/db";
+import { NextRequest, NextResponse, after } from "next/server";
+import { createIscrizione, getEventoById } from "@/lib/db";
+import { sendRegistrationConfirmation } from "@/lib/events/registration-emails";
 import { withDbRetry, getErrorMessage, isConnectionError } from "@/lib/mongo/operation-retry";
 import type { CreateIscrizioneData } from "@/types";
 import { cookies } from "next/headers";
@@ -23,10 +24,7 @@ export async function POST(request: NextRequest) {
     const isFamily = body.registrationType === "family";
 
     // Validation: required fields
-    if (
-      !body.eventoId ||
-      !body.telefono?.trim()
-    ) {
+    if (!body.eventoId || !body.telefono?.trim()) {
       return NextResponse.json(
         {
           error: "Campi obbligatori mancanti: telefono ed evento",
@@ -37,7 +35,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isFamily) {
-      if (!body.nome?.trim() || !body.cognome?.trim() || !body.padreNome?.trim() || !body.padreCognome?.trim()) {
+      if (
+        !body.nome?.trim() ||
+        !body.cognome?.trim() ||
+        !body.padreNome?.trim() ||
+        !body.padreCognome?.trim()
+      ) {
         return NextResponse.json(
           {
             error:
@@ -75,19 +78,15 @@ export async function POST(request: NextRequest) {
     // Fetch authenticated user info with retry for cold start resilience
     try {
       if (adminToken) {
-        const adminUser = await withDbRetry(
-          () => validateSession(adminToken),
-          { maxAttempts: 2 }
-        );
+        const adminUser = await withDbRetry(() => validateSession(adminToken), { maxAttempts: 2 });
         if (adminUser) {
           createdByNome = adminUser.nome;
           createdByCognome = adminUser.cognome;
           createdByUserId = adminUser.id;
           createdByAccountType = "admin";
-          const relatedUser = await withDbRetry(
-            () => findUserByUsername(adminUser.username),
-            { maxAttempts: 2 }
-          );
+          const relatedUser = await withDbRetry(() => findUserByUsername(adminUser.username), {
+            maxAttempts: 2,
+          });
           if (relatedUser) {
             createdByEmail = relatedUser.email;
           }
@@ -95,15 +94,9 @@ export async function POST(request: NextRequest) {
       }
 
       if (!createdByNome && token) {
-        const session = await withDbRetry(
-          () => validateUserSession(token),
-          { maxAttempts: 2 }
-        );
+        const session = await withDbRetry(() => validateUserSession(token), { maxAttempts: 2 });
         if (session) {
-          const user = await withDbRetry(
-            () => findUserById(session.userId),
-            { maxAttempts: 2 }
-          );
+          const user = await withDbRetry(() => findUserById(session.userId), { maxAttempts: 2 });
           if (user) {
             createdByNome = user.nome;
             createdByCognome = user.cognome;
@@ -124,6 +117,8 @@ export async function POST(request: NextRequest) {
     // venire solo dalla sessione. Un'iscrizione anonima non ha proprietario.
     const bodyWithCreator = {
       ...body,
+      // Lingua delle email: quella con cui la persona sta usando il sito.
+      emailLocale: cookieStore.get("locale")?.value === "ar" ? "ar" : "it",
       createdByNome,
       createdByCognome,
       createdByEmail,
@@ -134,10 +129,9 @@ export async function POST(request: NextRequest) {
     // Create registration with retry logic for database resilience
     let result;
     try {
-      result = await withDbRetry(
-        () => createIscrizione(bodyWithCreator as CreateIscrizioneData),
-        { maxAttempts: 3 }
-      );
+      result = await withDbRetry(() => createIscrizione(bodyWithCreator as CreateIscrizioneData), {
+        maxAttempts: 3,
+      });
     } catch (dbErr) {
       console.error("[Iscrizione API] Registration error:", dbErr);
       if (isConnectionError(dbErr)) {
@@ -161,8 +155,7 @@ export async function POST(request: NextRequest) {
         case "duplicate":
           return NextResponse.json(
             {
-              error:
-                "Questa persona risulta già iscritta a questo evento con lo stesso genitore.",
+              error: "Questa persona risulta già iscritta a questo evento con lo stesso genitore.",
               errorCode: "duplicate",
             },
             { status: 409 }
@@ -183,6 +176,26 @@ export async function POST(request: NextRequest) {
             { status: 500 }
           );
       }
+    }
+
+    // Email di conferma dopo la risposta: l'utente non aspetta l'invio e un
+    // problema del provider email non annulla un'iscrizione già salvata.
+    const iscrizione = result.iscrizione;
+    if (iscrizione) {
+      after(async () => {
+        try {
+          const evento = await getEventoById(iscrizione.eventoId);
+          if (!evento) return;
+          const sent = await sendRegistrationConfirmation(evento, iscrizione);
+          if (sent && !sent.ok)
+            console.error("[Iscrizione API] conferma email non inviata", { error: sent.error });
+        } catch (err) {
+          console.error(
+            "[Iscrizione API] errore invio conferma",
+            err instanceof Error ? err.message : "unknown"
+          );
+        }
+      });
     }
 
     return NextResponse.json(
