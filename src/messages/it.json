@@ -661,5 +661,31 @@
     "livello_info": "Avviso",
     "livello_importante": "Importante",
     "livello_urgente": "Urgente"
+  },
+  "pwa": {
+    "updateAvailable": "È disponibile una nuova versione del sito.",
+    "updateNow": "Aggiorna",
+    "installTitle": "Installa l'app di San Marco",
+    "installBody": "Orari, avvisi e preghiere sempre a portata di mano, anche senza connessione.",
+    "installCta": "Installa",
+    "installLater": "Non ora",
+    "installClose": "Chiudi",
+    "iosTitle": "Aggiungi San Marco alla schermata Home",
+    "iosStep1": "Tocca il pulsante Condividi <icon></icon> in basso (o in alto su iPad).",
+    "iosStep2": "Scorri e scegli «Aggiungi alla schermata Home» <icon></icon>.",
+    "iosStep3": "Conferma con «Aggiungi»: l'icona di San Marco comparirà tra le tue app.",
+    "iosNotSafari": "Su iPhone l'installazione funziona da Safari: apri questo sito in Safari e segui i passaggi.",
+    "installButton": "Installa l'app",
+    "installed": "App installata",
+    "pushTitle": "Notifiche degli avvisi",
+    "pushBody": "Ricevi una notifica sul telefono quando la parrocchia pubblica un avviso importante.",
+    "pushEnable": "Attiva notifiche",
+    "pushDisable": "Disattiva notifiche",
+    "pushEnabled": "Notifiche attive su questo dispositivo.",
+    "pushDenied": "Le notifiche sono bloccate nelle impostazioni del browser per questo sito. Sbloccale da lì per attivarle.",
+    "pushUnsupported": "Questo browser non supporta le notifiche push.",
+    "pushIosInstall": "Su iPhone e iPad le notifiche funzionano solo dopo aver installato l'app: aggiungila alla schermata Home e aprila da lì.",
+    "pushError": "Non è stato possibile attivare le notifiche. Riprova più tardi.",
+    "pushNotConfigured": "Le notifiche non sono ancora disponibili."
   }
 }

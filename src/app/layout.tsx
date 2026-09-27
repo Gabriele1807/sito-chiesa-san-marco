@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Noto_Naskh_Arabic, Source_Sans_3 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -7,6 +7,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AuthProvider } from "@/components/auth/AuthContext";
 import LoginModal from "@/components/auth/LoginModal";
 import RegisterModal from "@/components/auth/RegisterModal";
+import PwaManager from "@/components/pwa/PwaManager";
+import { EARLY_INSTALL_PROMPT_SCRIPT } from "@/components/pwa/early-install-script";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -57,6 +59,25 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  applicationName: "San Marco",
+  // iOS: apertura a schermo intero dopo "Aggiungi alla schermata Home".
+  appleWebApp: {
+    capable: true,
+    title: "San Marco",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FFF9F2",
+  colorScheme: "light",
 };
 
 // JSON-LD (schema.org) per la scheda locale/religiosa: aiuta i motori di
@@ -95,6 +116,7 @@ export default async function RootLayout({
         className={`${bodyFont.variable} ${displayFont.variable} ${arabicFont.variable} force-motion antialiased`}
         suppressHydrationWarning
       >
+        <script dangerouslySetInnerHTML={{ __html: EARLY_INSTALL_PROMPT_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -104,6 +126,7 @@ export default async function RootLayout({
             {children}
             <LoginModal />
             <RegisterModal />
+            <PwaManager />
           </AuthProvider>
         </NextIntlClientProvider>
         <Analytics />

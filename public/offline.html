@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="it" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FFF9F2" />
+    <title>Offline – Chiesa di San Marco</title>
+    <link rel="icon" href="/icons/icon-192.png" />
+    <style>
+      :root {
+        --bg: #fff9f2;
+        --fg: #231913;
+        --muted: rgba(35, 25, 19, 0.65);
+        --accent: #b45309;
+        --border: #e7d1b8;
+        --surface: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      html[dir="rtl"] body {
+        font-family: "Noto Naskh Arabic", system-ui, sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 440px;
+        text-align: center;
+      }
+      img {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 6px;
+      }
+      h1 {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: 30px;
+        font-weight: 600;
+        margin: 20px 0 8px;
+      }
+      p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        padding: 12px 24px;
+        cursor: pointer;
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+      section {
+        margin-top: 28px;
+        text-align: start;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px 18px;
+      }
+      section[hidden] {
+        display: none;
+      }
+      h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      li a {
+        display: block;
+        padding: 9px 0;
+        color: var(--fg);
+        text-decoration: none;
+        border-bottom: 1px solid var(--border);
+      }
+      li:last-child a {
+        border-bottom: 0;
+      }
+      li a::after {
+        content: " ›";
+        color: var(--accent);
+      }
+      html[dir="rtl"] li a::after {
+        content: " ‹";
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icons/icon-192.png" alt="" />
+      <h1 id="title">Sei offline</h1>
+      <p id="message">
+        Non c’è connessione a Internet. Appena torna la connessione la pagina si ricaricherà da sola.
+      </p>
+      <button id="retry" type="button">Riprova</button>
+      <section id="cached" hidden>
+        <h2 id="cached-title">Disponibili senza connessione</h2>
+        <ul id="cached-list"></ul>
+      </section>
+    </main>
+    <script>
+      (function () {
+        var TEXT = {
+          it: {
+            title: "Sei offline",
+            message:
+              "Non c’è connessione a Internet. Appena torna la connessione la pagina si ricaricherà da sola.",
+            retry: "Riprova",
+            cached: "Disponibili senza connessione",
+            pages: {
+              "/": "Home e orari delle liturgie",
+              "/avvisi": "Avvisi",
+              "/eventi": "Eventi",
+              "/orari": "Orari",
+              "/preghiere": "Preghiere",
+              "/video-corsi": "Video e corsi",
+              "/chi-siamo": "Chi siamo",
+              "/contatti": "Contatti",
+              "/icone": "Galleria icone",
+              "/libreria": "Libreria",
+              "/privacy": "Privacy",
+              "/termini": "Termini di servizio",
+            },
+          },
+          ar: {
+            title: "أنت غير متصل",
+            message: "لا يوجد اتصال بالإنترنت. ستُعاد تحميل الصفحة تلقائيًا عند عودة الاتصال.",
+            retry: "إعادة المحاولة",
+            cached: "متاح بدون اتصال",
+            pages: {
+              "/": "الرئيسية ومواعيد الصلوات",
+              "/avvisi": "الإعلانات",
+              "/eventi": "الفعاليات",
+              "/orari": "المواعيد",
+              "/preghiere": "الصلوات",
+              "/video-corsi": "الفيديوهات والدورات",
+              "/chi-siamo": "من نحن",
+              "/contatti": "اتصل بنا",
+              "/icone": "معرض الأيقونات",
+              "/libreria": "المكتبة",
+              "/privacy": "الخصوصية",
+              "/termini": "شروط الخدمة",
+            },
+          },
+        };
+
+        var match = document.cookie.match(/(?:^|;\s*)locale=([^;]+)/);
+        var locale = match && match[1] === "ar" ? "ar" : "it";
+        var t = TEXT[locale];
+        document.documentElement.lang = locale;
+        document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+        document.getElementById("title").textContent = t.title;
+        document.getElementById("message").textContent = t.message;
+        document.getElementById("retry").textContent = t.retry;
+        document.getElementById("cached-title").textContent = t.cached;
+
+        function reload() {
+          window.location.reload();
+        }
+        document.getElementById("retry").addEventListener("click", reload);
+        window.addEventListener("online", reload);
+
+        // Elenco delle pagine salvate dal service worker (cache "sm-pages-*").
+        if (!("caches" in window)) return;
+        caches
+          .keys()
+          .then(function (names) {
+            var pageCaches = names.filter(function (name) {
+              return name.indexOf("sm-pages-") === 0;
+            });
+            return Promise.all(
+              pageCaches.map(function (name) {
+                return caches.open(name).then(function (cache) {
+                  return cache.keys();
+                });
+              })
+            );
+          })
+          .then(function (lists) {
+            var seen = {};
+            var items = [];
+            lists.forEach(function (requests) {
+              requests.forEach(function (request) {
+                var url = new URL(request.url);
+                var path = url.pathname.replace(/\/$/, "") || "/";
+                if (seen[path] || url.pathname === window.location.pathname) return;
+                seen[path] = true;
+                var base = "/" + path.split("/")[1];
+                var label = t.pages[path] || (t.pages[base] ? t.pages[base] + " · " + decodeURIComponent(path.split("/")[2] || "") : path);
+                items.push({ path: path, label: label });
+              });
+            });
+            if (items.length === 0) return;
+            var list = document.getElementById("cached-list");
+            items.forEach(function (item) {
+              var li = document.createElement("li");
+              var a = document.createElement("a");
+              a.href = item.path;
+              a.textContent = item.label;
+              li.appendChild(a);
+              list.appendChild(li);
+            });
+            document.getElementById("cached").hidden = false;
+          })
+          .catch(function () {});
+      })();
+    </script>
+  </body>
+</html>

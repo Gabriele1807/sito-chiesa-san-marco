@@ -109,6 +109,20 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Service worker: mai in cache HTTP, altrimenti il browser non vede
+        // gli aggiornamenti (vedi public/sw.js e src/components/pwa/PwaManager.tsx).
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      {
+        source: "/offline.html",
+        headers: [{ key: "Cache-Control", value: "no-cache" }],
+      },
+      {
         source: "/(.*)",
         headers: [
           {

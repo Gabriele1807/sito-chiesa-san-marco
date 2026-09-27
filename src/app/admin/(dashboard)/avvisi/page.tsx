@@ -1,10 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, Eye, EyeOff, Megaphone, Languages } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Eye,
+  EyeOff,
+  Megaphone,
+  Languages,
+  BellRing,
+} from "lucide-react";
 import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
 import { showToast } from "@/components/admin/AdminToast";
 import ConfirmModal from "@/components/admin/ConfirmModal";
+import PushSendButton from "@/components/admin/PushSendButton";
 
 type Livello = "info" | "importante" | "urgente";
 
@@ -103,10 +114,21 @@ export default function AdminAvvisiPage() {
   const [deleteTarget, setDeleteTarget] = useState<Avviso | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [push, setPush] = useState<{
+    configured: boolean;
+    subscribers: { total: number; it: number; ar: number };
+  }>({
+    configured: false,
+    subscribers: { total: 0, it: 0, ar: 0 },
+  });
 
   async function fetchData() {
-    const res = await adminFetch("/api/admin/avvisi");
+    const [res, pushRes] = await Promise.all([
+      adminFetch("/api/admin/avvisi"),
+      adminFetch("/api/admin/push"),
+    ]);
     if (res.ok) setAvvisi(await res.json());
+    if (pushRes.ok) setPush(await pushRes.json());
     setNow(Date.now());
     setLoading(false);
   }
@@ -230,6 +252,24 @@ export default function AdminAvvisiPage() {
         >
           <Plus className="h-4 w-4" /> Nuovo avviso
         </button>
+      </div>
+
+      <div className="border-border bg-surface flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3 text-sm">
+        <BellRing className={`h-4 w-4 ${push.configured ? "text-gold" : "text-foreground/30"}`} />
+        {push.configured ? (
+          <span className="text-foreground/70">
+            Notifiche push attive:{" "}
+            <strong className="text-foreground">{push.subscribers.total}</strong> dispositivi
+            iscritti ({push.subscribers.it} in italiano, {push.subscribers.ar} in arabo). Usa il
+            pulsante <BellRing className="text-gold inline h-3.5 w-3.5" /> accanto a un avviso
+            visibile per inviarlo.
+          </span>
+        ) : (
+          <span className="text-foreground/60">
+            Notifiche push non configurate: servono le variabili NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+            VAPID_PRIVATE_KEY e VAPID_SUBJECT (vedi PROJECT_CONTEXT.md).
+          </span>
+        )}
       </div>
 
       {showForm && (
@@ -426,6 +466,15 @@ export default function AdminAvvisiPage() {
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-1">
+                    <PushSendButton
+                      avvisoId={avviso.id}
+                      titolo={avviso.titolo}
+                      pushSentAt={avviso.pushSentAt}
+                      inactive={status.label !== "Visibile"}
+                      configured={push.configured}
+                      subscribers={push.subscribers.total}
+                      onSent={fetchData}
+                    />
                     <button
                       onClick={() => togglePublished(avviso)}
                       className="text-foreground/60 hover:bg-background hover:text-foreground rounded-lg p-2"

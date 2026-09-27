@@ -5,6 +5,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getActiveAvvisi } from "@/lib/db";
 import AvvisoItem from "@/components/avvisi/AvvisoItem";
 import { toAvvisoViews } from "@/components/avvisi/avvisi-view";
+import PushToggle from "@/components/pwa/PushToggle";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("avvisi", "titolo", "sottotitolo", "/avvisi");
@@ -21,6 +22,8 @@ export default async function AvvisiPage() {
         <h1 className="font-display text-foreground mt-2 text-3xl sm:text-4xl">{t("titolo")}</h1>
         <p className="text-foreground/70 mt-2 text-sm leading-relaxed">{t("sottotitolo")}</p>
       </header>
+
+      <PushToggle />
 
       {views.length === 0 ? (
         <div className="border-border bg-surface rounded-2xl border px-6 py-14 text-center">
