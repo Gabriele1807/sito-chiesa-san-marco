@@ -12,6 +12,7 @@ import {
   recordResetPasswordAttempt,
 } from "@/lib/auth/password-reset-rate-limit";
 import { getClientIp } from "@/lib/auth/rate-limit";
+import { supabaseAdmin } from "@/lib/supabase/server";
 
 const INVALID_TOKEN_RESPONSE = { success: false, error: "Link non valido o scaduto" };
 
@@ -74,6 +75,21 @@ export async function POST(request: Request) {
       await updateUserPassword(tokenDoc.userId, newHash);
       passwordSaved = true;
       await setHasPassword(tokenDoc.userId, true);
+
+      // Un admin promosso da utente (adminRequest "approved") accede con la
+      // copia della password in Supabase `admin_users`, collegata per
+      // username: va aggiornata anche lì, come fa /api/auth/change-password.
+      // Altrimenti dopo il reset il login admin userebbe ancora la vecchia
+      // password e il recupero via email non funzionerebbe per gli admin.
+      if (user.adminRequest === "approved" && user.username) {
+        const { error } = await supabaseAdmin
+          .from("admin_users")
+          .update({ password_hash: newHash })
+          .eq("username", user.username);
+        if (error) {
+          console.error("[reset-password] sincronizzazione password admin fallita:", error.message);
+        }
+      }
     } catch (err) {
       if (!passwordSaved) {
         await releasePasswordResetToken(tokenDoc._id, tokenDoc.consumedAt).catch((releaseErr) =>

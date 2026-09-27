@@ -10,6 +10,19 @@ vi.mock("@/lib/mongo/users", () => ({
   setHasPassword: vi.fn(),
 }));
 vi.mock("@/lib/mongo/sessions", () => ({ deleteAllUserSessions: vi.fn() }));
+const adminUpdates: { values: unknown; column: string; value: unknown }[] = [];
+vi.mock("@/lib/supabase/server", () => ({
+  supabaseAdmin: {
+    from: () => ({
+      update: (values: unknown) => ({
+        eq: async (column: string, value: unknown) => {
+          adminUpdates.push({ values, column, value });
+          return { error: null };
+        },
+      }),
+    }),
+  },
+}));
 vi.mock("@/lib/auth/password", () => ({ hashPassword: vi.fn().mockResolvedValue("newhash") }));
 vi.mock("@/lib/auth/password-reset-rate-limit", () => ({
   isResetPasswordRateLimited: vi.fn().mockResolvedValue(false),
@@ -33,7 +46,29 @@ function mockRequest(body: unknown) {
 }
 
 describe("POST /api/auth/reset-password", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    adminUpdates.length = 0;
+  });
+
+  it("also updates the linked admin account password (M-05)", async () => {
+    (consumePasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "tok1", userId: "u1" });
+    (findUserByIdFull as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      _id: "u1",
+      attivo: true,
+      username: "mario",
+      adminRequest: "approved",
+    });
+    const res = await POST(mockRequest({ token: "good", newPassword: "Valid123!" }));
+    expect(res.status).toBe(200);
+    expect(adminUpdates).toEqual([{ values: { password_hash: "newhash" }, column: "username", value: "mario" }]);
+  });
+
+  it("does not touch admin_users for plain users", async () => {
+    (consumePasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "tok1", userId: "u1" });
+    await POST(mockRequest({ token: "good", newPassword: "Valid123!" }));
+    expect(adminUpdates).toEqual([]);
+  });
 
   it("rejects a missing token", async () => {
     const res = await POST(mockRequest({ token: "", newPassword: "Valid123!" }));

@@ -41,10 +41,8 @@ export default function AdminLibreriaPrivataPage() {
       const res = await adminFetch("/api/admin/libreria-privata", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          dataCaricamento: new Date().toISOString(),
-        }),
+        // La data di caricamento la imposta il server.
+        body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error("Errore server");
       showToast("File caricato con successo");
@@ -81,7 +79,7 @@ export default function AdminLibreriaPrivataPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Libreria Privata</h1>
-          <p className="text-sm text-foreground/60 mt-1">{files.length} file privati — visibili solo all&apos;admin</p>
+          <p className="text-sm text-foreground/60 mt-1">{files.length} file privati — elenco visibile solo agli admin</p>
         </div>
         <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors">
           <Plus className="w-4 h-4" /> Carica file
@@ -111,6 +109,11 @@ export default function AdminLibreriaPrivataPage() {
             <label className="block text-xs font-semibold text-foreground/70 uppercase mb-1">URL / Link Google Drive</label>
             <input type="text" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} required placeholder="https://drive.google.com/file/d/.../view" className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-gold" />
             <p className="text-xs text-foreground/40 mt-1">Incolla il link di condivisione di Google Drive</p>
+            <p className="text-xs text-amber-700 mt-1">
+              Il sito protegge solo l&apos;elenco: il file resta su Google Drive. In Drive imposta
+              &quot;Accesso limitato&quot; e condividilo solo con gli account degli admin, mai
+              &quot;Chiunque abbia il link&quot;.
+            </p>
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={saving} className="px-4 py-2 bg-gold text-white text-sm font-semibold rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50">
