@@ -103,3 +103,26 @@ describe("sendPasswordResetEmail", () => {
     error.mockRestore();
   });
 });
+
+describe("flussi email non ancora attivi", () => {
+  it("return an explicit failure instead of throwing, without sending", async () => {
+    const {
+      sendVerificationEmail,
+      sendBookingConfirmationEmail,
+      sendEventReminderEmail,
+      sendNewsletter,
+    } = await import("./send-email");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    send.mockClear();
+    for (const fn of [
+      sendVerificationEmail,
+      sendBookingConfirmationEmail,
+      sendEventReminderEmail,
+      sendNewsletter,
+    ]) {
+      await expect(fn()).resolves.toEqual({ ok: false, error: "not_implemented" });
+    }
+    expect(send).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { adminFetch } from "@/lib/admin/fetch-with-auth-redirect";
+import { passwordPolicyError } from "@/lib/auth/password-rules";
 import {
   Users,
   Search,
@@ -229,8 +230,9 @@ export default function GestioneUtentiPage() {
 
   async function handleResetPassword() {
     if (!editingUser || !newPassword) return;
-    if (newPassword.length < 8) {
-      setPasswordMsg({ ok: false, text: "La password deve avere almeno 8 caratteri" });
+    const passwordError = passwordPolicyError(newPassword);
+    if (passwordError) {
+      setPasswordMsg({ ok: false, text: passwordError });
       return;
     }
     setSavingPassword(true);

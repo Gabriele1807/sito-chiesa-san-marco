@@ -714,7 +714,8 @@ export default function GestioneAdminPage() {
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required={!editingId}
                   minLength={8}
-                  placeholder={editingId ? "••••••••" : "Minimo 8 caratteri"}
+                  placeholder={editingId ? "••••••••" : "Min. 8 caratteri"}
+                  title="Almeno 8 caratteri con maiuscola, minuscola, numero e carattere speciale"
                   className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-light/50 focus:border-gold-light"
                 />
               </div>

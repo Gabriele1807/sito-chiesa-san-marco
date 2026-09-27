@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { listUsers, updateUser, deleteUser, updateUserPassword, findUserByIdFull } from "@/lib/mongo/users";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { hashPassword } from "@/lib/auth/password";
+import { passwordPolicyError } from "@/lib/auth/password-rules";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { requireSuperAdminSession } from "@/lib/auth/session";
 
@@ -137,8 +138,9 @@ export async function PATCH(request: Request) {
     if (!id || !newPassword) {
       return NextResponse.json({ success: false, error: "id e newPassword richiesti" }, { status: 400 });
     }
-    if (typeof newPassword !== "string" || newPassword.length < 8) {
-      return NextResponse.json({ success: false, error: "La password deve avere almeno 8 caratteri" }, { status: 400 });
+    const passwordError = passwordPolicyError(newPassword);
+    if (passwordError) {
+      return NextResponse.json({ success: false, error: passwordError }, { status: 400 });
     }
 
     const passwordHash = await hashPassword(newPassword);

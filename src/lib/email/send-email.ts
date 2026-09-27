@@ -71,24 +71,30 @@ export async function sendPasswordResetEmail(
   }
 }
 
-/** Stub — vedi design spec §7, §11. Non collegato a nessun flusso reale. */
+// Flussi email non ancora attivi (design spec §7, §11). Nessuno li chiama.
+// Invece di lanciare "not implemented" (che farebbe fallire con un 500 la
+// route che un domani li collegasse senza gestire l'eccezione) restituiscono
+// un esito esplicito di mancato invio, come per un provider non configurato:
+// il chiamante deve comunque controllare `ok`.
+function notImplemented(flow: string): SendEmailResult {
+  console.warn("[email] flow not implemented", { flow });
+  return { ok: false, error: "not_implemented" };
+}
+
 export async function sendVerificationEmail(): Promise<SendEmailResult> {
-  throw new Error("not implemented");
+  return notImplemented("verify-email");
 }
 
-/** Stub — vedi design spec §7, §11. Non collegato a registrations.ts. */
 export async function sendBookingConfirmationEmail(): Promise<SendEmailResult> {
-  throw new Error("not implemented");
+  return notImplemented("booking-confirmation");
 }
 
-/** Stub — vedi design spec §7, §11. Non collegato a registrations.ts. */
 export async function sendEventReminderEmail(): Promise<SendEmailResult> {
-  throw new Error("not implemented");
+  return notImplemented("event-reminder");
 }
 
-/** Stub — vedi design spec §7, §11. */
 export async function sendNewsletter(): Promise<SendEmailResult> {
-  throw new Error("not implemented");
+  return notImplemented("newsletter");
 }
 
 // Riesportato per completezza del modulo Brevo predisposto (design spec §7).

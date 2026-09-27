@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { hashPassword } from "@/lib/auth/password";
+import { passwordPolicyError } from "@/lib/auth/password-rules";
 import { requireSuperAdminSession } from "@/lib/auth/session";
 
 async function requireSuperAdmin() {
@@ -47,11 +48,9 @@ export async function PUT(
 
     // Se viene fornita una nuova password, hasharla
     if (password) {
-      if (password.length < 8) {
-        return NextResponse.json(
-          { success: false, error: "La password deve essere di almeno 8 caratteri" },
-          { status: 400 }
-        );
+      const passwordError = passwordPolicyError(password);
+      if (passwordError) {
+        return NextResponse.json({ success: false, error: passwordError }, { status: 400 });
       }
       updates.password_hash = await hashPassword(password);
     }
