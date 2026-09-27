@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById } from "@/lib/mongo/users";
-import { getIscrizioniByUser } from "@/lib/mongo/registrations";
+import { getIscrizioniByUser, redactForViewer } from "@/lib/mongo/registrations";
 import { getEventoById } from "@/lib/mongo/content";
 import { withDbRetry, getErrorMessage, isConnectionError } from "@/lib/mongo/operation-retry";
 import type { IscrizioneEvento, UserPublic } from "@/types";
@@ -51,10 +51,13 @@ export async function GET() {
     let iscrizioni: IscrizioneEvento[] = [];
     try {
       user = await withDbRetry(() => findUserById(session.userId), { maxAttempts: 2 });
+      const owner = { id: session.userId, accountType: "user" as const };
       iscrizioni = await withDbRetry(
-        () => getIscrizioniByUser(user?.nome ?? "", user?.cognome ?? "", user?.email),
+        () => getIscrizioniByUser(user?.nome ?? "", user?.cognome ?? "", user?.email, owner),
         { maxAttempts: 2 }
-      ).catch(() => []);
+      )
+        .then((list) => redactForViewer(list, owner, user?.email))
+        .catch(() => []);
     } catch (dbErr) {
       console.error("[Iscrizioni API] Database error:", dbErr);
       if (isConnectionError(dbErr)) {

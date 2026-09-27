@@ -106,6 +106,11 @@ export interface IscrizioneEvento {
   createdByNome?: string;      // Nome dell'utente autenticato che ha creato l'iscrizione
   createdByCognome?: string;   // Cognome dell'utente autenticato che ha creato l'iscrizione
   createdByEmail?: string;     // Email dell'utente autenticato che ha creato l'iscrizione
+  /** Account che ha creato l'iscrizione (impostato solo lato server dalla sessione).
+   * È l'unico riferimento di proprietà affidabile: nome, cognome ed email del
+   * profilo sono modificabili dall'utente. Assente nelle iscrizioni storiche. */
+  createdByUserId?: string;
+  createdByAccountType?: "user" | "admin";
   // Metadati
   createdAt?: string;      // ISO date
 }

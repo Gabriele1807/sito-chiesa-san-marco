@@ -68,6 +68,9 @@ export async function POST(request: NextRequest) {
     let createdByNome = "";
     let createdByCognome = "";
     let createdByEmail: string | undefined = undefined;
+    // Proprietà dell'iscrizione: solo dalla sessione, mai dal body.
+    let createdByUserId: string | undefined = undefined;
+    let createdByAccountType: "user" | "admin" | undefined = undefined;
 
     // Fetch authenticated user info with retry for cold start resilience
     try {
@@ -79,6 +82,8 @@ export async function POST(request: NextRequest) {
         if (adminUser) {
           createdByNome = adminUser.nome;
           createdByCognome = adminUser.cognome;
+          createdByUserId = adminUser.id;
+          createdByAccountType = "admin";
           const relatedUser = await withDbRetry(
             () => findUserByUsername(adminUser.username),
             { maxAttempts: 2 }
@@ -103,6 +108,8 @@ export async function POST(request: NextRequest) {
             createdByNome = user.nome;
             createdByCognome = user.cognome;
             createdByEmail = user.email;
+            createdByUserId = session.userId;
+            createdByAccountType = "user";
           }
         }
       }
@@ -112,17 +119,16 @@ export async function POST(request: NextRequest) {
       // This is non-critical for registration itself
     }
 
-    // Se non autenticato, aggiungi comunque i dati se disponibili nel body (backward compatibility)
-    if (!createdByNome && body.email) {
-      createdByEmail = body.email;
-    }
-
-    // Add creator tracking to body
+    // Nessun dato "createdBy*" preso dal body: sono usati per stabilire chi
+    // vede i dati di contatto dell'iscrizione (redactForViewer), quindi devono
+    // venire solo dalla sessione. Un'iscrizione anonima non ha proprietario.
     const bodyWithCreator = {
       ...body,
       createdByNome,
       createdByCognome,
       createdByEmail,
+      createdByUserId,
+      createdByAccountType,
     };
 
     // Create registration with retry logic for database resilience

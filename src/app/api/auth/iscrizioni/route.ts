@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById, findUserByUsername } from "@/lib/mongo/users";
-import { getIscrizioniByUser } from "@/lib/mongo/registrations";
+import {
+  getIscrizioniByUser,
+  redactForViewer,
+  type RegistrationOwner,
+} from "@/lib/mongo/registrations";
 import { getEventoById } from "@/lib/mongo/content";
 import { validateSession } from "@/lib/auth/session";
 
@@ -15,12 +19,14 @@ export async function GET() {
     let targetNome = "";
     let targetCognome = "";
     let targetEmail: string | undefined = undefined;
+    let owner: RegistrationOwner | null = null;
 
     if (adminToken) {
       const adminUser = await validateSession(adminToken);
       if (adminUser) {
         targetNome = adminUser.nome;
         targetCognome = adminUser.cognome;
+        owner = { id: adminUser.id, accountType: "admin" };
         // Provo a recuperare l'email dall'utente MongoDB corrispondente (se esiste)
         const relatedUser = await findUserByUsername(adminUser.username);
         if (relatedUser) {
@@ -37,18 +43,23 @@ export async function GET() {
           targetNome = user.nome;
           targetCognome = user.cognome;
           targetEmail = user.email;
+          owner = { id: session.userId, accountType: "user" };
         }
       }
     }
 
-    if (!targetNome) {
+    if (!targetNome || !owner) {
       return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
     }
 
     // Debug logging
 
     // Recupera iscrizioni dell'utente (o admin)
-    const iscrizioniRaw = await getIscrizioniByUser(targetNome, targetCognome, targetEmail);
+    const iscrizioniRaw = redactForViewer(
+      await getIscrizioniByUser(targetNome, targetCognome, targetEmail, owner),
+      owner,
+      targetEmail
+    );
 
 
     // Arricchisci i dati con informazioni sull'evento (titolo, data, etc.)

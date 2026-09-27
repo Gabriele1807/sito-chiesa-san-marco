@@ -131,16 +131,11 @@ export async function validateSession(token: string): Promise<AdminUser | null> 
     return null;
   }
 
-  return {
-    id: payload.sub,
-    username: payload.username,
-    email: payload.email ?? "",
-    nome: payload.nome ?? "",
-    cognome: payload.cognome ?? "",
-    ruolo: payload.ruolo,
-    attivo: payload.attivo ?? true,
-    ultimo_accesso: payload.ultimo_accesso ?? null,
-  };
+  // Stato corrente dal database, non dal token: un admin disattivato,
+  // eliminato o declassato (superadmin → admin) dopo l'emissione del JWT
+  // perde subito accesso/privilegi invece di mantenerli fino alla scadenza.
+  // getAdminUserById filtra già attivo=true.
+  return getAdminUserById(payload.sub);
 }
 
 export async function getAdminSession(): Promise<AdminUser | null> {

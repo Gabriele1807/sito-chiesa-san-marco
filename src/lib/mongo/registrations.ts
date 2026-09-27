@@ -28,6 +28,17 @@ export function normalizeName(s: string): string {
     .replace(/\s+/g, " ");
 }
 
+/** Escape dei metacaratteri regex: i nomi arrivano dal profilo utente e
+ * non devono mai diventare un'espressione (es. ".*" troverebbe tutti). */
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Match esatto, case-insensitive, di un valore letterale. */
+function exactInsensitive(value: string) {
+  return { $regex: `^${escapeRegex(value)}$`, $options: "i" };
+}
+
 /** Chiave identificativa del padre (per raggruppamento famiglia) */
 export function familyKey(padreNome: string, padreCognome: string): string {
   const padre = normalizeName(padreNome);
@@ -127,7 +138,17 @@ export async function getIscrizioniByEvento(eventoId: string): Promise<Iscrizion
 }
 
 /** Lista iscrizioni di un utente, cercate per email o (nome + cognome) o come membro famiglia, ordinate per data di iscrizione (più recenti prima) */
-export async function getIscrizioniByUser(nome: string, cognome: string, email?: string): Promise<IscrizioneEvento[]> {
+export interface RegistrationOwner {
+  id: string;
+  accountType: "user" | "admin";
+}
+
+export async function getIscrizioniByUser(
+  nome: string,
+  cognome: string,
+  email?: string,
+  owner?: RegistrationOwner
+): Promise<IscrizioneEvento[]> {
   await ensureIndexes();
   const c = await col();
   const pKey = personKey(nome, cognome);
@@ -157,8 +178,8 @@ export async function getIscrizioniByUser(nome: string, cognome: string, email?:
   
   // Ricerca per nome e cognome esatto (case-insensitive)
   conditions.push({
-    nome: { $regex: `^${nomeNorm}$`, $options: "i" },
-    cognome: { $regex: `^${cognomeNorm}$`, $options: "i" }
+    nome: exactInsensitive(nomeNorm),
+    cognome: exactInsensitive(cognomeNorm),
   });
   
   // Ricerca come membro della famiglia (fullName esatto)
@@ -166,7 +187,7 @@ export async function getIscrizioniByUser(nome: string, cognome: string, email?:
     conditions.push({
       "familyMembers": {
         $elemMatch: {
-          fullName: { $regex: `^${fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: "i" }
+          fullName: exactInsensitive(fullName),
         }
       }
     });
@@ -182,12 +203,16 @@ export async function getIscrizioniByUser(nome: string, cognome: string, email?:
   const createdByCognomeNorm = normalizeName(cognome);
   
   conditions.push({
-    createdByNome: { $regex: `^${createdByNomeNorm}$`, $options: "i" },
-    createdByCognome: { $regex: `^${createdByCognomeNorm}$`, $options: "i" }
+    createdByNome: exactInsensitive(createdByNomeNorm),
+    createdByCognome: exactInsensitive(createdByCognomeNorm),
   });
   
   if (email && email.trim()) {
     conditions.push({ createdByEmail: email.trim() });
+  }
+
+  if (owner) {
+    conditions.push({ createdByUserId: owner.id, createdByAccountType: owner.accountType });
   }
 
   const query = conditions.length > 0 ? { $or: conditions } : { _personKey: pKey };
@@ -208,6 +233,38 @@ export async function getIscrizioniByUser(nome: string, cognome: string, email?:
     console.error("Errore in getIscrizioniByUser:", err);
     return [];
   }
+}
+
+/**
+ * Le iscrizioni trovate per nome/cognome/email del profilo (dati che
+ * l'utente può modificare liberamente) restano visibili, così si vede a
+ * quali eventi si è iscritti anche se l'iscrizione l'ha fatta un familiare,
+ * ma i dati di contatto (telefono, email, note) sono mostrati solo a chi
+ * l'ha creata. Proprietà: `createdByUserId` per le iscrizioni nuove; per
+ * quelle storiche senza id, l'email dell'account che le aveva create.
+ */
+export function redactForViewer(
+  iscrizioni: IscrizioneEvento[],
+  owner: RegistrationOwner,
+  accountEmail?: string
+): IscrizioneEvento[] {
+  const email = accountEmail?.trim().toLowerCase();
+  return iscrizioni.map((isc) => {
+    const owned = isc.createdByUserId
+      ? isc.createdByUserId === owner.id && isc.createdByAccountType === owner.accountType
+      : Boolean(email) && isc.createdByEmail?.trim().toLowerCase() === email;
+    if (owned) return isc;
+    const {
+      telefono: _telefono,
+      email: _email,
+      note: _note,
+      createdByEmail: _createdByEmail,
+      createdByUserId: _createdByUserId,
+      ...rest
+    } = isc;
+    void _telefono; void _email; void _note; void _createdByEmail; void _createdByUserId;
+    return { ...rest, telefono: "" };
+  });
 }
 
 /** Conteggio iscritti per tutti gli eventi: include i membri della famiglia */
@@ -440,6 +497,8 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
     createdByNome: data.createdByNome?.trim() || undefined,
     createdByCognome: data.createdByCognome?.trim() || undefined,
     createdByEmail: data.createdByEmail?.trim() || undefined,
+    createdByUserId: data.createdByUserId || undefined,
+    createdByAccountType: data.createdByUserId ? data.createdByAccountType : undefined,
     // campi tecnici per indici/lookup (non esposti al client)
     _familyKey: fKey,
     _personKey: pKey,
