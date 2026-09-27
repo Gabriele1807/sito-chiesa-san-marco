@@ -65,15 +65,20 @@ export default function AdminRichiestePreghieraPage() {
   const [deleteTarget, setDeleteTarget] = useState<Richiesta | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Lo spinner lo accende il cambio di scheda (selectTab), non l'effetto.
+  // Lo spinner lo accende il cambio di scheda (selectTab); qui si spegne a caricamento finito.
   const load = useCallback(async () => {
-    const res = await adminFetch(`/api/admin/richieste-preghiera?stato=${tab}`);
-    if (res.ok) {
-      const data = await res.json();
-      setRichieste(data.richieste);
-      setCounts(data.counts);
+    try {
+      const res = await adminFetch(`/api/admin/richieste-preghiera?stato=${tab}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRichieste(data.richieste);
+        setCounts(data.counts);
+      }
+    } catch {
+      showToast("Errore di connessione", "error");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [tab]);
 
   useEffect(() => {
