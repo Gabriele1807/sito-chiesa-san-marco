@@ -73,7 +73,11 @@ chiavi/segreti. Dopo ogni modifica serve un **nuovo deploy** (le
 | `GOOGLE_CLIENT_ID` / `_SECRET` | facoltative | ❌ | Login con Google |
 | `FACEBOOK_CLIENT_ID` / `_SECRET` | facoltative | ❌ | Login con Facebook |
 | `YOUTUBE_API_KEY` | facoltativa | facoltativa | Video in home |
-| `BREVO_*`, `EMAIL_FROM_EVENTS`, `EMAIL_FROM_NEWSLETTER`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ❌ non usate dal codice | ❌ | — |
+| `EMAIL_FROM_EVENTS` | facoltativa (default `EMAIL_FROM_AUTH`) | ❌ | Mittente conferme e promemoria eventi |
+| `BREVO_API_KEY` | facoltativa | ❌ | Se presente con `EMAIL_FROM_EVENTS`, le email eventi passano da Brevo |
+| `CRON_SECRET` | ✅ per i promemoria | ❌ | Protegge `/api/cron/event-reminders` (Vercel Cron, `vercel.json`) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | facoltative (servono tutte e tre per le notifiche push) | ❌ | Notifiche degli avvisi; generare con `npm run generate-vapid-keys` |
+| `EMAIL_FROM_NEWSLETTER`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ❌ non usate dal codice | ❌ | — |
 
 Perché i Preview senza `NEXT_PUBLIC_SITE_URL`, OAuth e Resend: gli URL dei
 preview cambiano a ogni deploy, quindi non corrispondono alle callback
@@ -123,6 +127,18 @@ su un preview modifica dati reali.
    dall'app al primo uso (incluso `username_ci_unique`). Script facoltativo e
    idempotente: `npm run backfill-has-password` (con `MONGODB_URI` di
    produzione, solo se vuoi rendere esplicito `hasPassword`).
+9. **Promemoria degli eventi (Vercel Cron)**: `vercel.json` programma
+   `/api/cron/event-reminders` ogni giorno alle 16:00 UTC (17 o 18 in Italia).
+   Imposta `CRON_SECRET` (es. `openssl rand -hex 32`) nelle variabili di
+   Production: Vercel la invia da solo al job; senza, il job risponde 503 e
+   non invia nulla. I cron partono solo sul deploy di produzione e sono
+   visibili in Settings → Cron Jobs.
+10. **Notifiche push** (facoltative): `npm run generate-vapid-keys`, poi
+    copia la chiave pubblica in `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, quella privata
+    in `VAPID_PRIVATE_KEY` e un contatto in `VAPID_SUBJECT`
+    (`mailto:indirizzo@dominio`). Serve un Redeploy (variabile `NEXT_PUBLIC_`).
+    Cambiare le chiavi in seguito invalida le iscrizioni esistenti: gli utenti
+    dovranno riattivare le notifiche.
 
 ---
 
@@ -148,7 +164,14 @@ su un preview modifica dati reali.
 | 7 | Login con Google e con Facebook (account nuovo e già collegato) | Redirect al provider e ritorno sul sito loggati; collegamento/scollegamento dal profilo |
 | 8 | Admin: login, dashboard, export PDF iscrizioni (anche con nomi in arabo) | PDF scaricato; eventuali caratteri non latini mostrati come `?` con nota |
 | 9 | Cambio username dal profilo (libero / già usato) | Salvato / errore "già in uso" |
-| 10 | Vercel → Logs (Runtime) | Nessuna delle righe della tabella seguente |
+| 10 | App: su Android/Chrome desktop, seconda visita al sito | Compare l'invito "Installa l'app"; installata si apre a schermo intero. Su iPhone: istruzioni per "Aggiungi alla schermata Home" |
+| 11 | App: modalità aereo dopo aver visitato alcune pagine | Pagine già viste consultabili; le altre mostrano "Sei offline" |
+| 12 | Avvisi: crea un avviso urgente dal pannello | Striscia rossa in cima alle pagine e bacheca in home (entro circa un minuto per la cache) |
+| 13 | Notifiche (se VAPID configurate): "Attiva notifiche" su `/avvisi` dal telefono, poi pulsante campanella sull'avviso nel pannello | Notifica ricevuta; tocco → pagina Avvisi |
+| 14 | Iscrizione a un evento con la tua email | Email di conferma ricevuta |
+| 15 | Registrazione nuovo account | Email "Conferma il tuo indirizzo"; dopo il clic il profilo mostra "Email confermata" |
+| 16 | Vercel → Settings → Cron Jobs → Run sull'evento di domani (facoltativo) | Promemoria ricevuto dagli iscritti con email |
+| 17 | Vercel → Logs (Runtime) | Nessuna delle righe della tabella seguente |
 
 Righe di log che indicano un problema di configurazione:
 
@@ -164,6 +187,9 @@ Righe di log che indicano un problema di configurazione:
 | `[email] reset-password send skipped: EMAIL_FROM_AUTH not configured` | Mittente mancante in produzione |
 | `[email] reset-password send failed` | Chiave Resend errata o dominio non verificato |
 | `[redis] … non configurate` | Redis assente (funziona, ma protezioni per singola istanza) |
+| `[email] booking-confirmation send skipped` / `event-reminder …` / `verify-email …` | Nessun provider email o mittente configurato |
+| `[cron] event-reminders: CRON_SECRET non configurata` | Promemoria disattivati |
+| `[push] invio fallito` frequente | Chiavi VAPID errate o servizio push non raggiungibile |
 | `[users] indice username case-insensitive non creato` | Username storici duplicati per maiuscole: rinominarne uno |
 | Errore OAuth `redirect_uri_mismatch` (Google) / "URL bloccato" (Facebook) | Callback non registrata o dominio diverso da `NEXT_PUBLIC_SITE_URL` |
 
