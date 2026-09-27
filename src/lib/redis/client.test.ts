@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 
-vi.mock("@upstash/redis", () => ({ Redis: vi.fn().mockImplementation(() => ({})) }));
+// `function` (non arrow): da Vitest 4 un mock usato con `new` deve essere costruibile.
+vi.mock("@upstash/redis", () => ({
+  Redis: vi.fn(function () {
+    return {};
+  }),
+}));
 
 describe("getRedis", () => {
   afterEach(() => {

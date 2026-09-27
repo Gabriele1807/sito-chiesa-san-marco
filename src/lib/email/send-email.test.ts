@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const send = vi.fn();
 vi.mock("resend", () => ({
-  Resend: vi.fn().mockImplementation(() => ({ emails: { send } })),
+  // `function` (non arrow): da Vitest 4 un mock usato con `new` deve essere costruibile.
+  Resend: vi.fn(function () {
+    return { emails: { send } };
+  }),
 }));
 
 import { sendPasswordResetEmail } from "./send-email";
