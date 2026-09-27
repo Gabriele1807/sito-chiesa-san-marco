@@ -10,6 +10,15 @@ import {
   BookOpen,
   FolderLock,
   Users,
+  UsersRound,
+  ClipboardList,
+  Youtube,
+  Eye,
+  Lock,
+  Megaphone,
+  HandHeart,
+  BarChart3,
+  History,
 } from "lucide-react";
 
 const titleMap: Record<string, { label: string; icon: React.ElementType }> = {
@@ -21,6 +30,15 @@ const titleMap: Record<string, { label: string; icon: React.ElementType }> = {
   "/admin/preghiere": { label: "Gestione Preghiere", icon: BookOpen },
   "/admin/libreria-privata": { label: "Libreria Privata", icon: FolderLock },
   "/admin/gestione-admin": { label: "Gestione Amministratori", icon: Users },
+  "/admin/utenti": { label: "Gestione Utenti", icon: UsersRound },
+  "/admin/iscrizioni": { label: "Iscrizioni Eventi", icon: ClipboardList },
+  "/admin/video-corsi": { label: "Video & Corsi", icon: Youtube },
+  "/admin/gestione-sezioni": { label: "Gestione Sezioni", icon: Eye },
+  "/admin/gestione-permessi": { label: "Gestione Permessi", icon: Lock },
+  "/admin/avvisi": { label: "Avvisi e notifiche", icon: Megaphone },
+  "/admin/richieste-preghiera": { label: "Richieste di preghiera", icon: HandHeart },
+  "/admin/statistiche": { label: "Statistiche", icon: BarChart3 },
+  "/admin/registro": { label: "Registro attività", icon: History },
 };
 
 export default function AdminTopbarTitle() {

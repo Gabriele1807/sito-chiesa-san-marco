@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { requireSuperAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 
 async function requireSuperAdmin() {
   const adminUser = await requireSuperAdminSession();
@@ -69,6 +70,12 @@ export async function PATCH(
       );
     }
 
+    await recordAdminAction({
+      action: "update",
+      entity: "admin",
+      entityId: data.id,
+      summary: `Account admin @${data.username} ${data.attivo ? "riattivato" : "disattivato"}`,
+    });
     return NextResponse.json({ success: true, data });
   } catch (err) {
     console.error("Errore toggle admin:", err);

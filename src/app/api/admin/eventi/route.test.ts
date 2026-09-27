@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+vi.mock("@/lib/mongo/audit-log", () => ({ recordAdminAction: vi.fn(), logAdminAction: vi.fn() }));
 vi.mock("@/lib/auth/session", () => ({ requireAdminSession: vi.fn(async () => ({ id: "a1" })) }));
 vi.mock("@/lib/cache/content-revalidate", () => ({ revalidatePublicContent: vi.fn() }));
 vi.mock("@/lib/mongo/registrations", () => ({ deleteIscrizioniByEvento: vi.fn() }));
@@ -12,6 +13,7 @@ vi.mock("@/lib/mongo/content", () => ({
 
 import { POST, PUT } from "./route";
 import { addEvento, updateEvento } from "@/lib/mongo/content";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 
 function req(method: string, body: unknown) {
   return new Request("http://localhost/api/admin/eventi", { method, body: JSON.stringify(body) });
@@ -26,6 +28,12 @@ describe("/api/admin/eventi", () => {
     );
     expect(res.status).toBe(201);
     expect(addEvento).toHaveBeenCalledWith({ titolo: "Festa", data: "2026-05-01" });
+    expect(recordAdminAction).toHaveBeenCalledWith({
+      action: "create",
+      entity: "eventi",
+      entityId: "1",
+      summary: 'Evento "Festa"',
+    });
   });
 
   it("POST rejects invalid data with 400 without touching the database", async () => {
@@ -34,6 +42,7 @@ describe("/api/admin/eventi", () => {
     );
     expect(res.status).toBe(400);
     expect(addEvento).not.toHaveBeenCalled();
+    expect(recordAdminAction).not.toHaveBeenCalled();
   });
 
   it("PUT rejects an operator object as id", async () => {

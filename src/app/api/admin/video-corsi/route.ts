@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getVideoCorsi, addVideoCorso, updateVideoCorso, deleteVideoCorso } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 import { validateContent, parseContentId } from "@/lib/admin/content-validation";
 import type { VideoCorso } from "@/types";
 
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const videoCorso = await addVideoCorso(parsed.data as Omit<VideoCorso, "id">);
     revalidatePublicContent("video-corsi");
+    await recordAdminAction({
+      action: "create",
+      entity: "video-corsi",
+      entityId: videoCorso.id,
+      summary: `Video "${videoCorso.titolo}"`,
+    });
     return NextResponse.json(videoCorso, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -43,6 +50,12 @@ export async function PUT(request: Request) {
     const updated = await updateVideoCorso(id, parsed.data as Partial<VideoCorso>);
     if (!updated) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("video-corsi");
+    await recordAdminAction({
+      action: "update",
+      entity: "video-corsi",
+      entityId: id,
+      summary: `Video "${updated.titolo}"`,
+    });
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -61,6 +74,7 @@ export async function DELETE(request: Request) {
     const deleted = await deleteVideoCorso(id);
     if (!deleted) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("video-corsi");
+    await recordAdminAction({ action: "delete", entity: "video-corsi", entityId: id, summary: `Video n. ${id}` });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Errore" }, { status: 500 });

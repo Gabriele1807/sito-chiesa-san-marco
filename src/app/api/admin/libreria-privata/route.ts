@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getFilePrivati, addFilePrivato, deleteFilePrivato } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 import { validateContent } from "@/lib/admin/content-validation";
 import type { FilePrivato } from "@/lib/data/store";
 
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
       dataCaricamento: new Date().toISOString(),
     });
     revalidatePublicContent("libreria");
+    await recordAdminAction({ action: "create", entity: "libreria-privata", entityId: file.id, summary: `File "${file.nome}"` });
     return NextResponse.json(file, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -48,6 +50,7 @@ export async function DELETE(request: Request) {
     const deleted = await deleteFilePrivato(id);
     if (!deleted) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("libreria");
+    await recordAdminAction({ action: "delete", entity: "libreria-privata", entityId: id, summary: `File n. ${id}` });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Errore" }, { status: 500 });

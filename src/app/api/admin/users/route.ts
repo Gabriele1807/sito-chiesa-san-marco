@@ -10,6 +10,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { hashPassword } from "@/lib/auth/password";
 import { passwordPolicyError } from "@/lib/auth/password-rules";
 import { requireSuperAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 import {
   normalizeUsername,
   isUsernameTaken,
@@ -116,6 +117,12 @@ export async function POST(request: Request) {
       );
     }
 
+    await recordAdminAction({
+      action: "create",
+      entity: "admin",
+      entityId: data.id,
+      summary: `Account admin @${data.username} (${data.ruolo})`,
+    });
     return NextResponse.json({ success: true, data }, { status: 201 });
   } catch (err) {
     console.error("Errore creazione admin:", err);

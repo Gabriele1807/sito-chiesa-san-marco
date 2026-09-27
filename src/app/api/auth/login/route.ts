@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
+import { logAdminAction } from "@/lib/mongo/audit-log";
 import { findUserByEmail, findUserByUsername, updateUserLastAccess } from "@/lib/mongo/users";
 import { createUserSession } from "@/lib/mongo/sessions";
 import {
@@ -108,6 +109,7 @@ async function tryAdminLogin(
     .update({ ultimo_accesso: new Date().toISOString() })
     .eq("id", user.id);
 
+  await logAdminAction(user, { action: "login", entity: "accesso", entityId: user.id, summary: "Accesso al pannello admin" });
   const { token, expiresAt } = await createSession(user.id, request, rememberMe);
 
   const cookieStore = await cookies();

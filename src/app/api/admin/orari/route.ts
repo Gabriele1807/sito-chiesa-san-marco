@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getOrari, addOrario, updateOrario, deleteOrario } from "@/lib/mongo/content";
 import { revalidatePublicContent } from "@/lib/cache/content-revalidate";
 import { requireAdminSession } from "@/lib/auth/session";
+import { recordAdminAction } from "@/lib/mongo/audit-log";
 import { validateContent } from "@/lib/admin/content-validation";
 import type { OrarioSettimanale } from "@/types";
 
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const orario = await addOrario(parsed.data as unknown as OrarioSettimanale);
     revalidatePublicContent("orari");
+    await recordAdminAction({ action: "create", entity: "orari", entityId: orario.giorno, summary: `Orari di ${orario.giorno}` });
     return NextResponse.json(orario, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -42,6 +44,7 @@ export async function PUT(request: Request) {
     const updated = await updateOrario(data.giorno, data);
     if (!updated) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("orari");
+    await recordAdminAction({ action: "update", entity: "orari", entityId: data.giorno, summary: `Orari di ${data.giorno}` });
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
@@ -60,6 +63,7 @@ export async function DELETE(request: Request) {
     const deleted = await deleteOrario(giorno);
     if (!deleted) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
     revalidatePublicContent("orari");
+    await recordAdminAction({ action: "delete", entity: "orari", entityId: giorno, summary: `Orari di ${giorno}` });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Errore" }, { status: 500 });

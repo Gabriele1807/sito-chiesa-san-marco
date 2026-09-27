@@ -7,6 +7,7 @@ import {
   findUserById,
 } from "@/lib/mongo/users";
 import { requireSuperAdminSession } from "@/lib/auth/session";
+import { logAdminAction } from "@/lib/mongo/audit-log";
 
 /**
  * GET /api/admin/richieste-superadmin
@@ -55,6 +56,12 @@ export async function POST(request: Request) {
 
     if (action === "reject") {
       await updateSuperAdminRequest(userId, "rejected");
+      await logAdminAction(adminUser, {
+        action: "reject",
+        entity: "richieste-superadmin",
+        entityId: userId,
+        summary: `Richiesta superadmin di @${user.username} rifiutata`,
+      });
       return NextResponse.json({ success: true, message: "Richiesta superadmin rifiutata" });
     }
 
@@ -75,6 +82,12 @@ export async function POST(request: Request) {
     }
 
     await updateSuperAdminRequest(userId, "approved");
+    await logAdminAction(adminUser, {
+      action: "approve",
+      entity: "richieste-superadmin",
+      entityId: userId,
+      summary: `@${user.username} promosso a superadmin`,
+    });
 
     return NextResponse.json({
       success: true,

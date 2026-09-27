@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
+import { logAdminAction } from "@/lib/mongo/audit-log";
 import {
   isRateLimited,
   recordFailedAttempt,
@@ -90,6 +91,8 @@ export async function POST(request: Request) {
       .from("admin_users")
       .update({ ultimo_accesso: new Date().toISOString() })
       .eq("id", user.id);
+
+    await logAdminAction(user, { action: "login", entity: "accesso", entityId: user.id, summary: "Accesso al pannello admin" });
 
     // Crea sessione nel DB
     const { token, expiresAt } = await createSession(

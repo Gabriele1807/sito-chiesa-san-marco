@@ -19,6 +19,10 @@ import {
   UsersRound,
   Eye,
   Lock,
+  Megaphone,
+  HandHeart,
+  BarChart3,
+  History,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -33,6 +37,9 @@ const links = [
   { href: "/admin/preghiere", label: "Gestione Preghiere", icon: BookOpen },
   { href: "/admin/video-corsi", label: "Video & Corsi", icon: Youtube },
   { href: "/admin/libreria-privata", label: "Libreria Privata", icon: FolderLock },
+  { href: "/admin/avvisi", label: "Avvisi e notifiche", icon: Megaphone },
+  { href: "/admin/richieste-preghiera", label: "Richieste di preghiera", icon: HandHeart },
+  { href: "/admin/statistiche", label: "Statistiche", icon: BarChart3 },
 ];
 
 export default function AdminSidebar() {
@@ -191,6 +198,18 @@ export default function AdminSidebar() {
             >
               <Users className="w-4.5 h-4.5" />
               Gestione Admin
+            </Link>
+            <Link
+              href="/admin/registro"
+              onClick={closeMobile}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                pathname === "/admin/registro"
+                  ? "bg-[#B45309]/20 text-[#F59E0B] font-semibold"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <History className="w-4.5 h-4.5" />
+              Registro attività
             </Link>
           </>
         )}
