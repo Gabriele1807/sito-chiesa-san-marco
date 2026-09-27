@@ -8,11 +8,12 @@ const FACEBOOK_URL = "https://www.facebook.com/people/Chiesa-di-San-Marco/615565
 const YOUTUBE_URL = "https://www.youtube.com/@SanMarco-Milano";
 
 export default async function Footer() {
-  const [tCommon, tFooter, tNav, tContact] = await Promise.all([
+  const [tCommon, tFooter, tNav, tContact, tLegal] = await Promise.all([
     getTranslations("common"),
     getTranslations("footer"),
     getTranslations("nav"),
     getTranslations("contatti"),
+    getTranslations("legal"),
   ]);
 
   return (
@@ -240,6 +241,14 @@ export default async function Footer() {
         {/* Footer Bottom - sempre presente */}
         <div className="mt-8 lg:mt-10 border-t border-border/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-foreground/45">
           <p>{tCommon("copyright")}</p>
+          <nav aria-label={`${tLegal("footerPrivacy")} · ${tLegal("footerTerms")}`} className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-accent transition-colors">
+              {tLegal("footerPrivacy")}
+            </Link>
+            <Link href="/termini" className="hover:text-accent transition-colors">
+              {tLegal("footerTerms")}
+            </Link>
+          </nav>
           <p>{tFooter("note")}</p>
         </div>
       </div>

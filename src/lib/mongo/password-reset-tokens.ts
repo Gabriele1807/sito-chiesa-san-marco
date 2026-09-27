@@ -45,8 +45,13 @@ export async function createPasswordResetToken(
   await ensurePasswordResetTokenIndexes();
   const c = await col();
 
-  // Invalida eventuali token precedenti ancora attivi per lo stesso utente.
-  await c.updateMany({ userId, usedAt: null }, { $set: { usedAt: new Date() } });
+  // Invalida eventuali token precedenti ancora attivi per lo stesso utente e
+  // marca come superati TUTTI i precedenti, compresi quelli consumati da un
+  // reset ancora in corso: releasePasswordResetToken non può riattivare un
+  // token superato, quindi non restano mai due link validi contemporaneamente.
+  const supersededAt = new Date();
+  await c.updateMany({ userId, usedAt: null }, { $set: { usedAt: supersededAt } });
+  await c.updateMany({ userId, supersededAt: null }, { $set: { supersededAt } });
 
   const rawToken = randomBytes(32).toString("hex");
   const now = new Date();
@@ -57,6 +62,7 @@ export async function createPasswordResetToken(
     tokenHash: hashToken(rawToken),
     expiresAt,
     usedAt: null,
+    supersededAt: null,
     createdAt: now,
     requestIp: meta?.requestIp,
     userAgent: meta?.userAgent,
@@ -65,21 +71,40 @@ export async function createPasswordResetToken(
   return { rawToken, expiresAt };
 }
 
-export async function findValidPasswordResetToken(
+/**
+ * Valida e consuma il token in un'unica operazione atomica: il token viene
+ * marcato usato nello stesso `findOneAndUpdate` che lo trova. Due richieste
+ * concorrenti con lo stesso link non possono quindi reimpostare la password
+ * entrambe (con find + update separati, entrambe avrebbero visto
+ * `usedAt: null` prima che l'altra lo scrivesse).
+ */
+export async function consumePasswordResetToken(
   rawToken: string
-): Promise<{ _id: string; userId: string } | null> {
+): Promise<{ _id: string; userId: string; consumedAt: Date } | null> {
   const c = await col();
-  const doc = await c.findOne({
-    tokenHash: hashToken(rawToken),
-    usedAt: null,
-    expiresAt: { $gt: new Date() },
-  });
+  const now = new Date();
+  const doc = await c.findOneAndUpdate(
+    { tokenHash: hashToken(rawToken), usedAt: null, supersededAt: null, expiresAt: { $gt: now } },
+    { $set: { usedAt: now } }
+  );
   if (!doc) return null;
-  return { _id: doc._id.toString(), userId: doc.userId as string };
+  return { _id: doc._id.toString(), userId: doc.userId as string, consumedAt: now };
 }
 
-export async function markPasswordResetTokenUsed(id: string): Promise<void> {
+/**
+ * Annulla un consumo se il cambio password che lo seguiva è fallito prima di
+ * salvare la nuova password, così il link dell'email resta utilizzabile.
+ * Solo se il token porta ancora esattamente quel timestamp di consumo e non
+ * è stato superato da una richiesta più recente (`supersededAt`, impostato
+ * da createPasswordResetToken anche sui token in corso di utilizzo).
+ * `supersededAt: null` corrisponde anche ai documenti creati prima che il
+ * campo esistesse.
+ */
+export async function releasePasswordResetToken(id: string, consumedAt: Date): Promise<void> {
   if (!ObjectId.isValid(id)) return;
   const c = await col();
-  await c.updateOne({ _id: new ObjectId(id) }, { $set: { usedAt: new Date() } });
+  await c.updateOne(
+    { _id: new ObjectId(id), usedAt: consumedAt, supersededAt: null },
+    { $set: { usedAt: null } }
+  );
 }

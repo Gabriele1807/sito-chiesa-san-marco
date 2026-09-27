@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import {
-  findValidPasswordResetToken,
-  markPasswordResetTokenUsed,
+  consumePasswordResetToken,
+  releasePasswordResetToken,
 } from "@/lib/mongo/password-reset-tokens";
-import { updateUserPassword, setHasPassword } from "@/lib/mongo/users";
+import { findUserByIdFull, updateUserPassword, setHasPassword } from "@/lib/mongo/users";
 import { deleteAllUserSessions } from "@/lib/mongo/sessions";
 import { hashPassword } from "@/lib/auth/password";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
@@ -46,19 +46,42 @@ export async function POST(request: Request) {
       );
     }
 
-    const tokenDoc = await findValidPasswordResetToken(token);
+    // Validato dopo le regole password: un tentativo con password debole
+    // non deve consumare il link, che l'utente può ancora riusare.
+    const tokenDoc = await consumePasswordResetToken(token);
     if (!tokenDoc) {
       return NextResponse.json(INVALID_TOKEN_RESPONSE, { status: 400 });
     }
 
-    const newHash = await hashPassword(newPassword);
-    await updateUserPassword(tokenDoc.userId, newHash);
-    await setHasPassword(tokenDoc.userId, true);
-    await markPasswordResetTokenUsed(tokenDoc._id);
-    // deleteAllUserSessions sets passwordChangedAt internally (design spec §3);
-    // calling setPasswordChangedAt separately here would write it twice with
-    // two different timestamps.
-    await deleteAllUserSessions(tokenDoc.userId);
+    // Da qui in poi il link è consumato. Va rilasciato (riusabile) solo se
+    // la password NON è stata cambiata: dopo il salvataggio della nuova
+    // password il link non deve mai tornare valido.
+    let passwordSaved = false;
+    try {
+      const user = await findUserByIdFull(tokenDoc.userId);
+      if (!user || !user.attivo) {
+        return NextResponse.json(INVALID_TOKEN_RESPONSE, { status: 400 });
+      }
+
+      const newHash = await hashPassword(newPassword);
+      // Prima si invalidano tutte le sessioni (imposta passwordChangedAt,
+      // design spec §3), poi si salva la password: se il salvataggio fallisce
+      // l'utente deve solo riaccedere con la vecchia password; nell'ordine
+      // inverso un errore qui lascerebbe attive sessioni (anche di un
+      // eventuale intruso) con la password già cambiata. Nessuna sessione
+      // viene creata: il client viene mandato al login.
+      await deleteAllUserSessions(tokenDoc.userId);
+      await updateUserPassword(tokenDoc.userId, newHash);
+      passwordSaved = true;
+      await setHasPassword(tokenDoc.userId, true);
+    } catch (err) {
+      if (!passwordSaved) {
+        await releasePasswordResetToken(tokenDoc._id, tokenDoc.consumedAt).catch((releaseErr) =>
+          console.error("Errore rilascio token reset password:", releaseErr)
+        );
+      }
+      throw err;
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

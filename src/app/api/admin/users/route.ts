@@ -9,6 +9,11 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { hashPassword } from "@/lib/auth/password";
 import { requireSuperAdminSession } from "@/lib/auth/session";
+import {
+  normalizeUsername,
+  isUsernameTaken,
+  USERNAME_INVALID_ERROR,
+} from "@/lib/auth/username";
 
 /** Verifica che chi chiama sia superadmin. */
 async function requireSuperAdmin() {
@@ -75,14 +80,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Controlla username duplicato
-    const { data: existing } = await supabaseAdmin
-      .from("admin_users")
-      .select("id")
-      .eq("username", username)
-      .single();
+    const normalizedUsername = normalizeUsername(username);
+    if (!normalizedUsername) {
+      return NextResponse.json({ success: false, error: USERNAME_INVALID_ERROR }, { status: 400 });
+    }
 
-    if (existing) {
+    // Unicità su admin e utenti MongoDB, senza distinguere maiuscole/minuscole:
+    // un admin con lo stesso username di un utente verrebbe "collegato" a lui.
+    if (await isUsernameTaken(normalizedUsername)) {
       return NextResponse.json(
         { success: false, error: "Username già in uso" },
         { status: 409 }
@@ -95,7 +100,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabaseAdmin
       .from("admin_users")
       .insert({
-        username,
+        username: normalizedUsername,
         email: email || null,
         password_hash,
         nome,

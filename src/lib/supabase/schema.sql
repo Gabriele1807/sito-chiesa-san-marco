@@ -9,7 +9,7 @@
 --
 -- DOPO aver eseguito lo schema:
 -- 1. Genera l'hash bcrypt della password del primo admin:
---      npm run generate-hash -- "sanmarco2026"
+--      npm run generate-hash -- "<password-robusta-scelta-da-te>"
 -- 2. Copia l'hash generato
 -- 3. Sostituisci il PLACEHOLDER nell'INSERT sotto, oppure
 --    esegui manualmente:
@@ -55,6 +55,15 @@ CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_
 CREATE INDEX IF NOT EXISTS idx_admin_users_username ON admin_users(username);
 
 -- ========================
+-- Row Level Security
+-- ========================
+-- Le tabelle admin contengono hash delle password: nessun accesso tramite la
+-- chiave pubblica "anon" dell'API REST di Supabase. L'app usa solo la
+-- service_role (lato server), che bypassa RLS: nessuna policy è necessaria.
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_sessions ENABLE ROW LEVEL SECURITY;
+
+-- ========================
 -- Trigger per aggiornare updated_at automaticamente
 -- ========================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -74,7 +83,7 @@ CREATE TRIGGER set_admin_users_updated_at
 -- Primo superadmin
 -- ========================
 -- ⚠️ SOSTITUISCI il placeholder con l'hash reale generato da:
---   npm run generate-hash -- "sanmarco2026"
+--   npm run generate-hash -- "<password-robusta-scelta-da-te>"
 --
 -- Esempio output: $2b$12$xYz... (stringa di ~60 caratteri)
 -- Incolla al posto di '$2b$12$PLACEHOLDER_SOSTITUIRE_CON_HASH_REALE'

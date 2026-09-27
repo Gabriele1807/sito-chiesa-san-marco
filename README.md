@@ -40,14 +40,14 @@ Crea un file `.env.local` nella root del progetto:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=       # URL progetto Supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=  # Chiave pubblica anon
 SUPABASE_SERVICE_ROLE_KEY=      # Chiave server (secret)
 ADMIN_SESSION_SECRET=           # Stringa random per sessioni
 MONGODB_URI=                    # Connessione MongoDB (utenti, iscrizioni, contenuti)
 NEXT_PUBLIC_SITE_URL=           # Base URL del sito, usata anche nei link email (es. reset password)
 ```
 
-Per la lista completa (incluse le variabili Resend/Brevo e OAuth, opzionali) vedi `.env.example`.
+Per la lista completa, divisa in obbligatorie/consigliate/opzionali, vedi `.env.example`.
+Per la pubblicazione su Vercel vedi `VERCEL_DEPLOYMENT_GUIDE.md`.
 
 ### 3. Setup database
 

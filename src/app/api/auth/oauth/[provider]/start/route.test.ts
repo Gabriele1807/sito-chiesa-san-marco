@@ -51,15 +51,33 @@ describe("GET /api/auth/oauth/[provider]/start", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns 503 when the provider adapter is unavailable (missing env vars)", async () => {
+  it("redirects back with oauthError=provider_unavailable when the provider is not configured", async () => {
     (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue(null);
     const res = await GET(req("https://example.org/api/auth/oauth/google/start"), {
       params: Promise.resolve({ provider: "google" }),
     });
-    expect(res.status).toBe(503);
+    expect(res.status).toBe(307);
+    const location = new URL(res.headers.get("location")!);
+    expect(location.origin).toBe("https://example.org");
+    expect(location.pathname).toBe("/");
+    expect(location.searchParams.get("oauthError")).toBe("provider_unavailable");
   });
 
-  it("returns 401 for intent=link without a valid session", async () => {
+  it("redirects back with oauthError=rate_limited when the IP is rate limited", async () => {
+    const { isIpRateLimited } = await import("@/lib/auth/rate-limit");
+    (isIpRateLimited as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/start?intent=link"),
+      { params: Promise.resolve({ provider: "google" }) }
+    );
+    expect(res.status).toBe(307);
+    const location = new URL(res.headers.get("location")!);
+    expect(location.pathname).toBe("/profilo");
+    expect(location.searchParams.get("oauthError")).toBe("rate_limited");
+    expect(getProviderAdapter).not.toHaveBeenCalled();
+  });
+
+  it("redirects to /profilo with oauthError=session_expired for intent=link without a valid session", async () => {
     (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
       usesPkce: true,
       createAuthorizationURL: () => new URL("https://accounts.google.com/authorize"),
@@ -70,7 +88,11 @@ describe("GET /api/auth/oauth/[provider]/start", () => {
       req("https://example.org/api/auth/oauth/google/start?intent=link"),
       { params: Promise.resolve({ provider: "google" }) }
     );
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(307);
+    const location = new URL(res.headers.get("location")!);
+    expect(location.pathname).toBe("/profilo");
+    expect(location.searchParams.get("oauthError")).toBe("session_expired");
+    expect(res.headers.get("set-cookie") ?? "").not.toContain("oauth_flow=");
   });
 
   it("allows intent=link with a valid admin session (checked before user session)", async () => {

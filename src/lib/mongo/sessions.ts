@@ -24,7 +24,8 @@ const SESSION_DURATION_REMEMBER = 7 * 24 * 60 * 60 * 1000; // 7 giorni
 export async function createUserSession(
   userId: string,
   _req: Request,
-  rememberMe = false
+  rememberMe = false,
+  options?: { passwordChangedAt?: string }
 ): Promise<{ token: string; expiresAt: Date }> {
   const duration = rememberMe ? SESSION_DURATION_REMEMBER : SESSION_DURATION_DEFAULT;
   const expiresAt = new Date(Date.now() + duration);
@@ -32,6 +33,11 @@ export async function createUserSession(
     {
       sub: userId,
       sessionType: "user",
+      // `pca` = passwordChangedAt noto al momento dell'emissione. Serve solo
+      // alla sessione riemessa subito dopo un cambio password: il suo `iat`
+      // (in secondi) può coincidere con il secondo di passwordChangedAt e
+      // verrebbe altrimenti rifiutato insieme alle sessioni da invalidare.
+      ...(options?.passwordChangedAt ? { pca: options.passwordChangedAt } : {}),
     },
     Math.floor(duration / 1000)
   );
@@ -45,7 +51,7 @@ export async function validateUserSession(
   token: string
 ): Promise<{ userId: string } | null> {
   if (!token) return null;
-  const payload = await verifyJwt<{ sub: string; sessionType?: string }>(token);
+  const payload = await verifyJwt<{ sub: string; sessionType?: string; pca?: string }>(token);
   if (!payload || payload.sessionType !== "user" || !payload.sub) return null;
 
   // Importa dinamicamente per evitare circular dependencies (stesso pattern
@@ -54,7 +60,7 @@ export async function validateUserSession(
   const user = await findUserByIdFull(payload.sub);
   if (!user) return null;
 
-  if (user.passwordChangedAt) {
+  if (user.passwordChangedAt && payload.pca !== user.passwordChangedAt) {
     const changedAtSeconds = Math.floor(Date.parse(user.passwordChangedAt) / 1000);
     if (payload.iat <= changedAtSeconds) return null;
   }
@@ -80,10 +86,12 @@ export async function deleteUserSession(token: string): Promise<void> {
  * esistente per l'utente impostando passwordChangedAt = ora, cosicché
  * qualunque JWT con iat <= ora venga rifiutato da validateUserSession.
  * Usata da reset-password e change-password dopo un cambio password riuscito.
+ * Ritorna il nuovo passwordChangedAt, da passare a createUserSession quando
+ * la sessione corrente va mantenuta (change-password).
  */
-export async function deleteAllUserSessions(userId: string): Promise<void> {
+export async function deleteAllUserSessions(userId: string): Promise<string> {
   const { setPasswordChangedAt } = await import("./users");
-  await setPasswordChangedAt(userId);
+  return setPasswordChangedAt(userId);
 }
 
 // --------------- Cleanup ---------------

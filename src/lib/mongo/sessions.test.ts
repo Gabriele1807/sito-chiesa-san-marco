@@ -4,7 +4,7 @@ vi.mock("@/lib/mongo/users", () => ({
   findUserByIdFull: vi.fn(),
 }));
 
-import { validateUserSession } from "@/lib/mongo/sessions";
+import { validateUserSession, createUserSession } from "@/lib/mongo/sessions";
 import { signJwt } from "@/lib/auth/jwt";
 import { findUserByIdFull } from "@/lib/mongo/users";
 
@@ -57,5 +57,33 @@ describe("validateUserSession", () => {
 
     const result = await validateUserSession(token);
     expect(result).toBeNull();
+  });
+
+  it("accepts a session re-issued with the current passwordChangedAt even in the same second", async () => {
+    const oldToken = await signJwt({ sub: "user-1", sessionType: "user" }, 3600);
+    const passwordChangedAt = new Date().toISOString();
+    const { token: reissued } = await createUserSession(
+      "user-1",
+      new Request("http://localhost"),
+      false,
+      { passwordChangedAt }
+    );
+    mockFindUser.mockResolvedValue({ _id: "user-1", passwordChangedAt });
+
+    expect(await validateUserSession(reissued)).toEqual({ userId: "user-1" });
+    expect(await validateUserSession(oldToken)).toBeNull();
+  });
+
+  it("rejects a re-issued session once the password changes again", async () => {
+    const firstChange = new Date(Date.now() - 1000).toISOString();
+    const { token } = await createUserSession("user-1", new Request("http://localhost"), false, {
+      passwordChangedAt: firstChange,
+    });
+    mockFindUser.mockResolvedValue({
+      _id: "user-1",
+      passwordChangedAt: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    expect(await validateUserSession(token)).toBeNull();
   });
 });

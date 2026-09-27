@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md - Chiesa di San Marco (Chiesa Copta Ortodossa di Milano)
 
-> Documento di contesto operativo del progetto. Questa versione riflette lo stato reale del repository nel workspace: contenuti pubblici letti da MongoDB, area admin protetta, supporto bilingue italiano/arabo e nessun seed demo automatico nei layer dati.
+> Documento di contesto operativo del progetto (ultimo allineamento col codice: 2026-09-26, audit OAuth/email §7.4.11 e §7.5.7–7.5.9, preparazione deploy Vercel §13). Riflette lo stato reale del repository: contenuti pubblici letti da MongoDB, area admin protetta, supporto bilingue italiano/arabo e nessun seed demo automatico nei layer dati.
 
 ---
 
@@ -101,9 +101,13 @@ npm run generate-hash -- "password"
     senza introdurre una CSP a nonce (cambio architetturale più ampio)
 
 - `vercel.json`
-  - build command: `next build`
-  - route API con `maxDuration` maggiore
+  - build command: `next build`, framework `nextjs`
+  - route API (`src/app/api/**`) con `maxDuration` 60 s
   - cache-control disattivato sulle API
+  - (2026-09-26) rimosso il rewrite `/api/:path*` → `/api/:path*`, che non
+    faceva nulla
+- Deploy: procedura, variabili per ambiente, servizi esterni, verifiche
+  post-deploy e rollback in `VERCEL_DEPLOYMENT_GUIDE.md` (§13)
 
 - `eslint.config.mjs`
   - configurazione lint del progetto
@@ -136,14 +140,27 @@ FACEBOOK_CLIENT_SECRET=
 # Alternative names created by the Vercel Marketplace integration
 KV_REST_API_URL=
 KV_REST_API_TOKEN=
+RESEND_API_KEY=
+EMAIL_FROM_AUTH=
+EMAIL_REPLY_TO=
+PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES=
+BREVO_API_KEY=
+EMAIL_FROM_EVENTS=
+EMAIL_FROM_NEWSLETTER=
 ```
 
 Note operative:
 
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` alimentano il layer admin Supabase.
+- `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` alimentano il layer admin Supabase (solo server). `NEXT_PUBLIC_SUPABASE_ANON_KEY` non è usata: `src/lib/supabase/client.ts` non è importato da nessuna parte.
 - `ADMIN_SESSION_SECRET` firma la sessione admin JWT.
 - `MONGODB_URI` e `MONGODB_DB` alimentano MongoDB per contenuti, utenti e iscrizioni.
-- `NEXT_PUBLIC_SITE_URL` viene usato per costruire URL assoluti in alcune API.
+- `NEXT_PUBLIC_SITE_URL` è la base degli URL assoluti che escono dal sito
+  (link di reset nelle email, `redirect_uri` OAuth, `metadataBase`). Va letta
+  sempre tramite `getSiteUrl()` (`src/lib/site-url.ts`), che toglie lo slash
+  finale e ritorna `null` se manca o non è un URL http(s): mai derivarla
+  dall'header `Host` della richiesta (manipolabile). Essendo `NEXT_PUBLIC_*`,
+  Next.js la **incorpora al momento della build**: cambiarla su Vercel
+  richiede un nuovo deploy.
 - `YOUTUBE_API_KEY` alimenta l'endpoint del canale YouTube.
 - `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` oppure `KV_REST_API_URL`/`KV_REST_API_TOKEN` sono **opzionali**:
   alimentano `src/lib/redis/client.ts` (rate limiting e revoca token admin,
@@ -151,10 +168,14 @@ Note operative:
   memoria di processo (comportamento pre-esistente).
 - `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` e `FACEBOOK_CLIENT_ID`/`FACEBOOK_CLIENT_SECRET`
   alimentano il login/registrazione tramite provider esterni (`src/lib/oauth/*`,
-  `src/app/api/auth/oauth/**`). Nessun fallback: se assenti, il rispettivo
-  provider è disabilitato lato UI (vedi §7 nuova sezione autenticazione OAuth
-  se presente, altrimenti PROJECT_CONTEXT.md non richiede aggiornamenti
-  ulteriori per questo task).
+  `src/app/api/auth/oauth/**`). Nessun fallback: se assenti, il pulsante del
+  provider resta visibile ma `start` riporta l'utente alla pagina di partenza
+  con `?oauthError=provider_unavailable` (messaggio generico nel modale di
+  login o nel profilo), vedi §7.4.11.
+- `RESEND_API_KEY`/`EMAIL_FROM_AUTH`/`EMAIL_REPLY_TO`/`PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES`
+  alimentano le email auth (reset password), `BREVO_API_KEY`/`EMAIL_FROM_EVENTS`/
+  `EMAIL_FROM_NEWSLETTER` il modulo Brevo predisposto ma non collegato — vedi
+  §7.5.5 e la mappa completa in §7.5.7.
 
 ---
 
@@ -267,8 +288,25 @@ Note operative:
     di un reset password non si conoscono le sessioni attive su altri
     dispositivi/browser. `deleteAllUserSessions(userId)` in
     `src/lib/mongo/sessions.ts` è l'implementazione reale di questo logout
-    globale (imposta `passwordChangedAt = ora`), usata sia da
-    `POST /api/auth/reset-password` che da `POST /api/auth/change-password`.
+    globale (imposta `passwordChangedAt = ora` e ritorna il valore scritto),
+    usata sia da `POST /api/auth/reset-password` che da
+    `POST /api/auth/change-password`.
+  - **Claim `pca` (dal 2026-09-26).** `createUserSession(userId, req,
+    rememberMe, { passwordChangedAt })` può includere nel JWT il
+    `passwordChangedAt` noto all'emissione; `validateUserSession` accetta un
+    token il cui `pca` coincide esattamente con il `passwordChangedAt` attuale
+    dell'utente, altrimenti applica il controllo su `iat`. Serve a
+    `change-password`, che dopo aver invalidato tutte le sessioni **riemette**
+    il cookie `user_session` di chi ha appena cambiato la password (stessa
+    durata: 24h o "ricordami" 7 giorni, dedotta da `exp - iat` del token
+    precedente). Senza, il nuovo token avrebbe lo stesso secondo di
+    `passwordChangedAt` e verrebbe rifiutato: prima di questo fix l'utente
+    veniva disconnesso alla richiesta successiva al cambio password pur
+    vedendo "password cambiata". Un cambio password successivo cambia
+    `passwordChangedAt` e invalida anche i token con `pca` precedente.
+  - Il percorso admin di `change-password` (cookie `admin_session`) non
+    revoca le altre sessioni admin: il meccanismo `passwordChangedAt` vale
+    solo per `user_session` (limite noto).
   - `deleteUserSession(token)` (logout di una singola sessione) resta uno
     stub: non esiste uno store per-token per `user_session`, quindi questa
     funzione pulisce solo il cookie del chiamante e non revoca il JWT lato
@@ -427,6 +465,58 @@ Eccezioni intenzionali non toccate dal consolidamento:
 - Gli utenti normali sono letti da MongoDB nella collezione `users`.
 - Il login pubblico unificato in `/api/auth/login` tenta prima l'admin Supabase e poi l'utente MongoDB.
 - La route `/api/admin/login` rimane disponibile per il login diretto dell'area amministrativa.
+- **Collegamento admin ↔ utente tramite username.** Un utente promosso admin
+  (`richieste-admin`) ha un record in `users` e uno in `admin_users` con lo
+  **stesso username**: è l'unico legame tra i due (usato da `me`,
+  `iscrizioni`, `eventi/iscrizione`, `change-password`, revoca admin,
+  sincronizzazione password in `admin/utenti`). Per questo lo username deve
+  essere univoco su entrambi gli archivi.
+
+#### 6.5.1 Unicità degli username (2026-09-26)
+
+Modulo condiviso `src/lib/auth/username.ts`:
+
+- `normalizeUsername()` — trim + regole 3–30 caratteri, `[a-zA-Z0-9_.-]`
+  (profilo e creazione admin). La registrazione classica mantiene le sue
+  regole più strette (3–20, senza punto), coerenti con `RegisterModal`.
+- `isUsernameTaken(username, { userId?, adminId? })` — verifica **senza
+  distinguere maiuscole/minuscole** sia `users` (MongoDB, collation
+  `{ locale: "en", strength: 2 }` via `findUsersByUsernameInsensitive`) sia
+  `admin_users` (Supabase, `ilike` con escape di `_`/`%`), escludendo gli
+  account che già possiedono lo username (se stessi e l'account collegato).
+  Se la query Supabase fallisce ritorna `true` (mai concedere un possibile
+  duplicato).
+- `findLinkedAdminId(username)` — id admin collegato a un utente promosso.
+
+Applicato in:
+
+| Percorso | Prima | Ora |
+|---|---|---|
+| `POST /api/auth/register` | controllo esatto solo su MongoDB | case-insensitive su utenti + admin |
+| `POST /api/auth/oauth/complete-registration` | username generato (`localpart_xxxx`) senza controllo; collisione → "Email già registrata" | candidato verificato con fino a 5 tentativi; collisione → messaggio corretto, nessun account creato |
+| `POST /api/auth/update-profile` (utente) | controllo esatto solo su MongoDB; email salvata anche se lo username era rifiutato; admin collegato non rinominato | validazione e unicità **prima** di ogni scrittura; se l'utente è admin approvato viene rinominato anche il record `admin_users` |
+| `POST /api/auth/update-profile` (admin) | controllo solo su `admin_users`; utente MongoDB collegato non rinominato (collegamento rotto) | unicità su utenti + admin; rinomina anche l'utente MongoDB collegato |
+| `POST /api/admin/users` (creazione admin) | controllo esatto solo su `admin_users` | normalizzazione + unicità su utenti + admin |
+| `POST /api/admin/richieste-admin` (approvazione) | se l'insert Supabase falliva per duplicato, l'utente veniva comunque "approvato" e legato all'admin esistente, anche di un'altra persona | approvato solo se l'admin esistente ha la stessa email; altrimenti 409. Dal 2026-09-27 il record esistente viene anche **riattivato** (`attivo: true`, ruolo richiesto): prima un admin revocato e riapprovato risultava approvato ma restava senza accesso |
+
+Database: oltre all'indice unico `username_1` (esatto), `ensureIndexes()`
+crea `username_ci_unique` (unico, collation case-insensitive) contro le race
+tra controllo e insert. Se esistono già duplicati storici che differiscono
+solo per maiuscole la creazione fallisce: viene loggato
+`[users] indice username case-insensitive non creato` e l'app continua con i
+soli controlli applicativi — in quel caso i duplicati vanno risolti a mano
+(rinominando uno dei due account) e l'indice verrà creato al riavvio.
+
+Login: la ricerca per username resta **esatta** (invariata), per non
+cambiare il comportamento degli account storici.
+
+UI: la modifica dello username era già presente in `/profilo` (utente e
+admin). Aggiunto il suggerimento `profilo.usernameHint` sotto il campo e la
+traduzione IT/AR degli errori "già in uso" (`profilo.usernameGiaUsato`) e
+"non valido". Verifiche: unit test su tutti i percorsi sopra (153 test
+totali), typecheck, lint invariato, build ok; la pagina `/profilo` non è
+stata verificata in browser (richiede un utente autenticato su MongoDB, non
+disponibile in questa sessione).
 
 ---
 
@@ -454,6 +544,10 @@ Eccezioni intenzionali non toccate dal consolidamento:
 - `GET /api/auth/me`
 - `POST /api/auth/change-password`
 - `POST /api/auth/update-profile`
+- `POST /api/auth/forgot-password`, `POST /api/auth/reset-password` (§7.5)
+- `GET /api/auth/oauth/[provider]/start`, `GET /api/auth/oauth/[provider]/callback`,
+  `GET /api/auth/oauth/pending`, `POST /api/auth/oauth/complete-registration`,
+  `POST /api/auth/oauth/unlink`, `GET /api/auth/oauth/status` (§7.4)
 - `POST /api/admin/login`
 - `POST /api/admin/logout`
 - `GET /api/youtube/channel`
@@ -492,6 +586,15 @@ Layer OAuth condiviso:
   costruiti sopra `signJwt`/`verifyJwt` esistenti.
 - `src/lib/oauth/error-messages.ts` — mappa i codici di errore del callback
   a chiavi di traduzione già esistenti in `it.json`/`ar.json`.
+- `src/lib/oauth/safe-redirect.ts` — `sanitizeReturnTo()`, aggiunto nel
+  hardening di sicurezza §7.4.9.
+- `src/lib/oauth/session-resolver.ts` — `readSessionCookie`/
+  `resolveAdminSessionToken`/`resolveUserSessionToken`, estratti da
+  `callback/route.ts` nello stesso hardening per validare le sessioni admin
+  e utente in modo identico in tutte le route OAuth (`start`, `callback`,
+  `unlink`, `status`) invece di copie che potevano divergere.
+- `src/lib/oauth/http.ts` — `applyNoStore()`, wrapper che forza
+  `Cache-Control: no-store` sulle risposte delle route OAuth (§7.4.10).
 
 Modello dati (`src/lib/mongo/`):
 - `oauth-identities.ts` — nuova collezione `oauth_identities` (identità
@@ -644,6 +747,148 @@ credenziali reali configurate in un ambiente di test.
 solo nomi di variabili con valori vuoti; verificato leggendo per intero
 ogni file nuovo di questa feature prima di questo commit.
 
+I conteggi di test sopra sono superati dagli hardening successivi in
+§7.4.9/§7.4.10 (76/76) e poi dalla feature password reset (§7.5): vedi
+§7.4.10 per il numero corrente.
+
+#### 7.4.9 Hardening di sicurezza post-review (2026-09-15)
+
+Una seconda review (security-review + code-review, più verifica manuale in
+browser) sul flusso OAuth appena introdotto ha trovato e corretto, oltre a
+fix già applicati manualmente dal proprietario del repository (pulizia
+identità orfane sul collegamento, cascata di eliminazione su
+`admin_session`, deduplicazione `LoginModal`/`profilo`):
+
+- **Open redirect su `returnTo`.** Il parametro `returnTo` di `GET
+  /api/auth/oauth/[provider]/start` veniva firmato nel cookie di flusso e
+  poi passato senza sanitizzazione a `new URL(returnTo, base)` nel
+  callback: un valore assoluto o protocol-relative (`https://evil.example`,
+  `//evil.example`) fa sì che `base` venga ignorato, reindirizzando la
+  vittima a un host attaccante subito dopo una schermata di consenso
+  Google/Facebook legittima. Aggiunto `src/lib/oauth/safe-redirect.ts`
+  (`sanitizeReturnTo()`), applicato sia quando `returnTo` viene accettato
+  in `start` sia di nuovo, difensivamente, su ogni redirect costruito in
+  `callback`.
+- **Email non verificata trattata come identità attendibile.**
+  `complete-registration` associava `pending.providerEmail` al nuovo
+  account senza mai controllare il flag `providerEmailVerified` (già
+  raccolto dal claim `email_verified` di Google). Ora `emailVerificata`
+  sull'utente creato riflette quel flag: `true` solo per un'email
+  confermata dal provider, `false` sia per un'email provider non
+  verificata sia per una inserita manualmente — coerente col modello di
+  fiducia già esistente della registrazione classica.
+- **Pulizia identità orfane estesa al login/registrazione** (prima solo sul
+  collegamento) e corretto un bug per cui un admin semplicemente
+  **disattivato** veniva trattato come **eliminato**:
+  `getAdminUserById` filtra `attivo=true`, quindi ritornava `null` in
+  entrambi i casi. Aggiunta `adminUserExists()` (verifica di esistenza che
+  ignora `attivo`) così il collegamento OAuth di un admin disabilitato
+  viene preservato invece di essere rimosso silenziosamente e reso
+  riassegnabile a chiunque si autentichi in futuro con quello stesso
+  account esterno.
+- **`complete-registration` senza `try/catch` di primo livello** (a
+  differenza di tutte le altre route auth): un doppio submit concorrente
+  che superasse il controllo email pre-insert avrebbe generato un errore
+  Mongo di chiave duplicata non gestito (500 grezzo) invece del JSON
+  amichevole atteso dal frontend. Avvolta seguendo lo stesso pattern di
+  `register/route.ts`.
+- **Cascata di pulizia identità OAuth in `deleteUser` senza `try/catch`**:
+  un fallimento transitorio in quella fase rigettava l'intera chiamata pur
+  con l'utente già eliminato. Resa best-effort: log e continua (un'identità
+  orfana residua si auto-ripara tramite la pulizia già presente nel
+  callback).
+- **`RegisterModal`: reset dello step al riapertura del modale.** L'effetto
+  che azzera il form resettava incondizionatamente `step` a
+  `"credentials"` e puliva nome/cognome a ogni transizione
+  `showRegisterModal` false→true, inclusa quella innescata dal flusso
+  stesso di completamento OAuth — cancellando lo step quiz pre-compilato
+  subito dopo un redirect da Google/Facebook. Corretto con un flag `ref`
+  impostato dall'effetto di completamento OAuth e consumato dall'effetto di
+  reset.
+- **Consolidamento risoluzione sessione**: `callback/route.ts` aveva una
+  propria copia duplicata di `resolveUserIdFromSession`/
+  `resolveAdminIdFromSession` accanto a `session-resolver.ts` già condiviso
+  da `unlink`/`status`. Estratte `readSessionCookie`/
+  `resolveAdminSessionToken`/`resolveUserSessionToken` in
+  `session-resolver.ts` e riusate ovunque (`start`, `callback`, `unlink`,
+  `status`), evitando la divergenza tra le due implementazioni.
+
+Verificato: 76/76 test (18 nuovi/aggiornati), `tsc` pulito, `eslint` pulito
+(nessun nuovo warning), build di produzione riuscita, fix dell'open
+redirect confermato su un dev server reale con credenziali Google OAuth
+vere configurate (il `returnTo` malevolo non sopravvive più nel cookie di
+flusso firmato).
+
+#### 7.4.10 Fix stato OAuth "stantio" su back/forward del browser (2026-09-15)
+
+Premendo "Indietro" dopo aver avviato (o completato) un login
+Google/Facebook poteva apparire brevemente uno stato di autenticazione
+stantio prima che il sito si autocorreggesse: il bfcache del browser
+(back-forward cache) ripristina la pagina esattamente come era congelata
+prima della navigazione, e nulla forzava un controllo fresco col server
+subito al ripristino.
+
+- `AuthContext` ora ascolta l'evento `pageshow` e chiama `refresh()` quando
+  `event.persisted` è `true`, così ogni ripristino da bfcache innesca una
+  riconciliazione verificata dal server invece di affidarsi a qualche altro
+  trigger incidentale.
+- Tutte e sei le route `/api/auth/oauth/**` impostano ora esplicitamente
+  `Cache-Control: no-store` nel codice (tramite il piccolo wrapper
+  `applyNoStore()` in `src/lib/oauth/http.ts`), non solo tramite
+  `vercel.json` (che si applica solo in produzione, non in `next dev`, e
+  non incide sull'idoneità al bfcache allo stesso modo). Garantisce che
+  tornare indietro su un URL `start`/`callback` che porta uno
+  state/code mono-uso colpisca sempre il server invece di rigiocare una
+  risposta cache.
+
+Conteggio test corrente dopo questi due hardening: 76/76 (vedi §7.4.9),
+poi ulteriormente esteso dalla feature password reset (§7.5) con altri 7
+file di test (`change-password`, `forgot-password`, `reset-password`,
+`password-reset-rate-limit`, `send-email`, `password-reset-tokens`,
+`sessions`), per un totale di 22 file `*.test.ts` al 2026-09-15 (dopo
+l'audit del 2026-09-26: 25 file, 130 test — vedi §7.5.8; dopo l'unicità username §6.5.1: 29 file, 153 test).
+
+#### 7.4.11 Audit OAuth/email (2026-09-26)
+
+Audit end-to-end dei flussi OAuth ed email. Interventi sul lato OAuth:
+
+- **`start` non restituisce più JSON a una navigazione a pagina intera.**
+  I pulsanti "Continua con Google/Facebook" fanno `window.location.href =
+  …/start`; con provider non configurato (prima 503), IP oltre il rate
+  limit (prima 429) o collegamento senza sessione (prima 401) l'utente
+  vedeva una pagina JSON grezza. Ora `start` fa redirect a `returnTo` (o
+  `/profilo` per il collegamento) con `?oauthError=provider_unavailable` /
+  `rate_limited` / `session_expired`. Il 404 per provider non supportato
+  resta JSON (nessun pulsante porta lì). Nuovo codice `rate_limited` in
+  `src/lib/oauth/error-messages.ts`.
+- **Messaggio d'errore OAuth nel modale di login mai visibile.** L'effetto
+  che legge `?oauthError=` impostava l'errore e apriva il modale, ma
+  l'effetto "reset form all'apertura" lo azzerava subito dopo. Verificato
+  in browser prima e dopo il fix: ora l'errore passa da un `ref`
+  (`pendingOauthErrorRef`) consumato dal reset. Stesso pattern già usato in
+  `RegisterModal`.
+- **Utente orfano in `complete-registration`.** Se l'insert in
+  `oauth_identities` fallisce dopo la creazione dell'utente (stessa
+  identità esterna collegata nel frattempo da un'altra scheda, doppio
+  submit), l'utente appena creato (`hasPassword:false`, quindi senza alcun
+  metodo di accesso) viene eliminato; su chiave duplicata si risponde 409
+  "account Google/Facebook già collegato a un altro profilo" (prima:
+  "Email già registrata", fuorviante) e si cancellano pending e cookie
+  `oauth_pending`.
+- **`appsecret_proof` sulla chiamata Graph di Facebook**
+  (HMAC-SHA256 dell'access token con l'app secret): raccomandato da Meta,
+  necessario se nell'app è attivo "Require App Secret"; un access token
+  sottratto non è riusabile da altre app.
+- **`redirect_uri` con slash doppio.** `providers.ts` e `callback` usano
+  `getSiteUrl()`: con `NEXT_PUBLIC_SITE_URL` terminante in `/` la
+  `redirect_uri` diventava `https://x//api/...`, rifiutata dai provider.
+
+Verificato **senza credenziali OAuth reali** (non disponibili in questa
+sessione): unit test delle route, e in browser (Chromium via Playwright,
+build di produzione in locale) il redirect di `start` con provider non
+configurato e la comparsa del messaggio d'errore nel modale. Il flusso
+completo con Google/Facebook reali resta da provare (§7.4.8).
+
 ### 7.5 Password dimenticata e servizio email (2026-09-15)
 
 Design spec: `docs/superpowers/specs/2026-09-15-password-reset-email-service-design.md`.
@@ -659,22 +904,56 @@ Piano: `docs/superpowers/plans/2026-09-15-password-reset-email-service.md`.
   cerca l'utente, e **restituisce sempre la stessa risposta generica**
   indipendentemente dal fatto che l'utente esista, sia rate-limitato, o
   l'invio fallisca — nessuna differenza osservabile dal client, per
-  proteggere da enumerazione account. Se l'utente esiste, genera un token e
-  invia l'email via Resend.
-- `/reset-password?token=...`: pagina standalone che legge il token dalla
-  query string, mostra i requisiti password in tempo reale (riusa
-  `validatePasswordRules` lato client), e gestisce token
-  mancante/invalido/scaduto/usato con lo stesso messaggio generico.
-- `POST /api/auth/reset-password`: valida token e nuova password, aggiorna
-  `passwordHash` e `hasPassword: true` (permette anche agli account
-  solo-OAuth di impostare una password), marca il token usato, e invalida
-  tutte le altre sessioni dell'utente (vedi §6.4). **Non crea una sessione**:
-  il client viene reindirizzato al login, garantendo che il primo JWT
-  successivo abbia `iat` strettamente posteriore a `passwordChangedAt`.
+  proteggere da enumerazione account (nota: `/api/auth/register` rivela
+  comunque se un'email è registrata, quindi l'enumerazione non è eliminata
+  a livello di sito). Se l'utente esiste **ed è attivo** (`attivo !== false`),
+  genera un token e invia l'email via Resend, nella lingua del cookie
+  `locale` della richiesta (`it` di default, `ar` se impostato — lo stesso
+  cookie letto da `src/i18n/request.ts`; `UserProfile` non ha una lingua
+  salvata). Se `getSiteUrl()` ritorna `null` (`NEXT_PUBLIC_SITE_URL` assente
+  o non valida) non crea token né invia, logga l'errore e risponde comunque
+  in modo generico: un link relativo nell'email sarebbe inutilizzabile.
+- `/forgot-password` e `/reset-password` sono tradotte (chiavi
+  `auth.forgotPassword*`, `auth.resetPassword*`, `auth.passwordReset*` in
+  `it.json`/`ar.json`; requisiti password riusano `auth.registerPasswordRule*`).
+  Mostrano solo messaggi tradotti, mai la stringa d'errore del server.
+- `/reset-password?token=...` legge il token una volta, lo tiene in stato
+  React e lo **rimuove dalla barra degli indirizzi** (`history.replaceState`):
+  non resta in cronologia/segnalibri. Conseguenza: ricaricando la pagina
+  serve ricliccare il link dell'email (che resta valido finché non usato).
+  Mostra i requisiti password in tempo reale (`validatePasswordRules`) e
+  gestisce token mancante/invalido/scaduto/usato con un messaggio generico.
+  Dopo il successo mostra un pulsante "Accedi" verso `/?login=1`.
+- `?login=1` su qualunque pagina apre il `LoginModal` e il parametro viene
+  rimosso dall'URL (usato da "Torna al login" e dopo il reset). L'effetto
+  dipende da `pathname` perché il modale vive nel layout radice e non si
+  rimonta durante la navigazione client-side.
+- `POST /api/auth/reset-password`: valida prima la nuova password (una
+  password debole **non** consuma il link), poi consuma il token in modo
+  **atomico** (`consumePasswordResetToken`, un solo `findOneAndUpdate` che
+  trova e marca usato: due richieste concorrenti con lo stesso link non
+  possono riuscire entrambe), rifiuta account disattivati, **invalida prima
+  tutte le sessioni** (`deleteAllUserSessions`, §6.4) e **poi** salva la
+  nuova password e `hasPassword: true` (permette anche agli account
+  solo-OAuth di impostare una password). Ordine voluto (revisione del
+  2026-09-27): se il salvataggio fallisce, l'utente deve solo riaccedere con
+  la vecchia password; nell'ordine inverso un errore avrebbe lasciato attive
+  le vecchie sessioni con la password già cambiata. Se un passo fallisce
+  **prima** che la password sia salvata (inclusa la lettura dell'utente),
+  `releasePasswordResetToken(id, consumedAt)` rimette `usedAt: null` e la
+  route risponde 500: il link resta riutilizzabile. Dopo il salvataggio
+  della password il link non viene **mai** riattivato. **Non crea una
+  sessione**: il client viene mandato al login.
+- `createPasswordResetToken` marca con `supersededAt` **tutti** i token
+  precedenti dell'utente, inclusi quelli consumati da un reset ancora in
+  corso; consumo e rilascio richiedono `supersededAt: null` (vale anche per
+  i documenti creati prima del campo). Così un token superato da una nuova
+  richiesta non può tornare valido e non esistono mai due link attivi.
 
 #### 7.5.2 Collection `password_reset_tokens`
 
-`src/lib/mongo/password-reset-tokens.ts`. Documento:
+`src/lib/mongo/password-reset-tokens.ts` (`createPasswordResetToken`,
+`consumePasswordResetToken`, `releasePasswordResetToken`). Documento:
 `{ userId, tokenHash (SHA-256 del token raw a 256 bit), expiresAt (indice
 TTL, expireAfterSeconds: 0), usedAt, createdAt, requestIp?, userAgent? }`.
 Il token raw non è mai salvato, solo il suo hash — è una chiave di lookup,
@@ -690,7 +969,9 @@ minuti indipendentemente dal valore in env).
 La decisione `passwordChangedAt` + confronto con `iat` del JWT è descritta
 in dettaglio in §6.4. Sia `reset-password` che il preesistente
 `change-password` (che prima di questa modifica non invalidava nulla)
-chiamano `deleteAllUserSessions(userId)` dopo un cambio password riuscito.
+chiamano `deleteAllUserSessions(userId)` dopo un cambio password riuscito;
+`change-password` poi riemette la sessione del chiamante col claim `pca`
+(§6.4), `reset-password` no.
 
 #### 7.5.4 Servizio email: Resend + Brevo
 
@@ -716,9 +997,16 @@ chiamano `deleteAllUserSessions(userId)` dopo un cambio password riuscito.
   `getRequestConfig`, che chiama `cookies()` e richiede un contesto di
   request Next.js attivo — non disponibile quando si costruisce un'email
   fuori da una request, e comunque userebbe la lingua del cookie della
-  richiesta che ha innescato l'invio invece della lingua salvata del
-  destinatario. `createTranslator` carica invece direttamente il file
-  messaggi per la lingua richiesta.
+  richiesta che ha innescato l'invio. `createTranslator` carica invece
+  direttamente il file messaggi per la lingua passata dal chiamante
+  (oggi `forgot-password` passa la lingua del cookie `locale`). L'URL è
+  inserito nell'HTML con escaping (`&`, `<`, `>`, `"`, `'`).
+- Mittente: `EMAIL_FROM_AUTH`. Solo fuori produzione, se assente, si usa
+  `onboarding@resend.dev` (che consegna unicamente alla casella del
+  titolare dell'account Resend); con `NODE_ENV=production` e
+  `EMAIL_FROM_AUTH` assente l'invio viene saltato con errore
+  `provider_not_configured` nel log, invece di "riuscire" senza che
+  l'utente riceva nulla.
 - Un solo provider per categoria, nessun invio doppio, nessun fallback
   automatico tra provider.
 - Errori del provider (chiave mancante, rete, timeout) non vengono mai
@@ -744,7 +1032,7 @@ nuova `NEXT_PUBLIC_APP_URL`). Vedi `.env.example` per il blocco completo
 con commenti e il README per la checklist SPF/DKIM/DMARC del dominio
 mittente in produzione.
 
-#### 7.5.6 Fuori scope di questa feature
+#### 7.5.6 Fuori scope di questa feature (2026-09-15)
 
 - Wiring di Brevo nei flussi reali di prenotazione/evento — solo il modulo
   e i template stub sono stati costruiti.
@@ -754,6 +1042,89 @@ mittente in produzione.
 - Nessuna libreria di validazione nuova (niente zod): stesso stile manuale
   `if`/`typeof` del resto delle route esistenti.
 - Nessuna localizzazione copta: il progetto supporta solo `it`/`ar`.
+
+#### 7.5.7 Mappa del servizio email (stato al 2026-09-26)
+
+| Punto | Dove | Stato |
+|---|---|---|
+| `sendPasswordResetEmail` (Resend) | `src/lib/email/send-email.ts` ← `POST /api/auth/forgot-password` | **Usato e funzionante nel codice** (unit test con Resend mockato). Invio reale non verificato: nessuna `RESEND_API_KEY` in sessione. |
+| `renderResetPasswordEmail` | `src/lib/email/templates/reset-password.ts` | **Usato**; rendering IT/AR e escaping testati. Prima dell'audit la lingua era sempre `it` (ora dal cookie `locale`). |
+| `getResendClient` | `src/lib/email/resend.ts` | Usato da `sendPasswordResetEmail`. |
+| Link nell'email (`NEXT_PUBLIC_SITE_URL`) | `forgot-password` | Prima: link relativo se la variabile mancava, `//reset-password` con slash finale. Ora: `getSiteUrl()`, nessun invio se assente. |
+| `sendVerificationEmail` + `renderVerifyEmail` | `send-email.ts`, `templates/verify-email.ts` | **Implementato come stub, mai usato** (lancia `Error("not implemented")`). Nessun flusso di verifica email esiste: `emailVerificata` è impostato solo alla registrazione (`false`, o `true` per email Google/Facebook verificate) e ora azzerato quando l'utente cambia email (`updateUserEmail`). Lasciato non collegato: collegarlo richiede un flusso di conferma (token, pagina, UI) e una decisione su cosa sblocchi la verifica. |
+| `sendBookingConfirmationEmail` + template | idem | **Stub, mai usato.** Il flusso che lo giustificherebbe (iscrizione evento, `src/lib/mongo/registrations.ts`) esiste ma **non è stato collegato** deliberatamente: sarebbe un invio automatico nuovo verso indirizzi (anche di familiari/terzi iscritti) senza una decisione esplicita del proprietario, e richiede Brevo configurato. |
+| `sendEventReminderEmail` + template | idem | **Stub, mai usato.** Richiederebbe un job schedulato: non esiste alcuna coda/cron nel progetto. |
+| `sendNewsletter` + template | idem | **Stub, mai usato.** Nessuna gestione iscritti/consenso newsletter nel progetto. |
+| `sendViaBrevo` | `src/lib/email/brevo.ts` (riesportato da `send-email.ts`) | **Implementato ma mai usato**, non testato. |
+| Code/job di invio | — | **Non esistono**: l'invio è sincrono nella request di `forgot-password`. |
+| Log email | `send-email.ts`, `forgot-password` | Solo categoria/provider/esito/message-id; test automatico verifica che token e API key non finiscano nei log. |
+
+#### 7.5.8 Audit OAuth/email del 2026-09-26: interventi e verifiche
+
+Interventi lato email/password (lato OAuth: §7.4.11):
+
+- `change-password` non disconnette più chi cambia la password (§6.4, `pca`).
+- Consumo atomico del token di reset e rilascio in caso di errore (§7.5.1).
+- Lingua dell'email dal cookie `locale`; nessun invio ad account
+  disattivati; nessun invio senza `NEXT_PUBLIC_SITE_URL` valida.
+- `EMAIL_FROM_AUTH` obbligatoria in produzione (§7.5.4); escaping URL nel template.
+- `update-profile` (utente normale) salva l'email con `trim()` +
+  minuscolo e valida il formato: prima un'email salvata con maiuscole o
+  spazi non era più trovata da login per email / forgot-password (lookup
+  esatto su valore minuscolo) e l'unicità era aggirabile cambiando le
+  maiuscole. `updateUserEmail` azzera `emailVerificata` al cambio.
+- Pagine `/forgot-password` e `/reset-password` tradotte, token rimosso
+  dall'URL, `?login=1`.
+- Nuovo helper `src/lib/site-url.ts` (`getSiteUrl()`).
+
+Verifiche eseguite:
+
+- `npx vitest run`: 25 file, 130 test verdi (prima dell'audit: 22 file,
+  103 test). Nuovi/aggiornati: `site-url`, `providers` (redirect_uri,
+  `appsecret_proof` con `fetch`/arctic mockati), `start` (redirect con
+  `oauthError`), `complete-registration` (rollback utente orfano),
+  `sessions` (claim `pca`), `change-password` (sessione riemessa),
+  `password-reset-tokens` (consumo atomico, rilascio), `reset-password`
+  (race, account disattivato, rilascio su errore), `forgot-password`
+  (link assoluto, lingua, URL mancante, account disattivato, errore
+  provider), `send-email` (mittente in produzione, nessun segreto nei log),
+  template reset (IT/AR/escaping), `update-profile` (normalizzazione email).
+  Nessun test invia email reali (Resend/fetch sempre mockati).
+- `npx tsc --noEmit`: 0 errori.
+- `npx eslint`: 16 errori / 35 warning, **identici alla baseline** prima
+  dell'audit, nessuno nei file toccati.
+- `npx next build`: riuscita. Nota: senza `MONGODB_URI` la build fallisce
+  in "Collecting page data" (`src/lib/mongo/client.ts` lancia all'import):
+  comportamento preesistente, in locale servono valori (anche segnaposto).
+- Browser (Chromium/Playwright su `next start`, MongoDB non raggiungibile):
+  `/forgot-password` IT (mobile 390px) e AR (desktop, RTL) senza testi
+  italiani residui; errore generico tradotto se il server fallisce;
+  `/reset-password` rimuove il token dall'URL ma lo invia all'API,
+  validazione "password non coincidono" senza chiamata API, messaggio
+  tradotto al posto di "Errore del server"; "Torna al login" → `?login=1`
+  apre il modale anche con navigazione client-side; OAuth `start` senza
+  provider configurato → redirect alla pagina di partenza con messaggio
+  d'errore visibile nel modale; nessun errore JS non gestito.
+- **Non verificato** (servono servizi esterni): invio reale con Resend,
+  deliverability/SPF/DKIM, flusso completo reset con MongoDB reale (il
+  download dei binari MongoDB è bloccato dalla rete di questa sessione:
+  coperto solo da unit test con mock), login/registrazione/collegamento
+  con Google/Facebook reali.
+
+#### 7.5.9 Limitazioni ancora aperte
+
+- Stub email non collegati (tabella §7.5.7); Brevo senza chiamanti.
+- Nessun flusso di verifica email: `emailVerificata` è informativo.
+- Invio email sincrono nella request (nessuna coda/retry); con Resend lento
+  la risposta di `forgot-password` rallenta di conseguenza.
+- `deleteUserSession` (logout singola sessione utente) resta uno stub (§6.4);
+  `change-password` admin non revoca le altre sessioni admin.
+- `src/lib/mongo/client.ts` ritenta la connessione per ~70 s prima di
+  fallire e produce `unhandledRejection` nei log quando MongoDB non è
+  raggiungibile (preesistente, fuori scope).
+- ~~`npm ci` fallisce per lockfile non sincronizzato~~ — risolto il
+  2026-09-26 (§13): lockfile rigenerato con npm 10 (quello di Node 22,
+  usato su Vercel); `npm ci` verificato da zero sia con npm 10 sia con npm 11.
 
 ---
 
@@ -805,6 +1176,10 @@ mittente in produzione.
 - `src/app/(main)/video-corsi/page.tsx`
 - `src/app/(main)/iscrizioni/page.tsx`
 - `src/app/(main)/profilo/page.tsx`
+- `src/app/(main)/forgot-password/page.tsx`, `src/app/(main)/reset-password/page.tsx`
+  (client component tradotti, §7.5.1)
+- `src/app/(main)/privacy/page.tsx`, `src/app/(main)/termini/page.tsx` — Informativa
+  privacy e Termini di servizio (§10.9)
 
 ### 9.3 App admin
 
@@ -845,6 +1220,12 @@ mittente in produzione.
 - `src/lib/next-celebration.ts`
 - `src/lib/supabase/server.ts`
 - `src/lib/supabase/client.ts`
+- `src/lib/site-url.ts` — `getSiteUrl()`, URL base assoluto da `NEXT_PUBLIC_SITE_URL`
+- `src/lib/oauth/*` — adapter provider, cookie di flusso, redirect sicuri (§7.4)
+- `src/lib/email/*` — Resend/Brevo, funzioni di invio e template (§7.5.4, mappa §7.5.7)
+- `src/lib/mongo/oauth-identities.ts`, `pending-oauth-registrations.ts`,
+  `password-reset-tokens.ts`
+- `src/lib/auth/password-reset-rate-limit.ts`
 
 ### 9.6 Tipi e traduzioni
 
@@ -1258,7 +1639,9 @@ rischio/alto impatto senza bisogno di credenziali o decisioni esterne
 
 ### 10.7.2 Middleware di sicurezza per le route admin
 
-- Nuovo `src/middleware.ts` con `matcher: ["/api/admin/:path*"]`: verifica
+- Nuovo `src/middleware.ts` (dal 2026-09-26 `src/proxy.ts` con funzione
+  `proxy()`, convenzione di Next.js 16; il nome `middleware` è deprecato)
+  con `matcher: ["/api/admin/:path*"]`: verifica
   JWT (`verifyJwt`, Edge-compatibile via Web Crypto) e, quando Redis è
   configurato, la revoca token, **prima** che la richiesta raggiunga
   l'handler. Escluse esplicitamente `/api/admin/login` (deve restare
@@ -1455,6 +1838,43 @@ e stato autenticato):
   un evento pubblicato e superare il gate `SectionVisibilityGate`, non
   praticabile rapidamente in questa sessione) e la resa in arabo.
 
+## 10.9 Informativa privacy e Termini di servizio (2026-09-26)
+
+- Pagine `/privacy` e `/termini` (server component), testi IT/AR in costanti
+  nella pagina (stessa convenzione di `chi-siamo`), layout condiviso
+  `src/components/legal/LegalDocument.tsx` con indice ad ancore. Il
+  contenitore imposta `dir="rtl"`/`lang="ar"` per l'arabo (il layout radice
+  resta `dir="ltr"`, §6.4.1). La versione araba dichiara che fa fede
+  l'italiano.
+- Contenuto basato sul trattamento **reale** del codice: dati di account,
+  OAuth, iscrizioni eventi, reset password, IP per rate limiting; fornitori
+  Vercel, MongoDB, Supabase, Upstash, Resend, Google/Facebook, YouTube,
+  Google Maps, Google Drive; tempi di conservazione tecnici (sessione 24h/7gg,
+  token reset 60 min, pending OAuth 24h); solo cookie tecnici; art. 9.2.d GDPR
+  per i dati che rivelano l'appartenenza religiosa; minori di 14 anni.
+  **Quando cambia il trattamento (nuovi dati, fornitori, cookie, invii
+  email) vanno aggiornate queste pagine e la costante `UPDATED_AT`.**
+- Metadati/SEO via namespace `legal` (`privacyTitle`, `termsTitle`, …);
+  pagine aggiunte a `sitemap.ts`; link nel footer (`legal.footerPrivacy`,
+  `legal.footerTerms`); avviso con link (nuova scheda) nell'ultimo step di
+  `RegisterModal` (`legal.registerNotice`, comune a registrazione classica e
+  OAuth). Nota ICU: in `it.json` usare l'apostrofo tipografico `’` prima di
+  un tag rich-text (`l’<privacy>`): `'` seguito da `<` fa da escape e il tag
+  viene mostrato come testo.
+- Video YouTube incorporati da `youtube-nocookie.com` (modalità privacy
+  avanzata, già consentita dalla CSP), coerentemente con l'informativa.
+- Verifiche: typecheck, lint invariato, build, browser (IT mobile 390px senza
+  scroll orizzontale, AR desktop RTL, ancore dell'indice, link footer,
+  avviso in registrazione).
+- **Da completare a cura della comunità** (non inventato nel testo): eventuali
+  dati identificativi dell'ente (denominazione legale, codice fiscale),
+  eventuale DPO, tempi di conservazione effettivi delle iscrizioni agli
+  eventi. La mappa Google Maps in `/contatti` è un iframe che può impostare
+  cookie di terze parti senza consenso preventivo: per piena conformità alle
+  linee guida del Garante andrebbe caricata solo dopo un clic (o sostituita
+  con un link). Il testo non è una consulenza legale: farlo rivedere prima
+  di considerarlo definitivo.
+
 ---
 
 ## 11. Note operative
@@ -1471,8 +1891,12 @@ e stato autenticato):
 ```bash
 npm install
 npm run dev
-npm run build
-npm run lint
+npm run build          # richiede MONGODB_URI (anche segnaposto) per "Collecting page data"
+npm run lint           # baseline: 16 errori / 35 warning preesistenti, fuori dai flussi auth/email
+npm ci                 # installazione pulita come su CI/Vercel (lockfile generato con npm 10)
+npm test               # vitest; nessun test invia email reali o contatta provider esterni
+npx tsc --noEmit
+npx prettier --check <file toccati>   # formattare solo i file modificati, non tutto il repo (§10.7.3)
 ```
 
 Per l'hash bcrypt iniziale di un admin:
@@ -1480,3 +1904,65 @@ Per l'hash bcrypt iniziale di un admin:
 ```bash
 npm run generate-hash -- "la-tua-password"
 ```
+
+---
+
+## 13. Preparazione al deploy su Vercel (2026-09-26)
+
+Guida operativa completa: `VERCEL_DEPLOYMENT_GUIDE.md` (variabili per
+ambiente, ordine delle configurazioni su Supabase/Upstash/Resend/Google/Meta,
+verifiche post-deploy, righe di log da riconoscere, rollback). Qui solo lo
+stato del codice e le decisioni.
+
+**Sicurezza — azione manuale urgente.** Il repository GitHub è pubblico e
+`test-mongodb.js` conteneva come fallback la connessione MongoDB Atlas
+dell'utente `admin` con password in chiaro (introdotta nel commit iniziale
+di luglio). Rimossa dal codice (lo script ora richiede `MONGODB_URI`), ma
+resta nella cronologia: **va ruotata su Atlas** (guida §0). Nessun'altra
+credenziale reale trovata nella cronologia (controllati URI MongoDB, JWT
+Supabase, chiavi Resend/Google/Brevo). `.dbg/export-iscrizioni-vercel.env`
+(sessione di debug, nessuna credenziale) era tracciato nonostante
+`.gitignore`: rimosso dall'indice. Esempio di password `sanmarco2026` tolto
+da `schema.sql`/`generate-hash.ts`; `schema.sql` abilita RLS su
+`admin_users`/`admin_sessions` (da applicare a mano sul DB esistente).
+
+**Correzioni nel codice**
+
+| Problema | Correzione |
+|---|---|
+| `src/lib/mongo/client.ts`: la catena `.then().catch()` "di servizio" rilanciava l'errore in una promise non attesa → `unhandledRejection` a ogni connessione fallita (può terminare la funzione); connessione avviata all'import del modulo, anche durante `next build` | La catena non rilancia più (il chiamante riceve comunque l'errore); connessione **pigra** alla prima `getDb()`; rimosso l'export `clientPromise` non usato. Test `client.test.ts` (falliscono col codice precedente). Verificato con `next start` e MongoDB irraggiungibile: 0 `unhandledRejection`, server vivo |
+| Export PDF iscrizioni: 500 con un solo carattere non WinAnsi (arabo, copto, emoji, "Ğ") — bug aperto in `debug-export-iscrizioni-vercel.md` | `src/lib/pdf/winansi.ts` (`createPdfTextSanitizer`): diacritici ridotti, resto → `?` con nota nel PDF. Test di route con dati arabi (fallisce senza fix) |
+| `middleware.ts` deprecato in Next 16 (warning in build) | Rinominato `src/proxy.ts` / `proxy()` (verificato sul template di Next 16.1.6); test `proxy.test.ts` |
+| OAuth: senza `NEXT_PUBLIC_SITE_URL` la `redirect_uri` ripiegava su `http://localhost:3000` anche in produzione | In produzione il provider risulta non configurato con errore `[oauth] … disabilitato` nei log; fallback localhost solo fuori produzione |
+| Redis assente in produzione: fallback in memoria silenzioso | Avviso `[redis] …` una volta per istanza in produzione (comportamento invariato) |
+| `vercel.json` con rewrite inutile | Rimosso |
+| `package-lock.json` non sincronizzato (`npm ci` falliva) | Rigenerato con npm 10 (vedi sopra) |
+| `.env.example` senza distinzione obbligatorie/opzionali | Riorganizzato: obbligatorie, consigliate, opzionali, predisposte non usate |
+
+**Decisioni**
+- I Preview **non** dovrebbero avere `NEXT_PUBLIC_SITE_URL`, OAuth e Resend
+  (URL variabili ≠ callback registrate; link email verso il dominio
+  sbagliato). Senza, il codice li disattiva in modo esplicito e loggato.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `src/lib/supabase/client.ts` non sono
+  usati da nessuna parte: la chiave non serve e non finisce nel bundle.
+- Nessun segreto server nel bundle client (scansione di `.next/static` dopo
+  la build con valori segnaposto riconoscibili).
+- Timeout MongoDB non modificati: con DB irraggiungibile una richiesta ha
+  impiegato ~110 s (> `maxDuration` 60 s → 504 su Vercel). Da rivedere solo
+  con dati reali di produzione (`MONGODB_COLD_START_FIX.md`).
+
+**Verifiche eseguite (2026-09-26)**: `npm ci` da zero (npm 10 e npm 11),
+`npx eslint` (16 errori / 35 warning preesistenti, quasi tutti negli script
+di audit i18n alla radice; 0 nei file toccati; `next build` non esegue il
+lint), `npx tsc --noEmit` (0), `npx vitest run` (34 file, 167 test),
+`next build` (ok, nessun warning di deprecazione, nessuna connessione DB in
+build), smoke test con `next start`: header di sicurezza, `401` su
+`/api/admin/*` senza sessione, redirect OAuth con `oauthError`, MongoDB
+giù senza crash. **Non verificabile senza account reali**: invio email
+Resend, OAuth Google/Facebook, connessione ad Atlas/Supabase/Upstash di
+produzione, comportamento sul dominio pubblico. `vercel build` non eseguito
+(richiede login e collegamento al progetto Vercel).
+
+**Limiti aperti**: `arctic` e `@oslojs/*` deprecati su npm; PDF senza
+supporto arabo reale; mappa Google Maps senza consenso preventivo;
+`src/lib/mongo/connection-utils.ts` con timeout più lunghi di `maxDuration`.

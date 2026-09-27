@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { createHmac } from "node:crypto";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { getProviderAdapter, SUPPORTED_PROVIDERS } from "./providers";
 
 describe("provider adapters", () => {
@@ -41,5 +42,75 @@ describe("provider adapters", () => {
     expect(adapter?.usesPkce).toBe(false);
     const url = adapter!.createAuthorizationURL("state-value");
     expect(url.searchParams.get("state")).toBe("state-value");
+  });
+
+  it("builds the callback URL without a double slash when NEXT_PUBLIC_SITE_URL ends with '/'", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "https://example.org/";
+    process.env.GOOGLE_CLIENT_ID = "client-id";
+    process.env.GOOGLE_CLIENT_SECRET = "client-secret";
+    const url = getProviderAdapter("google")!.createAuthorizationURL("s", "v");
+    expect(url.searchParams.get("redirect_uri")).toBe(
+      "https://example.org/api/auth/oauth/google/callback"
+    );
+  });
+
+  it("signs the Facebook Graph call with appsecret_proof", async () => {
+    process.env.FACEBOOK_CLIENT_ID = "fb-id";
+    process.env.FACEBOOK_CLIENT_SECRET = "fb-secret";
+    const adapter = getProviderAdapter("facebook")!;
+
+    const { Facebook } = await import("arctic");
+    const validateSpy = vi
+      .spyOn(Facebook.prototype, "validateAuthorizationCode")
+      .mockResolvedValue({ accessToken: () => "fb-access-token" } as never);
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: "fb-1", email: "a@example.com" }), { status: 200 })
+      );
+
+    try {
+      const profile = await adapter.validateCallback("code");
+      expect(profile.providerAccountId).toBe("fb-1");
+
+      const calledUrl = new URL(String(fetchSpy.mock.calls[0][0]));
+      const expectedProof = createHmac("sha256", "fb-secret")
+        .update("fb-access-token")
+        .digest("hex");
+      expect(calledUrl.searchParams.get("appsecret_proof")).toBe(expectedProof);
+    } finally {
+      validateSpy.mockRestore();
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it("disables providers in production when NEXT_PUBLIC_SITE_URL is missing (no localhost fallback)", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.GOOGLE_CLIENT_ID = "client-id";
+    process.env.GOOGLE_CLIENT_SECRET = "client-secret";
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(getProviderAdapter("google")).toBeNull();
+      expect(error).toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("keeps the localhost callback in development when NEXT_PUBLIC_SITE_URL is missing", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.GOOGLE_CLIENT_ID = "client-id";
+    process.env.GOOGLE_CLIENT_SECRET = "client-secret";
+    try {
+      const url = getProviderAdapter("google")!.createAuthorizationURL("s", "v");
+      expect(url.searchParams.get("redirect_uri")).toBe(
+        "http://localhost:3000/api/auth/oauth/google/callback"
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

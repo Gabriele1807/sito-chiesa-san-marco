@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,6 +22,9 @@ export default function LoginModal() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null);
+  // Errore OAuth arrivato col redirect: sopravvive al reset del form che
+  // scatta proprio quando il modale viene aperto per mostrarlo.
+  const pendingOauthErrorRef = useRef("");
 
   function startOAuth(provider: "google" | "facebook") {
     setOauthLoading(provider);
@@ -53,11 +56,24 @@ export default function LoginModal() {
       setPassword("");
       setRememberMe(false);
       setShowPassword(false);
-      setError("");
+      setError(pendingOauthErrorRef.current);
+      pendingOauthErrorRef.current = "";
       setLoading(false);
       setOauthLoading(null);
     }
   }, [showLoginModal]);
+
+  // Apre il login quando richiesto da un link (?login=1), es. dopo il reset
+  // password. Dipende da pathname: il modale vive nel layout radice e non si
+  // rimonta con la navigazione client-side, quindi un effetto solo-al-mount
+  // non vedrebbe il parametro arrivando da un'altra pagina del sito.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("login") !== "1") return;
+    setShowLoginModal(true);
+    url.searchParams.delete("login");
+    window.history.replaceState(window.history.state, "", url.toString());
+  }, [pathname, setShowLoginModal]);
 
   // Mostra errori OAuth provenienti dal redirect (?oauthError=<code>)
   useEffect(() => {
@@ -67,6 +83,7 @@ export default function LoginModal() {
     if (!code) return;
     if (pathname === "/profilo") return;
     const key = OAUTH_ERROR_KEYS[code] ?? "oauthErrorGeneric";
+    pendingOauthErrorRef.current = t(key);
     setError(t(key));
     setShowLoginModal(true);
     const url = new URL(window.location.href);

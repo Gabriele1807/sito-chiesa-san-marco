@@ -303,6 +303,13 @@ export default function ProfiloPage() {
     setEditMessage(null);
   }
 
+  /** Errori di update-profile sullo username mostrati tradotti (IT/AR). */
+  function translateProfileError(error?: string): string {
+    if (error === "Username già in uso da un altro account") return t("usernameGiaUsato");
+    if (error?.startsWith("Username non valido")) return t("usernameHint");
+    return error || t("erroreGenerico");
+  }
+
   /* â”€â”€ Submit profile update â”€â”€ */
   async function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -328,7 +335,7 @@ export default function ProfiloPage() {
         await refresh();
         setTimeout(closeEdit, 1500);
       } else {
-        setEditMessage({ type: "error", text: data.error || t("erroreGenerico") });
+        setEditMessage({ type: "error", text: translateProfileError(data.error) });
       }
     } catch {
       setEditMessage({ type: "error", text: t("erroreGenerico") });
@@ -452,7 +459,7 @@ export default function ProfiloPage() {
         await refresh();
         setTimeout(closeAdminEdit, 1500);
       } else {
-        setAdminEditMessage({ type: "error", text: data.error || t("erroreGenerico") });
+        setAdminEditMessage({ type: "error", text: translateProfileError(data.error) });
       }
     } catch {
       setAdminEditMessage({ type: "error", text: t("erroreGenerico") });
@@ -696,9 +703,11 @@ export default function ProfiloPage() {
                       minLength={3}
                       maxLength={30}
                       pattern="[a-zA-Z0-9_.\-]+"
+                      aria-describedby="admin-username-hint"
                       className="w-full pl-8 pr-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
+                  <p id="admin-username-hint" className="mt-1.5 text-xs text-foreground/50">{t("usernameHint")}</p>
                 </div>
 
                 {adminEditMessage && (
@@ -816,9 +825,11 @@ export default function ProfiloPage() {
                       minLength={3}
                       maxLength={30}
                       pattern="[a-zA-Z0-9_.\-]+"
+                      aria-describedby="user-username-hint"
                       className="w-full pl-8 pr-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-gold/20 focus:border-gold outline-none transition-all"
                     />
                   </div>
+                  <p id="user-username-hint" className="mt-1.5 text-xs text-foreground/50">{t("usernameHint")}</p>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>

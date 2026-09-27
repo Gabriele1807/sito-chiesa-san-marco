@@ -1,5 +1,11 @@
-const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://admin:GabriWasef@cluster0.mv32tie.mongodb.net/?appName=Cluster0';
-const dbName = process.env.MONGODB_DB || 'chiesa-san-marco';
+// Script manuale di verifica connessione: legge SOLO da variabili d'ambiente.
+// Uso: MONGODB_URI="..." MONGODB_DB="..." node test-mongodb.js
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  console.error("MONGODB_URI non impostata: esporta la variabile prima di eseguire lo script.");
+  process.exit(1);
+}
+const dbName = process.env.MONGODB_DB || 'chiesa_san_marco';
 
 
 async function testConnection() {

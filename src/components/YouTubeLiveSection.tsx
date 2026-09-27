@@ -108,7 +108,7 @@ export default function YouTubeLiveSection() {
                 <div className="aspect-video">
                   {featuredVideo ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${featuredVideo.id}?rel=0`}
+                      src={`https://www.youtube-nocookie.com/embed/${featuredVideo.id}?rel=0`}
                       title={featuredVideo.title || t("youtubeUltima")}
                       className="h-full w-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

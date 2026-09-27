@@ -2,20 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const insertOne = vi.fn();
 const updateMany = vi.fn();
-const findOne = vi.fn();
+const findOneAndUpdate = vi.fn();
 const updateOne = vi.fn();
 const createIndex = vi.fn();
 
 vi.mock("./client", () => ({
   getDb: vi.fn().mockResolvedValue({
-    collection: () => ({ insertOne, updateMany, findOne, updateOne, createIndex }),
+    collection: () => ({ insertOne, updateMany, findOneAndUpdate, updateOne, createIndex }),
   }),
 }));
 
 import {
   createPasswordResetToken,
-  findValidPasswordResetToken,
-  markPasswordResetTokenUsed,
+  consumePasswordResetToken,
+  releasePasswordResetToken,
 } from "./password-reset-tokens";
 import { createHash } from "node:crypto";
 
@@ -34,32 +34,47 @@ describe("password-reset-tokens", () => {
       { userId: "user-1", usedAt: null },
       { $set: { usedAt: expect.any(Date) } }
     );
+    // Anche i token in corso di utilizzo vengono marcati come superati.
+    expect(updateMany).toHaveBeenCalledWith(
+      { userId: "user-1", supersededAt: null },
+      { $set: { supersededAt: expect.any(Date) } }
+    );
     const insertedDoc = insertOne.mock.calls[0][0];
     expect(insertedDoc.tokenHash).toBe(createHash("sha256").update(rawToken).digest("hex"));
     expect(insertedDoc.tokenHash).not.toBe(rawToken);
   });
 
-  it("finds a token by its raw value via hash lookup", async () => {
-    findOne.mockResolvedValue({ _id: { toString: () => "id1" }, userId: "user-1" });
+  it("finds and consumes a valid token in a single atomic operation", async () => {
+    findOneAndUpdate.mockResolvedValue({ _id: { toString: () => "id1" }, userId: "user-1" });
 
-    const found = await findValidPasswordResetToken("deadbeef");
+    const consumed = await consumePasswordResetToken("deadbeef");
 
-    expect(findOne).toHaveBeenCalledWith({
-      tokenHash: createHash("sha256").update("deadbeef").digest("hex"),
-      usedAt: null,
-      expiresAt: { $gt: expect.any(Date) },
-    });
-    expect(found).toEqual({ _id: "id1", userId: "user-1" });
+    expect(findOneAndUpdate).toHaveBeenCalledTimes(1);
+    expect(findOneAndUpdate).toHaveBeenCalledWith(
+      {
+        tokenHash: createHash("sha256").update("deadbeef").digest("hex"),
+        usedAt: null,
+        supersededAt: null,
+        expiresAt: { $gt: expect.any(Date) },
+      },
+      { $set: { usedAt: expect.any(Date) } }
+    );
+    expect(consumed).toEqual({ _id: "id1", userId: "user-1", consumedAt: expect.any(Date) });
   });
 
-  it("returns null when no matching token exists", async () => {
-    findOne.mockResolvedValue(null);
-    const found = await findValidPasswordResetToken("nope");
-    expect(found).toBeNull();
+  it("returns null when the token is unknown, expired or already used", async () => {
+    findOneAndUpdate.mockResolvedValue(null);
+    expect(await consumePasswordResetToken("nope")).toBeNull();
   });
 
-  it("marks a token used by id", async () => {
-    await markPasswordResetTokenUsed("507f1f77bcf86cd799439011");
-    expect(updateOne).toHaveBeenCalled();
+  it("releases a token only if it still carries the exact consumption timestamp", async () => {
+    const consumedAt = new Date("2026-09-26T10:00:00.000Z");
+    await releasePasswordResetToken("507f1f77bcf86cd799439011", consumedAt);
+
+    const [filter, update] = updateOne.mock.calls[0];
+    expect(filter.usedAt).toBe(consumedAt);
+    expect(filter.supersededAt).toBeNull();
+    expect(filter._id.toString()).toBe("507f1f77bcf86cd799439011");
+    expect(update).toEqual({ $set: { usedAt: null } });
   });
 });

@@ -5,7 +5,14 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("@/lib/mongo/sessions", () => ({
   validateUserSession: vi.fn(),
-  deleteAllUserSessions: vi.fn(),
+  deleteAllUserSessions: vi.fn(async () => "2026-09-26T10:00:00.000Z"),
+  createUserSession: vi.fn(async () => ({
+    token: "new-session-token",
+    expiresAt: new Date(Date.now() + 1000),
+  })),
+}));
+vi.mock("@/lib/auth/jwt", () => ({
+  verifyJwt: vi.fn(async () => ({ sub: "u1", iat: 0, exp: 7 * 24 * 60 * 60 })),
 }));
 vi.mock("@/lib/mongo/users", () => ({
   findUserByIdFull: vi.fn(),
@@ -25,7 +32,11 @@ vi.mock("@/lib/auth/session", () => ({
 
 import { POST } from "./route";
 import { cookies } from "next/headers";
-import { validateUserSession, deleteAllUserSessions } from "@/lib/mongo/sessions";
+import {
+  validateUserSession,
+  deleteAllUserSessions,
+  createUserSession,
+} from "@/lib/mongo/sessions";
 import { findUserByIdFull, updateUserPassword } from "@/lib/mongo/users";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
 
@@ -37,10 +48,13 @@ function mockRequest(body: unknown) {
 }
 
 describe("POST /api/auth/change-password", () => {
+  const cookieSet = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
     (cookies as ReturnType<typeof vi.fn>).mockResolvedValue({
       get: (name: string) => (name === "user_session" ? { value: "tok" } : undefined),
+      set: cookieSet,
     });
   });
 
@@ -63,5 +77,46 @@ describe("POST /api/auth/change-password", () => {
 
     expect(json).toEqual({ success: true });
     expect(deleteAllUserSessions).toHaveBeenCalledWith("u1");
+  });
+
+  it("keeps the caller signed in by re-issuing their session bound to the new passwordChangedAt", async () => {
+    (validateUserSession as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "u1" });
+    (findUserByIdFull as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "u1",
+      username: "mario",
+      passwordHash: "hash",
+      adminRequest: "none",
+    });
+    (verifyPassword as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    (hashPassword as ReturnType<typeof vi.fn>).mockResolvedValue("newhash");
+
+    await POST(mockRequest({ currentPassword: "Old12345!", newPassword: "New12345!" }));
+
+    // Il token originale durava 7 giorni: la sessione riemessa resta "ricordami".
+    expect(createUserSession).toHaveBeenCalledWith("u1", expect.any(Request), true, {
+      passwordChangedAt: "2026-09-26T10:00:00.000Z",
+    });
+    expect(cookieSet).toHaveBeenCalledWith(
+      "user_session",
+      "new-session-token",
+      expect.objectContaining({ httpOnly: true, sameSite: "lax", path: "/" })
+    );
+  });
+
+  it("does not re-issue a session when the current password is wrong", async () => {
+    (validateUserSession as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "u1" });
+    (findUserByIdFull as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "u1",
+      username: "mario",
+      passwordHash: "hash",
+      adminRequest: "none",
+    });
+    (verifyPassword as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+
+    const res = await POST(mockRequest({ currentPassword: "Wrong123!", newPassword: "New12345!" }));
+
+    expect(res.status).toBe(403);
+    expect(deleteAllUserSessions).not.toHaveBeenCalled();
+    expect(cookieSet).not.toHaveBeenCalled();
   });
 });

@@ -17,7 +17,7 @@ async function main() {
 
   if (!password) {
     console.error("❌ Uso: npm run generate-hash -- \"la-tua-password\"");
-    console.error("   Esempio: npm run generate-hash -- \"sanmarco2026\"");
+    console.error("   Esempio: npm run generate-hash -- \"<password-robusta-scelta-da-te>\"");
     process.exit(1);
   }
 

@@ -3,6 +3,7 @@ import { getProviderAdapter, SUPPORTED_PROVIDERS, type SupportedProvider } from 
 import { verifyOAuthFlowCookie, hashSessionToken, signOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
 import { sanitizeReturnTo } from "@/lib/oauth/safe-redirect";
 import { applyNoStore } from "@/lib/oauth/http";
+import { getSiteUrl } from "@/lib/site-url";
 import {
   readSessionCookie,
   resolveAdminSessionToken,
@@ -76,7 +77,7 @@ async function handleGet(
   { params }: { params: Promise<{ provider: string }> }
 ): Promise<NextResponse> {
   const { provider } = await params;
-  const siteBase = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
+  const siteBase = getSiteUrl() ?? new URL(request.url).origin;
 
   if (!isSupportedProvider(provider)) {
     return errorRedirect(siteBase, "/", "unsupported_provider");

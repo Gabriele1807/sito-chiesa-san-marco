@@ -43,6 +43,7 @@ function PasswordMatchIndicator({ password, confirm }: { password: string; confi
 
 export default function RegisterModal() {
   const t = useTranslations("auth");
+  const tLegal = useTranslations("legal");
   const tc = useTranslations("common");
   const { showRegisterModal, setShowRegisterModal, setShowLoginModal, refresh } = useAuth();
 
@@ -821,6 +822,21 @@ export default function RegisterModal() {
                   {t("registerRequestAdminHelp")}
                 </p>
               </div>
+
+              <p className="text-xs leading-relaxed text-foreground/60">
+                {tLegal.rich("registerNotice", {
+                  terms: (chunks) => (
+                    <a href="/termini" target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline-offset-2 hover:underline">
+                      {chunks}
+                    </a>
+                  ),
+                  privacy: (chunks) => (
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline-offset-2 hover:underline">
+                      {chunks}
+                    </a>
+                  ),
+                })}
+              </p>
 
               {/* Bottoni */}
               <div className="flex gap-3">

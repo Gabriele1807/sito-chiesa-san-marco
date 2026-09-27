@@ -15,9 +15,12 @@ import { getRedis } from "@/lib/redis/client";
  * handler. It's deliberately additive, not a replacement, to avoid
  * regressing existing per-route behavior in this pass.
  *
+ * Named `proxy.ts` / `proxy()` per the Next.js 16 file convention (the old
+ * `middleware.ts` name is deprecated).
+ *
  * Known limitation: revocation (logout) is only enforced here when Redis is
  * configured (see src/lib/redis/client.ts) — the in-memory revocation Set in
- * session.ts lives in a different process/runtime than this Edge middleware,
+ * session.ts lives in a different module instance than this proxy,
  * so without Redis a just-logged-out token can still pass this check until
  * the corresponding route handler's own requireAdminSession() call — which
  * does share that in-memory Set at least within the same instance — or
@@ -26,7 +29,7 @@ import { getRedis } from "@/lib/redis/client";
 
 const PUBLIC_ADMIN_PATHS = ["/api/admin/login", "/api/admin/logout"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (PUBLIC_ADMIN_PATHS.includes(request.nextUrl.pathname)) {
     return NextResponse.next();
   }

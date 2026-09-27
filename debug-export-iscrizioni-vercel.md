@@ -1,5 +1,5 @@
 # Debug Session: export-iscrizioni-vercel
-- **Status**: [OPEN]
+- **Status**: [RESOLVED 2026-09-26] — causa trovata: vedi "Verification Conclusion"
 - **Issue**: In produzione su Vercel i pulsanti di export iscrizioni (`PDF` e `Excel`) non funzionano piu, mentre in locale funzionavano. Inoltre va aggiunta la scelta delle colonne da includere nel PDF prima dell'esportazione.
 - **Environment**: Vercel production + admin dashboard iscrizioni
 
@@ -23,4 +23,14 @@
 - In attesa di analisi delle route export, del client admin e di eventuale riproduzione locale.
 
 ## Verification Conclusion
-- In attesa di evidenze runtime e implementazione del fix minimo.
+- Causa riprodotta (2026-09-26): il PDF usa i font standard di pdf-lib (Helvetica,
+  codifica WinAnsi) e `drawText` lancia `WinAnsi cannot encode …` su qualunque
+  carattere fuori da quel set (arabo, copto, emoji, lettere come "Ğ"). In locale
+  i dati di prova erano solo latini; in produzione basta un'iscrizione con un
+  nome in arabo per far fallire l'intero export con 500 (ipotesi A/B confermate).
+- Fix: `src/lib/pdf/winansi.ts` (`createPdfTextSanitizer`) applicato a tutti i
+  testi dinamici in `src/app/api/admin/iscrizioni/export/route.ts`; i caratteri
+  non rappresentabili diventano `?` e il PDF riporta una nota. Test:
+  `src/app/api/admin/iscrizioni/export/route.test.ts` (fallisce senza il fix).
+- La selezione delle colonne (ipotesi E) è già implementata (`columns=`).
+- Aperto: rendering completo dell'arabo richiede un font Unicode con shaping.

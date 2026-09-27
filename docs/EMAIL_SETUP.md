@@ -33,6 +33,7 @@ EMAIL_FROM_NEWSLETTER=
 3. Mittente:
    - In sviluppo puoi usare l'indirizzo di test già verificato da Resend, `onboarding@resend.dev` (nessuna configurazione DNS necessaria, ma invia solo alla tua email di account Resend).
    - In produzione va verificato un dominio reale (vedi §3 più sotto) e `EMAIL_FROM_AUTH` va impostato su un indirizzo di quel dominio (es. `noreply@auth.tuodominio.it`), **mai** un indirizzo Gmail personale.
+   - In produzione (`NODE_ENV=production`) `EMAIL_FROM_AUTH` è **obbligatoria**: se manca, l'invio viene saltato e il log server riporta `EMAIL_FROM_AUTH not configured` (il fallback `onboarding@resend.dev` vale solo in sviluppo, perché in produzione consegnerebbe solo alla casella del titolare dell'account Resend).
 4. `EMAIL_REPLY_TO` (opzionale): un indirizzo realmente monitorato se vuoi che le risposte alle email arrivino da qualche parte; lascialo vuoto altrimenti.
 
 ---

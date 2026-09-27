@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/lib/mongo/users", () => ({ findUserByEmail: vi.fn() }));
 vi.mock("@/lib/mongo/password-reset-tokens", () => ({
@@ -16,16 +16,28 @@ import { createPasswordResetToken } from "@/lib/mongo/password-reset-tokens";
 import { sendPasswordResetEmail } from "@/lib/email/send-email";
 import { isForgotPasswordRateLimited } from "@/lib/auth/password-reset-rate-limit";
 
-function mockRequest(body: unknown) {
+function mockRequest(body: unknown, cookie?: string) {
   return new Request("http://localhost/api/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify(body),
-    headers: { "x-forwarded-for": "1.2.3.4" },
+    headers: { "x-forwarded-for": "1.2.3.4", ...(cookie ? { cookie } : {}) },
   });
 }
 
+const knownUser = { _id: "u1", email: "known@example.com", attivo: true };
+
 describe("POST /api/auth/forgot-password", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (isForgotPasswordRateLimited as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://chiesa.example.it/");
+    (createPasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      rawToken: "abc",
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
+    (sendPasswordResetEmail as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
+  });
+  afterEach(() => vi.unstubAllEnvs());
 
   it("returns the same generic response whether the user exists or not", async () => {
     (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(null);
@@ -81,5 +93,62 @@ describe("POST /api/auth/forgot-password", () => {
 
     expect(json.success).toBe(true);
     expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it("builds an absolute reset link without a double slash and uses the request locale", async () => {
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(knownUser);
+
+    await POST(mockRequest({ email: "known@example.com" }, "theme=x; locale=ar"));
+
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "known@example.com",
+        resetUrl: "https://chiesa.example.it/reset-password?token=abc",
+        locale: "ar",
+        expirationMinutes: 60,
+      })
+    );
+  });
+
+  it("defaults to Italian when no locale cookie is present", async () => {
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(knownUser);
+    await POST(mockRequest({ email: "known@example.com" }));
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith(expect.objectContaining({ locale: "it" }));
+  });
+
+  it("does not create a token or send when NEXT_PUBLIC_SITE_URL is missing, but answers generically", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(knownUser);
+
+    const res = await POST(mockRequest({ email: "known@example.com" }));
+
+    expect((await res.json()).success).toBe(true);
+    expect(createPasswordResetToken).not.toHaveBeenCalled();
+    expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it("does not send to a deactivated account", async () => {
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...knownUser,
+      attivo: false,
+    });
+
+    const res = await POST(mockRequest({ email: "known@example.com" }));
+
+    expect((await res.json()).success).toBe(true);
+    expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it("still answers generically when the provider fails", async () => {
+    (findUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(knownUser);
+    (sendPasswordResetEmail as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      error: "send_failed",
+    });
+
+    const res = await POST(mockRequest({ email: "known@example.com" }));
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).success).toBe(true);
   });
 });

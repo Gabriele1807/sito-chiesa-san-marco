@@ -29,8 +29,6 @@ const globalForMongo = globalThis as unknown as {
   _isHealthy?: boolean;
 };
 
-let clientPromise: Promise<MongoClient>;
-
 /**
  * Initialize MongoDB connection with retry logic
  */
@@ -51,18 +49,22 @@ function resetClientState() {
 }
 
 function initializeClientPromise(): Promise<MongoClient> {
-  globalForMongo._mongoClientPromise = createClientConnection();
-  globalForMongo._mongoClientPromise
+  const promise = createClientConnection();
+  globalForMongo._mongoClientPromise = promise;
+  // Catena "di servizio": registra il client o azzera lo stato. Non rilancia
+  // l'errore: il chiamante lo riceve già attendendo `promise`; rilanciarlo qui
+  // creerebbe una seconda promise rifiutata che nessuno attende
+  // (unhandledRejection, che su Node può terminare la funzione serverless).
+  promise
     .then((client) => {
       globalForMongo._mongoClient = client;
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       console.error("[MongoDB] Connection promise failed:", err.message);
-      resetClientState();
-      throw err;
+      if (globalForMongo._mongoClientPromise === promise) resetClientState();
     });
 
-  return globalForMongo._mongoClientPromise;
+  return promise;
 }
 
 function getClientPromise(): Promise<MongoClient> {
@@ -78,32 +80,11 @@ async function getClient(): Promise<MongoClient> {
   return getClientPromise();
 }
 
-if (process.env.NODE_ENV === "development") {
-  // In development, reuse connection via global to avoid HMR reconnections
-  if (!globalForMongo._mongoClientPromise) {
-    console.log("[MongoDB] Development mode: initializing connection...");
-    globalForMongo._mongoClientPromise = createClientConnection();
-    globalForMongo._mongoClientPromise.then((c) => {
-      globalForMongo._mongoClient = c;
-    }).catch((err) => {
-      console.error("[MongoDB] Development connection failed:", err.message);
-      // Clear promise so next attempt will retry
-      globalForMongo._mongoClientPromise = undefined;
-      throw err;
-    });
-  }
-  clientPromise = globalForMongo._mongoClientPromise as Promise<MongoClient>;
-} else {
-  // In production (including Vercel), maintain singleton connection
-  if (!globalForMongo._mongoClientPromise) {
-    console.log("[MongoDB] Production mode: initializing connection...");
-    clientPromise = initializeClientPromise();
-  } else {
-    clientPromise = globalForMongo._mongoClientPromise;
-  }
-}
-
-export { clientPromise };
+// Connessione pigra: si apre alla prima richiesta che usa il database, non
+// all'import del modulo (che avveniva anche durante `next build`, nella fase
+// "Collecting page data"). La promise vive su globalThis, quindi resta
+// condivisa tra hot reload in sviluppo e tra invocazioni della stessa istanza
+// serverless in produzione.
 
 async function closeExistingClient(): Promise<void> {
   if (globalForMongo._mongoClient) {
@@ -174,5 +155,5 @@ export async function getDb(): Promise<Db> {
  * Get client instance (for administrative tasks)
  */
 export async function getMongoClient(): Promise<MongoClient> {
-  return clientPromise;
+  return getClient();
 }

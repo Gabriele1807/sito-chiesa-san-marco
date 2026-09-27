@@ -6,6 +6,7 @@ import { getIscrizioniByEvento } from "@/lib/mongo/registrations";
 import { requireAdminSession } from "@/lib/auth/session";
 import { withDbRetry, getErrorMessage, isConnectionError } from "@/lib/mongo/operation-retry";
 import type { IscrizioneEvento } from "@/types";
+import { createPdfTextSanitizer } from "@/lib/pdf/winansi";
 
 /**
  * GET /api/admin/iscrizioni/export?eventoId=XXX&format=pdf
@@ -108,6 +109,9 @@ async function buildPdfBuffer(
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  // Helvetica e Helvetica Bold condividono lo stesso set WinAnsi.
+  const pdfText = createPdfTextSanitizer(font);
+  const safe = pdfText.sanitize;
 
   const pageSize: [number, number] = [841.89, 595.28];
   const margin = 32;
@@ -129,7 +133,7 @@ async function buildPdfBuffer(
   let y = pageSize[1] - margin;
 
   const drawPageHeader = () => {
-    page.drawText(`Iscritti - ${evento?.titolo ?? "Evento"}`, {
+    page.drawText(safe(`Iscritti - ${evento?.titolo ?? "Evento"}`), {
       x: margin,
       y,
       size: titleFontSize,
@@ -137,7 +141,7 @@ async function buildPdfBuffer(
       color: rgb(0.1, 0.1, 0.18),
     });
     y -= 20;
-    page.drawText(`${formatData(evento?.data || "")} - ${evento?.luogo || ""}`, {
+    page.drawText(safe(`${formatData(evento?.data || "")} - ${evento?.luogo || ""}`), {
       x: margin,
       y,
       size: metaFontSize,
@@ -226,7 +230,7 @@ async function buildPdfBuffer(
           borderWidth: 0.5,
           borderColor: rgb(0.86, 0.86, 0.86),
         });
-        page.drawText(text || "-", {
+        page.drawText(safe(text) || "-", {
           x: x + 4,
           y: y - 12,
           size: bodyFontSize,
@@ -238,6 +242,13 @@ async function buildPdfBuffer(
 
       y -= rowHeight;
     });
+  }
+
+  if (pdfText.hadReplacements) {
+    page.drawText(
+      "Nota: alcuni caratteri non latini (es. arabo) non sono rappresentabili in questo PDF e sono indicati con \"?\". I valori completi sono visibili nel pannello admin.",
+      { x: margin, y: 28, size: 8, font, color: rgb(0.6, 0.2, 0.2) }
+    );
   }
 
   page.drawText(`Generato il ${formatData(new Date().toISOString())} - Chiesa San Marco`, {

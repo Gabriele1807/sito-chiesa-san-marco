@@ -455,7 +455,27 @@
     "userMenuRolePrete": "قس",
     "userMenuProfile": "ملفي الشخصي",
     "userMenuAdminPanel": "لوحة الإدارة",
-    "userMenuLogout": "تسجيل الخروج"
+    "userMenuLogout": "تسجيل الخروج",
+    "passwordResetEyebrow": "الدخول",
+    "forgotPasswordIntro": "أدخل عنوان بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.",
+    "forgotPasswordEmailLabel": "البريد الإلكتروني",
+    "forgotPasswordSubmit": "إرسال رابط إعادة التعيين",
+    "forgotPasswordSubmitting": "جارٍ الإرسال...",
+    "forgotPasswordSent": "إذا كان هذا العنوان مرتبطًا بحساب، فستصلك رسالة بريد إلكتروني تتضمن تعليمات إعادة تعيين كلمة المرور.",
+    "forgotPasswordInvalidEmail": "عنوان البريد الإلكتروني غير صالح",
+    "passwordResetGenericError": "حدث خطأ. يرجى المحاولة مرة أخرى لاحقًا.",
+    "passwordResetBackToLogin": "العودة إلى تسجيل الدخول",
+    "resetPasswordTitle": "إعادة تعيين كلمة المرور",
+    "resetPasswordInvalidLink": "الرابط غير صالح أو منتهي الصلاحية.",
+    "resetPasswordRequestNewLink": "اطلب رابطًا جديدًا",
+    "resetPasswordNewLabel": "كلمة المرور الجديدة",
+    "resetPasswordConfirmLabel": "تأكيد كلمة المرور",
+    "resetPasswordMismatch": "كلمتا المرور غير متطابقتين",
+    "resetPasswordRulesNotMet": "كلمة المرور لا تستوفي جميع المتطلبات",
+    "resetPasswordSubmit": "إعادة تعيين كلمة المرور",
+    "resetPasswordSubmitting": "جارٍ الحفظ...",
+    "resetPasswordSuccess": "تم تحديث كلمة المرور. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.",
+    "resetPasswordLoading": "جارٍ التحميل..."
   },
   "common": {
     "close": "إغلاق",
@@ -591,7 +611,8 @@
     "linkedAccountsSuccess": "تم ربط حساب {provider} بنجاح!",
     "oauthNudgeText": "يمكنك تسجيل الدخول بسرعة أكبر بربط حساب Google أو Facebook بحسابك.",
     "oauthNudgeAction": "اربط حساب",
-    "oauthNudgeDismiss": "إغلاق هذا التنبيه"
+    "oauthNudgeDismiss": "إغلاق هذا التنبيه",
+    "usernameHint": "من 3 إلى 30 حرفًا: أحرف وأرقام ونقطة وشرطة وشرطة سفلية. يجب ألا يطابق اسم مستخدم أي حساب آخر."
   },
   "iscrizioni": {
     "titolo": "تسجيلاتي",
@@ -614,5 +635,14 @@
     "iscrizionePerAltro": "لشخص آخر",
     "iscrizionePerFamiglia": "العائلة",
     "componentiFamiglia": "أفراد العائلة"
+  },
+  "legal": {
+    "privacyTitle": "سياسة الخصوصية",
+    "privacyDescription": "كيف تعالج كنيسة القديس مرقس القبطية الأرثوذكسية في ميلانو البيانات الشخصية للزوّار والمستخدمين المسجّلين والمسجّلين في الفعاليات.",
+    "termsTitle": "شروط الخدمة",
+    "termsDescription": "شروط استخدام موقع كنيسة القديس مرقس القبطية الأرثوذكسية في ميلانو وخدماته للمستخدمين المسجّلين.",
+    "footerPrivacy": "الخصوصية",
+    "footerTerms": "شروط الخدمة",
+    "registerNotice": "بتسجيلك فإنك توافق على <terms>شروط الخدمة</terms> وتقرّ بأنك قرأت <privacy>سياسة الخصوصية</privacy>."
   }
 }
