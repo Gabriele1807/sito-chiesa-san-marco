@@ -67,12 +67,32 @@ function normalizeEvento(doc: unknown): Evento {
   };
 }
 
-// Genera ID stringa numerica incrementale (compatibile con lo store)
-async function nextId(colName: string): Promise<string> {
+// Genera ID stringa numerica incrementale (compatibile con lo store).
+// Calcolare "max + 1" a ogni inserimento non era atomico: due creazioni
+// concorrenti potevano ottenere lo stesso ID. Ora un contatore per
+// collezione ("content_counters") viene incrementato con $inc, che MongoDB
+// esegue in modo atomico. Il contatore viene allineato al massimo ID già
+// presente con $max (mai all'indietro), una volta per processo: così i
+// documenti esistenti e le istanze serverless concorrenti restano coerenti.
+const COUNTERS = "content_counters";
+const seededCounters = new Set<string>();
+
+export async function nextId(colName: string): Promise<string> {
   const db = await getDb();
-  const docs = await db.collection(colName).find({}, { projection: { id: 1 } }).toArray();
-  const max = docs.reduce((m, d) => Math.max(m, parseInt(d.id as string) || 0), 0);
-  return String(max + 1);
+  const counters = db.collection<{ _id: string; seq: number }>(COUNTERS);
+  if (!seededCounters.has(colName)) {
+    const docs = await db.collection(colName).find({}, { projection: { id: 1 } }).toArray();
+    const max = docs.reduce((m, d) => Math.max(m, parseInt(d.id as string) || 0), 0);
+    await counters.updateOne({ _id: colName }, { $max: { seq: max } }, { upsert: true });
+    seededCounters.add(colName);
+  }
+  const counter = await counters.findOneAndUpdate(
+    { _id: colName },
+    { $inc: { seq: 1 } },
+    { upsert: true, returnDocument: "after" }
+  );
+  if (!counter) throw new Error(`Contatore ID non disponibile per ${colName}`);
+  return String(counter.seq);
 }
 
 // Flag per indici — su globalThis per sopravvivere all'HMR in sviluppo
