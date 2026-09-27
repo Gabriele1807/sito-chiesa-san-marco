@@ -141,3 +141,26 @@ Audit statico mirato del codice applicativo, delle route API, dei moduli auth/Mo
 - Controlli di autenticazione presenti nelle principali route `/api/admin/*`.
 
 Queste verifiche non sostituiscono test di integrazione o penetration test in ambiente di staging.
+## Stato correzioni (2026-09-27)
+
+Branch `claude/eager-bardeen-h13079`. Ogni correzione di codice ha test che falliscono sul codice precedente.
+
+| ID | Stato | Intervento |
+| --- | --- | --- |
+| C-01 | Risolto | `next`/`eslint-config-next` 16.3.6, `next-intl` ^4.14.7, `vitest` ^4.1.11 (+ `vite` ^7.3.6). `npm audit`: 0 vulnerabilita (runtime e dev). |
+| H-01 | Risolto | `validateSession` rilegge l'admin da Supabase (`attivo = true`) a ogni richiesta: disattivazione, eliminazione e cambio ruolo immediati. |
+| H-02 | Risolto | Regex con escape e match esatto; proprieta per `createdByUserId`/`createdByAccountType` impostati dalla sessione (non piu `createdByEmail` dal body); dati di contatto oscurati sulle iscrizioni non create dall'account. |
+| H-03 | Risolto | Logout utente revoca il JWT (`revoked_user_sessions`, hash SHA-256, TTL). |
+| H-04 | Risolto | Whitelist per entita in `src/lib/admin/content-validation.ts`: campi sconosciuti scartati, tipi/lunghezze controllati, URL solo http(s)/percorsi interni, `id` solo stringa; data di caricamento libreria privata impostata dal server. |
+| M-01 | Risolto | `getClientIp`: `x-vercel-forwarded-for` → `x-real-ip` → ultimo hop di `X-Forwarded-For`; usato anche dai due login. |
+| M-02 | Risolto | `page`/`limit` limitati (max 100); escape della ricerca corretto (la classe di caratteri precedente era malformata). |
+| M-03 | Risolto | `nextId` con contatore atomico `$inc` in `content_counters`, allineato con `$max` agli ID esistenti. |
+| M-04 | Mitigato | Non risolvibile solo nel codice: il file resta su Google Drive. La pagina admin avverte di usare accesso "limitato"; processo documentato in `PROJECT_CONTEXT.md` §6.4.0. Un download mediato dal server richiederebbe un'integrazione Drive (service account) non presente. |
+| M-05 | Parziale | Il reset via email aggiorna anche `admin_users` per gli admin promossi da utente. Gli admin creati solo da "Gestione admin" usano il processo operativo documentato (reset da superadmin; ultimo superadmin via SQL). |
+| M-06 | Risolto | Gli stub email restituiscono `{ ok: false, error: "not_implemented" }` invece di lanciare. |
+| M-07 | Risolto | Password impostate da admin/superadmin con la stessa policy degli utenti (`passwordPolicyError`). |
+| L-01 | Risolto | Lint: 0 errori (erano 16 dopo l'aggiornamento dipendenze). |
+| L-02 | Migliorato | Suite da 173 a 236 test, con copertura dei percorsi dei finding sopra. Nessun test di integrazione con MongoDB/Supabase reali. |
+| L-03 | Parziale | Warning da 40 a 28. Restano: script di sviluppo, `<img>` per URL esterni arbitrari inseriti dall'admin (`next/image` richiederebbe di elencare i domini), redirect a pagina intera voluti dopo login/OAuth, codice di UI non collegato (richiesta superadmin nel profilo) lasciato per decisione del proprietario. |
+
+Resta aperto: revoca delle altre sessioni admin al cambio/reset password (richiede una nuova colonna in `admin_users`, cioe una migrazione Supabase).

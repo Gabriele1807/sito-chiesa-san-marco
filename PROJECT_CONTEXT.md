@@ -27,11 +27,11 @@ Il documento serve come fotografia aggiornata del codice presente nel repository
 |---|---|
 | Nome progetto | `chiesa-san-marco` |
 | URL sviluppo | `http://localhost:3000` |
-| Framework | Next.js 16.1.6 con App Router |
+| Framework | Next.js 16.3.6 con App Router |
 | UI runtime | React 19.2.3 / React DOM 19.2.3 |
 | Linguaggio | TypeScript |
 | Styling | Tailwind CSS 4 |
-| i18n | `next-intl` 4.8.3 |
+| i18n | `next-intl` 4.14.7 |
 | Lingue | italiano, arabo |
 | Contenuti pubblici | MongoDB |
 | Iscrizioni eventi | MongoDB |
@@ -51,13 +51,13 @@ Dipendenze principali lette da `package.json`:
 
 | Tecnologia | Versione | Ruolo |
 |---|---:|---|
-| `next` | 16.1.6 | Framework, App Router, API routes |
+| `next` | 16.3.6 | Framework, App Router, API routes |
 | `react` | 19.2.3 | UI |
 | `react-dom` | 19.2.3 | Runtime React |
 | `typescript` | ^5 | Tipizzazione |
 | `tailwindcss` | ^4 | Styling utility-first |
 | `@tailwindcss/postcss` | ^4 | Integrazione PostCSS |
-| `next-intl` | ^4.8.3 | Traduzioni IT/AR |
+| `next-intl` | ^4.14.7 | Traduzioni IT/AR |
 | `mongodb` | ^7.1.1 | Database contenuti, utenti, sessioni, iscrizioni |
 | `@supabase/supabase-js` | ^2.98.0 | Layer admin e residui compatibili |
 | `bcryptjs` | ^3.0.3 | Hash password |
@@ -70,7 +70,7 @@ Dipendenze principali lette da `package.json`:
 | `babel-plugin-react-compiler` | 1.0.0 | React Compiler |
 | `dotenv` | ^17.3.1 | Supporto env locale |
 | `eslint` | ^9 | Lint |
-| `eslint-config-next` | 16.1.6 | Preset ESLint Next.js |
+| `eslint-config-next` | 16.3.6 | Preset ESLint Next.js |
 | `agentation`, `thinking-orbs` | presenti | Dipendenze non centrali per il flusso pubblico |
 
 Script utili:
@@ -249,6 +249,14 @@ Note operative:
   - `orari_settimanali`
   - `file_privati`
 - Crea indici su `id`, `slug`, `giorno` e altri campi utili.
+- Gli `id` numerici dei contenuti vengono da `nextId()`: contatore atomico
+  (`$inc`) nella collezione `content_counters`, allineato con `$max` al
+  massimo `id` esistente una volta per processo (dal 2026-09-27; prima
+  `max+1` non atomico, ID duplicabili con creazioni concorrenti).
+- Le route admin dei contenuti validano il body con
+  `src/lib/admin/content-validation.ts` (whitelist di campi per entità,
+  tipi, lunghezze, URL solo http(s) o percorsi interni; campi sconosciuti
+  scartati, 400 se non valido; `id` del PUT solo stringa).
 - Normalizza gli eventi con `raccoglimento` e ordina gli orari secondo la settimana italiana.
 - Le collezioni non vengono più popolate da dati demo all'avvio: partono vuote e vengono riempite dall'admin.
 
@@ -307,11 +315,42 @@ Note operative:
   - Il percorso admin di `change-password` (cookie `admin_session`) non
     revoca le altre sessioni admin: il meccanismo `passwordChangedAt` vale
     solo per `user_session` (limite noto).
-  - `deleteUserSession(token)` (logout di una singola sessione) resta uno
-    stub: non esiste uno store per-token per `user_session`, quindi questa
-    funzione pulisce solo il cookie del chiamante e non revoca il JWT lato
-    server. È un limite noto e documentato nel codice, non un tentativo di
-    revoca reale.
+  - `deleteUserSession(token)` (logout di una singola sessione, dal
+    2026-09-27) revoca davvero il JWT: salva l'hash SHA-256 del token in
+    `revoked_user_sessions` (`src/lib/mongo/revoked-sessions.ts`, indice TTL
+    sulla scadenza naturale) e `validateUserSession` rifiuta i token revocati.
+    MongoDB e non Redis perché la revoca deve valere su tutte le istanze.
+  - `validateSession` (admin, dal 2026-09-27) rilegge ogni volta l'admin da
+    Supabase con `attivo = true`: disattivazione, eliminazione e cambio
+    ruolo hanno effetto alla richiesta successiva, non alla scadenza del JWT.
+
+#### 6.4.0 Correzioni da `SECURITY-BUG-AUDIT.md` (2026-09-27)
+
+Dettaglio per finding e stato nella sezione "Stato correzioni" di
+`SECURITY-BUG-AUDIT.md`; qui solo ciò che serve per lavorare sul codice:
+
+- IP client per il rate limit: `getClientIp()` in
+  `src/lib/auth/rate-limit.ts` (ordine `x-vercel-forwarded-for`,
+  `x-real-ip`, ultimo valore di `X-Forwarded-For`); mai leggere a mano il
+  primo valore di `X-Forwarded-For`, è scritto dal client.
+- Iscrizioni: la proprietà è `createdByUserId` + `createdByAccountType`
+  impostati solo dalla sessione; nome/cognome/email del profilo servono solo
+  a trovare iscrizioni storiche, i cui dati di contatto vengono oscurati
+  (`redactForViewer`) se non create dallo stesso account.
+- Password impostate da admin/superadmin: stessa policy degli utenti
+  (`passwordPolicyError` in `src/lib/auth/password-rules.ts`).
+- Recupero password admin: il reset via email aggiorna anche
+  `admin_users.password_hash` per gli admin promossi da utente
+  (`adminRequest = "approved"`, collegamento per username). Gli admin
+  creati solo in "Gestione admin" (senza account utente) non hanno recupero
+  via email: la password la reimposta un superadmin da "Gestione admin";
+  per l'ultimo superadmin si usa `npm run generate-hash` + `UPDATE` SQL in
+  Supabase (istruzioni in testa a `src/lib/supabase/schema.sql`).
+- Libreria privata: il sito protegge solo l'elenco; i file restano su Google
+  Drive e devono avere accesso "limitato" agli account degli admin (avviso
+  anche nella pagina admin).
+- `listUsers`: `page`/`limit` limitati (limit max 100), ricerca con escape
+  corretto.
 
 #### 6.4.1 Stato sicurezza post-audit (2026-09-12)
 
@@ -984,7 +1023,8 @@ chiamano `deleteAllUserSessions(userId)` dopo un cambio password riuscito;
 - `send-email.ts` — funzioni tipizzate per categoria: solo
   `sendPasswordResetEmail()` è implementata; `sendVerificationEmail()`,
   `sendBookingConfirmationEmail()`, `sendEventReminderEmail()`,
-  `sendNewsletter()` esistono con firma corretta ma lanciano
+  `sendNewsletter()` esistono con firma corretta e (dal 2026-09-27)
+  restituiscono `{ ok: false, error: "not_implemented" }` invece di lanciare
   `Error("not implemented")` — predisposte, non collegate a
   `src/lib/mongo/registrations.ts` o `content.ts`. Nessun campo
   `emailPending`/`emailSent`/`emailFailed`/`emailSentAt`/`emailProvider`/
@@ -1036,9 +1076,8 @@ mittente in produzione.
 
 - Wiring di Brevo nei flussi reali di prenotazione/evento — solo il modulo
   e i template stub sono stati costruiti.
-- Revoca di una singola sessione (`deleteUserSession`) — non realizzabile
-  senza uno store per-token per `user_session`; resta uno stub con
-  commento esplicito invece di un no-op silenzioso.
+- Revoca di una singola sessione (`deleteUserSession`) — realizzata poi il
+  2026-09-27 (§6.4).
 - Nessuna libreria di validazione nuova (niente zod): stesso stile manuale
   `if`/`typeof` del resto delle route esistenti.
 - Nessuna localizzazione copta: il progetto supporta solo `it`/`ar`.
@@ -1051,7 +1090,7 @@ mittente in produzione.
 | `renderResetPasswordEmail` | `src/lib/email/templates/reset-password.ts` | **Usato**; rendering IT/AR e escaping testati. Prima dell'audit la lingua era sempre `it` (ora dal cookie `locale`). |
 | `getResendClient` | `src/lib/email/resend.ts` | Usato da `sendPasswordResetEmail`. |
 | Link nell'email (`NEXT_PUBLIC_SITE_URL`) | `forgot-password` | Prima: link relativo se la variabile mancava, `//reset-password` con slash finale. Ora: `getSiteUrl()`, nessun invio se assente. |
-| `sendVerificationEmail` + `renderVerifyEmail` | `send-email.ts`, `templates/verify-email.ts` | **Implementato come stub, mai usato** (lancia `Error("not implemented")`). Nessun flusso di verifica email esiste: `emailVerificata` è impostato solo alla registrazione (`false`, o `true` per email Google/Facebook verificate) e ora azzerato quando l'utente cambia email (`updateUserEmail`). Lasciato non collegato: collegarlo richiede un flusso di conferma (token, pagina, UI) e una decisione su cosa sblocchi la verifica. |
+| `sendVerificationEmail` + `renderVerifyEmail` | `send-email.ts`, `templates/verify-email.ts` | **Implementato come stub, mai usato** (restituisce `not_implemented`; il template lancia ancora `Error("not implemented")`). Nessun flusso di verifica email esiste: `emailVerificata` è impostato solo alla registrazione (`false`, o `true` per email Google/Facebook verificate) e ora azzerato quando l'utente cambia email (`updateUserEmail`). Lasciato non collegato: collegarlo richiede un flusso di conferma (token, pagina, UI) e una decisione su cosa sblocchi la verifica. |
 | `sendBookingConfirmationEmail` + template | idem | **Stub, mai usato.** Il flusso che lo giustificherebbe (iscrizione evento, `src/lib/mongo/registrations.ts`) esiste ma **non è stato collegato** deliberatamente: sarebbe un invio automatico nuovo verso indirizzi (anche di familiari/terzi iscritti) senza una decisione esplicita del proprietario, e richiede Brevo configurato. |
 | `sendEventReminderEmail` + template | idem | **Stub, mai usato.** Richiederebbe un job schedulato: non esiste alcuna coda/cron nel progetto. |
 | `sendNewsletter` + template | idem | **Stub, mai usato.** Nessuna gestione iscritti/consenso newsletter nel progetto. |
@@ -1117,8 +1156,9 @@ Verifiche eseguite:
 - Nessun flusso di verifica email: `emailVerificata` è informativo.
 - Invio email sincrono nella request (nessuna coda/retry); con Resend lento
   la risposta di `forgot-password` rallenta di conseguenza.
-- `deleteUserSession` (logout singola sessione utente) resta uno stub (§6.4);
-  `change-password` admin non revoca le altre sessioni admin.
+- `change-password` e il reset via email non revocano le altre sessioni
+  **admin** (il meccanismo `passwordChangedAt` vale solo per
+  `user_session`). Il logout utente singolo revoca invece il JWT (§6.4).
 - `src/lib/mongo/client.ts` ritenta la connessione per ~70 s prima di
   fallire e produce `unhandledRejection` nei log quando MongoDB non è
   raggiungibile (preesistente, fuori scope).
@@ -1893,7 +1933,7 @@ npm install
 npm run dev
 npm run build          # richiede MONGODB_URI (anche segnaposto) per "Collecting page data"
 npm run lint           # baseline: 16 errori / 35 warning preesistenti, fuori dai flussi auth/email
-npm ci                 # installazione pulita come su CI/Vercel (lockfile generato con npm 10)
+npm ci                 # installazione pulita come su CI/Vercel (lockfile rigenerato il 2026-09-27 con npm 11 perché npm 10 va in crash sull'albero di Vitest 4; `npm ci` verificato con npm 10 e 11)
 npm test               # vitest; nessun test invia email reali o contatta provider esterni
 npx tsc --noEmit
 npx prettier --check <file toccati>   # formattare solo i file modificati, non tutto il repo (§10.7.3)
