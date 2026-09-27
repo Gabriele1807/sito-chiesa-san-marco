@@ -18,7 +18,7 @@ export default function BarList({
       {data.map((d) => (
         <li
           key={d.label}
-          className="grid grid-cols-[7.5rem_1fr] items-center gap-3 text-sm"
+          className="grid grid-cols-[10.5rem_1fr] items-center gap-3 text-sm"
           title={`${d.label}: ${d.value} ${unit}`}
         >
           <span className="text-foreground/70 truncate">{d.label}</span>

@@ -27,6 +27,29 @@ function sameKey(subscription: PushSubscription): boolean {
   return actual.length === expected.length && actual.every((b, i) => b === expected[i]);
 }
 
+/**
+ * Il browser contatta il proprio servizio push (Google, Mozilla, Apple) per
+ * creare l'iscrizione: se non risponde la promessa può restare in attesa
+ * per sempre, lasciando il pulsante bloccato sulla rotellina.
+ */
+const SUBSCRIBE_TIMEOUT_MS = 20_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("push subscribe timeout")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 async function saveOnServer(subscription: PushSubscription, locale: string): Promise<boolean> {
   const res = await fetch("/api/push/subscribe", {
     method: "POST",
@@ -98,10 +121,13 @@ export default function PushToggle() {
         await subscription.unsubscribe();
         subscription = null;
       }
-      subscription ??= await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
+      subscription ??= await withTimeout(
+        registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        }),
+        SUBSCRIBE_TIMEOUT_MS
+      );
       if (!(await saveOnServer(subscription, locale))) throw new Error("save failed");
       setStatus("on");
     } catch {

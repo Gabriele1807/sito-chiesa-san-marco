@@ -12,8 +12,8 @@ interface Datum {
 
 const HEIGHT = 180;
 const TOP = 16;
-const BOTTOM = 24;
-const LEFT = 32;
+const BOTTOM = 28;
+const LEFT = 36;
 const BAR_MAX = 24;
 
 /** Tick "puliti" (0, 1, 2, 5, 10, 20…) per l'asse verticale. */
@@ -68,7 +68,7 @@ export default function ColumnChart({
               x={LEFT - 6}
               y={y(t) + 4}
               textAnchor="end"
-              className="fill-foreground/50 text-[10px] tabular-nums"
+              className="fill-foreground/55 text-[13px] tabular-nums"
             >
               {t}
             </text>
@@ -111,16 +111,16 @@ export default function ColumnChart({
                   x={cx}
                   y={yTop - 5}
                   textAnchor="middle"
-                  className="fill-foreground text-[11px] font-semibold"
+                  className="fill-foreground text-[14px] font-semibold"
                 >
                   {d.value}
                 </text>
               )}
               <text
                 x={cx}
-                y={HEIGHT - 8}
+                y={HEIGHT - 7}
                 textAnchor="middle"
-                className="fill-foreground/55 text-[10px]"
+                className="fill-foreground/60 text-[13px]"
               >
                 {d.label}
               </text>

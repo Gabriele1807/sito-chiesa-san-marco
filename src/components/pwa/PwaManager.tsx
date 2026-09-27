@@ -23,6 +23,11 @@ export default function PwaManager() {
   const t = useTranslations("pwa");
   const pathname = usePathname();
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+  // Ricarica solo dopo che l'utente ha scelto "Aggiorna". Alla prima
+  // installazione il service worker prende il controllo della pagina
+  // (clients.claim) e scatena lo stesso evento: ricaricare lì farebbe
+  // perdere a chi sta compilando un modulo quello che ha scritto.
+  const updateRequested = useRef(false);
   const reloading = useRef(false);
 
   useEffect(() => {
@@ -58,7 +63,7 @@ export default function PwaManager() {
     };
 
     const onControllerChange = () => {
-      if (reloading.current) return;
+      if (!updateRequested.current || reloading.current) return;
       reloading.current = true;
       window.location.reload();
     };
@@ -97,7 +102,10 @@ export default function PwaManager() {
           <span className="text-foreground/80 flex-1">{t("updateAvailable")}</span>
           <button
             type="button"
-            onClick={() => waitingWorker.postMessage({ type: "SKIP_WAITING" })}
+            onClick={() => {
+              updateRequested.current = true;
+              waitingWorker.postMessage({ type: "SKIP_WAITING" });
+            }}
             className="bg-accent hover:bg-accent-light rounded-full px-3 py-1.5 text-xs font-semibold text-white"
           >
             {t("updateNow")}
