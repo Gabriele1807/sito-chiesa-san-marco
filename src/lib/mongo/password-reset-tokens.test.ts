@@ -34,6 +34,11 @@ describe("password-reset-tokens", () => {
       { userId: "user-1", usedAt: null },
       { $set: { usedAt: expect.any(Date) } }
     );
+    // Anche i token in corso di utilizzo vengono marcati come superati.
+    expect(updateMany).toHaveBeenCalledWith(
+      { userId: "user-1", supersededAt: null },
+      { $set: { supersededAt: expect.any(Date) } }
+    );
     const insertedDoc = insertOne.mock.calls[0][0];
     expect(insertedDoc.tokenHash).toBe(createHash("sha256").update(rawToken).digest("hex"));
     expect(insertedDoc.tokenHash).not.toBe(rawToken);
@@ -49,6 +54,7 @@ describe("password-reset-tokens", () => {
       {
         tokenHash: createHash("sha256").update("deadbeef").digest("hex"),
         usedAt: null,
+        supersededAt: null,
         expiresAt: { $gt: expect.any(Date) },
       },
       { $set: { usedAt: expect.any(Date) } }
@@ -67,6 +73,7 @@ describe("password-reset-tokens", () => {
 
     const [filter, update] = updateOne.mock.calls[0];
     expect(filter.usedAt).toBe(consumedAt);
+    expect(filter.supersededAt).toBeNull();
     expect(filter._id.toString()).toBe("507f1f77bcf86cd799439011");
     expect(update).toEqual({ $set: { usedAt: null } });
   });

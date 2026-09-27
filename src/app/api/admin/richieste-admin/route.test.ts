@@ -1,10 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 let existingAdminEmail: string | null = null;
+const adminUpdate = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({
   supabaseAdmin: {
     from: vi.fn(() => ({
       insert: async () => ({ error: { code: "23505", message: "duplicate key value" } }),
+      update: (payload: Record<string, unknown>) => {
+        adminUpdate(payload);
+        return { eq: async () => ({ error: null }) };
+      },
       select: () => ({
         eq: () => ({
           maybeSingle: async () => ({
@@ -62,5 +67,18 @@ describe("POST /api/admin/richieste-admin — username già presente su Supabase
     const res = await approve();
     expect(res.status).toBe(200);
     expect(updateAdminRequest).toHaveBeenCalledWith("u1", "approved");
+  });
+
+  it("reactivates a previously revoked admin account of the same person", async () => {
+    existingAdminEmail = "mario@example.com";
+    const res = await approve();
+    expect(res.status).toBe(200);
+    expect(adminUpdate).toHaveBeenCalledWith({ attivo: true, ruolo: "admin" });
+  });
+
+  it("does not touch the existing admin row when it belongs to someone else", async () => {
+    existingAdminEmail = "altra.persona@example.com";
+    await approve();
+    expect(adminUpdate).not.toHaveBeenCalled();
   });
 });

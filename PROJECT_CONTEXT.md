@@ -497,7 +497,7 @@ Applicato in:
 | `POST /api/auth/update-profile` (utente) | controllo esatto solo su MongoDB; email salvata anche se lo username era rifiutato; admin collegato non rinominato | validazione e unicità **prima** di ogni scrittura; se l'utente è admin approvato viene rinominato anche il record `admin_users` |
 | `POST /api/auth/update-profile` (admin) | controllo solo su `admin_users`; utente MongoDB collegato non rinominato (collegamento rotto) | unicità su utenti + admin; rinomina anche l'utente MongoDB collegato |
 | `POST /api/admin/users` (creazione admin) | controllo esatto solo su `admin_users` | normalizzazione + unicità su utenti + admin |
-| `POST /api/admin/richieste-admin` (approvazione) | se l'insert Supabase falliva per duplicato, l'utente veniva comunque "approvato" e legato all'admin esistente, anche di un'altra persona | approvato solo se l'admin esistente ha la stessa email; altrimenti 409 |
+| `POST /api/admin/richieste-admin` (approvazione) | se l'insert Supabase falliva per duplicato, l'utente veniva comunque "approvato" e legato all'admin esistente, anche di un'altra persona | approvato solo se l'admin esistente ha la stessa email; altrimenti 409. Dal 2026-09-27 il record esistente viene anche **riattivato** (`attivo: true`, ruolo richiesto): prima un admin revocato e riapprovato risultava approvato ma restava senza accesso |
 
 Database: oltre all'indice unico `username_1` (esatto), `ensureIndexes()`
 crea `username_ci_unique` (unico, collation case-insensitive) contro le race
@@ -932,15 +932,23 @@ Piano: `docs/superpowers/plans/2026-09-15-password-reset-email-service.md`.
   password debole **non** consuma il link), poi consuma il token in modo
   **atomico** (`consumePasswordResetToken`, un solo `findOneAndUpdate` che
   trova e marca usato: due richieste concorrenti con lo stesso link non
-  possono riuscire entrambe), rifiuta account disattivati, aggiorna
-  `passwordHash` e `hasPassword: true` (permette anche agli account
-  solo-OAuth di impostare una password) e invalida tutte le sessioni
-  dell'utente (vedi §6.4). Se una scrittura successiva al consumo fallisce,
-  `releasePasswordResetToken(id, consumedAt)` rimette `usedAt: null` (solo
-  se il token porta ancora esattamente quel timestamp di consumo, così non
-  si riattiva un token invalidato nel frattempo da una nuova richiesta) e
-  la route risponde 500: il link resta riutilizzabile. **Non crea una
+  possono riuscire entrambe), rifiuta account disattivati, **invalida prima
+  tutte le sessioni** (`deleteAllUserSessions`, §6.4) e **poi** salva la
+  nuova password e `hasPassword: true` (permette anche agli account
+  solo-OAuth di impostare una password). Ordine voluto (revisione del
+  2026-09-27): se il salvataggio fallisce, l'utente deve solo riaccedere con
+  la vecchia password; nell'ordine inverso un errore avrebbe lasciato attive
+  le vecchie sessioni con la password già cambiata. Se un passo fallisce
+  **prima** che la password sia salvata (inclusa la lettura dell'utente),
+  `releasePasswordResetToken(id, consumedAt)` rimette `usedAt: null` e la
+  route risponde 500: il link resta riutilizzabile. Dopo il salvataggio
+  della password il link non viene **mai** riattivato. **Non crea una
   sessione**: il client viene mandato al login.
+- `createPasswordResetToken` marca con `supersededAt` **tutti** i token
+  precedenti dell'utente, inclusi quelli consumati da un reset ancora in
+  corso; consumo e rilascio richiedono `supersededAt: null` (vale anche per
+  i documenti creati prima del campo). Così un token superato da una nuova
+  richiesta non può tornare valido e non esistono mai due link attivi.
 
 #### 7.5.2 Collection `password_reset_tokens`
 

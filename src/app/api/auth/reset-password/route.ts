@@ -53,24 +53,33 @@ export async function POST(request: Request) {
       return NextResponse.json(INVALID_TOKEN_RESPONSE, { status: 400 });
     }
 
-    const user = await findUserByIdFull(tokenDoc.userId);
-    if (!user || !user.attivo) {
-      return NextResponse.json(INVALID_TOKEN_RESPONSE, { status: 400 });
-    }
-
+    // Da qui in poi il link è consumato. Va rilasciato (riusabile) solo se
+    // la password NON è stata cambiata: dopo il salvataggio della nuova
+    // password il link non deve mai tornare valido.
+    let passwordSaved = false;
     try {
+      const user = await findUserByIdFull(tokenDoc.userId);
+      if (!user || !user.attivo) {
+        return NextResponse.json(INVALID_TOKEN_RESPONSE, { status: 400 });
+      }
+
       const newHash = await hashPassword(newPassword);
-      await updateUserPassword(tokenDoc.userId, newHash);
-      await setHasPassword(tokenDoc.userId, true);
-      // deleteAllUserSessions imposta passwordChangedAt (design spec §3):
-      // nessuna sessione viene creata qui, il client viene mandato al login.
+      // Prima si invalidano tutte le sessioni (imposta passwordChangedAt,
+      // design spec §3), poi si salva la password: se il salvataggio fallisce
+      // l'utente deve solo riaccedere con la vecchia password; nell'ordine
+      // inverso un errore qui lascerebbe attive sessioni (anche di un
+      // eventuale intruso) con la password già cambiata. Nessuna sessione
+      // viene creata: il client viene mandato al login.
       await deleteAllUserSessions(tokenDoc.userId);
+      await updateUserPassword(tokenDoc.userId, newHash);
+      passwordSaved = true;
+      await setHasPassword(tokenDoc.userId, true);
     } catch (err) {
-      // Errore transitorio dopo il consumo: il link deve restare valido per
-      // un nuovo tentativo, invece di costringere a richiedere un'altra email.
-      await releasePasswordResetToken(tokenDoc._id, tokenDoc.consumedAt).catch((releaseErr) =>
-        console.error("Errore rilascio token reset password:", releaseErr)
-      );
+      if (!passwordSaved) {
+        await releasePasswordResetToken(tokenDoc._id, tokenDoc.consumedAt).catch((releaseErr) =>
+          console.error("Errore rilascio token reset password:", releaseErr)
+        );
+      }
       throw err;
     }
 

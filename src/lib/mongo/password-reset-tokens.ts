@@ -45,8 +45,13 @@ export async function createPasswordResetToken(
   await ensurePasswordResetTokenIndexes();
   const c = await col();
 
-  // Invalida eventuali token precedenti ancora attivi per lo stesso utente.
-  await c.updateMany({ userId, usedAt: null }, { $set: { usedAt: new Date() } });
+  // Invalida eventuali token precedenti ancora attivi per lo stesso utente e
+  // marca come superati TUTTI i precedenti, compresi quelli consumati da un
+  // reset ancora in corso: releasePasswordResetToken non può riattivare un
+  // token superato, quindi non restano mai due link validi contemporaneamente.
+  const supersededAt = new Date();
+  await c.updateMany({ userId, usedAt: null }, { $set: { usedAt: supersededAt } });
+  await c.updateMany({ userId, supersededAt: null }, { $set: { supersededAt } });
 
   const rawToken = randomBytes(32).toString("hex");
   const now = new Date();
@@ -57,6 +62,7 @@ export async function createPasswordResetToken(
     tokenHash: hashToken(rawToken),
     expiresAt,
     usedAt: null,
+    supersededAt: null,
     createdAt: now,
     requestIp: meta?.requestIp,
     userAgent: meta?.userAgent,
@@ -78,7 +84,7 @@ export async function consumePasswordResetToken(
   const c = await col();
   const now = new Date();
   const doc = await c.findOneAndUpdate(
-    { tokenHash: hashToken(rawToken), usedAt: null, expiresAt: { $gt: now } },
+    { tokenHash: hashToken(rawToken), usedAt: null, supersededAt: null, expiresAt: { $gt: now } },
     { $set: { usedAt: now } }
   );
   if (!doc) return null;
@@ -86,13 +92,19 @@ export async function consumePasswordResetToken(
 }
 
 /**
- * Annulla un consumo se il cambio password che lo seguiva è fallito, così
- * il link dell'email resta utilizzabile. Il filtro sul timestamp esatto di
- * consumo evita di riattivare un token invalidato nel frattempo da una
- * nuova richiesta (createPasswordResetToken imposta un usedAt diverso).
+ * Annulla un consumo se il cambio password che lo seguiva è fallito prima di
+ * salvare la nuova password, così il link dell'email resta utilizzabile.
+ * Solo se il token porta ancora esattamente quel timestamp di consumo e non
+ * è stato superato da una richiesta più recente (`supersededAt`, impostato
+ * da createPasswordResetToken anche sui token in corso di utilizzo).
+ * `supersededAt: null` corrisponde anche ai documenti creati prima che il
+ * campo esistesse.
  */
 export async function releasePasswordResetToken(id: string, consumedAt: Date): Promise<void> {
   if (!ObjectId.isValid(id)) return;
   const c = await col();
-  await c.updateOne({ _id: new ObjectId(id), usedAt: consumedAt }, { $set: { usedAt: null } });
+  await c.updateOne(
+    { _id: new ObjectId(id), usedAt: consumedAt, supersededAt: null },
+    { $set: { usedAt: null } }
+  );
 }

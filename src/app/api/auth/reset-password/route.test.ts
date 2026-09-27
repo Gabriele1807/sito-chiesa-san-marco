@@ -106,7 +106,23 @@ describe("POST /api/auth/reset-password", () => {
     expect(updateUserPassword).not.toHaveBeenCalled();
   });
 
-  it("releases the consumed token when saving the new password fails", async () => {
+  it("invalidates sessions before saving the new password", async () => {
+    (consumePasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "tok1",
+      userId: "u1",
+      consumedAt: new Date(),
+    });
+
+    await POST(mockRequest({ token: "good", newPassword: "Valid123!" }));
+
+    const sessionsOrder = (deleteAllUserSessions as ReturnType<typeof vi.fn>).mock
+      .invocationCallOrder[0];
+    const passwordOrder = (updateUserPassword as ReturnType<typeof vi.fn>).mock
+      .invocationCallOrder[0];
+    expect(sessionsOrder).toBeLessThan(passwordOrder);
+  });
+
+  it("releases the token when the password could not be saved", async () => {
     const consumedAt = new Date();
     (consumePasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({
       _id: "tok1",
@@ -120,6 +136,52 @@ describe("POST /api/auth/reset-password", () => {
 
     expect(res.status).toBe(500);
     expect(releasePasswordResetToken).toHaveBeenCalledWith("tok1", consumedAt);
-    expect(deleteAllUserSessions).not.toHaveBeenCalled();
+  });
+
+  it("releases the token when invalidating sessions fails (password untouched)", async () => {
+    (consumePasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "tok1",
+      userId: "u1",
+      consumedAt: new Date(),
+    });
+    (deleteAllUserSessions as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(mockRequest({ token: "good", newPassword: "Valid123!" }));
+
+    expect(res.status).toBe(500);
+    expect(updateUserPassword).not.toHaveBeenCalled();
+    expect(releasePasswordResetToken).toHaveBeenCalled();
+  });
+
+  it("never re-enables the link once the new password has been saved", async () => {
+    (consumePasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "tok1",
+      userId: "u1",
+      consumedAt: new Date(),
+    });
+    (setHasPassword as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(mockRequest({ token: "good", newPassword: "Valid123!" }));
+
+    expect(res.status).toBe(500);
+    expect(updateUserPassword).toHaveBeenCalled();
+    expect(releasePasswordResetToken).not.toHaveBeenCalled();
+  });
+
+  it("releases the token when the user lookup fails after consuming it", async () => {
+    (consumePasswordResetToken as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "tok1",
+      userId: "u1",
+      consumedAt: new Date(),
+    });
+    (findUserByIdFull as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(mockRequest({ token: "good", newPassword: "Valid123!" }));
+
+    expect(res.status).toBe(500);
+    expect(releasePasswordResetToken).toHaveBeenCalled();
   });
 });

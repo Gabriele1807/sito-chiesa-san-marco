@@ -149,11 +149,25 @@ export async function POST(request: Request) {
             { status: 409 }
           );
         }
-        // Aggiorna solo lo status su MongoDB
+        // Stessa persona: tipicamente un admin revocato (la revoca lascia il
+        // record con attivo=false) e poi riapprovato. Va riattivato con il
+        // ruolo richiesto, altrimenti l'approvazione risulterebbe riuscita ma
+        // l'utente resterebbe senza accesso admin.
+        const { error: reactivateError } = await supabaseAdmin
+          .from("admin_users")
+          .update({ attivo: true, ruolo: adminRuolo })
+          .eq("username", user.username);
+        if (reactivateError) {
+          console.error("Errore riattivazione admin su Supabase:", reactivateError);
+          return NextResponse.json(
+            { success: false, error: "Errore durante la riattivazione dell'amministratore" },
+            { status: 500 }
+          );
+        }
         await updateAdminRequest(userId, "approved");
         return NextResponse.json({
           success: true,
-          message: "Richiesta approvata (utente admin già esistente su Supabase)",
+          message: "Richiesta approvata (account admin esistente riattivato)",
         });
       }
       console.error("Errore creazione admin su Supabase:", insertError);
