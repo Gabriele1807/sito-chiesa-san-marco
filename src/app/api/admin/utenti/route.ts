@@ -4,6 +4,7 @@ import { isSuperAdmin } from "@/lib/auth/permissions";
 import { hashPassword } from "@/lib/auth/password";
 import { passwordPolicyError } from "@/lib/auth/password-rules";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { markAdminPasswordChangedByUsername } from "@/lib/mongo/admin-password-changes";
 import { requireSuperAdminSession } from "@/lib/auth/session";
 
 /**
@@ -156,6 +157,7 @@ export async function PATCH(request: Request) {
         .from("admin_users")
         .update({ password_hash: passwordHash })
         .eq("username", fullUser.username);
+      await markAdminPasswordChangedByUsername(fullUser.username);
     }
 
     return NextResponse.json({ success: true });

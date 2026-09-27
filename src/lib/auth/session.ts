@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
 import { getRedis } from "@/lib/redis/client";
+import { getAdminPasswordChangedAt } from "@/lib/mongo/admin-password-changes";
 
 // Fallback in memoria di processo, usato solo quando Redis non è
 // configurato (es. sviluppo locale): il limite noto in PROJECT_CONTEXT.md
@@ -131,11 +132,38 @@ export async function validateSession(token: string): Promise<AdminUser | null> 
     return null;
   }
 
+  // Token emesso prima dell'ultimo cambio/reset password: sessione chiusa.
+  // Confronto stretto (<): il token riemesso a chi ha appena cambiato la
+  // password ha lo stesso secondo del cambio e deve restare valido.
+  const passwordChangedAt = await getAdminPasswordChangedAt(payload.sub);
+  if (passwordChangedAt !== null && payload.iat < passwordChangedAt) return null;
+
   // Stato corrente dal database, non dal token: un admin disattivato,
   // eliminato o declassato (superadmin → admin) dopo l'emissione del JWT
   // perde subito accesso/privilegi invece di mantenerli fino alla scadenza.
   // getAdminUserById filtra già attivo=true.
   return getAdminUserById(payload.sub);
+}
+
+/**
+ * Riemette il cookie `admin_session` del chiamante con la stessa durata del
+ * token attuale. Da chiamare dopo `markAdminPasswordChanged` quando è
+ * l'admin stesso a cambiare la propria password: le altre sessioni vengono
+ * chiuse, quella di questa richiesta no.
+ */
+export async function reissueAdminSessionCookie(request: Request, adminId: string): Promise<void> {
+  const cookieStore = await cookies();
+  const previous = await verifyJwt(cookieStore.get("admin_session")?.value ?? "");
+  if (!previous || previous.sub !== adminId || previous.sessionType !== "admin") return;
+  const rememberMe = previous.exp - previous.iat > 24 * 60 * 60;
+  const { token, expiresAt } = await createSession(adminId, request, rememberMe);
+  cookieStore.set("admin_session", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: expiresAt,
+  });
 }
 
 export async function getAdminSession(): Promise<AdminUser | null> {

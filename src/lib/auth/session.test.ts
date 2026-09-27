@@ -26,6 +26,11 @@ vi.mock("@/lib/supabase/server", () => ({
   },
 }));
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
+// Secondi Unix dell'ultimo cambio password admin (null = mai cambiata).
+let passwordChangedAt: number | null = null;
+vi.mock("@/lib/mongo/admin-password-changes", () => ({
+  getAdminPasswordChangedAt: vi.fn(async () => passwordChangedAt),
+}));
 
 import { validateSession, createSession, deleteSession } from "./session";
 import { signJwt } from "./jwt";
@@ -55,6 +60,7 @@ describe("validateSession (admin)", () => {
   });
   beforeEach(() => {
     eqCalls.length = 0;
+    passwordChangedAt = null;
   });
 
   it("returns the current admin for a valid token", async () => {
@@ -90,5 +96,23 @@ describe("validateSession (admin)", () => {
     adminRow = { ...baseAdmin };
     const token = await signJwt({ sub: "a1", sessionType: "user" }, 3600);
     expect(await validateSession(token)).toBeNull();
+  });
+
+  // Orario simulato: i JWT sono deterministici (stesso secondo = stesso
+  // token) e un test precedente ne revoca uno.
+  it("rejects a token issued before the admin's last password change", async () => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2030-01-01T00:00:00Z") });
+    const token = await issueToken();
+    passwordChangedAt = Math.floor(Date.now() / 1000) + 5;
+    expect(await validateSession(token)).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it("keeps a token issued in the same second as the password change (re-issued session)", async () => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2030-01-02T00:00:00Z") });
+    const token = await issueToken();
+    passwordChangedAt = Math.floor(Date.now() / 1000);
+    expect(await validateSession(token)).toMatchObject({ id: "a1" });
+    vi.useRealTimers();
   });
 });

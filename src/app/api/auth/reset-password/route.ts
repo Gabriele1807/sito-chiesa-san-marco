@@ -13,6 +13,7 @@ import {
 } from "@/lib/auth/password-reset-rate-limit";
 import { getClientIp } from "@/lib/auth/rate-limit";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { markAdminPasswordChangedByUsername } from "@/lib/mongo/admin-password-changes";
 
 const INVALID_TOKEN_RESPONSE = { success: false, error: "Link non valido o scaduto" };
 
@@ -88,6 +89,8 @@ export async function POST(request: Request) {
           .eq("username", user.username);
         if (error) {
           console.error("[reset-password] sincronizzazione password admin fallita:", error.message);
+        } else {
+          await markAdminPasswordChangedByUsername(user.username);
         }
       }
     } catch (err) {

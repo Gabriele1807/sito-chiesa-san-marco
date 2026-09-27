@@ -163,4 +163,4 @@ Branch `claude/eager-bardeen-h13079`. Ogni correzione di codice ha test che fall
 | L-02 | Migliorato | Suite da 173 a 236 test, con copertura dei percorsi dei finding sopra. Nessun test di integrazione con MongoDB/Supabase reali. |
 | L-03 | Parziale | Warning da 40 a 28. Restano: script di sviluppo, `<img>` per URL esterni arbitrari inseriti dall'admin (`next/image` richiederebbe di elencare i domini), redirect a pagina intera voluti dopo login/OAuth, codice di UI non collegato (richiesta superadmin nel profilo) lasciato per decisione del proprietario. |
 
-Resta aperto: revoca delle altre sessioni admin al cambio/reset password (richiede una nuova colonna in `admin_users`, cioe una migrazione Supabase).
+Risolto in seguito: al cambio/reset della password di un admin le sue altre sessioni admin vengono chiuse (data del cambio in MongoDB `admin_password_changes`, nessuna migrazione Supabase).

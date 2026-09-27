@@ -7,7 +7,8 @@ import { verifyPassword, hashPassword } from "@/lib/auth/password";
 import { validatePasswordRules } from "@/lib/auth/password-rules";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types";
-import { validateSession } from "@/lib/auth/session";
+import { validateSession, reissueAdminSessionCookie } from "@/lib/auth/session";
+import { markAdminPasswordChangedByUsername } from "@/lib/mongo/admin-password-changes";
 
 export async function POST(request: Request) {
   try {
@@ -140,6 +141,13 @@ export async function POST(request: Request) {
         .from("admin_users")
         .update({ password_hash: newHash })
         .eq("username", mongoUser.username);
+
+      // Chiude anche le sessioni admin aperte con la vecchia password…
+      await markAdminPasswordChangedByUsername(mongoUser.username);
+
+      // …tranne quella di chi sta cambiando la password.
+      const previousAdmin = adminToken ? await verifyJwt(adminToken) : null;
+      if (previousAdmin?.sub) await reissueAdminSessionCookie(request, previousAdmin.sub);
     }
 
     return NextResponse.json({ success: true });
