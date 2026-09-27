@@ -7,7 +7,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("legal", "privacyTitle", "privacyDescription", "/privacy");
 }
 
-const UPDATED_AT = "2026-09-26";
+const UPDATED_AT = "2026-09-27";
 
 const IT_COPY: LegalDocumentCopy = {
   eyebrow: "Informativa",
@@ -34,6 +34,10 @@ const IT_COPY: LegalDocumentCopy = {
         "Iscrizioni agli eventi: nome e cognome del partecipante, nome e cognome del padre (per distinguere persone omonime e raggruppare le famiglie), telefono, email facoltativa, eventuali note, familiari iscritti insieme, punto di raccolta scelto, stato del pagamento e account che ha effettuato l'iscrizione.",
         "Recupero password: un codice temporaneo (conservato solo in forma cifrata), l'indirizzo IP e il tipo di browser della richiesta.",
         "Comunicazioni via email: i dati che ci invii scrivendo all'indirizzo della comunità.",
+        "Verifica dell'email: un codice temporaneo (conservato solo in forma cifrata) legato all'indirizzo da confermare e l'esito della conferma.",
+        "Richieste di preghiera (solo se ne invii una): il tipo e il testo dell'intenzione, che possono contenere nomi e informazioni sulla salute o sulla fede di altre persone, il tuo nome e la tua email se scegli di indicarli, il consenso alla lettura durante la liturgia e la lingua del sito. Scrivi solo ciò che è necessario e, per altre persone, solo se sei autorizzato a farlo.",
+        "Notifiche push (solo se le attivi): l'indirizzo tecnico fornito dal servizio di notifiche del tuo browser, le relative chiavi di cifratura e la lingua. Non è collegato al tuo account e non contiene il tuo nome o la tua email.",
+        "Registro delle attività degli amministratori: per chi amministra il sito, le operazioni svolte nel pannello (accessi, creazione, modifica ed eliminazione dei contenuti) con data e ora.",
       ],
     },
     {
@@ -42,7 +46,10 @@ const IT_COPY: LegalDocumentCopy = {
       items: [
         "Gestire l'account e i servizi riservati del sito, incluse le iscrizioni agli eventi: esecuzione del servizio che richiedi (art. 6.1.b GDPR).",
         "Proteggere il sito e gli account (limitazione dei tentativi, prevenzione di abusi, sicurezza delle sessioni): legittimo interesse del titolare (art. 6.1.f GDPR).",
-        "Inviarti le email di servizio strettamente necessarie, come il link per reimpostare la password richiesto da te: esecuzione del servizio (art. 6.1.b GDPR). Non inviamo newsletter né comunicazioni promozionali.",
+        "Inviarti le email di servizio strettamente necessarie: il link per reimpostare la password o per confermare il tuo indirizzo, la conferma di un'iscrizione a un evento e il promemoria il giorno prima dell'evento, all'indirizzo del tuo account o a quello indicato nel modulo di iscrizione: esecuzione del servizio (art. 6.1.b GDPR). Non inviamo newsletter né comunicazioni promozionali.",
+        "Affidare alla preghiera della comunità le intenzioni che ci invii: consenso esplicito, espresso con l'apposita casella del modulo e revocabile in qualsiasi momento (artt. 6.1.a e 9.2.a GDPR).",
+        "Inviarti notifiche sugli avvisi della parrocchia: consenso, espresso attivando le notifiche e revocabile disattivandole dalla pagina Avvisi o dalle impostazioni del browser (art. 6.1.a GDPR).",
+        "Tenere traccia delle modifiche fatte dagli amministratori, per sicurezza e per ricostruire chi ha cambiato cosa: legittimo interesse del titolare (art. 6.1.f GDPR).",
         "Alcune informazioni, come il ruolo nella comunità o l'iscrizione alle attività della chiesa, possono rivelare le convinzioni religiose. Sono trattate dalla comunità religiosa nell'ambito delle proprie attività e solo per i suoi membri o per chi ha contatti regolari con essa, senza comunicarle all'esterno senza il tuo consenso (art. 9.2.d GDPR).",
         "Adempiere a eventuali obblighi di legge (art. 6.1.c GDPR).",
       ],
@@ -65,7 +72,8 @@ const IT_COPY: LegalDocumentCopy = {
         "MongoDB (database dei contenuti, degli account e delle iscrizioni);",
         "Supabase (database degli account amministratore);",
         "Upstash (archivio temporaneo per la limitazione dei tentativi di accesso, quando attivo);",
-        "Resend (invio delle email di servizio, come il recupero password);",
+        "Resend e, se attivato, Brevo (invio delle email di servizio: recupero password, conferma dell'email, conferme e promemoria degli eventi);",
+        "i servizi di notifica del browser che usi (ad esempio Google Firebase Cloud Messaging, Mozilla, Apple o Microsoft), solo se attivi le notifiche, che ricevono il messaggio cifrato da consegnare al tuo dispositivo;",
         "Google e Facebook, solo se scegli di accedere con il loro account, secondo le rispettive informative;",
         "YouTube, Google Maps e Google Drive, per i video, la mappa e i documenti della libreria incorporati nelle pagine, che possono raccogliere dati secondo le proprie informative quando li visualizzi o li usi.",
       ],
@@ -87,13 +95,18 @@ const IT_COPY: LegalDocumentCopy = {
         "Registrazione con Google o Facebook non completata: eliminata automaticamente dopo 24 ore.",
         "Contatori di sicurezza legati all'indirizzo IP: da pochi minuti a 24 ore.",
         "Iscrizioni agli eventi: per il tempo necessario all'organizzazione dell'evento e agli adempimenti collegati; puoi chiederne la cancellazione in qualsiasi momento.",
+        "Link per confermare l'email: 48 ore, poi viene eliminato automaticamente.",
+        "Richieste di preghiera: finché non vengono archiviate dagli amministratori; quelle archiviate sono eliminate automaticamente dopo 90 giorni. Puoi chiederne la cancellazione in qualsiasi momento.",
+        "Iscrizione alle notifiche: finché non le disattivi o finché il servizio del browser non la dichiara scaduta.",
+        "Registro delle attività degli amministratori: 12 mesi.",
       ],
     },
     {
       id: "cookie",
       title: "Cookie e memoria del browser",
       paragraphs: [
-        "Il sito usa solo cookie tecnici, necessari al suo funzionamento, per i quali non è richiesto il consenso: la sessione di accesso (utente o amministratore), la lingua scelta e, durante l'accesso con Google o Facebook, due cookie temporanei che proteggono la procedura. Nella memoria del browser vengono salvate alcune preferenze di navigazione. Non usiamo cookie di profilazione o pubblicitari.",
+        "Il sito usa solo cookie tecnici, necessari al suo funzionamento, per i quali non è richiesto il consenso: la sessione di accesso (utente o amministratore), la lingua scelta e, durante l'accesso con Google o Facebook, due cookie temporanei che proteggono la procedura. Nella memoria del browser vengono salvate alcune preferenze di navigazione (ad esempio gli avvisi che hai nascosto o la scelta di non installare l'app). Non usiamo cookie di profilazione o pubblicitari.",
+        "Per funzionare anche senza connessione e come app installabile, il sito salva nella cache del tuo browser le risorse tecniche (script, immagini) e una copia delle pagine pubbliche che hai visitato. Le pagine personali, come il profilo o le iscrizioni, non vengono mai salvate, e le copie vengono cancellate quando esci dall'account. Puoi eliminarle in qualsiasi momento cancellando i dati del sito dalle impostazioni del browser.",
         "I video di YouTube sono incorporati in modalità di privacy avanzata. La mappa di Google Maps nella pagina Contatti e i documenti della libreria visualizzati tramite Google Drive sono forniti da Google, che può impostare propri cookie quando li visualizzi.",
       ],
     },
@@ -148,6 +161,10 @@ const AR_COPY: LegalDocumentCopy = {
         "التسجيل في الفعاليات: اسم المشارك واسم عائلته واسم الأب واسم عائلته (للتمييز بين الأشخاص المتشابهين في الاسم ولتجميع العائلات) ورقم الهاتف والبريد الإلكتروني الاختياري والملاحظات وأفراد العائلة المسجّلين معًا ونقطة التجمّع المختارة وحالة الدفع والحساب الذي أجرى التسجيل.",
         "استعادة كلمة المرور: رمز مؤقت (محفوظ بشكل مشفّر فقط) وعنوان IP ونوع المتصفح الخاص بالطلب.",
         "المراسلات عبر البريد الإلكتروني: البيانات التي ترسلها إلينا عند الكتابة إلى عنوان الجماعة.",
+        "تأكيد البريد الإلكتروني: رمز مؤقت (محفوظ بشكل مشفّر فقط) مرتبط بالعنوان المراد تأكيده ونتيجة التأكيد.",
+        "طلبات الصلاة (فقط إذا أرسلت طلبًا): نوع النيّة ونصّها، وقد يتضمن أسماء ومعلومات عن صحة أشخاص آخرين أو إيمانهم، واسمك وبريدك الإلكتروني إذا اخترت ذكرهما، والموافقة على قراءة النيّة أثناء القداس ولغة الموقع. اكتب ما هو ضروري فقط، وبالنسبة للآخرين فقط إذا كنت مخوّلًا بذلك.",
+        "الإشعارات (فقط إذا فعّلتها): العنوان التقني الذي يوفّره خدمة الإشعارات في متصفحك ومفاتيح التشفير الخاصة به واللغة. لا يرتبط بحسابك ولا يتضمن اسمك أو بريدك الإلكتروني.",
+        "سجل نشاط المشرفين: بالنسبة لمن يدير الموقع، العمليات التي يجريها في لوحة التحكم (الدخول وإنشاء المحتوى وتعديله وحذفه) مع التاريخ والوقت.",
       ],
     },
     {
@@ -156,7 +173,10 @@ const AR_COPY: LegalDocumentCopy = {
       items: [
         "إدارة الحساب والخدمات المحجوزة في الموقع، بما في ذلك التسجيل في الفعاليات: تنفيذ الخدمة التي تطلبها (المادة 6.1.ب من اللائحة).",
         "حماية الموقع والحسابات (الحدّ من المحاولات ومنع إساءة الاستخدام وأمان الجلسات): المصلحة المشروعة للجهة المسؤولة (المادة 6.1.و).",
-        "إرسال رسائل البريد الإلكتروني الضرورية للخدمة فقط، مثل رابط إعادة تعيين كلمة المرور الذي تطلبه: تنفيذ الخدمة (المادة 6.1.ب). لا نرسل نشرات إخبارية ولا رسائل ترويجية.",
+        "إرسال رسائل البريد الإلكتروني الضرورية للخدمة فقط: رابط إعادة تعيين كلمة المرور أو تأكيد عنوانك، وتأكيد التسجيل في فعالية والتذكير بها في اليوم السابق، إلى عنوان حسابك أو إلى العنوان المذكور في نموذج التسجيل: تنفيذ الخدمة (المادة 6.1.ب). لا نرسل نشرات إخبارية ولا رسائل ترويجية.",
+        "تقديم النيّات التي ترسلها لصلاة الجماعة: موافقة صريحة تُعطى عبر الخانة المخصصة في النموذج ويمكن سحبها في أي وقت (المادتان 6.1.أ و9.2.أ).",
+        "إرسال إشعارات بإعلانات الكنيسة: موافقة تُعطى بتفعيل الإشعارات ويمكن سحبها بإيقافها من صفحة الإعلانات أو من إعدادات المتصفح (المادة 6.1.أ).",
+        "تتبّع التعديلات التي يجريها المشرفون، لأغراض الأمان ولمعرفة من غيّر ماذا: المصلحة المشروعة للجهة المسؤولة (المادة 6.1.و).",
         "قد تكشف بعض المعلومات، مثل الدور في الجماعة أو التسجيل في أنشطة الكنيسة، عن المعتقدات الدينية. تعالجها الجماعة الدينية في إطار أنشطتها ولأعضائها أو لمن تربطهم بها صلة منتظمة فقط، دون الإفصاح عنها خارجها بغير موافقتك (المادة 9.2.د).",
         "الوفاء بأي التزامات قانونية (المادة 6.1.ج).",
       ],
@@ -179,7 +199,8 @@ const AR_COPY: LegalDocumentCopy = {
         "MongoDB (قاعدة بيانات المحتوى والحسابات والتسجيلات)؛",
         "Supabase (قاعدة بيانات حسابات المشرفين)؛",
         "Upstash (تخزين مؤقت للحدّ من محاولات الدخول، عند تفعيله)؛",
-        "Resend (إرسال رسائل البريد الإلكتروني الخاصة بالخدمة مثل استعادة كلمة المرور)؛",
+        "Resend، وBrevo عند تفعيله (إرسال رسائل البريد الإلكتروني الخاصة بالخدمة: استعادة كلمة المرور وتأكيد البريد وتأكيدات الفعاليات والتذكير بها)؛",
+        "خدمات الإشعارات في المتصفح الذي تستخدمه (مثل Google Firebase Cloud Messaging أو Mozilla أو Apple أو Microsoft)، فقط إذا فعّلت الإشعارات، والتي تتلقى الرسالة المشفّرة لتوصيلها إلى جهازك؛",
         "Google وFacebook، فقط إذا اخترت تسجيل الدخول بحسابك لديهما، وفقًا لسياسات الخصوصية الخاصة بهما؛",
         "YouTube وGoogle Maps وGoogle Drive، للفيديوهات والخريطة ووثائق المكتبة المضمّنة في الصفحات، والتي قد تجمع بيانات وفقًا لسياساتها عند عرضها أو استخدامها.",
       ],
@@ -201,13 +222,18 @@ const AR_COPY: LegalDocumentCopy = {
         "التسجيل غير المكتمل عبر Google أو Facebook: يُحذف تلقائيًا بعد 24 ساعة.",
         "عدّادات الأمان المرتبطة بعنوان IP: من بضع دقائق إلى 24 ساعة.",
         "التسجيل في الفعاليات: طوال المدة اللازمة لتنظيم الفعالية وما يرتبط بها من التزامات؛ ويمكنك طلب حذفه في أي وقت.",
+        "رابط تأكيد البريد الإلكتروني: 48 ساعة، ثم يُحذف تلقائيًا.",
+        "طلبات الصلاة: حتى يؤرشفها المشرفون؛ وتُحذف الطلبات المؤرشفة تلقائيًا بعد 90 يومًا. ويمكنك طلب حذفها في أي وقت.",
+        "الاشتراك في الإشعارات: حتى توقفه أو حتى تعلن خدمة المتصفح انتهاء صلاحيته.",
+        "سجل نشاط المشرفين: 12 شهرًا.",
       ],
     },
     {
       id: "cookie",
       title: "ملفات تعريف الارتباط وذاكرة المتصفح",
       paragraphs: [
-        "يستخدم الموقع ملفات تعريف ارتباط تقنية فقط، ضرورية لعمله ولا تتطلب موافقة: جلسة الدخول (للمستخدم أو المشرف) واللغة المختارة، وأثناء تسجيل الدخول عبر Google أو Facebook ملفان مؤقتان لحماية العملية. تُحفظ في ذاكرة المتصفح بعض تفضيلات التصفح. لا نستخدم ملفات تعريف ارتباط للتنميط أو للإعلانات.",
+        "يستخدم الموقع ملفات تعريف ارتباط تقنية فقط، ضرورية لعمله ولا تتطلب موافقة: جلسة الدخول (للمستخدم أو المشرف) واللغة المختارة، وأثناء تسجيل الدخول عبر Google أو Facebook ملفان مؤقتان لحماية العملية. تُحفظ في ذاكرة المتصفح بعض تفضيلات التصفح (مثل الإعلانات التي أخفيتها أو اختيارك عدم تثبيت التطبيق). لا نستخدم ملفات تعريف ارتباط للتنميط أو للإعلانات.",
+        "ليعمل الموقع دون اتصال وكتطبيق قابل للتثبيت، يحفظ في ذاكرة التخزين المؤقت لمتصفحك الموارد التقنية (البرامج النصية والصور) ونسخة من الصفحات العامة التي زرتها. لا تُحفظ الصفحات الشخصية مثل الملف الشخصي أو التسجيلات أبدًا، وتُحذف النسخ عند تسجيل الخروج. يمكنك حذفها في أي وقت بمسح بيانات الموقع من إعدادات المتصفح.",
         "تُضمَّن فيديوهات YouTube في وضع الخصوصية المحسّن. أما خريطة Google Maps في صفحة «اتصل بنا» ووثائق المكتبة المعروضة عبر Google Drive فتقدمها Google، وقد تضع ملفات تعريف ارتباط خاصة بها عند عرضها.",
       ],
     },
