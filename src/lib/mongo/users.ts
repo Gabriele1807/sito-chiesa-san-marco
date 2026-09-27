@@ -418,3 +418,17 @@ export async function deleteUser(id: string): Promise<boolean> {
   }
   return result.deletedCount === 1;
 }
+
+/**
+ * Segna l'email come verificata, solo se l'account ha ancora lo stesso
+ * indirizzo per cui era stato emesso il link di verifica.
+ */
+export async function markEmailVerified(id: string, email: string): Promise<boolean> {
+  if (!ObjectId.isValid(id)) return false;
+  const c = await col();
+  const result = await c.updateOne(
+    { _id: new ObjectId(id), email },
+    { $set: { emailVerificata: true, updatedAt: new Date().toISOString() } }
+  );
+  return result.matchedCount === 1;
+}

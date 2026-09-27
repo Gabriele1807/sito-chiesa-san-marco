@@ -140,6 +140,7 @@ export async function GET() {
         chiesa: user.chiesa,
         isAdmin: false,
         adminRequest: user.adminRequest,
+        emailVerificata: user.emailVerificata === true,
       },
     });
   } catch (err) {

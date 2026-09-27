@@ -1,5 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const afterCallbacks: (() => Promise<void>)[] = [];
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (fn: () => Promise<void>) => afterCallbacks.push(fn),
+}));
+const startEmailVerification = vi.fn<(...args: unknown[]) => Promise<{ ok: boolean }>>(async () => ({ ok: true }));
+vi.mock("@/lib/auth/email-verification", () => ({
+  startEmailVerification: (...args: unknown[]) => startEmailVerification(...args),
+  localeFromRequest: () => "it",
+}));
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
 vi.mock("@/lib/mongo/sessions", () => ({ validateUserSession: vi.fn() }));
 vi.mock("@/lib/mongo/users", () => ({
@@ -82,11 +92,14 @@ describe("POST /api/auth/update-profile (utente normale)", () => {
 
     expect(res.status).toBe(200);
     expect(updateUserEmail).toHaveBeenCalledWith("u1", "nuovo.indirizzo@example.com");
+    await Promise.all(afterCallbacks.splice(0).map((fn) => fn()));
+    expect(startEmailVerification).toHaveBeenCalledWith("u1", "nuovo.indirizzo@example.com", "it");
   });
 
   it("does not touch the email when only its casing differs from the stored one", async () => {
     await POST(mockRequest({ email: "MARIO@example.com" }));
     expect(updateUserEmail).not.toHaveBeenCalled();
+    expect(afterCallbacks).toHaveLength(0);
   });
 
   it("rejects a malformed email", async () => {

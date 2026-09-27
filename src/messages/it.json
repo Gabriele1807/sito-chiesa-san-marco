@@ -652,7 +652,14 @@
     "oauthNudgeText": "Puoi accedere più velocemente collegando Google o Facebook al tuo account.",
     "oauthNudgeAction": "Collega un account",
     "oauthNudgeDismiss": "Chiudi questo avviso",
-    "usernameHint": "Da 3 a 30 caratteri: lettere, numeri, punto, trattino e underscore. Deve essere diverso da quello di ogni altro account."
+    "usernameHint": "Da 3 a 30 caratteri: lettere, numeri, punto, trattino e underscore. Deve essere diverso da quello di ogni altro account.",
+    "emailVerificata": "Email confermata",
+    "emailNonVerificata": "Email da confermare",
+    "emailNonVerificataTesto": "Ti abbiamo inviato un link di conferma. Non l'hai ricevuto?",
+    "inviaVerifica": "Invia di nuovo il link",
+    "verificaInviata": "Link inviato: controlla la posta (anche lo spam).",
+    "verificaAttendi": "Attendi {seconds} secondi prima di chiedere un nuovo invio.",
+    "verificaErrore": "Invio non riuscito. Riprova più tardi."
   },
   "iscrizioni": {
     "titolo": "Le mie iscrizioni",
@@ -759,5 +766,21 @@
     "errore_generico": "Non è stato possibile inviare la richiesta. Riprova più tardi.",
     "cta": "Chiedi una preghiera",
     "ctaTesto": "Vuoi affidare un'intenzione alla preghiera della comunità?"
+  },
+  "verificaEmail": {
+    "titolo": "Conferma email",
+    "descrizione": "Conferma l'indirizzo email del tuo account.",
+    "intro": "Tocca il pulsante per confermare che questo indirizzo email è tuo.",
+    "conferma": "Conferma il mio indirizzo",
+    "confermaInCorso": "Conferma in corso...",
+    "successoTitolo": "Email confermata",
+    "successoTesto": "Grazie! Il tuo indirizzo email è stato confermato.",
+    "vaiProfilo": "Vai al profilo",
+    "vaiHome": "Torna alla home",
+    "errore_invalid_token": "Il link non è valido o è scaduto. Puoi chiederne uno nuovo dal tuo profilo.",
+    "errore_email_changed": "Questo link era per un indirizzo email che nel frattempo è stato cambiato. Usa il link più recente o chiedine uno nuovo dal profilo.",
+    "errore_rate_limit": "Troppi tentativi. Riprova tra qualche minuto.",
+    "errore_generico": "Non è stato possibile confermare l'email. Riprova più tardi.",
+    "linkMancante": "Link incompleto: apri il link ricevuto per email."
   }
 }

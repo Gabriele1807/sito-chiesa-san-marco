@@ -221,6 +221,8 @@ export interface UserSessionInfo {
   chiesa?: string;
   isAdmin: false;
   adminRequest?: AdminRequestStatus;
+  /** Indirizzo email confermato tramite il link inviato per email. */
+  emailVerificata?: boolean;
 }
 
 /** Info admin serializzata nel cookie/session client */

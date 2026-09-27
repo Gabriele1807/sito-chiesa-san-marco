@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { startEmailVerification, localeFromRequest } from "@/lib/auth/email-verification";
 import { cookies } from "next/headers";
 import { validateUserSession } from "@/lib/mongo/sessions";
 import {
@@ -249,6 +250,13 @@ export async function POST(request: Request) {
       if (!result.success) {
         return NextResponse.json({ success: false, error: result.error }, { status: 409 });
       }
+      // Il nuovo indirizzo non è verificato: parte subito il link di conferma.
+      after(() =>
+        startEmailVerification(userId, email, localeFromRequest(request)).then(
+          () => undefined,
+          (err) => console.error("[update-profile] link di verifica non inviato", err instanceof Error ? err.message : err)
+        )
+      );
     }
 
     // ── Apply username change (checks done above, before any write) ──
