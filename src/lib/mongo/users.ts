@@ -181,6 +181,13 @@ export async function findUserByIdFull(id: string): Promise<(UserProfile & { _id
   return { ...doc, _id: doc._id.toString() } as unknown as UserProfile & { _id: string };
 }
 
+export const MAX_LIST_LIMIT = 100;
+
+function clampInt(value: number | undefined, fallback: number, min: number, max: number): number {
+  if (value === undefined || !Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, Math.trunc(value)));
+}
+
 export async function listUsers(opts?: {
   page?: number;
   limit?: number;
@@ -191,8 +198,9 @@ export async function listUsers(opts?: {
   query?: string;
 }): Promise<{ users: UserPublic[]; total: number }> {
   const c = await col();
-  const page = opts?.page ?? 1;
-  const limit = opts?.limit ?? 50;
+  // Valori dalla query string: NaN, negativi o enormi non devono arrivare a skip/limit.
+  const page = clampInt(opts?.page, 1, 1, 100_000);
+  const limit = clampInt(opts?.limit, 50, 1, MAX_LIST_LIMIT);
   const skip = (page - 1) * limit;
 
   const filter: Record<string, unknown> = {};
@@ -215,7 +223,7 @@ export async function listUsers(opts?: {
   }
 
   if (opts?.query?.trim()) {
-    const escapedQuery = opts.query.trim().replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+    const escapedQuery = opts.query.trim().slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(escapedQuery, "i");
     filter.$or = [
       { nome: regex },

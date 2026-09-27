@@ -10,6 +10,7 @@ import {
   recordFailedAttempt,
   resetAttempts,
   remainingAttempts,
+  getClientIp,
 } from "@/lib/auth/rate-limit";
 
 /**
@@ -18,8 +19,7 @@ import {
  */
 export async function POST(request: Request) {
   try {
-    const forwarded = request.headers.get("x-forwarded-for");
-    const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+    const ip = getClientIp(request);
 
     if (await isRateLimited(ip)) {
       return NextResponse.json(

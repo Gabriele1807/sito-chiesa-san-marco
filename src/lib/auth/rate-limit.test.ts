@@ -7,6 +7,7 @@ import {
   isIpRateLimited,
   recordIpRequest,
   remainingIpRequests,
+  getClientIp,
 } from "./rate-limit";
 
 // No UPSTASH_REDIS_REST_URL/TOKEN in the test environment, so these exercise
@@ -67,5 +68,29 @@ describe("generic request rate limiting (in-memory fallback)", () => {
     await recordIpRequest(ip); // 60th request
     expect(await isIpRateLimited(ip)).toBe(true);
     expect(await remainingIpRequests(ip)).toBe(0);
+  });
+});
+
+describe("getClientIp", () => {
+  const ip = (headers: Record<string, string>) => getClientIp({ headers: new Headers(headers) });
+
+  it("ignores the client-controlled first X-Forwarded-For entry", () => {
+    expect(ip({ "x-forwarded-for": "6.6.6.6, 10.0.0.1" })).toBe("10.0.0.1");
+  });
+
+  it("prefers the Vercel-provided headers", () => {
+    expect(
+      ip({
+        "x-vercel-forwarded-for": "1.1.1.1",
+        "x-real-ip": "2.2.2.2",
+        "x-forwarded-for": "6.6.6.6",
+      })
+    ).toBe("1.1.1.1");
+    expect(ip({ "x-real-ip": "2.2.2.2", "x-forwarded-for": "6.6.6.6, 3.3.3.3" })).toBe("2.2.2.2");
+  });
+
+  it("falls back to 'unknown'", () => {
+    expect(ip({})).toBe("unknown");
+    expect(ip({ "x-real-ip": "x".repeat(200) })).toBe("unknown");
   });
 });

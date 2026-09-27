@@ -185,12 +185,26 @@ export async function remainingIpRequests(ip: string): Promise<number> {
 }
 
 /**
- * Estrae l’indirizzo IP client dalle intestazioni standard.
+ * Estrae l’indirizzo IP client per il rate limiting.
+ *
+ * Il primo valore di `X-Forwarded-For` è scritto dal client e quindi
+ * falsificabile: usarlo permetteva di aggirare i limiti cambiando header a
+ * ogni richiesta. Ordine di fiducia:
+ * 1. `x-vercel-forwarded-for` — impostato dalla edge network di Vercel;
+ * 2. `x-real-ip` — impostato da Vercel e dai reverse proxy comuni;
+ * 3. l’ultimo valore di `X-Forwarded-For` — quello aggiunto dal proxy più
+ *    vicino all’applicazione, non dal client.
  */
 export function getClientIp(request: Request | { headers: Headers }): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
+  const headers = request.headers;
+  const candidates = [
+    headers.get("x-vercel-forwarded-for")?.split(",")[0],
+    headers.get("x-real-ip"),
+    headers.get("x-forwarded-for")?.split(",").at(-1),
+  ];
+  for (const candidate of candidates) {
+    const ip = candidate?.trim();
+    if (ip && ip.length <= 64) return ip;
   }
-  return request.headers.get("x-real-ip") ?? "unknown";
+  return "unknown";
 }
