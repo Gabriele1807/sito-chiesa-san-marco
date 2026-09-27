@@ -34,7 +34,6 @@ export default function PrayerRequestForm() {
   useEffect(() => {
     if (!user || prefilled.current) return;
     prefilled.current = true;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- precompilazione una tantum dai dati di sessione
     setForm((f) => ({
       ...f,
       nome: f.nome || `${user.nome} ${user.cognome}`.trim(),
