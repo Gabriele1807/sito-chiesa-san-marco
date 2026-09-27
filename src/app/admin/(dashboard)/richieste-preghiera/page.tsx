@@ -65,8 +65,8 @@ export default function AdminRichiestePreghieraPage() {
   const [deleteTarget, setDeleteTarget] = useState<Richiesta | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Lo spinner lo accende il cambio di scheda (selectTab), non l'effetto.
   const load = useCallback(async () => {
-    setLoading(true);
     const res = await adminFetch(`/api/admin/richieste-preghiera?stato=${tab}`);
     if (res.ok) {
       const data = await res.json();
@@ -79,6 +79,12 @@ export default function AdminRichiestePreghieraPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  function selectTab(value: Stato) {
+    if (value === tab) return;
+    setLoading(true);
+    setTab(value);
+  }
 
   async function setStato(richiesta: Richiesta, stato: Stato) {
     const res = await adminFetch("/api/admin/richieste-preghiera", {
@@ -152,7 +158,7 @@ export default function AdminRichiestePreghieraPage() {
             key={value}
             role="tab"
             aria-selected={tab === value}
-            onClick={() => setTab(value)}
+            onClick={() => selectTab(value)}
             className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
               tab === value ? "bg-gold text-white" : "text-foreground/60 hover:bg-background"
             }`}
