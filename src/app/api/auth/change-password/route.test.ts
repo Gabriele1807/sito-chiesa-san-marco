@@ -28,6 +28,10 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("@/lib/auth/session", () => ({
   validateSession: vi.fn(),
+  reissueAdminSessionCookie: vi.fn(),
+}));
+vi.mock("@/lib/mongo/admin-password-changes", () => ({
+  markAdminPasswordChangedByUsername: vi.fn(),
 }));
 
 import { POST } from "./route";
@@ -39,6 +43,8 @@ import {
 } from "@/lib/mongo/sessions";
 import { findUserByIdFull, updateUserPassword } from "@/lib/mongo/users";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { markAdminPasswordChangedByUsername } from "@/lib/mongo/admin-password-changes";
 
 function mockRequest(body: unknown) {
   return new Request("http://localhost/api/auth/change-password", {
@@ -118,5 +124,25 @@ describe("POST /api/auth/change-password", () => {
     expect(res.status).toBe(403);
     expect(deleteAllUserSessions).not.toHaveBeenCalled();
     expect(cookieSet).not.toHaveBeenCalled();
+  });
+
+  it("closes the other admin sessions of an admin linked to the user", async () => {
+    (validateUserSession as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "u1" });
+    (findUserByIdFull as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "u1",
+      username: "mario",
+      passwordHash: "old",
+      adminRequest: "approved",
+    });
+    (verifyPassword as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    (hashPassword as ReturnType<typeof vi.fn>).mockResolvedValue("newhash");
+    (supabaseAdmin.from as ReturnType<typeof vi.fn>).mockReturnValue({
+      update: () => ({ eq: async () => ({ error: null }) }),
+    });
+
+    const res = await POST(mockRequest({ currentPassword: "Old123!x", newPassword: "New123!x" }));
+
+    expect(res.status).toBe(200);
+    expect(markAdminPasswordChangedByUsername).toHaveBeenCalledWith("mario");
   });
 });

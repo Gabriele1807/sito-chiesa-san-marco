@@ -10,6 +10,9 @@ vi.mock("@/lib/mongo/users", () => ({
   setHasPassword: vi.fn(),
 }));
 vi.mock("@/lib/mongo/sessions", () => ({ deleteAllUserSessions: vi.fn() }));
+vi.mock("@/lib/mongo/admin-password-changes", () => ({
+  markAdminPasswordChangedByUsername: vi.fn(),
+}));
 const adminUpdates: { values: unknown; column: string; value: unknown }[] = [];
 vi.mock("@/lib/supabase/server", () => ({
   supabaseAdmin: {
@@ -62,6 +65,8 @@ describe("POST /api/auth/reset-password", () => {
     const res = await POST(mockRequest({ token: "good", newPassword: "Valid123!" }));
     expect(res.status).toBe(200);
     expect(adminUpdates).toEqual([{ values: { password_hash: "newhash" }, column: "username", value: "mario" }]);
+    const { markAdminPasswordChangedByUsername } = await import("@/lib/mongo/admin-password-changes");
+    expect(markAdminPasswordChangedByUsername).toHaveBeenCalledWith("mario");
   });
 
   it("does not touch admin_users for plain users", async () => {

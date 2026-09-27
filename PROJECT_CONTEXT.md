@@ -312,9 +312,14 @@ Note operative:
     veniva disconnesso alla richiesta successiva al cambio password pur
     vedendo "password cambiata". Un cambio password successivo cambia
     `passwordChangedAt` e invalida anche i token con `pca` precedente.
-  - Il percorso admin di `change-password` (cookie `admin_session`) non
-    revoca le altre sessioni admin: il meccanismo `passwordChangedAt` vale
-    solo per `user_session` (limite noto).
+  - Sessioni admin (dal 2026-09-27): ogni cambio/reset della password di un
+    admin (`change-password`, reset via email, "Gestione admin", reset da
+    "Utenti") registra la data in MongoDB `admin_password_changes`
+    (`src/lib/mongo/admin-password-changes.ts`, niente migrazione Supabase);
+    `validateSession` rifiuta i JWT admin con `iat` precedente. Chi cambia la
+    propria password riceve un nuovo cookie (`reissueAdminSessionCookie`);
+    confronto stretto `<`, quindi un token emesso nello stesso secondo del
+    cambio resta valido (finestra trascurabile, necessaria per la riemissione).
   - `deleteUserSession(token)` (logout di una singola sessione, dal
     2026-09-27) revoca davvero il JWT: salva l'hash SHA-256 del token in
     `revoked_user_sessions` (`src/lib/mongo/revoked-sessions.ts`, indice TTL
@@ -1156,9 +1161,8 @@ Verifiche eseguite:
 - Nessun flusso di verifica email: `emailVerificata` è informativo.
 - Invio email sincrono nella request (nessuna coda/retry); con Resend lento
   la risposta di `forgot-password` rallenta di conseguenza.
-- `change-password` e il reset via email non revocano le altre sessioni
-  **admin** (il meccanismo `passwordChangedAt` vale solo per
-  `user_session`). Il logout utente singolo revoca invece il JWT (§6.4).
+- ~~Le altre sessioni admin restano valide dopo un cambio password~~ —
+  risolto il 2026-09-27 (§6.4, `admin_password_changes`).
 - `src/lib/mongo/client.ts` ritenta la connessione per ~70 s prima di
   fallire e produce `unhandledRejection` nei log quando MongoDB non è
   raggiungibile (preesistente, fuori scope).

@@ -9,7 +9,8 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { hashPassword } from "@/lib/auth/password";
 import { passwordPolicyError } from "@/lib/auth/password-rules";
-import { requireSuperAdminSession } from "@/lib/auth/session";
+import { requireSuperAdminSession, reissueAdminSessionCookie } from "@/lib/auth/session";
+import { markAdminPasswordChanged } from "@/lib/mongo/admin-password-changes";
 
 async function requireSuperAdmin() {
   const adminUser = await requireSuperAdminSession();
@@ -24,7 +25,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { isSuperAdmin } = await requireSuperAdmin();
+  const { isSuperAdmin, currentUserId } = await requireSuperAdmin();
   if (!isSuperAdmin) {
     return NextResponse.json(
       { success: false, error: "Solo i superadmin possono modificare admin" },
@@ -81,6 +82,13 @@ export async function PUT(
         { success: false, error: "Admin non trovato" },
         { status: 404 }
       );
+    }
+
+    if (updates.password_hash) {
+      // Nuova password: chiude le sessioni aperte con quella vecchia
+      // (resta aperta solo quella del superadmin, se ha cambiato la propria).
+      await markAdminPasswordChanged(data.id);
+      if (data.id === currentUserId) await reissueAdminSessionCookie(request, data.id);
     }
 
     return NextResponse.json({ success: true, data });
