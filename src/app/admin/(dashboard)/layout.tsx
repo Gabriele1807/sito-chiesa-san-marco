@@ -17,13 +17,13 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
       <AdminSidebar />
 
       {/* Topbar */}
-      <header className="fixed top-0 left-0 lg:left-[260px] right-0 h-14 bg-surface border-b border-border flex items-center px-4 lg:px-6 z-30 gap-3">
+      <header className="fixed top-0 left-0 lg:left-[260px] right-0 h-14 bg-surface border-b border-border flex items-center px-4 lg:px-6 z-30 gap-3 print:hidden">
         <AdminMobileMenuButton />
         <AdminTopbarTitle />
       </header>
 
       {/* Content */}
-      <main className="lg:ml-[260px] pt-14">
+      <main className="lg:ml-[260px] pt-14 print:ml-0 print:pt-0">
         <div className="p-4 sm:p-6 lg:p-8">
           {children}
         </div>

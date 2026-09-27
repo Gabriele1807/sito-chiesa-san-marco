@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { BookOpen, Download } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, Download, HandHeart } from "lucide-react";
 import { getPreghiere } from "@/lib/db";
 import PreghieraExpand from "@/components/PreghieraExpand";
 import SectionVisibilityGate from "@/components/SectionVisibilityGate";
@@ -14,8 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PreghierePage() {
-  const [t, locale, preghiere] = await Promise.all([
+  const [t, tRichieste, locale, preghiere] = await Promise.all([
     getTranslations("preghiere"),
+    getTranslations("richiestePreghiera"),
     getLocale(),
     getPreghiere(),
   ]);
@@ -112,6 +114,16 @@ export default async function PreghierePage() {
           )}
         </div>
       </section>
+
+      <aside className="flex flex-col items-start gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="flex items-center gap-2.5 text-sm text-foreground/80">
+          <HandHeart className="h-5 w-5 shrink-0 text-accent" aria-hidden />
+          {tRichieste("ctaTesto")}
+        </p>
+        <Link href="/richieste-preghiera" className="btn-primary">
+          {tRichieste("cta")}
+        </Link>
+      </aside>
     </div>
   );
 

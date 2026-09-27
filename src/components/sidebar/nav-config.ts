@@ -15,6 +15,7 @@ import {
   PanelLeft,
   ClipboardList,
   Megaphone,
+  HandHeart,
 } from "lucide-react";
 
 export type SidebarItemType = "primary-nav" | "utility" | "mode-toggle";
@@ -123,6 +124,14 @@ export const infoSection: SidebarSection = {
       subKey: "subAvvisi",
       icon: Megaphone,
       href: "/avvisi",
+    },
+    {
+      id: "richieste-preghiera",
+      type: "primary-nav",
+      labelKey: "richiestePreghiera",
+      subKey: "subRichiestePreghiera",
+      icon: HandHeart,
+      href: "/richieste-preghiera",
     },
     {
       id: "chi-siamo",

@@ -23,7 +23,8 @@
     "videoCorsi": "Video e Corsi",
     "profilo": "Profilo",
     "pannelloAdmin": "Pannello Admin",
-    "avvisi": "Avvisi"
+    "avvisi": "Avvisi",
+    "richiestePreghiera": "Richieste di preghiera"
   },
   "home": {
     "dashboardTitolo": "Le risorse della chiesa san marco",
@@ -313,7 +314,8 @@
     "scansionaQR": "Scansiona il QR",
     "menu": "Menu",
     "dockCompatto": "Dock compatto",
-    "subAvvisi": "Comunicazioni della parrocchia"
+    "subAvvisi": "Comunicazioni della parrocchia",
+    "subRichiestePreghiera": "Affida un'intenzione"
   },
   "topbar": {
     "dashboard": "HOME",
@@ -687,5 +689,40 @@
     "pushIosInstall": "Su iPhone e iPad le notifiche funzionano solo dopo aver installato l'app: aggiungila alla schermata Home e aprila da lì.",
     "pushError": "Non è stato possibile attivare le notifiche. Riprova più tardi.",
     "pushNotConfigured": "Le notifiche non sono ancora disponibili."
+  },
+  "richiestePreghiera": {
+    "titolo": "Richieste di preghiera",
+    "sottotitolo": "Affida un'intenzione alla preghiera della comunità: i sacerdoti la ricorderanno nella Divina Liturgia.",
+    "eyebrow": "Pregare gli uni per gli altri",
+    "privacyNota": "La richiesta è letta solo dai sacerdoti e dagli amministratori della parrocchia. Non viene pubblicata sul sito.",
+    "tipo": "Per chi o per cosa preghiamo",
+    "tipo_malati": "Per un malato",
+    "tipo_defunti": "Per un defunto",
+    "tipo_famiglia": "Per la famiglia",
+    "tipo_ringraziamento": "Ringraziamento",
+    "tipo_altro": "Altra intenzione",
+    "intenzione": "La tua intenzione",
+    "intenzionePlaceholder": "Scrivi l'intenzione, ad esempio il nome della persona per cui chiedi di pregare.",
+    "caratteri": "{count}/{max}",
+    "nome": "Il tuo nome (facoltativo)",
+    "nomeHint": "Lascia vuoto per inviare in forma anonima.",
+    "email": "Email (facoltativa)",
+    "emailHint": "Solo se desideri essere ricontattato.",
+    "liturgia": "Acconsento che i nomi indicati siano letti durante la liturgia.",
+    "consenso": "Ho letto l'<privacy>informativa privacy</privacy> e acconsento al trattamento dei dati inseriti per questa richiesta.",
+    "invia": "Invia la richiesta",
+    "invio": "Invio in corso...",
+    "grazieTitolo": "Grazie, abbiamo ricevuto la tua richiesta",
+    "grazieTesto": "La affideremo alla preghiera della comunità. Il Signore ti benedica.",
+    "nuova": "Invia un'altra richiesta",
+    "errore_consent": "Per inviare la richiesta serve il consenso al trattamento dei dati.",
+    "errore_tipo": "Scegli per chi o per cosa preghiamo.",
+    "errore_intenzione": "Scrivi l'intenzione (da 3 a 1500 caratteri).",
+    "errore_nome": "Il nome può avere al massimo 100 caratteri.",
+    "errore_email": "Indirizzo email non valido.",
+    "errore_rate_limit": "Troppe richieste in poco tempo. Riprova tra qualche minuto.",
+    "errore_generico": "Non è stato possibile inviare la richiesta. Riprova più tardi.",
+    "cta": "Chiedi una preghiera",
+    "ctaTesto": "Vuoi affidare un'intenzione alla preghiera della comunità?"
   }
 }
