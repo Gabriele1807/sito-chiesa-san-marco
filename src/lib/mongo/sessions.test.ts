@@ -4,7 +4,17 @@ vi.mock("@/lib/mongo/users", () => ({
   findUserByIdFull: vi.fn(),
 }));
 
-import { validateUserSession, createUserSession } from "@/lib/mongo/sessions";
+// Deny-list simulata in memoria (su MongoDB nel codice reale).
+const revoked = new Set<string>();
+vi.mock("./revoked-sessions", () => ({
+  isUserSessionTokenRevoked: vi.fn(async (token: string) => revoked.has(token)),
+  revokeUserSessionToken: vi.fn(async (token: string) => {
+    revoked.add(token);
+  }),
+}));
+
+import { validateUserSession, createUserSession, deleteUserSession } from "@/lib/mongo/sessions";
+import { revokeUserSessionToken } from "./revoked-sessions";
 import { signJwt } from "@/lib/auth/jwt";
 import { findUserByIdFull } from "@/lib/mongo/users";
 
@@ -85,5 +95,34 @@ describe("validateUserSession", () => {
     });
 
     expect(await validateUserSession(token)).toBeNull();
+  });
+
+  it("rejects a token after logout (per-token revocation)", async () => {
+    mockFindUser.mockResolvedValue({ _id: "user-1" });
+    const { token } = await createUserSession("user-1", new Request("http://localhost"));
+    expect(await validateUserSession(token)).toEqual({ userId: "user-1" });
+
+    await deleteUserSession(token);
+
+    expect(await validateUserSession(token)).toBeNull();
+    // Registrato fino alla scadenza naturale del token.
+    expect(revokeUserSessionToken).toHaveBeenCalledWith(token, expect.any(Number), "user-1");
+  });
+
+  it("logging out one session does not affect the user's other sessions", async () => {
+    mockFindUser.mockResolvedValue({ _id: "user-1" });
+    const { token: phone } = await createUserSession("user-1", new Request("http://localhost"));
+    const laptop = await signJwt({ sub: "user-1", sessionType: "user", device: "laptop" }, 3600);
+
+    await deleteUserSession(phone);
+
+    expect(await validateUserSession(laptop)).toEqual({ userId: "user-1" });
+  });
+
+  it("does not record invalid or foreign tokens at logout", async () => {
+    vi.mocked(revokeUserSessionToken).mockClear();
+    await deleteUserSession("not-a-jwt");
+    await deleteUserSession(await signJwt({ sub: "a1", sessionType: "admin" }, 3600));
+    expect(revokeUserSessionToken).not.toHaveBeenCalled();
   });
 });

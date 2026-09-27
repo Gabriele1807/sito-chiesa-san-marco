@@ -4,16 +4,16 @@
  *
  * Nota architetturale (vedi design spec §3,
  * docs/superpowers/specs/2026-09-15-password-reset-email-service-design.md):
- * questo è un JWT completamente stateless, senza alcun aggancio server-side
- * per-token. L'invalidazione dopo un cambio password è ottenuta tramite
- * `passwordChangedAt` su UserProfile confrontato con `iat` del token, non
- * tramite una deny-list (che richiederebbe conoscere il token esatto delle
- * altre sessioni attive, cosa che non abbiamo). Questo è un meccanismo
- * diverso da quello usato per admin_session (src/lib/auth/session.ts), e
- * intenzionalmente non unificato con esso.
+ * JWT firmato. Due meccanismi di invalidazione:
+ * - logout di una singola sessione: deny-list per-token su MongoDB
+ *   (src/lib/mongo/revoked-sessions.ts), perché al logout il token è noto;
+ * - cambio/reset password: `passwordChangedAt` su UserProfile confrontato con
+ *   `iat` del token, perché i token delle ALTRE sessioni attive non sono noti.
+ * admin_session usa invece Redis (src/lib/auth/session.ts).
  */
 
 import { signJwt, verifyJwt } from "@/lib/auth/jwt";
+import { isUserSessionTokenRevoked, revokeUserSessionToken } from "./revoked-sessions";
 
 // Durate sessione
 const SESSION_DURATION_DEFAULT = 24 * 60 * 60 * 1000; // 24 ore
@@ -53,6 +53,7 @@ export async function validateUserSession(
   if (!token) return null;
   const payload = await verifyJwt<{ sub: string; sessionType?: string; pca?: string }>(token);
   if (!payload || payload.sessionType !== "user" || !payload.sub) return null;
+  if (await isUserSessionTokenRevoked(token)) return null;
 
   // Importa dinamicamente per evitare circular dependencies (stesso pattern
   // già usato in getUserFromSessionToken più sotto).
@@ -71,14 +72,16 @@ export async function validateUserSession(
 // --------------- Delete ---------------
 
 /**
- * Logout di una singola sessione. NON esiste uno store per-token per
- * user_session (a differenza di admin_session): questa funzione pulisce
- * solo il cookie lato client chiamante. Il JWT resta valido lato server
- * fino alla scadenza naturale se qualcuno ne conserva una copia — limite
- * documentato, non una vera revoca. Vedi design spec §3 e PROJECT_CONTEXT.md.
+ * Logout di una singola sessione: revoca il JWT lato server (deny-list su
+ * MongoDB fino alla sua scadenza naturale), così una copia del token non è
+ * più utilizzabile dopo il logout. Token non validi o già scaduti non
+ * vengono registrati.
  */
 export async function deleteUserSession(token: string): Promise<void> {
-  void token;
+  if (!token) return;
+  const payload = await verifyJwt<{ sub: string; sessionType?: string }>(token);
+  if (!payload || payload.sessionType !== "user" || !payload.sub) return;
+  await revokeUserSessionToken(token, payload.exp, payload.sub);
 }
 
 /**
