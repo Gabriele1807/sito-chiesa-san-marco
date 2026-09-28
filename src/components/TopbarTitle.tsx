@@ -14,6 +14,10 @@ import {
   Phone,
   User,
   ClipboardList,
+  Megaphone,
+  HandHeart,
+  ShieldCheck,
+  FileText,
 } from "lucide-react";
 
 // FIX [3] — Changed DASHBOARD to HOME, changed icon from LayoutDashboard to Home, added i18n
@@ -29,6 +33,10 @@ const titlesConfig: Record<string, { icon: React.ElementType; key: string }> = {
   "/contatti": { icon: Phone, key: "contatti" },
   "/profilo": { icon: User, key: "profilo" },
   "/iscrizioni": { icon: ClipboardList, key: "iscrizioni" },
+  "/avvisi": { icon: Megaphone, key: "avvisi" },
+  "/richieste-preghiera": { icon: HandHeart, key: "richiestePreghiera" },
+  "/privacy": { icon: ShieldCheck, key: "privacy" },
+  "/termini": { icon: FileText, key: "termini" },
 };
 
 interface TopbarTitleProps {
@@ -52,7 +60,8 @@ export default function TopbarTitle({ className }: TopbarTitleProps) {
   return (
     <div className={`flex items-center gap-2 min-w-0 ${className ?? ""}`}>
       <Icon className="w-5 h-5 text-accent shrink-0" />
-      <span className="min-w-0 truncate text-[11px] sm:text-xs font-display font-semibold text-foreground uppercase tracking-[0.26em] sm:tracking-[0.3em] text-center">
+      {/* Su telefono niente maiuscolo spaziato: in ~120px restava solo "H…". */}
+      <span className="min-w-0 truncate text-center font-display text-sm font-semibold text-foreground sm:text-xs sm:uppercase sm:tracking-[0.3em]">
         {t(match.key as Parameters<typeof t>[0])}
       </span>
     </div>

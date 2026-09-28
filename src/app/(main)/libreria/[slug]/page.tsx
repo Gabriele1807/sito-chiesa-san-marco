@@ -30,7 +30,7 @@ export default async function TestoSacroDetailPage({ params }: Props) {
       <BackLink href="/libreria" label={t("tornaLibreria")} />
 
       {/* Header */}
-      <div className="bg-surface rounded-2xl p-8 shadow-sm border border-border">
+      <div className="bg-surface rounded-2xl p-5 shadow-sm border border-border sm:p-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Cover */}
           <div className="w-full md:w-56 h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">

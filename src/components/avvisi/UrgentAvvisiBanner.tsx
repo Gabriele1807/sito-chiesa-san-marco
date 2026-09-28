@@ -81,7 +81,7 @@ export default function UrgentAvvisiBanner({ avvisi }: { avvisi: UrgentAvviso[] 
           <button
             type="button"
             onClick={() => dismiss(avviso.key)}
-            className="text-foreground/50 hover:bg-danger/10 hover:text-foreground rounded-full p-1 transition-colors"
+            className="text-foreground/60 hover:bg-danger/10 hover:text-foreground focus-visible:ring-gold -me-2 -mt-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
             aria-label={t("chiudi")}
           >
             <X className="h-4 w-4" />

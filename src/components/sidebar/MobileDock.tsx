@@ -13,6 +13,7 @@ export default function MobileDock() {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const tSidebar = useTranslations("sidebar");
+  const tDock = useTranslations("dock");
   const { toggleMobile } = useSidebar();
 
   const hashSectionIds = useMemo(
@@ -41,6 +42,12 @@ export default function MobileDock() {
     return pathname === item.href || pathname.startsWith(item.href + "/");
   }
 
+  // Etichetta breve visibile sotto l'icona ("Orari" invece di "Orari settimanali").
+  function getShortLabel(item: SidebarItem) {
+    const key = item.labelKey as Parameters<typeof tDock>[0];
+    return tDock.has(key) ? tDock(key) : getLabel(item);
+  }
+
   function getLabel(item: SidebarItem) {
     const namespace = item.labelNamespace ?? "nav";
     if (namespace === "sidebar") {
@@ -54,12 +61,13 @@ export default function MobileDock() {
       aria-label="Mobile dock"
       className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-sidebar text-white border-t border-white/10 pb-[env(safe-area-inset-bottom)]"
     >
-      <div className="grid grid-cols-6 gap-1 px-2 py-1.5">
+      <div className="grid grid-cols-6 gap-0.5 px-1.5 py-1.5">
         {mobileDockItems.map((item) => {
           const Icon = item.icon;
           const label = getLabel(item);
           const active = isActive(item);
-          const baseClass = `flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar ${
+          const shortLabel = getShortLabel(item);
+          const baseClass = `flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0 py-1.5 text-[10px] font-semibold leading-tight tracking-tight transition min-[375px]:text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar ${
             active ? "bg-white text-sidebar" : "text-white/70 hover:text-white hover:bg-white/10"
           }`;
 
@@ -72,8 +80,8 @@ export default function MobileDock() {
                 className={baseClass}
                 aria-label={label}
               >
-                <Icon className="h-4.5 w-4.5" />
-                <span className="sr-only">{label}</span>
+                <Icon className="h-5 w-5 shrink-0" aria-hidden />
+                <span aria-hidden className="max-w-full truncate">{shortLabel}</span>
               </button>
             );
           }
@@ -82,8 +90,8 @@ export default function MobileDock() {
 
           return (
             <HashLink key={item.id} href={item.href} aria-label={label} className={baseClass}>
-              <Icon className="h-4.5 w-4.5" />
-              <span className="sr-only">{label}</span>
+              <Icon className="h-5 w-5 shrink-0" aria-hidden />
+              <span aria-hidden className="max-w-full truncate">{shortLabel}</span>
             </HashLink>
           );
         })}

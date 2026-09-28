@@ -526,7 +526,7 @@ export default function ProfiloPage() {
             <button
               type="button"
               onClick={scrollToLinkedAccounts}
-              className="mt-2 text-sm font-semibold text-accent hover:underline"
+              className="mt-1 inline-flex min-h-10 items-center text-sm font-semibold text-accent hover:underline"
             >
               {t("oauthNudgeAction")}
             </button>
@@ -535,7 +535,7 @@ export default function ProfiloPage() {
             type="button"
             onClick={dismissOauthNudge}
             aria-label={t("oauthNudgeDismiss")}
-            className="shrink-0 text-foreground/40 hover:text-foreground/70 transition-colors"
+            className="-me-2 -mt-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-foreground/50 transition-colors hover:bg-foreground/5 hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
           >
             <X className="w-4 h-4" />
           </button>

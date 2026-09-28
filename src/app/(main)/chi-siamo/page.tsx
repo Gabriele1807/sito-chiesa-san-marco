@@ -20,6 +20,7 @@ type Copy = {
   milanTitle: string;
   milanItems: { title: string; body: string }[];
   notes: string;
+  notesTitle: string;
 };
 
 const IT_COPY: Copy = {
@@ -33,6 +34,7 @@ const IT_COPY: Copy = {
   community:
     "La parrocchia riunisce famiglie, giovani, diaconi e servitori che partecipano alla Divina Liturgia, alla catechesi, ai momenti di fraternità e alle opere di carità in comunione con la diocesi copta ortodossa di Milano.",
   institutionTitle: "Riferimenti ufficiali",
+  notesTitle: "Fonti",
   institutionIntro:
     "Le informazioni di questa pagina sono state riallineate ai riferimenti ufficiali della Chiesa Copta Ortodossa e della Diocesi Copta Ortodossa di Milano.",
   institutionItems: [
@@ -85,6 +87,7 @@ const AR_COPY: Copy = {
   community:
     "تضم الرعية عائلات وشباباً وشمامسة وخداماً يشاركون في القداس الإلهي والتعليم الكنسي وأعمال المحبة في شركة كاملة مع إيبارشية ميلانو القبطية الأرثوذكسية.",
   institutionTitle: "المراجع الرسمية",
+  notesTitle: "المصادر",
   institutionIntro:
     "تمت إعادة ضبط هذه الصفحة اعتماداً على المعلومات الرسمية المنشورة من الكنيسة القبطية الأرثوذكسية ومن إيبارشية ميلانو القبطية الأرثوذكسية.",
   institutionItems: [
@@ -143,7 +146,7 @@ export default async function ChiSiamoPage() {
   return (
     <div className="space-y-12">
       <section className="space-y-6">
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-8 shadow-sm">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-sm sm:p-8">
           <div className="texture-lattice pointer-events-none absolute inset-0 text-accent/[0.04]" />
           <div className="relative">
             <p className="eyebrow">{copy.title}</p>
@@ -165,8 +168,8 @@ export default async function ChiSiamoPage() {
                 key={pillar.title}
                 className={
                   isPrimary
-                    ? "rounded-2xl border border-accent/30 bg-surface-alt/50 p-6 shadow-sm"
-                    : "rounded-2xl border border-border bg-surface p-6 shadow-sm"
+                    ? "rounded-2xl border border-accent/30 bg-surface-alt/50 p-5 shadow-sm sm:p-6"
+                    : "rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6"
                 }
               >
                 <div className="flex items-center gap-3">
@@ -203,7 +206,7 @@ export default async function ChiSiamoPage() {
           {institutionCards.map((section) => {
             const Icon = section.icon;
             return (
-              <article key={section.title} className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+              <article key={section.title} className="rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-6">
                 <div className="flex items-center gap-3 border-b border-border/60 pb-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
@@ -212,7 +215,7 @@ export default async function ChiSiamoPage() {
                 </div>
                 <div className="mt-5 space-y-4">
                   {section.items.map((item) => (
-                    <div key={item.title} className="rounded-2xl border border-border/70 bg-surface-alt/60 p-4">
+                    <div key={item.title} className="rounded-2xl border border-border/70 bg-surface-alt/60 p-3.5 sm:p-4">
                       <div className="flex items-start gap-3">
                         <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />
                         <div>
@@ -229,11 +232,11 @@ export default async function ChiSiamoPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border-l-2 border-accent bg-surface-alt/40 p-6">
+      <section className="rounded-2xl border-s-2 border-accent bg-surface-alt/40 p-5 sm:p-6">
         <div className="flex items-center gap-3">
           <BookOpen className="h-5 w-5 shrink-0 text-accent" />
           <div>
-            <h2 className="font-display text-lg text-foreground">Fonti</h2>
+            <h2 className="font-display text-lg text-foreground">{copy.notesTitle}</h2>
             <p className="text-sm text-foreground/70">{copy.notes}</p>
           </div>
         </div>

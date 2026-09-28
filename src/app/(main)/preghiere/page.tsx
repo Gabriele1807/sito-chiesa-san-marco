@@ -45,25 +45,17 @@ export default async function PreghierePage() {
       </div>
 
       <section className="space-y-5">
-        <div className="max-w-2xl border-l-2 border-accent/30 pl-4">
-          <h2 className="font-display text-2xl text-foreground">
-            {t("sezionePreghiereTitolo")}
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-foreground/70">
-            {t("sezionePreghiereDescrizione")}
-          </p>
-        </div>
-
+        <h2 className="sr-only">{t("sezionePreghiereTitolo")}</h2>
         <div className="grid gap-4">
           {preghiere.map((preghiera, index) => {
             const isSquareIcon = index % 2 === 0;
             return (
             <article
               key={preghiera.id}
-              className="card-hover rounded-xl border border-border/70 bg-surface p-6 shadow-sm"
+              className="card-hover rounded-xl border border-border/70 bg-surface p-4 shadow-sm sm:p-6"
               style={{ animationDelay: `${index * 60}ms` }}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <div
                   className={
                     isSquareIcon
@@ -74,8 +66,9 @@ export default async function PreghierePage() {
                   <BookOpen className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
+                  {/* Su telefono il pulsante PDF va sotto al titolo: affiancato lo schiacciava in una colonna di poche lettere. */}
+                  <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
+                    <div className="min-w-0">
                       <span className="badge-tag">
                         {localizeCategoria(preghiera.categoria)}
                       </span>
@@ -92,7 +85,7 @@ export default async function PreghierePage() {
                         href={isGDriveUrl(preghiera.urlPDF) ? toGDrivePreviewUrl(preghiera.urlPDF) : preghiera.urlPDF}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                        className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                       >
                         <Download className="h-3.5 w-3.5" />
                         {t("scaricaPDF")}

@@ -127,7 +127,7 @@ html {
 
   /* Eyebrow label */
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-accent;
+    @apply inline-flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent sm:tracking-[0.35em];
   }
 
   /* Coptic cross mark used as a recurring identity motif, not a stock icon */
@@ -164,6 +164,11 @@ html {
 
   .btn-link {
     @apply inline-flex items-center gap-1.5 text-accent font-semibold text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Footer links: 40px touch rows on phones, compact list on desktop. */
+  .footer-link {
+    @apply inline-flex min-h-10 items-center rounded text-foreground/70 transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 lg:min-h-0;
   }
 
   .btn-option-card {

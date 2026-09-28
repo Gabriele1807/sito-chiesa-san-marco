@@ -31,14 +31,6 @@ export default async function VideoCorsiPage() {
         </div>
 
         <section className="space-y-5">
-          <div className="max-w-2xl border-l-2 border-accent/30 pl-4">
-            <h2 className="font-display text-2xl text-foreground">
-              {t("sezioneVideoTitolo")}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-foreground/70">
-              {t("videoIntro")}
-            </p>
-          </div>
 
           {videoCorsi.length === 0 && (
             <div className="empty-state">{t("sezioneVideoStatoVuoto")}</div>
@@ -81,9 +73,9 @@ export default async function VideoCorsiPage() {
                       <ExternalLink className="h-3.5 w-3.5" />
                     </span>
                   </div>
-                  <h3 className="font-display text-base text-foreground transition-colors group-hover:text-primary">
+                  <h2 className="font-display text-base text-foreground transition-colors group-hover:text-primary">
                     {video.titolo}
-                  </h3>
+                  </h2>
                   {video.descrizione ? (
                     <p className="text-sm leading-relaxed text-foreground/70">
                       {video.descrizione}
