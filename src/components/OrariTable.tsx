@@ -21,11 +21,14 @@ const celebrationKey = (giorno: string, cel: Celebrazione) =>
   `${giorno}__${cel.tipo}__${cel.orario}`;
 
 /**
- * Orari settimanali: fila di giorni a schede e sotto solo le celebrazioni del
- * giorno scelto, a ogni larghezza; si apre sul giorno della prossima
- * celebrazione. Con molti orari l'elenco completo era uno scorrimento
- * lunghissimo. Nome del giorno abbreviato ("Mer") o intero ("Mercoledì") in
- * base alla larghezza della colonna (container query).
+ * Orari settimanali.
+ *
+ * Colonna stretta (telefono, tablet): fila di giorni a schede e sotto solo le
+ * celebrazioni del giorno scelto, che si apre sul giorno della prossima
+ * celebrazione; nome del giorno breve ("Mer") o intero da @lg.
+ * Colonna larga (@2xl, da ~670px): griglia settimanale con un giorno per
+ * colonna, così lo spazio orizzontale non resta vuoto; la colonna del giorno
+ * della prossima celebrazione ha l'intestazione in evidenza.
  *
  * Giorni senza celebrazioni non compaiono. Prossima celebrazione e "Oggi"
  * sono calcolati solo nel browser (useMinuteClock).
@@ -80,10 +83,11 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
   );
 
   return (
-    // @container: le schede mostrano il nome intero del giorno quando la
-    // colonna è abbastanza larga, non in base alla larghezza dello schermo.
+    // @container: il layout dipende dalla larghezza della colonna, non dello
+    // schermo. Stretta: schede (nome breve, poi intero da @lg). Larga (@2xl):
+    // griglia settimanale, un giorno per colonna, tutto visibile.
     <div dir={isAr ? "rtl" : "ltr"} className="@container">
-      <div>
+      <div className="@2xl:hidden">
         <div
           role="tablist"
           aria-orientation="horizontal"
@@ -146,6 +150,79 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
           </div>
           {rows(selected)}
         </div>
+      </div>
+
+      {/* ── Colonna larga: settimana intera, un giorno per colonna ── */}
+      <div
+        className="hidden @2xl:grid"
+        style={{ gridTemplateColumns: `repeat(${giorni.length}, minmax(0, 1fr))` }}
+      >
+        {giorni.map((giorno) => {
+          const hasNext = giorno.giorno === next?.giorno;
+          const isToday = giorno.giorno === today;
+          return (
+            <section
+              key={giorno.giorno}
+              aria-label={localizeGiorno(giorno.giorno, locale)}
+              className="border-border/70 flex min-w-0 flex-col [&:not(:first-child)]:border-s"
+            >
+              <div className="border-border/70 bg-surface-alt/60 border-b p-2">
+                <div
+                  className={`flex min-h-12 flex-col items-center justify-center rounded-xl px-2 text-center ${
+                    hasNext
+                      ? "bg-accent text-white shadow-sm"
+                      : isToday
+                        ? "text-primary ring-primary/25 bg-surface ring-1 ring-inset"
+                        : "text-foreground/75"
+                  }`}
+                >
+                  <h3 className="text-sm font-semibold">{localizeGiorno(giorno.giorno, locale)}</h3>
+                  {isToday && (
+                    <span className="text-[11px] font-medium opacity-80">{labels.oggi}</span>
+                  )}
+                </div>
+              </div>
+              <ul className="flex-1 space-y-1 p-2">
+                {giorno.celebrazioni.map((cel, ci) => {
+                  const isNext = nextKey === celebrationKey(giorno.giorno, cel);
+                  return (
+                    <li
+                      key={`${ci}-${cel.orario}`}
+                      className={`rounded-xl px-3 py-2.5 ${
+                        isNext ? "bg-accent/10 ring-accent/25 ring-1 ring-inset" : ""
+                      }`}
+                    >
+                      <time
+                        className={`block text-base font-semibold tabular-nums ${
+                          isNext ? "text-accent" : "text-primary"
+                        }`}
+                      >
+                        {cel.orario}
+                      </time>
+                      <p
+                        className={`mt-0.5 text-sm leading-snug ${
+                          isNext ? "text-foreground font-semibold" : "text-foreground/85"
+                        }`}
+                      >
+                        {cel.tipo}
+                      </p>
+                      {cel.note && (
+                        <p className="text-foreground/60 mt-1 text-xs leading-relaxed">
+                          {cel.note}
+                        </p>
+                      )}
+                      {isNext && (
+                        <span className="bg-accent mt-2 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold text-white">
+                          {labels.prossima}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })}
       </div>
     </div>
   );
