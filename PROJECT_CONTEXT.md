@@ -2053,9 +2053,19 @@ celebrazioni esclusi. Da `sm` resta l'elenco completo. Righe condivise
 
 Verificato su build di produzione a 320/390 px e 360 px (ar) con tocco e
 tastiera, e a 390/768/1280 px (it) e 360/1280 px (ar): nessun errore di
-hydration in console. Resta da valutare la colonna
-YouTube accanto agli orari su desktop: ora è molto più alta della tabella e
-a 1280px testo e pulsanti vanno a capo in una colonna stretta.
+hydration in console.
+
+**Schede anche su computer (richiesta successiva dell'utente).** Tolto
+l'elenco completo da `sm`: le schede valgono a ogni larghezza. Il nome del
+giorno è abbreviato o intero in base alla larghezza della **colonna**
+(container query Tailwind: `@container` sul contenitore, `@lg:` sulle
+etichette), non dello schermo. Righe limitate a `max-w-2xl`. In home la
+sezione orari e la colonna YouTube non sono più affiancate da `lg`
+(`grid-cols-[1.1fr_0.9fr]` rimosso) ma una sotto l'altra: con le schede la
+card degli orari era bassa e accanto restava la colonna YouTube altissima e
+stretta (testo e pulsanti a capo). Verificato a 390/768/1024/1280/1600 px
+(it) e 1280 px (ar), clic e tastiera, nessun errore in console. (La colonna YouTube stretta accanto agli
+orari è stata risolta impilando le due sezioni, vedi sotto.)
 
 ---
 
