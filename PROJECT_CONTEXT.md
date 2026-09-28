@@ -2064,8 +2064,48 @@ sezione orari e la colonna YouTube non sono più affiancate da `lg`
 (`grid-cols-[1.1fr_0.9fr]` rimosso) ma una sotto l'altra: con le schede la
 card degli orari era bassa e accanto restava la colonna YouTube altissima e
 stretta (testo e pulsanti a capo). Verificato a 390/768/1024/1280/1600 px
-(it) e 1280 px (ar), clic e tastiera, nessun errore in console. (La colonna YouTube stretta accanto agli
+(it) e 1280 px (ar), clic e tastiera, nessun errore in console.
+
+**Griglia settimanale sulle colonne larghe (richiesta successiva).** Su
+monitor la card a schede restava quasi vuota a destra (un giorno con una sola
+riga). Da `@2xl` (colonna ≥ ~670px, cioè da tablet ~768px in su) la fila di
+giorni diventa una **griglia con un giorno per colonna** e tutti gli orari
+visibili (ora sopra, nome sotto, nota, "Prossima"); l'intestazione del giorno
+della prossima celebrazione è arancione, oggi ha il contorno/etichetta.
+Sotto `@2xl` restano le schede. Colonne con `grid-template-columns:
+repeat(N, minmax(0,1fr))` in base ai giorni presenti. Verificato con 6
+giorni a 640/768/1024/1280/1440/1920 px (it) e 1440 px (ar): nessun
+overflow orizzontale, nessun errore. (La colonna YouTube stretta accanto agli
 orari è stata risolta impilando le due sezioni, vedi sotto.)
+
+### 10.10.2 Sezione YouTube della home (2026-09-28)
+
+Problemi trovati in `YouTubeLiveSection`: pillola rossa "YouTube" che
+sembrava un pulsante ma non faceva nulla; **contenuti inventati** senza dati
+dall'API (titolo fisso "Divina Liturgia – Domenica delle Palme" presentato
+come "ultima celebrazione trasmessa", "—" con l'etichetta "oltre 1 000
+iscritti"); con i dati, numero reale seguito dalla frase fissa "oltre 1 000
+iscritti"; "Tutti i video" ripetuto tre volte; `iframe` di YouTube caricato a
+ogni apertura della home; "LIVE" fisso in inglese.
+
+Ora: titolo con icona, descrizione, riga compatta del canale ("2.480
+iscritti · 312 video", numeri nel formato della lingua) solo se ci sono dati,
+due pulsanti veri (Iscriviti / Tutti i video). Il video è un'anteprima
+(miniatura + play) e il lettore `youtube-nocookie` si carica **solo al
+tocco**; in diretta etichetta "In diretta ora" tradotta; data di
+pubblicazione sotto il titolo. Senza dati: al posto del video un link "Guarda
+le celebrazioni sul canale", nessuna statistica. Testo e video affiancati solo quando
+la **sezione** è larga (`@4xl`, container query), altrimenti video sopra: a
+1024px con la sidebar la colonna è ~700px e affiancati si schiacciavano.
+Pulsanti `whitespace-nowrap` (andavano a capo "Iscriviti al / canale"). Chiavi i18n rimosse
+`youtubeUltima/youtubeIscritti/youtubeVideo`, aggiunte
+`youtubeIscrittiCount/youtubeVideoCount/youtubePlay/youtubeVaiAlCanale`.
+
+Verifica: build di produzione, API YouTube e immagini **simulate** con
+Playwright (in locale la chiave non c'è): stati senza dati, con ultimo video
+e in diretta, a 390/768/1280 px (it) e 1280 px (ar); nessuna richiesta a
+`youtube-nocookie.com` prima del tocco, una dopo. Non verificato con l'API
+reale di YouTube.
 
 ---
 

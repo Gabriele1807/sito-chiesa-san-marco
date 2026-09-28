@@ -2,13 +2,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
-import {
-  Youtube,
-  ExternalLink,
-  Play,
-  Bell,
-} from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { Youtube, Play, Bell } from "lucide-react";
 
 const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@SanMarco-Milano";
 
@@ -33,17 +28,22 @@ interface YouTubeData {
   upcoming: YouTubeVideo[];
 }
 
-function formatCount(count: string): string {
-  const n = parseInt(count, 10);
-  if (isNaN(n)) return count;
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1).replace(".0", "")}M`;
-  if (n >= 1000) return `${Math.floor(n / 1000)}K+`;
-  return count;
-}
-
+/**
+ * Sezione YouTube della home.
+ *
+ * - Il lettore YouTube si carica solo quando si tocca l'anteprima: prima
+ *   l'iframe partiva a ogni apertura della home (peso su telefono).
+ * - Senza dati dall'API (chiave assente o errore) niente contenuti inventati:
+ *   al posto del video un invito ad aprire il canale, niente statistiche.
+ * - Impaginazione decisa dalla larghezza della sezione (container query):
+ *   testo e video affiancati solo da @4xl, così a 1024px non si schiacciano.
+ */
 export default function YouTubeLiveSection() {
   const t = useTranslations("contatti");
+  const locale = useLocale();
+  const numberLocale = locale === "ar" ? "ar-EG" : "it-IT";
   const [data, setData] = useState<YouTubeData | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -53,7 +53,7 @@ export default function YouTubeLiveSection() {
         setData(json.data);
       }
     } catch {
-      // Silently fail, show static fallback
+      // Nessun dato: resta l'invito ad aprire il canale.
     }
   }, []);
 
@@ -64,171 +64,168 @@ export default function YouTubeLiveSection() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  const featuredVideo =
-    data?.isLive && data.liveVideo ? data.liveVideo : data?.latestVideo;
+  const isLive = Boolean(data?.isLive && data.liveVideo);
+  const video = isLive ? data!.liveVideo : (data?.latestVideo ?? null);
+  const playing = video !== null && playingId === video.id;
+  const thumbnail = video
+    ? video.thumbnail || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`
+    : null;
+  const published =
+    video && !isLive && video.publishedAt
+      ? new Date(video.publishedAt).toLocaleDateString(numberLocale, {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : null;
 
-  const videoUrl = featuredVideo
-    ? `https://www.youtube.com/watch?v=${featuredVideo.id}`
-    : YOUTUBE_CHANNEL_URL;
-  // No embed fallback to "live_stream?channel=..." here: when the channel
-  // isn't currently live that embed renders as a broken/error preview
-  // instead of silently doing nothing, which is worse than showing no video.
+  const formatNumber = (value: string) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n.toLocaleString(numberLocale) : value;
+  };
+
+  const actions = (
+    <div className="flex flex-col gap-3 @sm:flex-row @sm:flex-wrap">
+      <a
+        href={YOUTUBE_CHANNEL_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      >
+        <Bell className="h-4 w-4" aria-hidden />
+        {t("youtubeIscriviti")}
+      </a>
+      <a
+        href={`${YOUTUBE_CHANNEL_URL}/videos`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      >
+        <Play className="h-4 w-4" aria-hidden />
+        {t("youtubeGuardaTutti")}
+      </a>
+    </div>
+  );
 
   return (
-    <section>
-      <div className="min-w-0 max-w-full overflow-hidden rounded-[1.5rem] bg-primary shadow-2xl sm:rounded-2xl">
-        {/* Top bar decorativo */}
-        <div className="h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
-
-        <div className="min-w-0 max-w-full p-4 sm:p-6 lg:p-8">
-          {/* Spans the full card width (both columns below), centered with
-              the card's own padding acting as the left/right margin. */}
-          <div className="mx-auto mb-6 flex w-full max-w-2xl items-center justify-center gap-3 rounded-full bg-red-600 px-8 py-2.5 text-base font-bold text-white shadow-lg">
-            <Youtube className="h-5 w-5" />
-            YouTube
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[1.25fr_minmax(18rem,1fr)]">
-            <div className="flex flex-col justify-center">
-              <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-3xl leading-tight">
-                {t("youtubeSezione")}
-              </h2>
-
-              <p className="mt-5 text-gray-300 leading-relaxed">
-                {t("youtubeDesc")}
-              </p>
-
-              <p className="mt-5 text-sm leading-relaxed text-gray-400">
-                {t("youtubeStreaming")}
-              </p>
-            </div>
-
-            <div className="min-w-0 space-y-4">
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
-                <div className="aspect-video">
-                  {featuredVideo ? (
-                    <iframe
-                      src={`https://www.youtube-nocookie.com/embed/${featuredVideo.id}?rel=0`}
-                      title={featuredVideo.title || t("youtubeUltima")}
-                      className="h-full w-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <a
-                      href={YOUTUBE_CHANNEL_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-white/5 to-transparent text-center transition-colors hover:bg-white/5"
-                    >
-                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-red-600/90">
-                        <Play className="h-6 w-6 fill-white text-white" />
-                      </span>
-                      <span className="max-w-[80%] text-sm text-gray-300">
-                        {t("youtubeGuardaTutti")}
-                      </span>
-                    </a>
-                  )}
-                </div>
-
-                <div className="border-t border-white/10 bg-black/70 px-4 py-4 sm:px-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-wider text-gray-400">
-                        {data?.isLive ? t("youtubeLiveLabel") : t("youtubeRecenteLabel")}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-sm font-semibold text-white">
-                        {featuredVideo?.title || t("youtubeUltima")}
-                      </p>
-                    </div>
-
-                    {data?.isLive && (
-                      <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-3 py-1 text-[10px] font-bold text-white">
-                        <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                        LIVE
+    <section aria-labelledby="youtube-title" className="@container">
+      <div className="bg-primary max-w-full min-w-0 overflow-hidden rounded-3xl shadow-xl">
+        <div className="grid gap-6 p-5 sm:p-6 @4xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] @4xl:gap-10 @4xl:p-8">
+          {/* Video: anteprima, il lettore parte al tocco */}
+          <div className="min-w-0 @4xl:order-2">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
+              <div className="relative aspect-video">
+                {video && playing ? (
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0&autoplay=1`}
+                    title={video.title}
+                    className="absolute inset-0 h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                ) : video ? (
+                  <button
+                    type="button"
+                    onClick={() => setPlayingId(video.id)}
+                    className="group focus-visible:ring-gold absolute inset-0 h-full w-full focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+                    aria-label={`${t("youtubePlay")}: ${video.title}`}
+                  >
+                    {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      />
+                    )}
+                    <span className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/15" />
+                    <span className="absolute top-1/2 left-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 shadow-lg transition-transform group-hover:scale-105">
+                      <Play className="h-7 w-7 translate-x-0.5 fill-white text-white" aria-hidden />
+                    </span>
+                    {isLive && (
+                      <span className="absolute top-3 left-3 inline-flex items-center gap-2 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white">
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
+                        {t("youtubeLiveOra")}
                       </span>
                     )}
-                  </div>
-
-                  <a
-                    href={videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex min-h-10 items-center gap-2 rounded text-xs font-semibold text-red-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    {t("youtubeGuardaTutti")}
-                  </a>
-                </div>
-              </div>
-
-              <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-inner">
-                <div className="flex items-center gap-3">
-                  {data?.channel.thumbnail ? (
-                    <img
-                      src={data.channel.thumbnail}
-                      alt={data.channel.title}
-                      className="w-12 h-12 rounded-full shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center shrink-0">
-                      <span className="text-white font-bold text-sm">☦</span>
-                    </div>
-                  )}
-
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">
-                      {data?.channel.title || "Chiesa Copta San Marco"}
-                    </p>
-                    <p className="truncate text-xs text-gray-400">
-                      @SanMarco-Milano
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-4 border-t border-white/10 pt-5 sm:grid-cols-2">
-                  <div className="rounded-3xl bg-white/5 p-4 text-center">
-                    <p className="text-2xl font-bold text-white">
-                      {data
-                        ? Number(data.channel.subscriberCount).toLocaleString("it-IT")
-                        : "—"}
-                    </p>
-                    <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-gray-400">
-                      {t("youtubeIscritti")}
-                    </p>
-                  </div>
-                  <div className="rounded-3xl bg-white/5 p-4 text-center">
-                    <p className="text-2xl font-bold text-white">
-                      {data ? formatCount(data.channel.videoCount) : "—"}
-                    </p>
-                    <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-gray-400">
-                      {t("youtubeVideo")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  </button>
+                ) : (
                   <a
                     href={YOUTUBE_CHANNEL_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+                    className="focus-visible:ring-gold absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-white/10 to-transparent px-6 text-center transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
                   >
-                    <Bell className="w-4 h-4" />
-                    {t("youtubeIscriviti")}
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600">
+                      <Youtube className="h-8 w-8 text-white" aria-hidden />
+                    </span>
+                    <span className="text-sm font-semibold text-white">
+                      {t("youtubeVaiAlCanale")}
+                    </span>
                   </a>
-                  <a
-                    href={`${YOUTUBE_CHANNEL_URL}/videos`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-w-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
-                  >
-                    <Play className="w-4 h-4" />
-                    {t("youtubeGuardaTutti")}
-                  </a>
+                )}
+              </div>
+
+              {video && (
+                <div className="border-t border-white/10 px-4 py-3 sm:px-5">
+                  <p className="text-xs font-semibold text-red-400">
+                    {isLive ? t("youtubeLiveLabel") : t("youtubeRecenteLabel")}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-sm font-semibold text-white" dir="auto">
+                    {video.title}
+                  </p>
+                  {published && <p className="mt-0.5 text-xs text-white/55">{published}</p>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Testo, canale, azioni */}
+          <div className="flex min-w-0 flex-col gap-5 @4xl:order-1 @4xl:justify-center">
+            <div>
+              <h2
+                id="youtube-title"
+                className="font-display flex items-center gap-3 text-2xl leading-tight text-white sm:text-3xl"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-600">
+                  <Youtube className="h-5 w-5 text-white" aria-hidden />
+                </span>
+                {t("youtubeSezione")}
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-white/75 sm:text-base">
+                {t("youtubeDesc")}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-white/55">{t("youtubeStreaming")}</p>
+            </div>
+
+            {data && (
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+                {data.channel.thumbnail ? (
+                  <img
+                    src={data.channel.thumbnail}
+                    alt=""
+                    loading="lazy"
+                    className="h-11 w-11 shrink-0 rounded-full"
+                  />
+                ) : (
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-600">
+                    <Youtube className="h-5 w-5 text-white" aria-hidden />
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-white">{data.channel.title}</p>
+                  <p className="truncate text-xs text-white/55">
+                    {t("youtubeIscrittiCount", {
+                      count: formatNumber(data.channel.subscriberCount),
+                    })}
+                    {" · "}
+                    {t("youtubeVideoCount", { count: formatNumber(data.channel.videoCount) })}
+                  </p>
                 </div>
               </div>
-            </div>
+            )}
+
+            {actions}
           </div>
         </div>
       </div>
