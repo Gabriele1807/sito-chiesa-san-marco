@@ -296,10 +296,7 @@
     "youtubeDomenica": "Ogni domenica",
     "youtubeFeste": "Festività copte",
     "youtubeRecenteLabel": "Ultima celebrazione trasmessa",
-    "youtubeUltima": "Divina Liturgia – Domenica delle Palme",
     "youtubeGuarda": "Guarda",
-    "youtubeIscritti": "oltre 1 000 iscritti",
-    "youtubeVideo": "Video sul canale",
     "emailSezione": "Email",
     "emailDesc": "Scrivici per informazioni generali, per richiedere una benedizione o per qualsiasi necessità della comunità.",
     "emailIndirizzo": "info@sanmarcocopti.it",
@@ -325,7 +322,11 @@
     "youtubeLiveLabel": "In diretta ora",
     "youtubeGuardaTutti": "Tutti i video",
     "youtubeInProgramma": "In programma",
-    "youtubeLiveOra": "IN DIRETTA ORA"
+    "youtubeLiveOra": "IN DIRETTA ORA",
+    "youtubeIscrittiCount": "{count} iscritti",
+    "youtubeVideoCount": "{count} video",
+    "youtubePlay": "Riproduci il video",
+    "youtubeVaiAlCanale": "Guarda le celebrazioni sul canale"
   },
   "sidebar": {
     "navigazione": "Navigazione",

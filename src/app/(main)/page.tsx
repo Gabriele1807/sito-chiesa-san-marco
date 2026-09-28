@@ -188,7 +188,7 @@ export default async function HomePage() {
           </Link> */}
         </div>
 
-        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid min-w-0 items-start gap-6">
           <div className="min-w-0 overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
             <OrariTable
               orari={orari}

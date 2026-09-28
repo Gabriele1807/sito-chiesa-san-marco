@@ -21,12 +21,11 @@ const celebrationKey = (giorno: string, cel: Celebrazione) =>
   `${giorno}__${cel.tipo}__${cel.orario}`;
 
 /**
- * Orari settimanali.
- *
- * Telefono: fila di giorni da toccare (tab) e sotto solo le celebrazioni del
- * giorno scelto; si apre sul giorno della prossima celebrazione. Con molti
- * orari l'elenco completo diventava uno scorrimento lunghissimo.
- * Da `sm`: elenco completo per giorno, giorno in colonna a sinistra.
+ * Orari settimanali: fila di giorni a schede e sotto solo le celebrazioni del
+ * giorno scelto, a ogni larghezza; si apre sul giorno della prossima
+ * celebrazione. Con molti orari l'elenco completo era uno scorrimento
+ * lunghissimo. Nome del giorno abbreviato ("Mer") o intero ("Mercoledì") in
+ * base alla larghezza della colonna (container query).
  *
  * Giorni senza celebrazioni non compaiono. Prossima celebrazione e "Oggi"
  * sono calcolati solo nel browser (useMinuteClock).
@@ -67,24 +66,24 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
     tabRefs.current[target]?.focus();
   }
 
-  const rows = (giorno: OrarioSettimanale, size: "lg" | "md") => (
-    <ul className="-mx-3 space-y-1">
+  const rows = (giorno: OrarioSettimanale) => (
+    <ul className="-mx-3 max-w-2xl space-y-1">
       {giorno.celebrazioni.map((cel, ci) => (
         <CelebrationRow
           key={`${ci}-${cel.orario}`}
           cel={cel}
           isNext={nextKey === celebrationKey(giorno.giorno, cel)}
           nextLabel={labels.prossima}
-          size={size}
         />
       ))}
     </ul>
   );
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"}>
-      {/* ── Telefono: giorni a schede ── */}
-      <div className="sm:hidden">
+    // @container: le schede mostrano il nome intero del giorno quando la
+    // colonna è abbastanza larga, non in base alla larghezza dello schermo.
+    <div dir={isAr ? "rtl" : "ltr"} className="@container">
+      <div>
         <div
           role="tablist"
           aria-orientation="horizontal"
@@ -108,7 +107,7 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
                 tabIndex={isSelected ? 0 : -1}
                 onClick={() => setPicked(giorno.giorno)}
                 onKeyDown={(event) => onTabKeyDown(event, index)}
-                className={`focus-visible:ring-gold relative flex min-h-12 min-w-11 flex-1 flex-col items-center justify-center rounded-xl px-1.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none ${
+                className={`focus-visible:ring-gold relative flex min-h-12 min-w-11 flex-1 flex-col items-center justify-center rounded-xl px-1.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none @lg:text-sm ${
                   isSelected
                     ? "bg-accent text-white shadow-sm"
                     : giorno.giorno === today
@@ -116,7 +115,12 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
                       : "text-foreground/70 hover:bg-surface hover:text-foreground"
                 }`}
               >
-                <span aria-hidden>{shortGiorno(giorno.giorno, locale)}</span>
+                <span aria-hidden className="@lg:hidden">
+                  {shortGiorno(giorno.giorno, locale)}
+                </span>
+                <span aria-hidden className="hidden @lg:inline">
+                  {localizeGiorno(giorno.giorno, locale)}
+                </span>
                 <span
                   aria-hidden
                   className={`mt-1 h-1.5 w-1.5 rounded-full ${
@@ -132,7 +136,7 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
           id="orari-panel"
           role="tabpanel"
           aria-labelledby={`orari-tab-${giorni.indexOf(selected)}`}
-          className="px-5 pt-4 pb-5"
+          className="px-5 pt-4 pb-5 sm:px-6 sm:pt-5 sm:pb-6"
         >
           <div className="mb-2 flex items-center gap-2">
             <h3 className="font-display text-foreground text-lg font-semibold">
@@ -140,27 +144,9 @@ export default function OrariTable({ orari, labels }: OrariTableProps) {
             </h3>
             {selected.giorno === today && <TodayBadge label={labels.oggi} />}
           </div>
-          {rows(selected, "lg")}
+          {rows(selected)}
         </div>
       </div>
-
-      {/* ── Da sm: elenco completo ── */}
-      <ol className="divide-border/70 hidden divide-y sm:block">
-        {giorni.map((giorno) => (
-          <li
-            key={giorno.giorno}
-            className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-6 px-6 py-5"
-          >
-            <div className="flex items-start gap-2 pt-2">
-              <h3 className="font-display text-foreground text-base font-semibold">
-                {localizeGiorno(giorno.giorno, locale)}
-              </h3>
-              {giorno.giorno === today && <TodayBadge label={labels.oggi} />}
-            </div>
-            {rows(giorno, "md")}
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }
@@ -177,22 +163,19 @@ function CelebrationRow({
   cel,
   isNext,
   nextLabel,
-  size,
 }: {
   cel: Celebrazione;
   isNext: boolean;
   nextLabel: string;
-  size: "lg" | "md";
 }) {
-  const lg = size === "lg";
   return (
     <li
-      className={`flex items-baseline gap-4 rounded-xl px-3 ${lg ? "py-2.5" : "py-2"} ${
+      className={`flex items-baseline gap-4 rounded-xl px-3 py-2.5 ${
         isNext ? "bg-accent/10 ring-accent/25 ring-1 ring-inset" : ""
       }`}
     >
       <time
-        className={`shrink-0 font-semibold tabular-nums ${lg ? "w-14 text-base" : "w-12 text-sm"} ${
+        className={`w-14 shrink-0 text-base font-semibold tabular-nums ${
           isNext ? "text-accent" : "text-primary"
         }`}
       >
@@ -200,7 +183,7 @@ function CelebrationRow({
       </time>
       <div className="min-w-0 flex-1">
         <p
-          className={`${lg ? "text-[15px]" : "text-sm"} ${
+          className={`text-[15px] ${
             isNext ? "text-foreground font-semibold" : "text-foreground/85"
           }`}
         >
