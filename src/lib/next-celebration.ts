@@ -26,6 +26,12 @@ export function localizeGiorno(giorno: string, locale: string): string {
   return locale === "ar" ? (GIORNI_AR[giorno] ?? giorno) : giorno;
 }
 
+/** Forma breve per spazi stretti: "Dom", "Lun"… (in arabo il nome è già corto). */
+export function shortGiorno(giorno: string, locale: string): string {
+  if (locale === "ar") return GIORNI_AR[giorno] ?? giorno;
+  return GIORNI_IT.includes(giorno) ? giorno.slice(0, 3) : giorno;
+}
+
 interface NextCelebration {
   giorno: string;
   tipo: string;

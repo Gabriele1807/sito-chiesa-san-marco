@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getNextCelebration, localizeGiorno } from "./next-celebration";
+import { getNextCelebration, localizeGiorno, shortGiorno } from "./next-celebration";
 import type { OrarioSettimanale } from "@/types";
 
 const orari: OrarioSettimanale[] = [
@@ -38,5 +38,13 @@ describe("localizeGiorno", () => {
   it("keeps Italian and unknown values unchanged", () => {
     expect(localizeGiorno("Domenica", "it")).toBe("Domenica");
     expect(localizeGiorno("Festa", "ar")).toBe("Festa");
+  });
+});
+
+describe("shortGiorno", () => {
+  it("abbreviates Italian day names and keeps Arabic ones whole", () => {
+    expect(shortGiorno("Mercoledì", "it")).toBe("Mer");
+    expect(shortGiorno("Domenica", "ar")).toBe("الأحد");
+    expect(shortGiorno("Festa", "it")).toBe("Festa");
   });
 });

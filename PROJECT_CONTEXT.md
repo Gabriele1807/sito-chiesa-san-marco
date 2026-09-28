@@ -2041,8 +2041,19 @@ in UTC, con rischio di evidenziare la celebrazione sbagliata e di errori di
 hydration. La card nell'hero ora mostra anche il giorno ("Mercoledì ·
 Vespri – 19:00"). Test: `src/lib/next-celebration.test.ts`.
 
-Verificato su build di produzione a 390/768/1280 px (it) e 360/1280 px
-(ar): nessun errore di hydration in console. Resta da valutare la colonna
+**Telefono, seconda versione (su richiesta dell'utente, con i suoi dati
+reali: 14 orari su 6 giorni, martedì vuoto).** Anche raggruppato, l'elenco
+completo era uno scorrimento lungo. Sotto `sm` ora c'è una fila di giorni a
+schede (`role="tablist"`, frecce/Home/End da tastiera, invertite in arabo;
+abbreviazioni da `shortGiorno`: Dom, Lun…, in arabo il nome intero) e sotto
+solo il giorno scelto. Si apre sul giorno della prossima celebrazione
+(pallino sulla scheda); il giorno corrente ha un contorno. Giorni senza
+celebrazioni esclusi. Da `sm` resta l'elenco completo. Righe condivise
+(`CelebrationRow`), su telefono ora e nome più grandi.
+
+Verificato su build di produzione a 320/390 px e 360 px (ar) con tocco e
+tastiera, e a 390/768/1280 px (it) e 360/1280 px (ar): nessun errore di
+hydration in console. Resta da valutare la colonna
 YouTube accanto agli orari su desktop: ora è molto più alta della tabella e
 a 1280px testo e pulsanti vanno a capo in una colonna stretta.
 
