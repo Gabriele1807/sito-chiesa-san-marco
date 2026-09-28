@@ -107,13 +107,21 @@ export async function countPushSubscriptions(): Promise<{ total: number; it: num
   return { total: it + ar, it, ar };
 }
 
-/** Scorre tutte le iscrizioni a blocchi (per l'invio). */
+/**
+ * Scorre a blocchi le iscrizioni che non hanno ancora ricevuto l'invio
+ * `runId` (tutte, per un invio nuovo). Serve a riprendere un invio
+ * interrotto dal limite di tempo senza mandare doppioni a chi l'ha già avuto.
+ */
 export async function* iteratePushSubscriptions(
+  runId: string,
   batchSize = 200
 ): AsyncGenerator<PushSubscriptionRecord[]> {
   const c = await col();
   const cursor = c
-    .find({}, { projection: { _id: 0, endpoint: 1, keys: 1, locale: 1 } })
+    .find(
+      { lastRunId: { $ne: runId } },
+      { projection: { _id: 0, endpoint: 1, keys: 1, locale: 1 } }
+    )
     .batchSize(batchSize);
   let batch: PushSubscriptionRecord[] = [];
   for await (const doc of cursor) {
@@ -130,8 +138,22 @@ export async function* iteratePushSubscriptions(
   if (batch.length) yield batch;
 }
 
-export async function markPushDelivered(endpoints: string[]): Promise<void> {
+/** Iscrizioni ancora da raggiungere per l'invio `runId`. */
+export async function countPendingPushSubscriptions(runId: string): Promise<number> {
+  const c = await col();
+  return c.countDocuments({ lastRunId: { $ne: runId } });
+}
+
+/** Segna le iscrizioni come gestite per l'invio `runId` (consegnate o fallite in modo non recuperabile). */
+export async function markPushHandled(
+  endpoints: string[],
+  runId: string,
+  delivered: boolean
+): Promise<void> {
   if (endpoints.length === 0) return;
   const c = await col();
-  await c.updateMany({ endpoint: { $in: endpoints } }, { $set: { lastSuccessAt: new Date() } });
+  await c.updateMany(
+    { endpoint: { $in: endpoints } },
+    { $set: { lastRunId: runId, ...(delivered ? { lastSuccessAt: new Date() } : {}) } }
+  );
 }

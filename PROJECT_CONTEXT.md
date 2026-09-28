@@ -2076,9 +2076,11 @@ Otto funzionalità scelte dal proprietario. Variabili d'ambiente in
   `POST /api/richieste-preghiera`: consenso esplicito obbligatorio, nome ed
   email facoltativi (precompilati per chi ha un account), campo trappola
   `website`, rate limit IP.
-- Admin: `/admin/richieste-preghiera` (da leggere / lette / archiviate,
-  stampa delle intenzioni da leggere in liturgia). Archiviate eliminate dopo
-  90 giorni (TTL su `deleteAfter`).
+- Admin: `/admin/richieste-preghiera`, **solo superadmin** (da leggere /
+  lette / archiviate, stampa delle intenzioni da leggere in liturgia). Non
+  gestite → archiviate da sole dopo 60 giorni (`archiveStalePrayerRequests`,
+  job giornaliero e apertura della pagina); archiviate eliminate dopo 90
+  giorni (TTL su `deleteAfter`).
 
 ### 14.5 Email degli eventi e verifica email
 - `src/lib/email/send-email.ts`: `deliverEmail` comune. Categoria `auth`
@@ -2089,8 +2091,8 @@ Otto funzionalità scelte dal proprietario. Variabili d'ambiente in
   (`layout.ts`), IT/AR, escape HTML, versione testo.
 - **Conferma iscrizione**: `src/lib/events/registration-emails.ts`, inviata
   con `after()` dopo la risposta di `api/eventi/iscrizione`; destinatario
-  = email dell'account, altrimenti email del modulo. Lingua salvata
-  sull'iscrizione (`emailLocale`).
+  = **solo** l'email dell'account (mai il campo `email` del modulo). Lingua
+  salvata sull'iscrizione (`emailLocale`).
 - **Promemoria**: `src/lib/events/reminders.ts` + `GET /api/cron/event-reminders`
   (Vercel Cron in `vercel.json`, 16:00 UTC; richiede `Authorization: Bearer
   CRON_SECRET`, senza segreto risponde 503). Eventi di "domani" secondo il
@@ -2124,3 +2126,31 @@ Otto funzionalità scelte dal proprietario. Variabili d'ambiente in
   provider configurato nel test), consegna delle notifiche push (il browser
   di test non raggiunge i server push di Google), esecuzione del Vercel Cron,
   installazione su dispositivi iOS/Android reali.
+
+### 14.8 Correzioni dopo l'analisi del 2026-09-28
+- **Iscrizioni agli eventi solo con account anche lato server**
+  (`api/eventi/iscrizione` → 401 senza sessione; prima solo la pagina lo
+  chiedeva). Email di conferma/promemoria solo all'indirizzo dell'account:
+  nessuno può far inviare email dal dominio a indirizzi altrui.
+- **Limiti per azione** (`src/lib/auth/action-limit.ts`, collezione
+  `action_rate_limits`, condivisa tra istanze anche senza Redis): registrazione
+  5/ora per IP (contate solo quelle valide), richieste di preghiera 5/ora per
+  IP, iscrizioni alle notifiche 10/ora per IP, iscrizioni agli eventi 20/ora
+  per account. Si aggiungono al limite generico di 60/minuto.
+- **Posti degli eventi**: il controllo conta anche le persone della nuova
+  iscrizione (famiglia = numero di membri, come nel pannello); dopo
+  l'inserimento si ricontrolla e, se due iscrizioni contemporanee hanno
+  superato i posti, la propria viene annullata. Massimo 20 familiari
+  (`src/lib/events/limits.ts`, anche nel modulo), nomi 100 caratteri, note 1000.
+- **Avvisi nel layout con timeout di 1,5 s** (`getActiveAvvisi`): con MongoDB
+  irraggiungibile le pagine pubbliche non restano bloccate un minuto.
+- **Sessioni**: il reset password fatto da un superadmin (utente o admin)
+  chiude anche le sessioni utente (per l'admin quelle dell'account collegato);
+  `/api/auth/me` con sessione admin non valida prosegue con quella utente;
+  il logout chiude sempre entrambe le sessioni (prima un admin promosso da
+  utente veniva ricollegato come admin al caricamento successivo).
+- **Notifiche push a blocchi con ripresa**: ogni invio ha un `runId`; entro 45 s
+  si inviano i dispositivi non ancora raggiunti per quel `runId`, poi ci si
+  ferma e l'avviso registra `pushRemaining`; il pulsante nel pannello diventa
+  "continua invio" e riprende senza doppioni.
+- **Service worker**: cache dei file statici limitata a 250 voci.

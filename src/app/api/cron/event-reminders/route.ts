@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { runEventReminders } from "@/lib/events/reminders";
+import { archiveStalePrayerRequests } from "@/lib/mongo/prayer-requests";
 
 /**
- * GET /api/cron/event-reminders — invia i promemoria degli eventi di domani.
+ * GET /api/cron/event-reminders — invia i promemoria degli eventi di domani
+ * e archivia le richieste di preghiera non gestite da oltre 60 giorni.
  *
  * Chiamato dal cron di Vercel (vercel.json), che aggiunge automaticamente
  * `Authorization: Bearer <CRON_SECRET>`. Senza CRON_SECRET configurata la
@@ -30,7 +32,17 @@ export async function GET(request: Request) {
   try {
     const result = await runEventReminders();
     console.log("[cron] event-reminders", result);
-    return NextResponse.json({ success: true, ...result });
+    // Manutenzione giornaliera: archivia le richieste di preghiera rimaste
+    // senza gestione (vedi archiveStalePrayerRequests). Un errore qui non
+    // deve far risultare falliti i promemoria già inviati.
+    const prayerArchived = await archiveStalePrayerRequests().catch((err) => {
+      console.error(
+        "[cron] archiviazione richieste di preghiera fallita",
+        err instanceof Error ? err.message : err
+      );
+      return 0;
+    });
+    return NextResponse.json({ success: true, ...result, prayerArchived });
   } catch (err) {
     console.error("[cron] event-reminders fallito", err instanceof Error ? err.message : err);
     return NextResponse.json({ success: false, error: "server_error" }, { status: 500 });

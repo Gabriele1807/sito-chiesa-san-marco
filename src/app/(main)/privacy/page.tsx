@@ -7,7 +7,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("legal", "privacyTitle", "privacyDescription", "/privacy");
 }
 
-const UPDATED_AT = "2026-09-27";
+const UPDATED_AT = "2026-09-28";
 
 const IT_COPY: LegalDocumentCopy = {
   eyebrow: "Informativa",
@@ -46,7 +46,7 @@ const IT_COPY: LegalDocumentCopy = {
       items: [
         "Gestire l'account e i servizi riservati del sito, incluse le iscrizioni agli eventi: esecuzione del servizio che richiedi (art. 6.1.b GDPR).",
         "Proteggere il sito e gli account (limitazione dei tentativi, prevenzione di abusi, sicurezza delle sessioni): legittimo interesse del titolare (art. 6.1.f GDPR).",
-        "Inviarti le email di servizio strettamente necessarie: il link per reimpostare la password o per confermare il tuo indirizzo, la conferma di un'iscrizione a un evento e il promemoria il giorno prima dell'evento, all'indirizzo del tuo account o a quello indicato nel modulo di iscrizione: esecuzione del servizio (art. 6.1.b GDPR). Non inviamo newsletter né comunicazioni promozionali.",
+        "Inviarti le email di servizio strettamente necessarie: il link per reimpostare la password o per confermare il tuo indirizzo, la conferma di un'iscrizione a un evento e il promemoria il giorno prima dell'evento, sempre e solo all'indirizzo email del tuo account (non a quello eventualmente scritto nel modulo di iscrizione): esecuzione del servizio (art. 6.1.b GDPR). Non inviamo newsletter né comunicazioni promozionali.",
         "Affidare alla preghiera della comunità le intenzioni che ci invii: consenso esplicito, espresso con l'apposita casella del modulo e revocabile in qualsiasi momento (artt. 6.1.a e 9.2.a GDPR).",
         "Inviarti notifiche sugli avvisi della parrocchia: consenso, espresso attivando le notifiche e revocabile disattivandole dalla pagina Avvisi o dalle impostazioni del browser (art. 6.1.a GDPR).",
         "Tenere traccia delle modifiche fatte dagli amministratori, per sicurezza e per ricostruire chi ha cambiato cosa: legittimo interesse del titolare (art. 6.1.f GDPR).",
@@ -96,7 +96,7 @@ const IT_COPY: LegalDocumentCopy = {
         "Contatori di sicurezza legati all'indirizzo IP: da pochi minuti a 24 ore.",
         "Iscrizioni agli eventi: per il tempo necessario all'organizzazione dell'evento e agli adempimenti collegati; puoi chiederne la cancellazione in qualsiasi momento.",
         "Link per confermare l'email: 48 ore, poi viene eliminato automaticamente.",
-        "Richieste di preghiera: finché non vengono archiviate dagli amministratori; quelle archiviate sono eliminate automaticamente dopo 90 giorni. Puoi chiederne la cancellazione in qualsiasi momento.",
+        "Richieste di preghiera: sono lette solo dai superamministratori della parrocchia; vengono archiviate al più tardi dopo 60 giorni e quelle archiviate sono eliminate automaticamente dopo altri 90 giorni. Puoi chiederne la cancellazione in qualsiasi momento.",
         "Iscrizione alle notifiche: finché non le disattivi o finché il servizio del browser non la dichiara scaduta.",
         "Registro delle attività degli amministratori: 12 mesi.",
       ],
@@ -173,7 +173,7 @@ const AR_COPY: LegalDocumentCopy = {
       items: [
         "إدارة الحساب والخدمات المحجوزة في الموقع، بما في ذلك التسجيل في الفعاليات: تنفيذ الخدمة التي تطلبها (المادة 6.1.ب من اللائحة).",
         "حماية الموقع والحسابات (الحدّ من المحاولات ومنع إساءة الاستخدام وأمان الجلسات): المصلحة المشروعة للجهة المسؤولة (المادة 6.1.و).",
-        "إرسال رسائل البريد الإلكتروني الضرورية للخدمة فقط: رابط إعادة تعيين كلمة المرور أو تأكيد عنوانك، وتأكيد التسجيل في فعالية والتذكير بها في اليوم السابق، إلى عنوان حسابك أو إلى العنوان المذكور في نموذج التسجيل: تنفيذ الخدمة (المادة 6.1.ب). لا نرسل نشرات إخبارية ولا رسائل ترويجية.",
+        "إرسال رسائل البريد الإلكتروني الضرورية للخدمة فقط: رابط إعادة تعيين كلمة المرور أو تأكيد عنوانك، وتأكيد التسجيل في فعالية والتذكير بها في اليوم السابق، دائمًا وفقط إلى البريد الإلكتروني لحسابك (وليس إلى العنوان المكتوب في نموذج التسجيل): تنفيذ الخدمة (المادة 6.1.ب). لا نرسل نشرات إخبارية ولا رسائل ترويجية.",
         "تقديم النيّات التي ترسلها لصلاة الجماعة: موافقة صريحة تُعطى عبر الخانة المخصصة في النموذج ويمكن سحبها في أي وقت (المادتان 6.1.أ و9.2.أ).",
         "إرسال إشعارات بإعلانات الكنيسة: موافقة تُعطى بتفعيل الإشعارات ويمكن سحبها بإيقافها من صفحة الإعلانات أو من إعدادات المتصفح (المادة 6.1.أ).",
         "تتبّع التعديلات التي يجريها المشرفون، لأغراض الأمان ولمعرفة من غيّر ماذا: المصلحة المشروعة للجهة المسؤولة (المادة 6.1.و).",
@@ -223,7 +223,7 @@ const AR_COPY: LegalDocumentCopy = {
         "عدّادات الأمان المرتبطة بعنوان IP: من بضع دقائق إلى 24 ساعة.",
         "التسجيل في الفعاليات: طوال المدة اللازمة لتنظيم الفعالية وما يرتبط بها من التزامات؛ ويمكنك طلب حذفه في أي وقت.",
         "رابط تأكيد البريد الإلكتروني: 48 ساعة، ثم يُحذف تلقائيًا.",
-        "طلبات الصلاة: حتى يؤرشفها المشرفون؛ وتُحذف الطلبات المؤرشفة تلقائيًا بعد 90 يومًا. ويمكنك طلب حذفها في أي وقت.",
+        "طلبات الصلاة: لا يقرؤها إلا كبار مسؤولي الموقع في الكنيسة؛ وتُؤرشف خلال 60 يومًا على الأكثر، ثم تُحذف الطلبات المؤرشفة تلقائيًا بعد 90 يومًا أخرى. ويمكنك طلب حذفها في أي وقت.",
         "الاشتراك في الإشعارات: حتى توقفه أو حتى تعلن خدمة المتصفح انتهاء صلاحيته.",
         "سجل نشاط المشرفين: 12 شهرًا.",
       ],

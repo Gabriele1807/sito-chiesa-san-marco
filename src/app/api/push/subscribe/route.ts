@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
+import { consumeActionLimit, LIMITS } from "@/lib/auth/action-limit";
 import { getVapidConfig } from "@/lib/push/config";
 import {
   parsePushSubscription,
@@ -31,6 +32,10 @@ export async function POST(request: Request) {
     const record = parsePushSubscription(body?.subscription, body?.locale ?? cookieLocale);
     if (!record) {
       return NextResponse.json({ success: false, error: "invalid_subscription" }, { status: 400 });
+    }
+
+    if (!(await consumeActionLimit(LIMITS.pushSubscribe, ip)).allowed) {
+      return NextResponse.json({ success: false, error: "rate_limited" }, { status: 429 });
     }
 
     await savePushSubscription(record);

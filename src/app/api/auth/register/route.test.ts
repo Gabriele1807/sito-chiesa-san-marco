@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const afterCallbacks: (() => Promise<void>)[] = [];
+const consumeActionLimit = vi.fn<(...args: unknown[]) => Promise<{ allowed: boolean; retryAfterSeconds: number }>>(async () => ({ allowed: true, retryAfterSeconds: 0 }));
+vi.mock("@/lib/auth/action-limit", () => ({
+  LIMITS: { register: {}, prayerRequest: {}, pushSubscribe: {}, eventRegistration: {} },
+  consumeActionLimit: (...args: unknown[]) => consumeActionLimit(...args),
+}));
 vi.mock("next/server", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/server")>()),
   after: (fn: () => Promise<void>) => afterCallbacks.push(fn),

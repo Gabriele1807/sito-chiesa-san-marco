@@ -36,6 +36,9 @@ export interface Avviso {
   updatedAt: string;
   /** Ultimo invio della notifica push per questo avviso. */
   pushSentAt?: string;
+  /** Id dell'ultimo invio push e dispositivi che mancavano quando si è fermato (0 = completato). */
+  pushRunId?: string;
+  pushRemaining?: number;
 }
 
 export type AvvisoInput = Pick<
@@ -250,9 +253,12 @@ export async function updateAvviso(id: string, data: Partial<AvvisoInput>): Prom
   return doc ? toAvviso(doc) : null;
 }
 
-export async function markAvvisoPushSent(id: string): Promise<void> {
+export async function markAvvisoPushRun(id: string, runId: string, remaining: number): Promise<void> {
   const c = await col();
-  await c.updateOne({ id }, { $set: { pushSentAt: new Date().toISOString() } });
+  await c.updateOne(
+    { id },
+    { $set: { pushSentAt: new Date().toISOString(), pushRunId: runId, pushRemaining: remaining } }
+  );
 }
 
 export async function deleteAvviso(id: string): Promise<boolean> {

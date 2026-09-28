@@ -249,6 +249,19 @@ describe("service worker", () => {
     expect(await cached!.text()).toBe("NETWORK /_next/static/chunks/app.js");
   });
 
+  it("keeps the static cache bounded across deploys", async () => {
+    for (let i = 0; i < 260; i++) {
+      await dispatch("fetch", {
+        request: request(`/_next/static/chunks/c${i}.js`, { destination: "script" }),
+      });
+    }
+    await new Promise((r) => setTimeout(r, 50));
+    const staticCache = (await caches.keys()).find((n) => n.startsWith("sm-static-"))!;
+    const size = (await (await caches.open(staticCache)).keys()).length;
+    expect(size).toBeLessThanOrEqual(250);
+    expect(size).toBeGreaterThan(200);
+  });
+
   it("does not cache React Server Component payloads", async () => {
     const headers = new Headers({ RSC: "1" });
     expect(await dispatch("fetch", { request: request("/eventi", { headers }) })).toBeUndefined();

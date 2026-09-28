@@ -32,6 +32,7 @@ interface Avviso {
   pubblicato: boolean;
   createdAt: string;
   pushSentAt?: string;
+  pushRemaining?: number;
 }
 
 const LIVELLI: { value: Livello; label: string; hint: string }[] = [
@@ -470,6 +471,7 @@ export default function AdminAvvisiPage() {
                       avvisoId={avviso.id}
                       titolo={avviso.titolo}
                       pushSentAt={avviso.pushSentAt}
+                      pushRemaining={avviso.pushRemaining}
                       inactive={status.label !== "Visibile"}
                       configured={push.configured}
                       subscribers={push.subscribers.total}

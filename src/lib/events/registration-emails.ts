@@ -2,9 +2,8 @@
  * Email legate alle iscrizioni agli eventi: conferma subito dopo
  * l'iscrizione e promemoria il giorno prima (job /api/cron/event-reminders).
  *
- * Destinatario: l'email dell'account che ha fatto l'iscrizione, oppure, per
- * chi si iscrive senza account, l'email indicata nel modulo. Nessun invio
- * se non c'è un indirizzo.
+ * Destinatario: solo l'email dell'account che ha fatto l'iscrizione (le
+ * iscrizioni richiedono un account). Nessun invio se non c'è un indirizzo.
  *
  * ⚠️ Solo lato server.
  */
@@ -19,9 +18,12 @@ import {
 import type { EventEmailData } from "@/lib/email/templates/booking-confirmation";
 
 export function registrationRecipient(
-  iscrizione: Pick<IscrizioneEvento, "createdByEmail" | "email">
+  iscrizione: Pick<IscrizioneEvento, "createdByEmail">
 ): string | null {
-  const email = (iscrizione.createdByEmail || iscrizione.email || "").trim();
+  // Solo l'email dell'account che ha fatto l'iscrizione: l'email scritta nel
+  // modulo (campo `email`) non riceve mai messaggi, altrimenti chiunque
+  // potrebbe far inviare email dal dominio della parrocchia a indirizzi altrui.
+  const email = (iscrizione.createdByEmail || "").trim();
   return email || null;
 }
 

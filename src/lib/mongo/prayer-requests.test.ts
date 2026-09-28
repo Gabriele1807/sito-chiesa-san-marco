@@ -72,3 +72,25 @@ describe("validatePrayerRequest", () => {
     });
   });
 });
+
+describe("archiveStalePrayerRequests", () => {
+  it("archives only requests older than 60 days that are not archived yet", async () => {
+    const updateMany = vi.fn(async () => ({ modifiedCount: 2 }));
+    const { getDb } = await import("./client");
+    (getDb as ReturnType<typeof vi.fn>).mockResolvedValue({
+      collection: () => ({ createIndex: vi.fn(), updateMany }),
+    });
+    const { archiveStalePrayerRequests } = await import("./prayer-requests");
+
+    const now = new Date("2026-09-28T12:00:00Z");
+    expect(await archiveStalePrayerRequests(now)).toBe(2);
+    const [filter, update] = updateMany.mock.calls[0] as unknown as [
+      { stato: unknown; createdAt: { $lt: string } },
+      { $set: { stato: string; deleteAfter: Date } },
+    ];
+    expect(filter.stato).toEqual({ $ne: "archiviata" });
+    expect(filter.createdAt.$lt).toBe("2026-07-30T12:00:00.000Z");
+    expect(update.$set.stato).toBe("archiviata");
+    expect(update.$set.deleteAfter.toISOString()).toBe("2026-12-27T12:00:00.000Z");
+  });
+});

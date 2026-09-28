@@ -8,6 +8,7 @@ import { validateUserSession } from "@/lib/mongo/sessions";
 import { findUserById, findUserByUsername } from "@/lib/mongo/users";
 import { validateSession } from "@/lib/auth/session";
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
+import { consumeActionLimit, LIMITS } from "@/lib/auth/action-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -108,13 +109,41 @@ export async function POST(request: NextRequest) {
       }
     } catch (dbErr) {
       console.error("[Iscrizione API] Database lookup error:", dbErr);
-      // Continue without user tracking if auth lookup fails
-      // This is non-critical for registration itself
+      return NextResponse.json(
+        {
+          error: "Registrazione non disponibile temporaneamente. Riprova tra pochi secondi.",
+          errorCode: "db_unavailable",
+          retryable: true,
+        },
+        { status: 503 }
+      );
+    }
+
+    // L'iscrizione richiede un account: la pagina lo chiede già, ma l'API
+    // va protetta anche se chiamata direttamente. Così ogni email di
+    // conferma/promemoria va solo all'indirizzo dell'account, mai a un
+    // indirizzo arbitrario scritto nel modulo.
+    if (!createdByUserId || !createdByAccountType) {
+      return NextResponse.json(
+        { error: "Accedi per iscriverti agli eventi.", errorCode: "unauthenticated" },
+        { status: 401 }
+      );
+    }
+
+    const accountLimit = await consumeActionLimit(
+      LIMITS.eventRegistration,
+      `${createdByAccountType}:${createdByUserId}`
+    );
+    if (!accountLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests, please try again later.", errorCode: "rate_limit" },
+        { status: 429 }
+      );
     }
 
     // Nessun dato "createdBy*" preso dal body: sono usati per stabilire chi
     // vede i dati di contatto dell'iscrizione (redactForViewer), quindi devono
-    // venire solo dalla sessione. Un'iscrizione anonima non ha proprietario.
+    // venire solo dalla sessione.
     const bodyWithCreator = {
       ...body,
       // Lingua delle email: quella con cui la persona sta usando il sito.

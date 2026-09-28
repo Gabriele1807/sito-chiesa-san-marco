@@ -34,12 +34,11 @@ describe("registration emails", () => {
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  it("writes to the account email first, then to the form email, otherwise to nobody", () => {
-    expect(
-      registrationRecipient({ createdByEmail: "account@example.com", email: "form@example.com" })
-    ).toBe("account@example.com");
-    expect(registrationRecipient({ email: " form@example.com " })).toBe("form@example.com");
-    expect(registrationRecipient({})).toBeNull();
+  it("writes only to the account email, never to the address typed in the form", () => {
+    expect(registrationRecipient({ createdByEmail: " account@example.com " })).toBe(
+      "account@example.com"
+    );
+    expect(registrationRecipient({ createdByEmail: undefined })).toBeNull();
   });
 
   it("lists every family member and the chosen meeting point", () => {
@@ -65,10 +64,18 @@ describe("registration emails", () => {
     expect(sendBookingConfirmationEmail).not.toHaveBeenCalled();
   });
 
-  it("links to the user's registrations page", async () => {
-    await sendRegistrationConfirmation(evento, { ...base, email: "form@example.com" });
+  it("ignores the form email and links to the user's registrations page", async () => {
+    expect(
+      await sendRegistrationConfirmation(evento, { ...base, email: "form@example.com" })
+    ).toBeNull();
+    await sendRegistrationConfirmation(evento, {
+      ...base,
+      email: "form@example.com",
+      createdByEmail: "account@example.com",
+    });
+    expect(sendBookingConfirmationEmail).toHaveBeenCalledTimes(1);
     expect(sendBookingConfirmationEmail.mock.calls[0][0]).toMatchObject({
-      to: "form@example.com",
+      to: "account@example.com",
       manageUrl: "https://sanmarco.example/iscrizioni",
       partecipanti: ["Maria Rossi"],
     });

@@ -64,6 +64,7 @@ export default function AdminRichiestePreghieraPage() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Richiesta | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
 
   // Lo spinner lo accende il cambio di scheda (selectTab); qui si spegne a caricamento finito.
   const load = useCallback(async () => {
@@ -73,6 +74,9 @@ export default function AdminRichiestePreghieraPage() {
         const data = await res.json();
         setRichieste(data.richieste);
         setCounts(data.counts);
+        setForbidden(false);
+      } else if (res.status === 403) {
+        setForbidden(true);
       }
     } catch {
       showToast("Errore di connessione", "error");
@@ -130,6 +134,14 @@ export default function AdminRichiestePreghieraPage() {
     }
   }
 
+  if (forbidden) {
+    return (
+      <p className="border-border bg-surface text-foreground/70 rounded-xl border p-6 text-sm">
+        Le richieste di preghiera contengono dati delicati e sono visibili solo ai superadmin.
+      </p>
+    );
+  }
+
   const liturgiche = richieste.filter((r) => r.leggibileInLiturgia);
 
   return (
@@ -139,7 +151,8 @@ export default function AdminRichiestePreghieraPage() {
           <h1 className="text-foreground text-2xl font-bold">Richieste di preghiera</h1>
           <p className="text-foreground/60 mt-1 max-w-2xl text-sm">
             Intenzioni inviate dal sito (pagina &quot;Richieste di preghiera&quot;). Visibili solo
-            agli admin. Le richieste archiviate vengono cancellate automaticamente dopo 90 giorni.
+            ai superadmin. Quelle non gestite vengono archiviate da sole dopo 60 giorni; le
+            archiviate vengono cancellate automaticamente dopo 90 giorni.
           </p>
         </div>
         {tab !== "archiviata" && liturgiche.length > 0 && (

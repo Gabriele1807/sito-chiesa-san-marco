@@ -5,6 +5,7 @@ import { validatePasswordRules } from "@/lib/auth/password-rules";
 import { createUser, findUserByEmail } from "@/lib/mongo/users";
 import { isUsernameTaken } from "@/lib/auth/username";
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
+import { consumeActionLimit, LIMITS } from "@/lib/auth/action-limit";
 import { VALID_ROLES, VALID_AGE_GROUPS } from "@/lib/auth/registration-constants";
 
 export async function POST(request: Request) {
@@ -100,6 +101,15 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: "Username già in uso" },
         { status: 409 }
+      );
+    }
+
+    // Limite dedicato (ogni account creato invia un'email di verifica):
+    // conta solo le registrazioni valide, così chi corregge il modulo non viene bloccato.
+    if (!(await consumeActionLimit(LIMITS.register, ip)).allowed) {
+      return NextResponse.json(
+        { success: false, error: "Troppe registrazioni da questa rete. Riprova tra un'ora." },
+        { status: 429 }
       );
     }
 
