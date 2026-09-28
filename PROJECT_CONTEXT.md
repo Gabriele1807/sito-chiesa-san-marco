@@ -2059,7 +2059,10 @@ Otto funzionalità scelte dal proprietario. Variabili d'ambiente in
 - Installazione: `install-store.ts` (stato condiviso via
   `useSyncExternalStore`; `beforeinstallprompt` catturato anche prima
   dell'idratazione con lo script inline `early-install-script.ts`),
-  `InstallPrompt` (dalla seconda visita o dopo 30 s, "Non ora" = 30 giorni),
+  `InstallPrompt` (dopo 10 s alla prima visita, 3 s a chi torna o all'apertura
+  di una seconda pagina; "Non ora" = 30 giorni), `NotificationPrompt` (solo
+  nell'app installata, se il permesso notifiche non è mai stato chiesto:
+  invito ad attivarle; "Non ora" = 14 giorni; logica comune in `push-client.ts`),
   `InstallAppButton` nel footer, `IosInstallSteps` per Safari iOS.
 - Logout: `clearOfflinePageCache()` svuota le copie offline delle pagine.
 - Push: `push_subscriptions` (`src/lib/mongo/push-subscriptions.ts`,
@@ -2104,6 +2107,9 @@ Otto funzionalità scelte dal proprietario. Variabili d'ambiente in
   `/verifica-email` conferma con **clic esplicito** (`POST
   /api/auth/verify-email`, i filtri antispam aprono i link in GET);
   reinvio dal profilo (`/api/auth/verify-email/resend`, max 1 al minuto).
+  Dopo la registrazione la finestra resta aperta con le istruzioni per
+  confermare l'email; finché non è confermata, `EmailVerifyBanner` mostra un
+  promemoria nascondibile in cima alle pagine pubbliche (tranne profilo).
   `/api/auth/me` espone `emailVerificata`. La verifica è informativa: non
   blocca nessuna funzione.
 - Newsletter: ancora non implementata (`sendNewsletter` restituisce `not_implemented`).
