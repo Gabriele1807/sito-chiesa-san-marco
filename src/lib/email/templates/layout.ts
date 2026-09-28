@@ -1,5 +1,5 @@
 /**
- * Struttura HTML comune delle email della parrocchia (conferma iscrizione,
+ * Struttura HTML comune delle email della chiesa (conferma iscrizione,
  * promemoria, verifica email). Tabelle e stili inline: sono l'unico modo
  * affidabile di impaginare nei client di posta (Gmail, Outlook, Apple Mail).
  */

@@ -25,7 +25,7 @@
       "intro": "Abbiamo registrato l'iscrizione all'evento «{event}». Ecco il riepilogo:",
       "button": "Vedi le mie iscrizioni",
       "reminderNote": "Il giorno prima dell'evento riceverai un promemoria a questo indirizzo.",
-      "footnote": "Hai ricevuto questa email perché questo indirizzo è stato indicato per un'iscrizione sul sito della parrocchia. Per modifiche o cancellazioni contatta la parrocchia."
+      "footnote": "Hai ricevuto questa email perché questo indirizzo è stato indicato per un'iscrizione sul sito della chiesa. Per modifiche o cancellazioni contatta la chiesa."
     },
     "eventReminder": {
       "subject": "Promemoria: domani {event}",
@@ -33,7 +33,7 @@
       "title": "Ci vediamo domani",
       "intro": "Ti ricordiamo che domani si terrà «{event}», a cui risulti iscritto.",
       "button": "Dettagli dell'evento",
-      "footnote": "Hai ricevuto questo promemoria perché questo indirizzo è stato indicato per un'iscrizione sul sito della parrocchia."
+      "footnote": "Hai ricevuto questo promemoria perché questo indirizzo è stato indicato per un'iscrizione sul sito della chiesa."
     },
     "verifyEmail": {
       "subject": "Conferma il tuo indirizzo email",
@@ -143,7 +143,7 @@
   },
   "orari": {
     "titolo": "Orari settimanali",
-    "sottotitolo": "Consulta gli orari delle celebrazioni e delle attività parrocchiali. Gli orari possono variare in occasione di festività o eventi speciali.",
+    "sottotitolo": "Consulta gli orari delle celebrazioni e delle attività chiesali. Gli orari possono variare in occasione di festività o eventi speciali.",
     "oggi": "Oggi",
     "prossima": "Prossima"
   },
@@ -347,7 +347,7 @@
     "scansionaQR": "Scansiona il QR",
     "menu": "Menu",
     "dockCompatto": "Dock compatto",
-    "subAvvisi": "Comunicazioni della parrocchia",
+    "subAvvisi": "Comunicazioni della chiesa",
     "subRichiestePreghiera": "Affida un'intenzione"
   },
   "topbar": {
@@ -449,7 +449,7 @@
     "registerRoleDiacono": "Diacono",
     "registerRoleDiaconoDesc": "Servizio liturgico e pastorale nella comunità",
     "registerRoleOspite": "Ospite da un'altra chiesa",
-    "registerRoleOspiteDesc": "Proveniente da un'altra parrocchia",
+    "registerRoleOspiteDesc": "Proveniente da un'altra chiesa",
     "registerChurchLabel": "Chiesa di provenienza",
     "registerChurchPlaceholder": "Seleziona...",
     "registerAgeTitle": "Fascia d'età",
@@ -703,7 +703,7 @@
   "avvisi": {
     "titolo": "Avvisi",
     "sottotitolo": "Comunicazioni e variazioni di orario della comunità.",
-    "eyebrow": "Dalla parrocchia",
+    "eyebrow": "Dalla chiesa",
     "vediTutti": "Tutti gli avvisi",
     "nessuno": "Al momento non ci sono avvisi.",
     "chiudi": "Nascondi avviso",
@@ -730,7 +730,7 @@
     "installButton": "Installa l'app",
     "installed": "App installata",
     "pushTitle": "Notifiche degli avvisi",
-    "pushBody": "Ricevi una notifica sul telefono quando la parrocchia pubblica un avviso importante.",
+    "pushBody": "Ricevi una notifica sul telefono quando la chiesa pubblica un avviso importante.",
     "pushEnable": "Attiva notifiche",
     "pushDisable": "Disattiva notifiche",
     "pushEnabled": "Notifiche attive su questo dispositivo.",
@@ -739,7 +739,7 @@
     "pushIosInstall": "Su iPhone e iPad le notifiche funzionano solo dopo aver installato l'app: aggiungila alla schermata Home e aprila da lì.",
     "pushError": "Non è stato possibile attivare le notifiche. Riprova più tardi.",
     "pushNotConfigured": "Le notifiche non sono ancora disponibili.",
-    "notifyTitle": "Vuoi ricevere gli avvisi della parrocchia?",
+    "notifyTitle": "Vuoi ricevere gli avvisi della chiesa?",
     "notifyBody": "Ti mandiamo una notifica solo per le comunicazioni importanti: variazioni di orario, chiusure, appuntamenti.",
     "notifyEnable": "Attiva notifiche",
     "notifyLater": "Non ora",
@@ -750,7 +750,7 @@
     "titolo": "Richieste di preghiera",
     "sottotitolo": "Affida un'intenzione alla preghiera della comunità: i sacerdoti la ricorderanno nella Divina Liturgia.",
     "eyebrow": "Pregare gli uni per gli altri",
-    "privacyNota": "La richiesta è letta solo dai sacerdoti e dai responsabili della parrocchia. Non viene pubblicata sul sito.",
+    "privacyNota": "La richiesta è letta solo dai sacerdoti e dai responsabili della chiesa. Non viene pubblicata sul sito.",
     "tipo": "Per chi o per cosa preghiamo",
     "tipo_malati": "Per un malato",
     "tipo_defunti": "Per un defunto",

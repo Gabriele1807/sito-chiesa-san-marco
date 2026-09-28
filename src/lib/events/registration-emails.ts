@@ -22,7 +22,7 @@ export function registrationRecipient(
 ): string | null {
   // Solo l'email dell'account che ha fatto l'iscrizione: l'email scritta nel
   // modulo (campo `email`) non riceve mai messaggi, altrimenti chiunque
-  // potrebbe far inviare email dal dominio della parrocchia a indirizzi altrui.
+  // potrebbe far inviare email dal dominio della chiesa a indirizzi altrui.
   const email = (iscrizione.createdByEmail || "").trim();
   return email || null;
 }

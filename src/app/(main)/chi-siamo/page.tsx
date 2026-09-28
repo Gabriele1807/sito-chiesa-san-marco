@@ -32,7 +32,7 @@ const IT_COPY: Copy = {
     "Accompagnare la comunità nella preghiera, nei sacramenti, nella formazione e nella vita familiare, offrendo un luogo stabile di culto, ascolto e crescita spirituale per bambini, giovani e adulti.",
   communityTitle: "La nostra comunità",
   community:
-    "La parrocchia riunisce famiglie, giovani, diaconi e servitori che partecipano alla Divina Liturgia, alla catechesi, ai momenti di fraternità e alle opere di carità in comunione con la diocesi copta ortodossa di Milano.",
+    "La chiesa riunisce famiglie, giovani, diaconi e servitori che partecipano alla Divina Liturgia, alla catechesi, ai momenti di fraternità e alle opere di carità in comunione con la diocesi copta ortodossa di Milano.",
   institutionTitle: "Riferimenti ufficiali",
   notesTitle: "Fonti",
   institutionIntro:
