@@ -296,10 +296,7 @@
     "youtubeDomenica": "كلّ يوم أحد",
     "youtubeFeste": "الأعياد القبطية",
     "youtubeRecenteLabel": "آخر احتفال مُبثّ",
-    "youtubeUltima": "القداس الإلهي – أحد الشعانين",
     "youtubeGuarda": "شاهده",
-    "youtubeIscritti": "أكثر من 1 000 مشترك",
-    "youtubeVideo": "فيديو على القناة",
     "emailSezione": "البريد الإلكتروني",
     "emailDesc": "راسلونا للاستفسار أو لطلب بركة أو لأيّ احتياج يخصّ الجالية.",
     "emailIndirizzo": "info@sanmarcocopti.it",
@@ -325,7 +322,11 @@
     "youtubeLiveLabel": "بثّ مباشر الآن",
     "youtubeGuardaTutti": "جميع الفيديوهات",
     "youtubeInProgramma": "مجدول قريباً",
-    "youtubeLiveOra": "بثّ مباشر الآن"
+    "youtubeLiveOra": "بثّ مباشر الآن",
+    "youtubeIscrittiCount": "{count} مشترك",
+    "youtubeVideoCount": "{count} فيديو",
+    "youtubePlay": "تشغيل الفيديو",
+    "youtubeVaiAlCanale": "شاهدوا الاحتفالات على القناة"
   },
   "sidebar": {
     "navigazione": "التصفّح",
