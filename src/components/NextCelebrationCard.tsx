@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
+import { useLocale } from "next-intl";
 import type { OrarioSettimanale } from "@/types";
-import { getNextCelebration } from "@/lib/next-celebration";
+import { getNextCelebration, localizeGiorno } from "@/lib/next-celebration";
+import { useMinuteClock } from "./useMinuteClock";
 
 interface NextCelebrationCardProps {
   orari: OrarioSettimanale[];
@@ -12,18 +13,15 @@ interface NextCelebrationCardProps {
 }
 
 export default function NextCelebrationCard({ orari, title, emptyLabel }: NextCelebrationCardProps) {
-  const [celebration, setCelebration] = useState(() => getNextCelebration(orari));
+  const locale = useLocale();
+  // Calcolata solo nel browser, con l'ora del dispositivo (vedi useMinuteClock).
+  const now = useMinuteClock();
+  const celebration = now ? getNextCelebration(orari, now) : null;
 
-  useEffect(() => {
-    // Aggiorna ogni minuto
-    const interval = setInterval(() => {
-      setCelebration(getNextCelebration(orari));
-    }, 60_000);
-    return () => clearInterval(interval);
-  }, [orari]);
-
-  const description = celebration
-    ? `${celebration.tipo} – ${celebration.orario}`
+  const description = !now
+    ? "\u00a0"
+    : celebration
+    ? `${localizeGiorno(celebration.giorno, locale)} · ${celebration.tipo} – ${celebration.orario}`
     : emptyLabel;
 
   return (

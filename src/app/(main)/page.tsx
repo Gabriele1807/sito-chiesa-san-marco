@@ -1,7 +1,6 @@
 ﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import {
-  Clock,
   CalendarDays,
   BookOpen,
   MapPin,
@@ -191,26 +190,12 @@ export default async function HomePage() {
 
         <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="min-w-0 overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
-            <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-alt/70 px-4 py-4 sm:px-6">
-              <div>
-                <h3 className="text-base font-bold text-foreground">
-                  {tOrari("titolo")}
-                </h3>
-                <p className="text-sm text-foreground/55">
-                  {t("quickProssima")}
-                </p>
-              </div>
-              <div className="rounded-full bg-accent/10 p-2 text-accent">
-                <Clock className="h-4 w-4" />
-              </div>
-            </div>
             <OrariTable
               orari={orari}
               labels={{
-                giorno: tOrari("giorno"),
-                celebrazione: tOrari("celebrazione"),
-                orario: tOrari("orario"),
-                note: tOrari("note"),
+                oggi: tOrari("oggi"),
+                prossima: tOrari("prossima"),
+                vuoto: t("noCelebration"),
               }}
             />
           </div>

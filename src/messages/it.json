@@ -144,10 +144,8 @@
   "orari": {
     "titolo": "Orari settimanali",
     "sottotitolo": "Consulta gli orari delle celebrazioni e delle attività parrocchiali. Gli orari possono variare in occasione di festività o eventi speciali.",
-    "giorno": "Giorno",
-    "celebrazione": "Celebrazione",
-    "orario": "Orario",
-    "note": "Note"
+    "oggi": "Oggi",
+    "prossima": "Prossima"
   },
   "preghiere": {
     "titolo": "Preghiere",

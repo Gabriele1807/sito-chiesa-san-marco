@@ -1,6 +1,30 @@
 import type { OrarioSettimanale } from "@/types";
 
-const GIORNI_IT = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+export const GIORNI_IT = [
+  "Domenica",
+  "Lunedì",
+  "Martedì",
+  "Mercoledì",
+  "Giovedì",
+  "Venerdì",
+  "Sabato",
+];
+
+// I giorni sono salvati nel database in italiano.
+const GIORNI_AR: Record<string, string> = {
+  Domenica: "الأحد",
+  Lunedì: "الاثنين",
+  Martedì: "الثلاثاء",
+  Mercoledì: "الأربعاء",
+  Giovedì: "الخميس",
+  Venerdì: "الجمعة",
+  Sabato: "السبت",
+};
+
+/** Nome del giorno nella lingua del sito (i dati sono in italiano). */
+export function localizeGiorno(giorno: string, locale: string): string {
+  return locale === "ar" ? (GIORNI_AR[giorno] ?? giorno) : giorno;
+}
 
 interface NextCelebration {
   giorno: string;
