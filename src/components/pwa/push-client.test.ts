@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 const KEY =
   "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM";
 
-function setup(permission: NotificationPermission) {
+function setup(permission: NotificationPermission, response = new Response("{}", { status: 200 })) {
   const subscription = {
     endpoint: "https://fcm.googleapis.com/fcm/send/x",
     options: {},
@@ -17,14 +17,14 @@ function setup(permission: NotificationPermission) {
     getSubscription: vi.fn(async () => null),
     subscribe: vi.fn(async () => subscription),
   };
-  const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+  const fetchMock = vi.fn(async () => response);
   vi.stubGlobal("Notification", {
     permission: "default",
     requestPermission: vi.fn(async () => permission),
   });
   vi.stubGlobal("navigator", { serviceWorker: { ready: Promise.resolve({ pushManager }) } });
   vi.stubGlobal("fetch", fetchMock);
-  return { pushManager, fetchMock };
+  return { pushManager, fetchMock, subscription };
 }
 
 describe("subscribeToPush", () => {
@@ -58,5 +58,17 @@ describe("subscribeToPush", () => {
       locale: "ar",
       subscription: { endpoint: expect.any(String) },
     });
+  });
+
+  it("undoes the device subscription when the server refuses it", async () => {
+    const { subscription } = setup(
+      "granted",
+      new Response(JSON.stringify({ success: false, error: "not_configured" }), { status: 503 })
+    );
+    const { subscribeToPush, PushSaveError } = await import("./push-client");
+    const attempt = subscribeToPush("it");
+    await expect(attempt).rejects.toBeInstanceOf(PushSaveError);
+    await expect(attempt).rejects.toMatchObject({ code: "not_configured" });
+    expect(subscription.unsubscribe).toHaveBeenCalled();
   });
 });

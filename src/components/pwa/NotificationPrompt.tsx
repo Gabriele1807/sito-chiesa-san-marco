@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { BellRing, Loader2, X } from "lucide-react";
 import { useInstallState } from "./install-store";
-import { currentPushSubscription, pushSupported, subscribeToPush } from "./push-client";
+import {
+  PushSaveError,
+  currentPushSubscription,
+  pushSupported,
+  subscribeToPush,
+} from "./push-client";
 
 const DISMISSED_KEY = "pwa_push_prompt_dismissed_at";
 const DISMISS_DAYS = 14;
@@ -24,7 +29,7 @@ export default function NotificationPrompt() {
   const [visible, setVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"" | "pushError" | "pushNotConfigured">("");
 
   useEffect(() => {
     if (!install.standalone || !pushSupported() || Notification.permission !== "default") return;
@@ -60,7 +65,7 @@ export default function NotificationPrompt() {
 
   async function enable() {
     setBusy(true);
-    setError(false);
+    setError("");
     try {
       const permission = await subscribeToPush(locale);
       if (permission === "granted") {
@@ -70,8 +75,12 @@ export default function NotificationPrompt() {
         // Negato o chiuso senza scegliere: non si insiste.
         dismiss();
       }
-    } catch {
-      setError(true);
+    } catch (err) {
+      setError(
+        err instanceof PushSaveError && err.code === "not_configured"
+          ? "pushNotConfigured"
+          : "pushError"
+      );
     } finally {
       setBusy(false);
     }
@@ -99,7 +108,7 @@ export default function NotificationPrompt() {
               <p className="text-foreground/70 text-sm leading-relaxed">{t("notifyBody")}</p>
               {error && (
                 <p role="alert" className="text-danger text-sm">
-                  {t("pushError")}
+                  {t(error)}
                 </p>
               )}
               <div className="flex gap-2 pt-1">

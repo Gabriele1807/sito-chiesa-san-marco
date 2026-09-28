@@ -1,3 +1,4 @@
+import { createECDH } from "node:crypto";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const consumeActionLimit = vi.fn<
@@ -39,8 +40,11 @@ function req(body: unknown, cookie = "") {
 describe("POST /api/push/subscribe", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = "public";
-    process.env.VAPID_PRIVATE_KEY = "private";
+    // Coppia valida: la configurazione verifica formato e corrispondenza delle chiavi.
+    const ecdh = createECDH("prime256v1");
+    ecdh.generateKeys();
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = ecdh.getPublicKey().toString("base64url");
+    process.env.VAPID_PRIVATE_KEY = ecdh.getPrivateKey().toString("base64url");
     process.env.VAPID_SUBJECT = "mailto:test@example.com";
   });
 

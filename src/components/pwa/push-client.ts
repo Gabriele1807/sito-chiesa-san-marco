@@ -48,13 +48,22 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
-async function saveOnServer(subscription: PushSubscription, locale: string): Promise<boolean> {
+/** Errore di registrazione sul server; `code` è quello restituito dall'API (es. "not_configured"). */
+export class PushSaveError extends Error {
+  constructor(public readonly code: string) {
+    super(`push subscribe failed: ${code}`);
+  }
+}
+
+async function saveOnServer(subscription: PushSubscription, locale: string): Promise<void> {
   const res = await fetch("/api/push/subscribe", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ subscription: subscription.toJSON(), locale }),
   });
-  return res.ok;
+  if (res.ok) return;
+  const body = await res.json().catch(() => null);
+  throw new PushSaveError(typeof body?.error === "string" ? body.error : `http_${res.status}`);
 }
 
 /** True se questo browser può ricevere notifiche push (API presenti e chiavi configurate). */
@@ -96,7 +105,14 @@ export async function subscribeToPush(locale: string): Promise<NotificationPermi
     }),
     SUBSCRIBE_TIMEOUT_MS
   );
-  if (!(await saveOnServer(subscription, locale))) throw new Error("save failed");
+  try {
+    await saveOnServer(subscription, locale);
+  } catch (err) {
+    // Il server non l'ha registrata: senza annullarla il dispositivo
+    // risulterebbe "iscritto" ma non riceverebbe mai nulla.
+    await subscription.unsubscribe().catch(() => undefined);
+    throw err;
+  }
   return permission;
 }
 
