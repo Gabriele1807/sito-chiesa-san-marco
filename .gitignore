@@ -46,3 +46,4 @@ next-env.d.ts
 /.dbg/
 /.remember/
 /.mcp.json
+env.setup-istruzioni.md

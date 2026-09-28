@@ -125,17 +125,9 @@ html {
     font-family: var(--font-arabic), var(--font-sans), serif;
   }
 
-  /* Eyebrow label with a drawn rule instead of a generic uppercase-only tag */
+  /* Eyebrow label */
   .eyebrow {
     @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-accent;
-  }
-  .eyebrow::before {
-    content: "";
-    display: inline-block;
-    width: 1.5rem;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.6;
   }
 
   /* Coptic cross mark used as a recurring identity motif, not a stock icon */
