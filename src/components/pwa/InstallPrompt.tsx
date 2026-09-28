@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
@@ -11,7 +12,11 @@ const DISMISSED_KEY = "pwa_install_dismissed_at";
 const VISITS_KEY = "pwa_visits";
 const VISIT_COUNTED_KEY = "pwa_visit_counted";
 const DISMISS_DAYS = 30;
-const FIRST_VISIT_DELAY_MS = 30_000;
+// Né subito (disturberebbe chi arriva sul sito) né troppo tardi: 10 secondi
+// alla prima visita, 3 a chi torna, oppure appena si apre una seconda pagina.
+const FIRST_VISIT_DELAY_MS = 10_000;
+const RETURNING_VISIT_DELAY_MS = 3_000;
+const SECOND_PAGE_DELAY_MS = 1_500;
 
 function safeGet(storage: Storage, key: string): string | null {
   try {
@@ -31,8 +36,8 @@ function safeSet(storage: Storage, key: string, value: string) {
 
 /**
  * Invito discreto a installare l'app. Compare solo se il dispositivo lo
- * permette, non prima della seconda visita (o di 30 secondi sul sito alla
- * prima), e dopo "Non ora" resta nascosto per 30 giorni.
+ * permette, dopo 10 secondi alla prima visita (3 a chi torna) o appena si
+ * apre una seconda pagina; dopo "Non ora" resta nascosto per 30 giorni.
  */
 export default function InstallPrompt() {
   const t = useTranslations("pwa");
@@ -53,13 +58,23 @@ export default function InstallPrompt() {
       safeSet(localStorage, VISITS_KEY, String(visits));
       safeSet(sessionStorage, VISIT_COUNTED_KEY, "1");
     }
-    if (visits >= 2) {
-      setEngaged(true);
-      return;
-    }
-    const timer = setTimeout(() => setEngaged(true), FIRST_VISIT_DELAY_MS);
+    const delay = visits >= 2 ? RETURNING_VISIT_DELAY_MS : FIRST_VISIT_DELAY_MS;
+    const timer = setTimeout(() => setEngaged(true), delay);
     return () => clearTimeout(timer);
   }, []);
+
+  // Seconda pagina aperta nella stessa visita: l'interesse c'è, l'invito può comparire.
+  const pathname = usePathname();
+  const firstPath = useRef<string | null>(null);
+  useEffect(() => {
+    if (firstPath.current === null) {
+      firstPath.current = pathname;
+      return;
+    }
+    if (pathname === firstPath.current) return;
+    const timer = setTimeout(() => setEngaged(true), SECOND_PAGE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   if (dismissed || !engaged || !canOfferInstall(install)) return null;
 
@@ -95,7 +110,9 @@ export default function InstallPrompt() {
           {isIos ? (
             <IosInstallSteps notSafari={install.platform === "ios-other"} />
           ) : (
-            <p className="text-foreground/70 text-sm leading-relaxed">{t("installBody")}</p>
+            <p className="text-foreground/70 text-sm leading-relaxed">
+              {t(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? "installBodyNotify" : "installBody")}
+            </p>
           )}
           {!isIos && (
             <div className="flex gap-2 pt-1">

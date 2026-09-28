@@ -102,6 +102,9 @@ export default function RegisterModal() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  // Indirizzo a cui è partito il link di conferma: finché è impostato la
+  // finestra resta aperta con le istruzioni, invece di chiudersi da sola.
+  const [verifyEmail, setVerifyEmail] = useState<string | null>(null);
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
 
   const roles: { value: UserRole; label: string; description: string }[] = [
@@ -191,6 +194,7 @@ export default function RegisterModal() {
       setFieldErrors({});
       setLoading(false);
       setSuccess(false);
+      setVerifyEmail(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showRegisterModal]);
@@ -338,7 +342,12 @@ export default function RegisterModal() {
         if (data.success) {
           setSuccess(true);
           await refresh();
-          setTimeout(() => setShowRegisterModal(false), 1500);
+          // Email scritta a mano o non verificata dal provider: è partito il link di conferma.
+          if (data.user?.emailVerificata === false && data.user?.email) {
+            setVerifyEmail(data.user.email);
+          } else {
+            setTimeout(() => setShowRegisterModal(false), 1500);
+          }
         } else {
           setError(mapRegisterError(data.error) || data.error || t("registerErrorGeneric"));
         }
@@ -387,10 +396,8 @@ export default function RegisterModal() {
           localStorage.setItem("user_info", JSON.stringify(loginData.user));
         }
         await refresh();
-        // Chiudi dopo un po'
-        setTimeout(() => {
-          setShowRegisterModal(false);
-        }, 1500);
+        // Resta aperta con le istruzioni per confermare l'email (vedi verifyEmail).
+        setVerifyEmail(email.trim().toLowerCase());
       } else {
         const mapped = mapRegisterError(data.error);
         setError(mapped || t("registerErrorGeneric"));
@@ -473,6 +480,17 @@ export default function RegisterModal() {
                 <span className="text-3xl">✓</span>
               </div>
               <p className="text-success text-sm">{t("registerSuccess")}</p>
+              {verifyEmail && (
+                <div className="mt-5 rounded-xl border border-accent/25 bg-accent/[0.06] p-4 text-start">
+                  <p className="font-semibold text-foreground">{t("registerVerifyTitle")}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground/75">
+                    {t("registerVerifyBody", { email: verifyEmail })}
+                  </p>
+                  <button type="button" onClick={() => setShowRegisterModal(false)} className="btn-primary mt-4 w-full">
+                    {t("registerVerifyContinue")}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

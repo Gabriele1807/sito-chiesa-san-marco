@@ -4,6 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { SidebarProvider } from "@/components/sidebar/SidebarContext";
 import UrgentAvvisiBanner from "@/components/avvisi/UrgentAvvisiBanner";
+import EmailVerifyBanner from "@/components/auth/EmailVerifyBanner";
 import { getActiveAvvisi } from "@/lib/db";
 import { localizeAvviso } from "@/lib/mongo/announcements";
 
@@ -26,6 +27,7 @@ export default async function MainLayout({
           <main className="flex-1 min-w-0 flex flex-col w-0 bg-background">
             <div className="px-3 py-6 sm:px-6 sm:py-10 lg:px-10 flex-1 max-w-full">
               {urgenti.length > 0 && <UrgentAvvisiBanner avvisi={urgenti} />}
+              <EmailVerifyBanner />
               {children}
             </div>
             <Footer />
