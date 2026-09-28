@@ -1919,6 +1919,102 @@ e stato autenticato):
   con un link). Il testo non è una consulenza legale: farlo rivedere prima
   di considerarlo definitivo.
 
+## 10.10 Revisione grafica mobile-first (2026-09-28)
+
+Audit visuale delle pagine pubbliche **renderizzate** (Chromium via
+Playwright, build di produzione locale con MongoDB in memoria e dati di
+prova), utente loggato e ospite, a 320/360/390/414/768/1280 px in italiano
+e 360/390/1280 in arabo. Script di controllo automatico: overflow
+orizzontale, elementi fuori schermo, target touch < 40px, testo < 12px;
+più screenshot a fette esaminati a mano. Skill usata: `frontend-design`
+(`.agents/skills`). Non erano disponibili "UI UX Pro Max" né i comandi
+`/design` e `/design-sync`.
+
+Risultati prima → dopo: overflow orizzontale 0 → 0 (nessuna pagina,
+nessuna larghezza); target touch piccoli su mobile in media 27 → 2,7 per
+pagina (rimasti: logo nell'header 36px, voci dell'indice legale 36px,
+checkbox native dei moduli con etichetta cliccabile).
+
+Problemi trovati e corretti:
+
+- **Header mobile**: il titolo di sezione era troncato a "H…" (maiuscolo
+  con spaziatura 0.26em in ~120px) e la pillola lingua "Italiano ▼" (testo
+  11px) occupava metà della barra, a 320px tagliata ("Italian").
+  `LanguageSwitcher` ora è una pillola 40px con il codice (`IT` / `ع`) e il
+  `<select>` nativo trasparente sopra (nome intero da `sm`); `TopbarTitle`
+  su telefono è in minuscolo `text-sm`, maiuscolo spaziato solo da `sm`, e
+  copre anche `/avvisi`, `/richieste-preghiera`, `/privacy`, `/termini`
+  (prima mostravano "Home"). Hamburger 44px, spaziature ridotte.
+- **Ospiti senza accesso dall'header**: `UserMenu` restituiva `null`;
+  ora mostra "Accedi" (icona + testo da 360px) che apre il modale di login.
+- **Dock mobile solo icone** (etichette `sr-only`, target 34px): ora
+  etichette brevi visibili (namespace i18n `dock`: Home, Orari, Preghiere,
+  Video, Contatti, Menu), altezza minima 48px.
+- **Eyebrow**: `tracking-[0.35em]` faceva andare a capo le etichette lunghe
+  su telefono; ora 0.18em sotto `sm`, trattino allineato; in arabo
+  `letter-spacing: 0` (la spaziatura spezza le legature). "Comunita" →
+  "Comunità".
+- **Home**: CTA hero a tutta larghezza sotto 420px; "Prossimi eventi"
+  mostrava eventi già passati → ora solo eventi non conclusi, in ordine di
+  data; frecce "→" specchiate con `rtl:`.
+- **Preghiere**: nelle card con PDF il pulsante affiancato schiacciava il
+  titolo in una colonna di poche lettere → su telefono va sotto; rimosso il
+  sottotitolo h2 che ripeteva il titolo (resta `sr-only`).
+- **Video & Corsi**: testo segnaposto da sviluppo visibile agli utenti
+  ("in attesa della futura integrazione nel database", "contenuti video di
+  esempio") sostituito; tolto il titolo ripetuto tre volte; titoli card h3
+  → h2.
+- **Dettaglio icona**: errore di hydration in `IconaQRSection`
+  (`useState(() => window…)`) → `useSyncExternalStore`; QR sopra i pulsanti
+  sotto i 400px (a 320px "Scarica QR" andava a capo).
+- **Galleria icone**: filtri su due colonne, classe `.input-field` (focus
+  oro come il resto del sito), `<label htmlFor>` collegate ai `<select>`.
+- **Padding su telefono** ridotti (p-8 → p-5 sm:p-8) in chi-siamo, dettaglio
+  icona e libro, intestazione privacy/termini; "Fonti" in chi-siamo ora
+  tradotto.
+- **Target touch**: nuova classe `.footer-link` (righe 40px su mobile,
+  compatte da `lg`), X degli avvisi urgenti e del suggerimento account
+  collegati 40px, "Torna a…" (`BackLink`) 44px, voci del menu laterale 44px,
+  indice privacy/termini a righe, "Leggi il testo", "Tutti gli avvisi",
+  "Tutti i video", voci del menu utente. Testi del footer da /45 a /55–60
+  di opacità per il contrasto.
+
+Convenzioni responsive adottate:
+
+- Target touch minimo 40px (44px per i controlli principali) sotto `lg`;
+  le liste desktop restano compatte con `lg:min-h-0`.
+- Testo di interfaccia su telefono mai in maiuscolo con tracking > 0.2em.
+- Due azioni affiancate su mobile solo se entrambe entrano senza andare a
+  capo; altrimenti colonna (breakpoint arbitrari `min-[400px]`,
+  `min-[420px]` dove `sm` è troppo largo).
+- Classi logiche (`ps-`, `border-s`, `end-`, `rtl:`) per il nuovo codice.
+
+Verifiche eseguite: `tsc --noEmit` 0 errori; eslint sui file toccati 0
+errori (solo warning preesistenti); `vitest` 332/332 (un primo giro con 2
+fallimenti durante l'avvio concorrente del server, poi 3 giri consecutivi
+verdi); `next build` ok; audit automatico e screenshot prima/dopo delle
+pagine elencate sopra, telefono e desktop 1280 (desktop invariato
+nell'identità: sidebar, hero a due colonne, PDF a destra nelle card).
+
+Nota di build: dopo la modifica di `globals.css` sia `next dev` sia
+`next build` hanno servito CSS **vecchio** dalla cache persistente di
+Turbopack in `.next`; con `rm -rf .next` le nuove regole sono comparse. Se
+su Vercel una modifica CSS non compare, fare "Redeploy" senza build cache.
+
+Problemi rimasti (non affrontati):
+
+- `dir="ltr"` resta fisso anche in arabo (vedi §6.4.1): il layout non si
+  specchia; gli avvisi senza traduzione araba appaiono in italiano allineati
+  a destra.
+- Sulla pagina eventi gli eventi passati restano elencati con il pulsante
+  "Iscriviti" (è logica di prenotazione, non grafica).
+- Su quasi tutte le pagine l'eyebrow ripete il titolo H1 (es. "Contatti" /
+  "Contatti"): serve nuovo testo per ogni pagina in due lingue.
+- A 320px le etichette del dock "Preghiere"/"Contatti" e il titolo di
+  sezione vengono troncati con "…".
+- Modali login/registrazione e area admin non ricontrollati in questo giro
+  (il modale iscrizione evento sì, a 390px: nessun problema).
+
 ---
 
 ## 11. Note operative

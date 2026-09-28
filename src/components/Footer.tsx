@@ -48,7 +48,7 @@ export default async function Footer() {
           </div>
 
           <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/45">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/55">
               {tFooter("orariTitle")}
             </p>
             <p className="text-sm text-foreground/70 leading-relaxed">
@@ -60,7 +60,7 @@ export default async function Footer() {
           </div>
 
           <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/45">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/55">
               {tNav("contatti")}
             </p>
             <div className="text-sm text-foreground/70 space-y-2">
@@ -80,35 +80,35 @@ export default async function Footer() {
           </div>
 
           <div className="space-y-3">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/45">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/55">
               {tFooter("quickLinksTitle")}
             </p>
             <nav className="grid gap-2 text-sm">
-              <Link href="/" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/" className="footer-link">
                 {tNav("home")}
               </Link>
-              <HashLink href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <HashLink href="/#orari" className="footer-link">
                 {tNav("orari")}
               </HashLink>
-              <Link href="/video-corsi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/video-corsi" className="footer-link">
                 {tNav("videoCorsi")}
               </Link>
-              <Link href="/eventi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/eventi" className="footer-link">
                 {tNav("eventi")}
               </Link>
-              <Link href="/libreria" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/libreria" className="footer-link">
                 {tNav("libreria")}
               </Link>
-              <Link href="/icone" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/icone" className="footer-link">
                 {tNav("icone")}
               </Link>
-              <Link href="/chi-siamo" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/chi-siamo" className="footer-link">
                 {tNav("chiSiamo")}
               </Link>
             </nav>
 
             <div className="pt-3">
-              <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/45 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/55 mb-2">
                 {tFooter("socialTitle")}
               </p>
               <div className="flex items-center gap-3 text-sm">
@@ -116,7 +116,7 @@ export default async function Footer() {
                   href={FACEBOOK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                  className="footer-link"
                 >
                   {tFooter("facebook")}
                 </a>
@@ -124,7 +124,7 @@ export default async function Footer() {
                   href={YOUTUBE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                  className="footer-link"
                 >
                   {tFooter("youtube")}
                 </a>
@@ -166,7 +166,7 @@ export default async function Footer() {
             <p className="text-sm text-foreground/70 leading-relaxed">
               {tFooter("orariDesc")}
             </p>
-            <HashLink href="/#orari" className="btn-link text-xs">
+            <HashLink href="/#orari" className="btn-link min-h-10">
               {tFooter("orariCta")}
             </HashLink>
           </FooterAccordion>
@@ -183,7 +183,7 @@ export default async function Footer() {
               href={ADDRESS_MAPS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-link text-xs"
+              className="btn-link min-h-10"
             >
               {tContact("indicazioniButton")}
             </a>
@@ -191,26 +191,26 @@ export default async function Footer() {
 
           {/* Quick Links Accordion */}
           <FooterAccordion title={tFooter("quickLinksTitle")}>
-            <nav className="grid gap-3 text-sm">
-              <Link href="/" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+            <nav className="grid text-sm">
+              <Link href="/" className="footer-link">
                 {tNav("home")}
               </Link>
-              <HashLink href="/#orari" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <HashLink href="/#orari" className="footer-link">
                 {tNav("orari")}
               </HashLink>
-              <Link href="/video-corsi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/video-corsi" className="footer-link">
                 {tNav("videoCorsi")}
               </Link>
-              <Link href="/eventi" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/eventi" className="footer-link">
                 {tNav("eventi")}
               </Link>
-              <Link href="/libreria" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/libreria" className="footer-link">
                 {tNav("libreria")}
               </Link>
-              <Link href="/icone" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/icone" className="footer-link">
                 {tNav("icone")}
               </Link>
-              <Link href="/chi-siamo" className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2">
+              <Link href="/chi-siamo" className="footer-link">
                 {tNav("chiSiamo")}
               </Link>
             </nav>
@@ -218,12 +218,12 @@ export default async function Footer() {
 
           {/* Social Accordion */}
           <FooterAccordion title={tFooter("socialTitle")} isLast={true}>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-5 text-sm">
               <a
                 href={FACEBOOK_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                className="footer-link"
               >
                 {tFooter("facebook")}
               </a>
@@ -231,7 +231,7 @@ export default async function Footer() {
                 href={YOUTUBE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded text-foreground/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                className="footer-link"
               >
                 {tFooter("youtube")}
               </a>
@@ -240,13 +240,13 @@ export default async function Footer() {
         </div>
 
         {/* Footer Bottom - sempre presente */}
-        <div className="mt-8 lg:mt-10 border-t border-border/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-foreground/45">
+        <div className="mt-8 lg:mt-10 border-t border-border/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-foreground/60">
           <p>{tCommon("copyright")}</p>
           <nav aria-label={`${tLegal("footerPrivacy")} · ${tLegal("footerTerms")}`} className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-accent transition-colors">
+            <Link href="/privacy" className="footer-link text-foreground/60">
               {tLegal("footerPrivacy")}
             </Link>
-            <Link href="/termini" className="hover:text-accent transition-colors">
+            <Link href="/termini" className="footer-link text-foreground/60">
               {tLegal("footerTerms")}
             </Link>
             <InstallAppButton />

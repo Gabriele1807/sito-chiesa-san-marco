@@ -203,7 +203,7 @@ export default function SidebarDock() {
       : isToggle
       ? "gap-2 px-3 py-2"
       : "gap-2.5 px-3 py-2";
-    const baseClass = `sidebar-link group flex w-full items-center rounded-xl text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar ${spacingClass}`;
+    const baseClass = `sidebar-link group flex min-h-11 w-full items-center rounded-xl text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar ${spacingClass}`;
     const labelClass = `min-w-0 flex-1 overflow-hidden transition-[max-width,opacity,transform] duration-200 ease-out ${
       isCompact ? "max-w-0 opacity-0 -translate-x-2" : "max-w-[160px] opacity-100 translate-x-0"
     }`;

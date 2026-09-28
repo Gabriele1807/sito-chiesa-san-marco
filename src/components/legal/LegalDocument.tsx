@@ -33,7 +33,7 @@ export default function LegalDocument({
   // finiscono sul lato sbagliato della riga.
   return (
     <div className="space-y-8" dir={locale === "ar" ? "rtl" : "ltr"} lang={locale}>
-      <header className="border-border bg-surface relative overflow-hidden rounded-3xl border p-8 shadow-sm">
+      <header className="border-border bg-surface relative overflow-hidden rounded-3xl border p-5 shadow-sm sm:p-8">
         <div className="texture-lattice text-accent/[0.04] pointer-events-none absolute inset-0" />
         <div className="relative">
           <p className="eyebrow">{copy.eyebrow}</p>
@@ -55,12 +55,12 @@ export default function LegalDocument({
           <p className="text-foreground/50 mb-3 text-xs font-semibold tracking-wide uppercase">
             {copy.tocTitle}
           </p>
-          <ol className="space-y-2">
+          <ol className="space-y-0.5 lg:space-y-2">
             {copy.sections.map((section, index) => (
               <li key={section.id}>
                 <a
                   href={`#${section.id}`}
-                  className="text-foreground/70 hover:text-accent focus-visible:ring-gold/40 rounded focus-visible:ring-2 focus-visible:outline-none"
+                  className="text-foreground/70 hover:text-accent focus-visible:ring-gold/40 block rounded py-2 focus-visible:ring-2 focus-visible:outline-none lg:py-0"
                 >
                   {index + 1}. {section.title}
                 </a>

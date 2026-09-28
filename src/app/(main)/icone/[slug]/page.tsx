@@ -75,7 +75,7 @@ export default async function IconaDetailPage({ params }: Props) {
       </div>
 
       {/* Story section */}
-      <section className="bg-surface rounded-2xl p-8 shadow-sm border border-border">
+      <section className="bg-surface rounded-2xl p-5 shadow-sm border border-border sm:p-8">
         <h2 className="text-2xl font-bold text-foreground mb-4">
           {t("storiaSanto")}
         </h2>
@@ -85,7 +85,7 @@ export default async function IconaDetailPage({ params }: Props) {
       </section>
 
       {/* Technical details */}
-      <section className="bg-surface rounded-2xl p-8 shadow-sm border border-border">
+      <section className="bg-surface rounded-2xl p-5 shadow-sm border border-border sm:p-8">
         <h2 className="text-2xl font-bold text-foreground mb-6">
           {t("dettagliTecnici")}
         </h2>

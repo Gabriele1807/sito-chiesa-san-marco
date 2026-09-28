@@ -33,6 +33,14 @@ export default async function HomePage() {
   ]);
 
   const now = new Date();
+  // "Prossimi eventi": solo quelli non ancora finiti, dal più vicino.
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const prossimiEventi = eventi
+    .filter((ev) => {
+      const end = new Date(ev.dataFine || ev.data).getTime();
+      return Number.isNaN(end) || end >= startOfToday;
+    })
+    .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
   const dateLocale = locale === "ar" ? "ar-EG" : "it-IT";
   const dateStr = now.toLocaleDateString(dateLocale, {
     weekday: "long",
@@ -68,19 +76,19 @@ export default async function HomePage() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <HashLink href="/#orari" className="btn-primary">
+                <div className="flex flex-col gap-3 pt-1 min-[420px]:flex-row min-[420px]:flex-wrap">
+                  <HashLink href="/#orari" className="btn-primary min-h-11">
                     {t("heroCtaPrimary")}
                   </HashLink>
 
-                  <Link href="/eventi" className="btn-secondary" aria-label={t("eventiOverviewCta")}>
+                  <Link href="/eventi" className="btn-secondary min-h-11" aria-label={t("eventiOverviewCta")}>
                     {t("eventiOverviewCta")}
                   </Link>
                 </div>
               </div>
 
               <div className="flex min-w-0 flex-col gap-3 pt-1 sm:gap-4 lg:justify-end lg:pt-0">
-                <div className="mb-4 flex flex-col gap-1.5 border-l-2 border-accent/30 pl-3 text-xs text-foreground/60 sm:mb-6">
+                <div className="mb-4 flex flex-col gap-1.5 border-s-2 border-accent/30 ps-3 text-xs text-foreground/60 sm:mb-6">
                   <span className="inline-flex items-center gap-2">
                     <CalendarDays className="h-3.5 w-3.5 text-accent" />
                     {dateStr}
@@ -145,7 +153,7 @@ export default async function HomePage() {
                 </div>
 
                 <div className="flex flex-col items-center gap-3 pt-2 text-foreground/70 lg:hidden">
-                  <span className="text-center text-[10px] font-semibold uppercase tracking-[0.4em]">
+                  <span className="text-center text-[11px] font-semibold uppercase tracking-[0.25em]">
                     {t("scrollHint")}
                   </span>
                   <ScrollDownHint targetId="orari" />
@@ -183,7 +191,7 @@ export default async function HomePage() {
 
         <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="min-w-0 overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
-            <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-alt/70 px-6 py-4">
+            <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-alt/70 px-4 py-4 sm:px-6">
               <div>
                 <h3 className="text-base font-bold text-foreground">
                   {tOrari("titolo")}
@@ -225,11 +233,11 @@ export default async function HomePage() {
                 {t("prossimiEventi")}
               </h3>
               <span className="text-sm font-semibold text-accent transition hover:text-accent/80">
-                {t("vediTutti")} →
+                {t("vediTutti")} <span aria-hidden className="inline-block rtl:-scale-x-100">→</span>
               </span>
             </div>
             <div className="divide-y divide-border/60 px-5 py-2 sm:px-6">
-              {eventi.slice(0, 3).map((ev, index) => (
+              {prossimiEventi.slice(0, 3).map((ev, index) => (
                 <div key={ev.id ?? ev.slug ?? `evento-${index}`} className="flex items-start gap-3 py-3">
                   <div className="min-w-[60px] rounded-xl bg-accent/10 px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-accent">
                     {new Date(ev.data).toLocaleDateString(dateLocale, {
@@ -243,7 +251,7 @@ export default async function HomePage() {
                   </div>
                 </div>
               ))}
-              {eventi.length === 0 && (
+              {prossimiEventi.length === 0 && (
                 <div className="py-6 text-sm text-foreground/60">
                   {t("nessunEvento")} — {t("controllaPiuTardi")}
                 </div>
@@ -257,7 +265,7 @@ export default async function HomePage() {
                 {t("ultimePreghiere")}
               </h3>
               <span className="text-sm font-semibold text-accent transition hover:text-accent/80">
-                {t("vediTutte")} →
+                {t("vediTutte")} <span aria-hidden className="inline-block rtl:-scale-x-100">→</span>
               </span>
             </div>
             <div className="divide-y divide-border/60 px-5 py-2 sm:px-6">

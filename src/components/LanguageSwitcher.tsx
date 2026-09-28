@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Globe } from "lucide-react";
+import { ChevronDown, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { setLocale } from "@/lib/actions";
 import type { Locale } from "@/types";
@@ -28,16 +28,34 @@ export default function LanguageSwitcher({ currentLocale }: Props) {
     });
   }
 
+  const current = options.find((option) => option.value === currentLocale) ?? options[0];
+  const switchLabel = t("switchLanguageTo", {
+    language: currentLocale === "it" ? t("arabo") : t("italiano"),
+  });
+
+  // Su telefono la pillola mostra solo il codice della lingua ("IT" / "ع"):
+  // il nome intero toglieva spazio al titolo della sezione. Il <select>
+  // nativo, trasparente, copre tutta la pillola e apre il selettore di sistema.
   return (
-    <label className="relative flex min-w-0 items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-1.5 text-[11px] font-semibold text-foreground shadow-sm">
-      <Globe className="w-4 h-4" />
-      <span className="sr-only">{t("switchLanguageTo", { language: currentLocale === "it" ? t("arabo") : t("italiano") })}</span>
+    <label
+      className={`relative flex h-10 min-w-10 shrink-0 items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-2.5 text-xs font-semibold text-foreground shadow-sm transition-colors hover:bg-surface-2 focus-within:ring-2 focus-within:ring-gold focus-within:ring-offset-2 focus-within:ring-offset-background sm:px-3 ${
+        isPending ? "opacity-60" : ""
+      }`}
+    >
+      <Globe className="h-4 w-4 shrink-0" aria-hidden />
+      <span aria-hidden className="sm:hidden">
+        {current.value === "ar" ? "ع" : "IT"}
+      </span>
+      <span aria-hidden className="hidden sm:inline">
+        {current.label}
+      </span>
+      <ChevronDown className="hidden h-3.5 w-3.5 shrink-0 text-foreground/50 sm:block" aria-hidden />
       <select
         value={currentLocale}
         onChange={(e) => handleSwitch(e.target.value)}
         disabled={isPending}
-        className="min-w-[3.5rem] max-w-[5.5rem] w-full appearance-none bg-transparent pr-5 text-[11px] font-semibold text-foreground outline-none disabled:opacity-50"
-        aria-label={t("switchLanguageTo", { language: currentLocale === "it" ? t("arabo") : t("italiano") })}
+        className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full opacity-0 disabled:cursor-wait"
+        aria-label={switchLabel}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -45,7 +63,6 @@ export default function LanguageSwitcher({ currentLocale }: Props) {
           </option>
         ))}
       </select>
-      <span className="pointer-events-none absolute right-2 text-[10px] text-foreground/50">▼</span>
     </label>
   );
 }

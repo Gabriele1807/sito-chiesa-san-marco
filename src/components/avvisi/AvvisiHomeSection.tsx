@@ -29,7 +29,10 @@ export default async function AvvisiHomeSection() {
             {t("titolo")}
           </h2>
         </div>
-        <Link href="/avvisi" className="text-accent text-sm font-semibold hover:underline">
+        <Link
+          href="/avvisi"
+          className="text-accent inline-flex min-h-10 items-center text-sm font-semibold hover:underline"
+        >
           {t("vediTutti")}
           {avvisi.length > HOME_LIMIT ? ` (${avvisi.length})` : ""}
         </Link>

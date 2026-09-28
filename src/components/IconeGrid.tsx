@@ -28,15 +28,16 @@ export default function IconeGrid({ icone }: Props) {
   return (
     <>
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-8">
-        <div>
-          <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1.5">
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
+        <div className="min-w-0">
+          <label htmlFor="icone-filtro-categoria" className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1.5">
             {t("filtraCategoria")}
           </label>
           <select
+            id="icone-filtro-categoria"
             value={categoriaFilter}
             onChange={(e) => setCategoriaFilter(e.target.value)}
-            className="px-3 py-2 bg-surface border border-border rounded-lg text-sm text-foreground/80 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            className="input-field min-h-11 sm:w-auto sm:min-w-44"
           >
             <option value="all">{t("tutte")}</option>
             {categorie.map((cat) => (
@@ -44,14 +45,15 @@ export default function IconeGrid({ icone }: Props) {
             ))}
           </select>
         </div>
-        <div>
-          <label className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1.5">
+        <div className="min-w-0">
+          <label htmlFor="icone-filtro-posizione" className="block text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1.5">
             {t("filtraPosizione")}
           </label>
           <select
+            id="icone-filtro-posizione"
             value={posizioneFilter}
             onChange={(e) => setPosizioneFilter(e.target.value)}
-            className="px-3 py-2 bg-surface border border-border rounded-lg text-sm text-foreground/80 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            className="input-field min-h-11 sm:w-auto sm:min-w-44"
           >
             <option value="all">{t("tutte")}</option>
             {posizioni.map((pos) => (

@@ -3,13 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
+import { LogIn, LogOut, Shield, ChevronDown, UserCircle } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { useTranslations } from "next-intl";
 
 export default function UserMenu() {
   const t = useTranslations("auth");
-  const { type, loading, user, admin, logout } = useAuth();
+  const { type, loading, user, admin, logout, setShowLoginModal } = useAuth();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -31,8 +31,19 @@ export default function UserMenu() {
     );
   }
 
+  // Ospite: accesso raggiungibile dall'header (prima solo dal menu laterale).
   if (type === "guest") {
-    return null;
+    return (
+      <button
+        type="button"
+        onClick={() => setShowLoginModal(true)}
+        className="inline-flex h-10 min-w-10 shrink-0 items-center justify-center gap-1.5 rounded-full border border-accent/30 bg-surface px-2.5 text-xs font-semibold text-accent shadow-sm transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label={t("userMenuLogin")}
+      >
+        <LogIn className="h-4 w-4 shrink-0 rtl:-scale-x-100" aria-hidden />
+        <span className="hidden min-[360px]:inline">{t("userMenuLogin")}</span>
+      </button>
+    );
   }
 
   // Utente autenticato (normale o admin)
@@ -60,8 +71,9 @@ export default function UserMenu() {
     <div ref={menuRef} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 rounded-lg transition-colors hover:bg-surface-2 active:bg-surface-2 px-1.5 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+        className="flex h-11 items-center gap-1 rounded-lg transition-colors hover:bg-surface-2 active:bg-surface-2 px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
         aria-expanded={open}
+        aria-label={displayName}
       >
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-offset-1 ${
@@ -74,7 +86,7 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-surface rounded-xl shadow-xl border border-border py-2 z-50 animate-scaleIn origin-top-right">
+        <div className="absolute end-0 top-full mt-2 w-56 bg-surface rounded-xl shadow-xl border border-border py-2 z-50 animate-scaleIn origin-top-right">
           <div className="px-4 py-2 border-b border-border animate-fadeInUp stagger-1">
             <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
             <p className="text-xs text-foreground/60">
@@ -92,7 +104,7 @@ export default function UserMenu() {
           <Link
             href="/profilo"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground/80 hover:bg-surface-2 transition-colors animate-fadeInUp stagger-2"
+            className="flex items-center gap-2 px-4 py-3 text-sm text-foreground/80 hover:bg-surface-2 transition-colors animate-fadeInUp stagger-2"
           >
             <UserCircle className="w-4 h-4" />
             {t("userMenuProfile")}
@@ -102,7 +114,7 @@ export default function UserMenu() {
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gold-light hover:bg-gold-light/10 transition-colors animate-fadeInUp stagger-3"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-gold-light hover:bg-gold-light/10 transition-colors animate-fadeInUp stagger-3"
             >
               <Shield className="w-4 h-4" />
               {t("userMenuAdminPanel")}
@@ -112,7 +124,7 @@ export default function UserMenu() {
           <div className="border-t border-border mt-1 pt-1 animate-fadeInUp stagger-4">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-danger/10 transition-colors w-full text-left"
+            className="flex items-center gap-2 px-4 py-3 text-sm text-danger hover:bg-danger/10 transition-colors w-full text-start"
           >
             <LogOut className="w-4 h-4" />
             {t("userMenuLogout")}

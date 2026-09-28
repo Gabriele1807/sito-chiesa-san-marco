@@ -125,17 +125,25 @@ html {
     font-family: var(--font-arabic), var(--font-sans), serif;
   }
 
-  /* Eyebrow label with a drawn rule instead of a generic uppercase-only tag */
+  /* Eyebrow label with a drawn rule instead of a generic uppercase-only tag.
+     Tracking ridotto su telefono: a 0.35em le etichette lunghe andavano a capo
+     con il trattino centrato su due righe. */
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-accent;
+    @apply inline-flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent sm:tracking-[0.35em];
   }
   .eyebrow::before {
     content: "";
     display: inline-block;
+    flex-shrink: 0;
     width: 1.5rem;
     height: 1px;
+    align-self: center;
     background: currentColor;
     opacity: 0.6;
+  }
+  /* Arabic has no letter case and letter-spacing breaks joined glyphs. */
+  [data-locale="ar"] .eyebrow {
+    letter-spacing: 0;
   }
 
   /* Coptic cross mark used as a recurring identity motif, not a stock icon */
@@ -172,6 +180,11 @@ html {
 
   .btn-link {
     @apply inline-flex items-center gap-1.5 text-accent font-semibold text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Footer links: 40px touch rows on phones, compact list on desktop. */
+  .footer-link {
+    @apply inline-flex min-h-10 items-center rounded text-foreground/70 transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 lg:min-h-0;
   }
 
   .btn-option-card {

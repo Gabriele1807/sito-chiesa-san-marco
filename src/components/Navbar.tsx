@@ -64,9 +64,9 @@ export default function Navbar({ locale }: Props) {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3 pointer-events-none"
       } ${isAtTop ? "shadow-sm" : "shadow-md"}`}
     >
-      <div className="grid h-14 grid-cols-[auto_1fr_auto] items-center gap-2 px-4 lg:px-6">
+      <div className="grid h-14 grid-cols-[auto_1fr_auto] items-center gap-1.5 px-2 sm:gap-2 sm:px-4 lg:px-6">
         {/* Left: hamburger (mobile) + logo */}
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-1 sm:gap-3">
           <div className="lg:hidden">
             <MobileMenuButton />
           </div>
@@ -76,7 +76,7 @@ export default function Navbar({ locale }: Props) {
               alt={t("logoAlt")}
               width={40}
               height={40}
-              className="rounded-full"
+              className="h-9 w-9 rounded-full sm:h-10 sm:w-10"
             />
             <span className="hidden sm:inline text-sm font-display font-semibold text-foreground">
               {t("sanMarco")}
@@ -85,14 +85,14 @@ export default function Navbar({ locale }: Props) {
         </div>
 
         {/* Center: current section title */}
-        <div className="flex min-w-0 justify-center px-2 sm:px-4">
+        <div className="flex min-w-0 justify-center px-1 sm:px-4">
           <div className="w-full max-w-[18rem] min-w-0">
             <TopbarTitle className="flex min-w-0 justify-center" />
           </div>
         </div>
 
         {/* Right: user menu + language switch */}
-        <div className="flex min-w-0 items-center justify-end gap-2">
+        <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
           <UserMenu />
           <LanguageSwitcher currentLocale={locale} />
         </div>

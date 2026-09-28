@@ -154,7 +154,7 @@ export default function YouTubeLiveSection() {
                     href={videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 rounded text-xs font-semibold text-red-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold"
+                    className="mt-3 inline-flex min-h-10 items-center gap-2 rounded text-xs font-semibold text-red-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     {t("youtubeGuardaTutti")}
