@@ -1,133 +1,220 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Clock } from "lucide-react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useLocale } from "next-intl";
 import type { OrarioSettimanale } from "@/types";
-import { getNextCelebration } from "@/lib/next-celebration";
+import { GIORNI_IT, getNextCelebration, localizeGiorno, shortGiorno } from "@/lib/next-celebration";
+import { useMinuteClock } from "./useMinuteClock";
 
 interface OrariTableProps {
   orari: OrarioSettimanale[];
   labels: {
-    giorno: string;
-    celebrazione: string;
-    orario: string;
-    note: string;
+    oggi: string;
+    prossima: string;
+    vuoto: string;
   };
 }
 
+type Celebrazione = OrarioSettimanale["celebrazioni"][number];
+
+const celebrationKey = (giorno: string, cel: Celebrazione) =>
+  `${giorno}__${cel.tipo}__${cel.orario}`;
+
+/**
+ * Orari settimanali.
+ *
+ * Telefono: fila di giorni da toccare (tab) e sotto solo le celebrazioni del
+ * giorno scelto; si apre sul giorno della prossima celebrazione. Con molti
+ * orari l'elenco completo diventava uno scorrimento lunghissimo.
+ * Da `sm`: elenco completo per giorno, giorno in colonna a sinistra.
+ *
+ * Giorni senza celebrazioni non compaiono. Prossima celebrazione e "Oggi"
+ * sono calcolati solo nel browser (useMinuteClock).
+ */
 export default function OrariTable({ orari, labels }: OrariTableProps) {
-  const [now, setNow] = useState(() => new Date());
+  const locale = useLocale();
+  const isAr = locale === "ar";
+  const now = useMinuteClock();
+  const [picked, setPicked] = useState<string | null>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  const giorni = useMemo(() => orari.filter((g) => g.celebrazioni.length > 0), [orari]);
+  const next = useMemo(() => (now ? getNextCelebration(giorni, now) : null), [giorni, now]);
+  const nextKey = next ? `${next.giorno}__${next.tipo}__${next.orario}` : null;
+  const today = now ? GIORNI_IT[now.getDay()] : null;
 
-  const nextCelebration = useMemo(() => getNextCelebration(orari, now), [orari, now]);
-  const nextKey = useMemo(() => {
-    if (!nextCelebration) return null;
-    return `${nextCelebration.giorno}__${nextCelebration.tipo}__${nextCelebration.orario}`;
-  }, [nextCelebration]);
+  if (giorni.length === 0) {
+    return <p className="text-foreground/60 px-5 py-8 text-center text-sm">{labels.vuoto}</p>;
+  }
+
+  // Scelta dell'utente, altrimenti il giorno della prossima celebrazione.
+  const selected =
+    giorni.find((g) => g.giorno === picked) ??
+    giorni.find((g) => g.giorno === next?.giorno) ??
+    giorni[0];
+
+  function onTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const forward = isAr ? "ArrowLeft" : "ArrowRight";
+    const backward = isAr ? "ArrowRight" : "ArrowLeft";
+    let target: number | null = null;
+    if (event.key === forward) target = (index + 1) % giorni.length;
+    else if (event.key === backward) target = (index - 1 + giorni.length) % giorni.length;
+    else if (event.key === "Home") target = 0;
+    else if (event.key === "End") target = giorni.length - 1;
+    if (target === null) return;
+    event.preventDefault();
+    setPicked(giorni[target].giorno);
+    tabRefs.current[target]?.focus();
+  }
+
+  const rows = (giorno: OrarioSettimanale, size: "lg" | "md") => (
+    <ul className="-mx-3 space-y-1">
+      {giorno.celebrazioni.map((cel, ci) => (
+        <CelebrationRow
+          key={`${ci}-${cel.orario}`}
+          cel={cel}
+          isNext={nextKey === celebrationKey(giorno.giorno, cel)}
+          nextLabel={labels.prossima}
+          size={size}
+        />
+      ))}
+    </ul>
+  );
 
   return (
-    <>
-      <div className="hidden sm:block min-w-0 overflow-x-auto">
-        <table className="w-full min-w-full table-auto max-w-full">
-          <thead>
-            <tr className="bg-surface border-b border-border">
-              <th className="text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.giorno}</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.celebrazione}</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.orario}</th>
-              <th className="hidden md:table-cell text-left px-4 py-3 text-sm font-semibold text-foreground">{labels.note}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orari.map((giorno, gi) =>
-              giorno.celebrazioni.map((cel, ci) => {
-                const isNext = nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`;
-                const isFirstInDay = ci === 0;
-                const rowBg = isNext ? "bg-accent/20" : gi % 2 === 0 ? "bg-background" : "bg-surface/50";
-                const rowBorder = isNext ? "border-accent/30" : "border-border/30";
-                const dayClasses = isNext
-                  ? "text-accent underline decoration-accent/60 underline-offset-4 font-semibold"
-                  : isFirstInDay
-                  ? "text-foreground font-semibold"
-                  : "text-foreground/50";
+    <div dir={isAr ? "rtl" : "ltr"}>
+      {/* ── Telefono: giorni a schede ── */}
+      <div className="sm:hidden">
+        <div
+          role="tablist"
+          aria-orientation="horizontal"
+          className="border-border/70 bg-surface-alt/60 flex gap-1 overflow-x-auto border-b p-2 [scrollbar-width:none]"
+        >
+          {giorni.map((giorno, index) => {
+            const isSelected = giorno.giorno === selected.giorno;
+            const hasNext = giorno.giorno === next?.giorno;
+            return (
+              <button
+                key={giorno.giorno}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
+                type="button"
+                role="tab"
+                id={`orari-tab-${index}`}
+                aria-selected={isSelected}
+                aria-controls="orari-panel"
+                aria-label={localizeGiorno(giorno.giorno, locale)}
+                tabIndex={isSelected ? 0 : -1}
+                onClick={() => setPicked(giorno.giorno)}
+                onKeyDown={(event) => onTabKeyDown(event, index)}
+                className={`focus-visible:ring-gold relative flex min-h-12 min-w-11 flex-1 flex-col items-center justify-center rounded-xl px-1.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none ${
+                  isSelected
+                    ? "bg-accent text-white shadow-sm"
+                    : giorno.giorno === today
+                      ? "text-primary ring-primary/25 bg-surface ring-1 ring-inset"
+                      : "text-foreground/70 hover:bg-surface hover:text-foreground"
+                }`}
+              >
+                <span aria-hidden>{shortGiorno(giorno.giorno, locale)}</span>
+                <span
+                  aria-hidden
+                  className={`mt-1 h-1.5 w-1.5 rounded-full ${
+                    hasNext ? (isSelected ? "bg-white" : "bg-accent") : "bg-transparent"
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
 
-                return (
-                  <tr
-                    key={`${gi}-${ci}`}
-                    className={`border-b ${rowBorder} ${rowBg} hover:bg-accent/10 transition-colors`}
-                  >
-                    <td className={`px-4 py-3 align-top ${dayClasses}`}>
-                      <div className="flex items-center gap-2">
-                        {isFirstInDay ? (
-                          <Clock className="w-4 h-4 text-accent" />
-                        ) : (
-                          <span className="w-4 h-4" aria-hidden="true" />
-                        )}
-                        <span className="truncate">{giorno.giorno}</span>
-                      </div>
-                    </td>
-                    <td className={`px-4 py-3 text-sm ${isNext ? "font-semibold text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground/70"}`}>
-                      {cel.tipo}
-                    </td>
-                    <td className={`px-4 py-3 text-sm font-medium ${isNext ? "text-accent underline decoration-accent/60 underline-offset-4" : "text-foreground"}`}>
-                      {cel.orario}
-                    </td>
-                    <td className={`hidden md:table-cell px-4 py-3 text-sm ${isNext ? "text-accent" : "text-foreground/50"}`}>
-                      {cel.note || "–"}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+        <div
+          id="orari-panel"
+          role="tabpanel"
+          aria-labelledby={`orari-tab-${giorni.indexOf(selected)}`}
+          className="px-5 pt-4 pb-5"
+        >
+          <div className="mb-2 flex items-center gap-2">
+            <h3 className="font-display text-foreground text-lg font-semibold">
+              {localizeGiorno(selected.giorno, locale)}
+            </h3>
+            {selected.giorno === today && <TodayBadge label={labels.oggi} />}
+          </div>
+          {rows(selected, "lg")}
+        </div>
       </div>
 
-      <div className="sm:hidden min-w-0 space-y-4 px-4 pb-4">
-        {orari.map((giorno, gi) => {
-          const hasNextInDay = giorno.celebrazioni.some(
-            (cel) => nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`
-          );
-          const headerClass = hasNextInDay ? "bg-accent text-white" : "bg-surface-alt text-foreground";
-          return (
-            <div key={gi} className="animate-fade-in-up min-w-0 bg-surface rounded-2xl shadow-sm border border-border overflow-hidden" style={{ animationDelay: `${gi * 80}ms` }}>
-              <div className={`px-4 py-3 flex items-center gap-2 ${headerClass}`}>
-                <Clock className={`w-4 h-4 ${hasNextInDay ? "text-white" : "text-accent"}`} />
-                <h3 className={`font-semibold text-sm ${hasNextInDay ? "text-white" : "text-foreground"}`}>
-                  {giorno.giorno}
-                </h3>
-              </div>
-              <div className="divide-y divide-border/70">
-                {giorno.celebrazioni.map((cel, ci) => {
-                  const isNext = nextKey === `${giorno.giorno}__${cel.tipo}__${cel.orario}`;
-                  return (
-                    <div key={ci} className={`px-4 py-3 transition-colors ${isNext ? "bg-gold/15" : "bg-surface"}`}>
-                      <div className="flex items-start justify-between gap-3 min-w-0">
-                        <div className="min-w-0">
-                          <p className={`text-sm ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "font-medium text-foreground"}`}>
-                            {cel.tipo}
-                          </p>
-                          {cel.note && (
-                            <p className={`text-xs mt-1 ${isNext ? "text-gold/80" : "text-foreground/60"}`}>
-                              {cel.note}
-                            </p>
-                          )}
-                        </div>
-                        <p className={`shrink-0 text-sm ${isNext ? "font-semibold text-gold underline decoration-gold/60 underline-offset-4" : "text-primary font-semibold"}`}>
-                          {cel.orario}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+      {/* ── Da sm: elenco completo ── */}
+      <ol className="divide-border/70 hidden divide-y sm:block">
+        {giorni.map((giorno) => (
+          <li
+            key={giorno.giorno}
+            className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-6 px-6 py-5"
+          >
+            <div className="flex items-start gap-2 pt-2">
+              <h3 className="font-display text-foreground text-base font-semibold">
+                {localizeGiorno(giorno.giorno, locale)}
+              </h3>
+              {giorno.giorno === today && <TodayBadge label={labels.oggi} />}
             </div>
-          );
-        })}
+            {rows(giorno, "md")}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function TodayBadge({ label }: { label: string }) {
+  return (
+    <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[11px] font-semibold">
+      {label}
+    </span>
+  );
+}
+
+function CelebrationRow({
+  cel,
+  isNext,
+  nextLabel,
+  size,
+}: {
+  cel: Celebrazione;
+  isNext: boolean;
+  nextLabel: string;
+  size: "lg" | "md";
+}) {
+  const lg = size === "lg";
+  return (
+    <li
+      className={`flex items-baseline gap-4 rounded-xl px-3 ${lg ? "py-2.5" : "py-2"} ${
+        isNext ? "bg-accent/10 ring-accent/25 ring-1 ring-inset" : ""
+      }`}
+    >
+      <time
+        className={`shrink-0 font-semibold tabular-nums ${lg ? "w-14 text-base" : "w-12 text-sm"} ${
+          isNext ? "text-accent" : "text-primary"
+        }`}
+      >
+        {cel.orario}
+      </time>
+      <div className="min-w-0 flex-1">
+        <p
+          className={`${lg ? "text-[15px]" : "text-sm"} ${
+            isNext ? "text-foreground font-semibold" : "text-foreground/85"
+          }`}
+        >
+          {cel.tipo}
+        </p>
+        {cel.note && (
+          <p className="text-foreground/60 mt-0.5 text-xs leading-relaxed">{cel.note}</p>
+        )}
       </div>
-    </>
+      {isNext && (
+        <span className="bg-accent shrink-0 self-center rounded-full px-2 py-0.5 text-[11px] font-semibold text-white">
+          {nextLabel}
+        </span>
+      )}
+    </li>
   );
 }

@@ -2015,6 +2015,48 @@ Problemi rimasti (non affrontati):
 - Modali login/registrazione e area admin non ricontrollati in questo giro
   (il modale iscrizione evento sì, a 390px: nessun problema).
 
+### 10.10.1 Orari settimanali ridisegnati (2026-09-28)
+
+`OrariTable` era una tabella a 4 colonne (desktop) più una seconda versione
+a card annidate (telefono): giorno ripetuto su ogni riga, colonna "Note"
+quasi sempre "–" che stringeva le altre, prossima celebrazione sottolineata
+in ogni cella (sembravano link), card del giorno attaccata all'intestazione
+su telefono, giorni in italiano anche in arabo, intestazione "Orari
+settimanali / Prossima Celebrazione" che ripeteva il titolo della sezione.
+
+Ora è un solo elenco per giorno per tutte le larghezze (`<ol>` di giorni,
+`<ul>` di celebrazioni): giorno una volta (colonna a sinistra da `sm`),
+ora in colonna fissa `tabular-nums`, nota sotto il nome, prossima
+celebrazione con sfondo tenue + etichetta "Prossima", giorno corrente con
+"Oggi". In arabo il blocco ha `dir="rtl"` e i giorni sono tradotti
+(`localizeGiorno` in `src/lib/next-celebration.ts`: i dati restano in
+italiano). Tolta l'intestazione duplicata in `page.tsx`; rimosse le chiavi
+i18n `orari.giorno/celebrazione/orario/note` (non più usate), aggiunte
+`orari.oggi/prossima`.
+
+Prossima celebrazione calcolata **solo nel browser** con l'ora del
+dispositivo (`src/components/useMinuteClock.ts`, `useSyncExternalStore`):
+prima `OrariTable` e `NextCelebrationCard` la calcolavano anche sul server
+in UTC, con rischio di evidenziare la celebrazione sbagliata e di errori di
+hydration. La card nell'hero ora mostra anche il giorno ("Mercoledì ·
+Vespri – 19:00"). Test: `src/lib/next-celebration.test.ts`.
+
+**Telefono, seconda versione (su richiesta dell'utente, con i suoi dati
+reali: 14 orari su 6 giorni, martedì vuoto).** Anche raggruppato, l'elenco
+completo era uno scorrimento lungo. Sotto `sm` ora c'è una fila di giorni a
+schede (`role="tablist"`, frecce/Home/End da tastiera, invertite in arabo;
+abbreviazioni da `shortGiorno`: Dom, Lun…, in arabo il nome intero) e sotto
+solo il giorno scelto. Si apre sul giorno della prossima celebrazione
+(pallino sulla scheda); il giorno corrente ha un contorno. Giorni senza
+celebrazioni esclusi. Da `sm` resta l'elenco completo. Righe condivise
+(`CelebrationRow`), su telefono ora e nome più grandi.
+
+Verificato su build di produzione a 320/390 px e 360 px (ar) con tocco e
+tastiera, e a 390/768/1280 px (it) e 360/1280 px (ar): nessun errore di
+hydration in console. Resta da valutare la colonna
+YouTube accanto agli orari su desktop: ora è molto più alta della tabella e
+a 1280px testo e pulsanti vanno a capo in una colonna stretta.
+
 ---
 
 ## 11. Note operative
