@@ -117,9 +117,11 @@ export default function AdminAvvisiPage() {
   const [now, setNow] = useState(() => Date.now());
   const [push, setPush] = useState<{
     configured: boolean;
+    problems?: string[];
     subscribers: { total: number; it: number; ar: number };
   }>({
     configured: false,
+    problems: [],
     subscribers: { total: 0, it: 0, ar: 0 },
   });
 
@@ -255,7 +257,7 @@ export default function AdminAvvisiPage() {
         </button>
       </div>
 
-      <div className="border-border bg-surface flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3 text-sm">
+      <div className="border-border bg-surface flex flex-wrap items-start gap-3 rounded-xl border px-4 py-3 text-sm">
         <BellRing className={`h-4 w-4 ${push.configured ? "text-gold" : "text-foreground/30"}`} />
         {push.configured ? (
           <span className="text-foreground/70">
@@ -266,10 +268,24 @@ export default function AdminAvvisiPage() {
             visibile per inviarlo.
           </span>
         ) : (
-          <span className="text-foreground/60">
-            Notifiche push non configurate: servono le variabili NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-            VAPID_PRIVATE_KEY e VAPID_SUBJECT (vedi PROJECT_CONTEXT.md).
-          </span>
+          <div className="text-foreground/70 min-w-0 flex-1 space-y-1">
+            <p className="text-foreground font-semibold">Notifiche push non attive</p>
+            {push.problems && push.problems.length > 0 ? (
+              <ul className="list-disc space-y-1 ps-5">
+                {push.problems.map((problem) => (
+                  <li key={problem}>{problem}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>
+                Servono le variabili NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY e
+                VAPID_SUBJECT (vedi PROJECT_CONTEXT.md).
+              </p>
+            )}
+            <p className="text-foreground/55 text-xs">
+              Dopo aver corretto le variabili su Vercel serve un nuovo deploy (Redeploy).
+            </p>
+          </div>
         )}
       </div>
 

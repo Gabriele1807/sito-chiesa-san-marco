@@ -2107,6 +2107,41 @@ e in diretta, a 390/768/1280 px (it) e 1280 px (ar); nessuna richiesta a
 `youtube-nocookie.com` prima del tocco, una dopo. Non verificato con l'API
 reale di YouTube.
 
+### 10.10.3 Notifiche push: diagnosi della configurazione (2026-09-29)
+
+Segnalazione: in produzione il pannello admin diceva "Notifiche push non
+configurate" pur con `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e
+`VAPID_SUBJECT` presenti su Vercel (Production); sul telefono il pulsante
+compariva (chiave pubblica ok), l'iscrizione veniva creata ma il server la
+rifiutava (503 `not_configured`) e la pagina mostrava insieme "Notifiche
+attive" e l'errore.
+
+Causa: `getVapidConfig()` restituiva `null` senza dire perché. Il controllo
+richiede tutte e tre le variabili e un `VAPID_SUBJECT` che inizi con
+`mailto:` o `https://`; i valori reali non sono leggibili da qui, quindi la
+causa esatta va letta nel pannello dopo il deploy di questa modifica.
+
+Modifiche:
+- `src/lib/push/config.ts`: `checkVapidConfig()` restituisce `problems`
+  (in italiano, **mai i valori**): variabili mancanti nel deploy, subject senza
+  `mailto:`, virgolette/spazi/`NOME=valore` incollati, chiavi non VAPID
+  (lunghezza/base64url), chiave pubblica e privata di **coppie diverse**
+  (verifica con ECDH P-256). Nessun controllo allentato: con un problema le
+  notifiche restano disattivate.
+- `GET /api/admin/push` (solo admin) include `problems`; `/admin/avvisi` li
+  elenca con il promemoria del Redeploy.
+- `push-client.ts`: se il server rifiuta l'iscrizione, quella appena creata
+  sul dispositivo viene annullata (`PushSaveError` con il codice dell'API);
+  `PushToggle` e `NotificationPrompt` mostrano "Le notifiche non sono ancora
+  disponibili" per `not_configured`, l'errore generico negli altri casi.
+- Test: `src/lib/push/config.test.ts` (6 casi) e rollback in
+  `push-client.test.ts`; i test di `send` e `subscribe` ora usano una coppia
+  di chiavi generata.
+
+Verifica: build di produzione, `/api/admin/push` e `/api/push/subscribe`
+con subject valido (configurato, 200) e senza `mailto:` (problema descritto,
+503). Consegna reale delle notifiche non verificata (servizi push esterni).
+
 ---
 
 ## 11. Note operative
