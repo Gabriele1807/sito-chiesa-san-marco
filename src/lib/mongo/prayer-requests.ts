@@ -20,6 +20,8 @@ export const PRAYER_STATES = ["nuova", "letta", "archiviata"] as const;
 export type PrayerState = (typeof PRAYER_STATES)[number];
 
 const ARCHIVE_RETENTION_DAYS = 90;
+/** Richieste non archiviate da nessuno: archiviate da sole dopo questi giorni. */
+export const AUTO_ARCHIVE_DAYS = 60;
 const COLLECTION = "prayer_requests";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -124,6 +126,30 @@ export async function createPrayerRequest(
   };
   await c.insertOne({ ...request });
   return request;
+}
+
+/**
+ * Archivia le richieste più vecchie di AUTO_ARCHIVE_DAYS non ancora
+ * archiviate: contengono dati delicati (salute, fede) e non devono restare
+ * per sempre se nessuno le gestisce. Dopo l'archiviazione vale la
+ * cancellazione automatica a 90 giorni. Chiamata dal job giornaliero e
+ * all'apertura della pagina admin. Restituisce quante ne ha archiviate.
+ */
+export async function archiveStalePrayerRequests(now = new Date()): Promise<number> {
+  await ensureIndexes();
+  const c = await col();
+  const cutoff = new Date(now.getTime() - AUTO_ARCHIVE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const result = await c.updateMany(
+    { stato: { $ne: "archiviata" }, createdAt: { $lt: cutoff } },
+    {
+      $set: {
+        stato: "archiviata",
+        deleteAfter: new Date(now.getTime() + ARCHIVE_RETENTION_DAYS * 24 * 60 * 60 * 1000),
+        updatedAt: now.toISOString(),
+      },
+    }
+  );
+  return result.modifiedCount;
 }
 
 export async function listPrayerRequests(stato?: PrayerState): Promise<PrayerRequest[]> {

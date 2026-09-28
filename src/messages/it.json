@@ -514,7 +514,10 @@
     "resetPasswordSubmit": "Reimposta password",
     "resetPasswordSubmitting": "Salvataggio...",
     "resetPasswordSuccess": "Password aggiornata. Ora puoi accedere con la nuova password.",
-    "resetPasswordLoading": "Caricamento..."
+    "resetPasswordLoading": "Caricamento...",
+    "registerVerifyTitle": "Conferma la tua email",
+    "registerVerifyBody": "Ti abbiamo inviato un'email a {email} con un link per confermare l'indirizzo. Aprila e tocca «Conferma email» (se non la trovi, guarda nello spam).",
+    "registerVerifyContinue": "Ho capito"
   },
   "common": {
     "close": "Chiudi",
@@ -659,7 +662,10 @@
     "inviaVerifica": "Invia di nuovo il link",
     "verificaInviata": "Link inviato: controlla la posta (anche lo spam).",
     "verificaAttendi": "Attendi {seconds} secondi prima di chiedere un nuovo invio.",
-    "verificaErrore": "Invio non riuscito. Riprova più tardi."
+    "verificaErrore": "Invio non riuscito. Riprova più tardi.",
+    "verifyBannerText": "Conferma il tuo indirizzo email: ti abbiamo inviato un link a {email}.",
+    "verifyBannerAction": "Invia di nuovo",
+    "verifyBannerClose": "Nascondi"
   },
   "iscrizioni": {
     "titolo": "Le mie iscrizioni",
@@ -730,13 +736,19 @@
     "pushUnsupported": "Questo browser non supporta le notifiche push.",
     "pushIosInstall": "Su iPhone e iPad le notifiche funzionano solo dopo aver installato l'app: aggiungila alla schermata Home e aprila da lì.",
     "pushError": "Non è stato possibile attivare le notifiche. Riprova più tardi.",
-    "pushNotConfigured": "Le notifiche non sono ancora disponibili."
+    "pushNotConfigured": "Le notifiche non sono ancora disponibili.",
+    "notifyTitle": "Vuoi ricevere gli avvisi della parrocchia?",
+    "notifyBody": "Ti mandiamo una notifica solo per le comunicazioni importanti: variazioni di orario, chiusure, appuntamenti.",
+    "notifyEnable": "Attiva notifiche",
+    "notifyLater": "Non ora",
+    "notifyDone": "Notifiche attivate. Puoi disattivarle quando vuoi dalla pagina Avvisi.",
+    "installBodyNotify": "Orari, avvisi e preghiere sempre a portata di mano, anche senza connessione, con le notifiche degli avvisi importanti."
   },
   "richiestePreghiera": {
     "titolo": "Richieste di preghiera",
     "sottotitolo": "Affida un'intenzione alla preghiera della comunità: i sacerdoti la ricorderanno nella Divina Liturgia.",
     "eyebrow": "Pregare gli uni per gli altri",
-    "privacyNota": "La richiesta è letta solo dai sacerdoti e dagli amministratori della parrocchia. Non viene pubblicata sul sito.",
+    "privacyNota": "La richiesta è letta solo dai sacerdoti e dai responsabili della parrocchia. Non viene pubblicata sul sito.",
     "tipo": "Per chi o per cosa preghiamo",
     "tipo_malati": "Per un malato",
     "tipo_defunti": "Per un defunto",

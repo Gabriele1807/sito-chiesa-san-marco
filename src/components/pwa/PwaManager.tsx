@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { RefreshCw } from "lucide-react";
 import { initInstallStore } from "./install-store";
 import InstallPrompt from "./InstallPrompt";
+import NotificationPrompt from "./NotificationPrompt";
 
 /**
  * Registra il service worker (/sw.js), segnala gli aggiornamenti e mostra
@@ -112,7 +113,12 @@ export default function PwaManager() {
           </button>
         </div>
       )}
-      {!isAdmin && <InstallPrompt />}
+      {!isAdmin && (
+        <>
+          <InstallPrompt />
+          <NotificationPrompt />
+        </>
+      )}
     </>
   );
 }

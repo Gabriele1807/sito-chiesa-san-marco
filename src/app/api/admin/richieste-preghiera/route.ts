@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requireSuperAdminSession } from "@/lib/auth/session";
 import { recordAdminAction } from "@/lib/mongo/audit-log";
 import {
   listPrayerRequests,
+  archiveStalePrayerRequests,
   countPrayerRequestsByState,
   setPrayerRequestState,
   deletePrayerRequest,
@@ -17,14 +18,19 @@ const STATE_LABELS: Record<PrayerState, string> = {
   archiviata: "archiviata",
 };
 
+// Dati delicati (salute, fede, nomi di terzi): solo i superadmin.
 function unauthorized() {
-  return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  return NextResponse.json(
+    { error: "Solo i superadmin possono gestire le richieste di preghiera" },
+    { status: 403 }
+  );
 }
 
 /** GET /api/admin/richieste-preghiera?stato=nuova|letta|archiviata */
 export async function GET(request: Request) {
-  if (!(await requireAdminSession())) return unauthorized();
+  if (!(await requireSuperAdminSession())) return unauthorized();
   const stato = new URL(request.url).searchParams.get("stato") as PrayerState | null;
+  await archiveStalePrayerRequests().catch(() => 0);
   const [richieste, counts] = await Promise.all([
     listPrayerRequests(stato && PRAYER_STATES.includes(stato) ? stato : undefined),
     countPrayerRequestsByState(),
@@ -34,7 +40,7 @@ export async function GET(request: Request) {
 
 /** PATCH { id, stato } — segna come letta, archivia o riapre. */
 export async function PATCH(request: Request) {
-  if (!(await requireAdminSession())) return unauthorized();
+  if (!(await requireSuperAdminSession())) return unauthorized();
   try {
     const body = await request.json();
     const id = parseContentId(body?.id);
@@ -59,7 +65,7 @@ export async function PATCH(request: Request) {
 
 /** DELETE ?id= */
 export async function DELETE(request: Request) {
-  if (!(await requireAdminSession())) return unauthorized();
+  if (!(await requireSuperAdminSession())) return unauthorized();
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "ID mancante" }, { status: 400 });
   const deleted = await deletePrayerRequest(id);

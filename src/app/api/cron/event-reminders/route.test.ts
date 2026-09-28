@@ -8,6 +8,10 @@ const runEventReminders = vi.fn(async () => ({
   withoutEmail: 0,
 }));
 vi.mock("@/lib/events/reminders", () => ({ runEventReminders: () => runEventReminders() }));
+const archiveStalePrayerRequests = vi.fn(async () => 3);
+vi.mock("@/lib/mongo/prayer-requests", () => ({
+  archiveStalePrayerRequests: () => archiveStalePrayerRequests(),
+}));
 
 import { GET } from "./route";
 
@@ -27,6 +31,7 @@ describe("GET /api/cron/event-reminders", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     expect((await call("Bearer anything")).status).toBe(503);
     expect(runEventReminders).not.toHaveBeenCalled();
+    expect(archiveStalePrayerRequests).not.toHaveBeenCalled();
   });
 
   it("rejects calls without the right secret", async () => {
@@ -42,5 +47,7 @@ describe("GET /api/cron/event-reminders", () => {
     const res = await call("Bearer s3cret-value");
     expect(res.status).toBe(200);
     expect(runEventReminders).toHaveBeenCalledTimes(1);
+    expect(archiveStalePrayerRequests).toHaveBeenCalledTimes(1);
+    expect(await res.json()).toMatchObject({ prayerArchived: 3 });
   });
 });

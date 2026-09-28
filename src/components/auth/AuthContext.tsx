@@ -136,16 +136,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const logout = useCallback(async () => {
-    try {
-      if (state.type === "admin") {
-        await fetch("/api/admin/logout", { method: "POST" });
-        localStorage.removeItem("admin_info");
-      } else if (state.type === "user") {
-        await fetch("/api/auth/logout", { method: "POST" });
-      }
-    } catch {
-      // ignora errori di rete
-    }
+    // Si chiudono sempre entrambe le sessioni: un admin promosso da un
+    // account utente ha anche il cookie utente, e /api/auth/me ricreerebbe
+    // la sessione admin partendo da quello (logout inefficace).
+    await Promise.all([
+      fetch("/api/admin/logout", { method: "POST" }).catch(() => undefined),
+      fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined),
+    ]);
+    localStorage.removeItem("admin_info");
     localStorage.removeItem("user_info");
     await clearOfflinePageCache();
     setState({
@@ -154,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: null,
       admin: null,
     });
-  }, [state.type]);
+  }, []);
 
   return (
     <AuthContext.Provider

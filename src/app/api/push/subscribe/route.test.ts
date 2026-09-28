@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const consumeActionLimit = vi.fn<
+  (...args: unknown[]) => Promise<{ allowed: boolean; retryAfterSeconds: number }>
+>(async () => ({ allowed: true, retryAfterSeconds: 0 }));
+vi.mock("@/lib/auth/action-limit", () => ({
+  LIMITS: { register: {}, prayerRequest: {}, pushSubscribe: {}, eventRegistration: {} },
+  consumeActionLimit: (...args: unknown[]) => consumeActionLimit(...args),
+}));
 vi.mock("@/lib/auth/rate-limit", () => ({
   getClientIp: () => "1.2.3.4",
   isIpRateLimited: vi.fn(async () => false),

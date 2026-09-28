@@ -11,6 +11,8 @@ import { hashPassword } from "@/lib/auth/password";
 import { passwordPolicyError } from "@/lib/auth/password-rules";
 import { requireSuperAdminSession, reissueAdminSessionCookie } from "@/lib/auth/session";
 import { markAdminPasswordChanged } from "@/lib/mongo/admin-password-changes";
+import { deleteAllUserSessions } from "@/lib/mongo/sessions";
+import { findUserByUsername } from "@/lib/mongo/users";
 import { recordAdminAction } from "@/lib/mongo/audit-log";
 
 async function requireSuperAdmin() {
@@ -89,6 +91,10 @@ export async function PUT(
       // Nuova password: chiude le sessioni aperte con quella vecchia
       // (resta aperta solo quella del superadmin, se ha cambiato la propria).
       await markAdminPasswordChanged(data.id);
+      // Anche le sessioni dell'account utente collegato (stesso username):
+      // altrimenti /api/auth/me ricreerebbe una sessione admin partendo da lì.
+      const linkedUser = await findUserByUsername(data.username);
+      if (linkedUser) await deleteAllUserSessions(linkedUser._id);
       if (data.id === currentUserId) await reissueAdminSessionCookie(request, data.id);
     }
 

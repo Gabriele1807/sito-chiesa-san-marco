@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const consumeActionLimit = vi.fn<
+  (...args: unknown[]) => Promise<{ allowed: boolean; retryAfterSeconds: number }>
+>(async () => ({ allowed: true, retryAfterSeconds: 0 }));
+vi.mock("@/lib/auth/action-limit", () => ({
+  LIMITS: { register: {}, prayerRequest: {}, pushSubscribe: {}, eventRegistration: {} },
+  consumeActionLimit: (...args: unknown[]) => consumeActionLimit(...args),
+}));
 vi.mock("@/lib/auth/rate-limit", () => ({
   getClientIp: () => "1.2.3.4",
   isIpRateLimited: vi.fn(async () => false),
@@ -66,15 +73,13 @@ function lastSaved() {
 describe("POST /api/eventi/iscrizione — proprietà dell'iscrizione", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("ignores createdBy* sent by an anonymous client", async () => {
+  it("refuses registrations without an account, whatever the body says", async () => {
     (cookies as ReturnType<typeof vi.fn>).mockResolvedValue({ get: () => undefined });
 
-    await POST(req(forgedBody));
+    const res = await POST(req(forgedBody));
 
-    const saved = lastSaved();
-    expect(saved.createdByUserId).toBeUndefined();
-    expect(saved.createdByAccountType).toBeUndefined();
-    expect(saved.createdByEmail).toBeUndefined();
+    expect(res.status).toBe(401);
+    expect(createIscrizione).not.toHaveBeenCalled();
   });
 
   it("takes the owner from the session, not from the body", async () => {
@@ -99,7 +104,14 @@ describe("POST /api/eventi/iscrizione — proprietà dell'iscrizione", () => {
   it("sends the confirmation email after the response, in the visitor's language", async () => {
     afterCallbacks.length = 0;
     (cookies as ReturnType<typeof vi.fn>).mockResolvedValue({
-      get: (n: string) => (n === "locale" ? { value: "ar" } : undefined),
+      get: (n: string) =>
+        n === "user_session" ? { value: "tok" } : n === "locale" ? { value: "ar" } : undefined,
+    });
+    (validateUserSession as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "u1" });
+    (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({
+      nome: "Mario",
+      cognome: "Rossi",
+      email: "mario@example.com",
     });
 
     const res = await POST(req(forgedBody));
@@ -113,5 +125,22 @@ describe("POST /api/eventi/iscrizione — proprietà dell'iscrizione", () => {
       expect.objectContaining({ id: "e1", titolo: "Ritiro" }),
       expect.objectContaining({ _id: "r1", createdByEmail: "mario@example.com" })
     );
+  });
+
+  it("limits registrations per account", async () => {
+    (cookies as ReturnType<typeof vi.fn>).mockResolvedValue({
+      get: (n: string) => (n === "user_session" ? { value: "tok" } : undefined),
+    });
+    (validateUserSession as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "u1" });
+    (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({
+      nome: "Mario",
+      cognome: "Rossi",
+      email: "mario@example.com",
+    });
+    consumeActionLimit.mockResolvedValueOnce({ allowed: false, retryAfterSeconds: 60 });
+
+    const res = await POST(req(forgedBody));
+    expect(res.status).toBe(429);
+    expect(createIscrizione).not.toHaveBeenCalled();
   });
 });

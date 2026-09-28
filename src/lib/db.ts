@@ -178,13 +178,27 @@ const getPublishedAvvisiCached = unstable_cache(
   { revalidate: CONTENT_REVALIDATE_SECONDS, tags: ["content", "avvisi"] }
 );
 
+/**
+ * Gli avvisi sono letti nel layout di tutte le pagine pubbliche: con il
+ * database lento o irraggiungibile (il client MongoDB ritenta per circa un
+ * minuto) bloccherebbero anche pagine che non usano il database, come
+ * Privacy o Contatti. Oltre questo tempo la pagina viene mostrata senza avvisi.
+ */
+const AVVISI_TIMEOUT_MS = 1500;
+
 export async function getActiveAvvisi(): Promise<Avviso[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    return filterActiveAvvisi(await getPublishedAvvisiCached());
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`timeout ${AVVISI_TIMEOUT_MS} ms`)), AVVISI_TIMEOUT_MS);
+    });
+    return filterActiveAvvisi(await Promise.race([getPublishedAvvisiCached(), timeout]));
   } catch (err) {
     // Gli avvisi sono un complemento: se il database non risponde la
     // pagina deve comunque essere mostrata, senza bacheca.
     console.error("[avvisi] lettura fallita:", err instanceof Error ? err.message : err);
     return [];
+  } finally {
+    clearTimeout(timer);
   }
 }

@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const consumeActionLimit = vi.fn<
+  (...args: unknown[]) => Promise<{ allowed: boolean; retryAfterSeconds: number }>
+>(async () => ({ allowed: true, retryAfterSeconds: 0 }));
+vi.mock("@/lib/auth/action-limit", () => ({
+  LIMITS: { register: {}, prayerRequest: {}, pushSubscribe: {}, eventRegistration: {} },
+  consumeActionLimit: (...args: unknown[]) => consumeActionLimit(...args),
+}));
 vi.mock("@/lib/auth/rate-limit", () => ({
   getClientIp: () => "1.2.3.4",
   isIpRateLimited: vi.fn(async () => false),
@@ -43,5 +50,14 @@ describe("POST /api/richieste-preghiera", () => {
     const res = await POST(req({ tipo: "defunti", intenzione: "Per Giovanni" }));
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ success: false, error: "consent" });
+  });
+
+  it("limits how many requests a network can send per hour", async () => {
+    consumeActionLimit.mockResolvedValueOnce({ allowed: false, retryAfterSeconds: 600 });
+    const res = await POST(
+      req({ tipo: "defunti", intenzione: "Per l'anima di Giovanni", consenso: true })
+    );
+    expect(res.status).toBe(429);
+    expect(createPrayerRequest).not.toHaveBeenCalled();
   });
 });
