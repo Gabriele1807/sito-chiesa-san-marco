@@ -10,6 +10,8 @@ interface Props {
   avvisoId: string;
   titolo: string;
   pushSentAt?: string;
+  /** Dispositivi non raggiunti dall'ultimo invio (fermato per limite di tempo). */
+  pushRemaining?: number;
   /** Avviso non visibile (bozza, programmato, scaduto): invio non consentito. */
   inactive: boolean;
   configured: boolean;
@@ -22,6 +24,7 @@ export default function PushSendButton({
   avvisoId,
   titolo,
   pushSentAt,
+  pushRemaining = 0,
   inactive,
   configured,
   subscribers,
@@ -29,6 +32,7 @@ export default function PushSendButton({
 }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [sending, setSending] = useState(false);
+  const incomplete = pushRemaining > 0;
 
   const disabledReason = !configured
     ? "Notifiche non configurate (chiavi VAPID mancanti)"
@@ -44,7 +48,7 @@ export default function PushSendButton({
       const res = await adminFetch("/api/admin/avvisi/push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: avvisoId }),
+        body: JSON.stringify({ id: avvisoId, resume: incomplete }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -52,7 +56,9 @@ export default function PushSendButton({
         return;
       }
       showToast(
-        `Notifica inviata a ${data.sent} dispositivi${data.failed ? ` (${data.failed} non raggiunti)` : ""}`,
+        data.remaining > 0
+          ? `Inviata a ${data.sent} dispositivi; ne mancano ${data.remaining}: premi di nuovo la campanella per continuare`
+          : `Notifica inviata a ${data.sent} dispositivi${data.failed ? ` (${data.failed} non raggiunti)` : ""}`,
         data.sent > 0 ? "success" : "error"
       );
       onSent();
@@ -84,15 +90,23 @@ export default function PushSendButton({
           (pushSentAt ? "Notifica già inviata: invia di nuovo" : "Invia notifica push")
         }
         className={`rounded-lg p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
-          pushSentAt ? "text-success hover:bg-success/10" : "text-gold hover:bg-gold/10"
+          incomplete
+            ? "text-danger hover:bg-danger/10"
+            : pushSentAt
+              ? "text-success hover:bg-success/10"
+              : "text-gold hover:bg-gold/10"
         }`}
       >
         {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
       </button>
       <ConfirmModal
         open={confirming}
-        title="Inviare la notifica?"
-        message={`"${titolo}" arriverà come notifica su ${subscribers} dispositivi iscritti.${sentBefore}`}
+        title={incomplete ? "Continuare l'invio?" : "Inviare la notifica?"}
+        message={
+          incomplete
+            ? `L'invio di "${titolo}" si era fermato: riprende dai ${pushRemaining} dispositivi non ancora raggiunti, senza doppioni.`
+            : `"${titolo}" arriverà come notifica su ${subscribers} dispositivi iscritti.${sentBefore}`
+        }
         confirmLabel="Invia notifica"
         loadingLabel="Invio in corso..."
         tone="primary"

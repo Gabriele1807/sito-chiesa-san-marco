@@ -2,7 +2,7 @@
  * Service worker della PWA — Chiesa Copta Ortodossa di San Marco.
  *
  * Strategie di cache (solo richieste GET dello stesso sito):
- *  - /_next/static/*  (file con hash, immutabili)      → cache-first
+ *  - /_next/static/*  (file con hash, immutabili)      → cache-first, max 250 voci
  *  - immagini e font                                   → stale-while-revalidate, max 80 voci
  *  - pagine pubbliche (elenco PUBLIC_PAGE)             → network-first; copia in cache per l'offline
  *  - tutto il resto (API, admin, profilo, reset…)      → solo rete, mai in cache
@@ -38,6 +38,9 @@ const PRECACHE_URLS = [
 
 const MAX_PAGES = 40;
 const MAX_IMAGES = 80;
+// File con hash di Next.js: ogni nuova versione del sito ne aggiunge di nuovi,
+// senza tetto la cache crescerebbe per sempre sul dispositivo.
+const MAX_STATIC = 250;
 const NAVIGATION_TIMEOUT_MS = 5000;
 
 // Pagine con contenuto pubblico, uguale per tutti: le uniche salvate per l'offline.
@@ -101,8 +104,12 @@ async function cacheFirst(request) {
   if (cached) return cached;
   const response = await fetch(request);
   if (isCacheableResponse(response)) {
-    const cache = await caches.open(STATIC_CACHE);
-    cache.put(request, response.clone());
+    const copy = response.clone();
+    caches
+      .open(STATIC_CACHE)
+      .then((cache) => cache.put(request, copy))
+      .then(() => trimCache(STATIC_CACHE, MAX_STATIC))
+      .catch(() => undefined);
   }
   return response;
 }

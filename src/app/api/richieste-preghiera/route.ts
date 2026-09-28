@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getClientIp, isIpRateLimited, recordIpRequest } from "@/lib/auth/rate-limit";
+import { consumeActionLimit, LIMITS } from "@/lib/auth/action-limit";
 import { validatePrayerRequest, createPrayerRequest } from "@/lib/mongo/prayer-requests";
 
 /**
@@ -25,6 +26,10 @@ export async function POST(request: Request) {
     const parsed = validatePrayerRequest(body);
     if (!parsed.ok) {
       return NextResponse.json({ success: false, error: parsed.error }, { status: 400 });
+    }
+
+    if (!(await consumeActionLimit(LIMITS.prayerRequest, ip)).allowed) {
+      return NextResponse.json({ success: false, error: "rate_limit" }, { status: 429 });
     }
 
     const locale = /(?:^|;\s*)locale=ar(?:;|$)/.test(request.headers.get("cookie") ?? "")

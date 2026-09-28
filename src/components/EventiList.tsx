@@ -10,6 +10,7 @@ import { CalendarDays, MapPin, Users, X, AlertTriangle, Lock, BadgeInfo, Info, P
 import type { Evento, RaccoglimentoPoint } from "@/types";
 import { toGDriveImageUrl } from "@/lib/gdrive";
 import { useAuth } from "@/components/auth/AuthContext";
+import { MAX_FAMILY_MEMBERS } from "@/lib/events/limits";
 
 type FamilyRole = "madre" | "padre" | "figlio";
 
@@ -299,7 +300,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   }
 
   function addFamilyMember() {
-    setFormData((prev) => ({
+    setFormData((prev) => (prev.familyMembers.length >= MAX_FAMILY_MEMBERS ? prev : {
       ...prev,
       familyMembers: [...prev.familyMembers, { role: "figlio", fullName: familyMemberSurnameDefault }],
     }));
@@ -752,7 +753,7 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">{t("sezioneFamiglia")}</h4>
-                      <button type="button" onClick={addFamilyMember} className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+                      <button type="button" onClick={addFamilyMember} disabled={formData.familyMembers.length >= MAX_FAMILY_MEMBERS} className="disabled:opacity-40 inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
                         <Plus className="h-3.5 w-3.5" /> {t("aggiungiMembro")}
                       </button>
                     </div>

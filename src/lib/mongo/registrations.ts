@@ -14,6 +14,7 @@
 import { getDb } from "./client";
 import type { IscrizioneEvento, CreateIscrizioneData, CreateIscrizioneResult } from "@/types";
 import { getEventoById } from "./content";
+import { MAX_FAMILY_MEMBERS } from "@/lib/events/limits";
 import { ObjectId, type WithId, type Document } from "mongodb";
 
 const COLLECTION = "event_registrations";
@@ -306,6 +307,31 @@ export function countIscrittiInRegistrations(iscrizioni: Array<IscrizioneEvento>
 
 // --------------- Create ---------------
 
+const MAX_NAME_LENGTH = 100;
+
+/** Persone che un'iscrizione occupa: i membri per le famiglie, altrimenti 1. */
+function peopleInRegistration(registrationType: string, familyMembers: unknown[]): number {
+  return registrationType === "family" ? familyMembers.length : 1;
+}
+
+const PEOPLE_EXPR = {
+  $cond: [
+    { $eq: ["$registrationType", "family"] },
+    { $size: { $ifNull: ["$familyMembers", []] } },
+    1,
+  ],
+};
+
+async function peopleRegistered(c: Awaited<ReturnType<typeof col>>, eventoId: string): Promise<number> {
+  const agg = await c
+    .aggregate<{ _id: null; total: number }>([
+      { $match: { eventoId } },
+      { $group: { _id: null, total: { $sum: PEOPLE_EXPR } } },
+    ])
+    .toArray();
+  return agg[0]?.total ?? 0;
+}
+
 /**
  * Crea una nuova iscrizione applicando validazione, controllo posti
  * e logica anti-duplicato / famiglia.
@@ -315,8 +341,34 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
 
   // Validazione minima lato server
   if (
-    !data.eventoId ||
-    !data.telefono?.trim()
+    typeof data.eventoId !== "string" ||
+    data.eventoId.length > 128 ||
+    typeof data.telefono !== "string" ||
+    !data.telefono.trim()
+  ) {
+    return { success: false, errorCode: "validation" };
+  }
+
+  // Lunghezze massime: senza limiti un solo invio poteva salvare testi
+  // enormi (poi riportati in email, PDF ed export).
+  const textLimits: [unknown, number][] = [
+    [data.nome, MAX_NAME_LENGTH],
+    [data.cognome, MAX_NAME_LENGTH],
+    [data.padreNome, MAX_NAME_LENGTH],
+    [data.padreCognome, MAX_NAME_LENGTH],
+    [data.fatherName, MAX_NAME_LENGTH],
+    [data.fatherSurname, MAX_NAME_LENGTH],
+    [data.telefono, 30],
+    [data.email, 200],
+    [data.note, 1000],
+  ];
+  if (textLimits.some(([value, max]) => value !== undefined && value !== null && (typeof value !== "string" || value.length > max))) {
+    return { success: false, errorCode: "validation" };
+  }
+  if (
+    Array.isArray(data.familyMembers) &&
+    (data.familyMembers.length > MAX_FAMILY_MEMBERS ||
+      data.familyMembers.some((m) => typeof m?.fullName !== "string" || m.fullName.length > MAX_NAME_LENGTH * 2))
   ) {
     return { success: false, errorCode: "validation" };
   }
@@ -450,27 +502,14 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
   // La famiglia (stesso padre) ha gia altre iscrizioni a questo evento?
   const sameFamily = (await c.countDocuments({ eventoId: data.eventoId, _familyKey: fKey })) > 0;
 
-  // Controllo posti disponibili (solo se l'evento ha un limite definito)
-  if (typeof evento.postiDisponibili === "number" && evento.postiDisponibili > 0) {
-    const agg = await c
-      .aggregate<{ _id: null; total: number }>([
-        { $match: { eventoId: data.eventoId } },
-        {
-          $group: {
-            _id: null,
-            total: {
-              $sum: {
-                $add: [1, { $size: { $ifNull: ["$familyMembers", []] } }],
-              },
-            },
-          },
-        },
-      ])
-      .toArray();
-    const current = agg[0]?.total ?? 0;
-    if (current >= evento.postiDisponibili) {
-      return { success: false, errorCode: "full", sameFamily };
-    }
+  // Controllo posti disponibili (solo se l'evento ha un limite definito).
+  // Conta anche le persone della nuova iscrizione: prima una famiglia di 6
+  // entrava con un solo posto libero.
+  const capacity =
+    typeof evento.postiDisponibili === "number" && evento.postiDisponibili > 0 ? evento.postiDisponibili : null;
+  const newPeople = peopleInRegistration(registrationType, normalizedFamilyMembers);
+  if (capacity !== null && (await peopleRegistered(c, data.eventoId)) + newPeople > capacity) {
+    return { success: false, errorCode: "full", sameFamily };
   }
 
   const now = new Date().toISOString();
@@ -504,6 +543,16 @@ export async function createIscrizione(data: CreateIscrizioneData): Promise<Crea
 
   try {
     const result = await c.insertOne(doc);
+
+    // Due iscrizioni contemporanee possono superare entrambe il controllo
+    // qui sopra: dopo l'inserimento si ricontrolla e, se i posti sono stati
+    // superati, si annulla la propria iscrizione (nel caso peggiore vengono
+    // rifiutate entrambe, mai accettate oltre il limite).
+    if (capacity !== null && (await peopleRegistered(c, data.eventoId)) > capacity) {
+      await c.deleteOne({ _id: result.insertedId });
+      return { success: false, errorCode: "full", sameFamily };
+    }
+
     const { _familyKey: _f, _personKey: _p, ...clean } = doc;
     void _f; void _p;
     return {

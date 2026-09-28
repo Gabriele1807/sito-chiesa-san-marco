@@ -40,9 +40,9 @@ describe("runEventReminders", () => {
     ]);
     getIscrizioniWithoutReminder.mockResolvedValue([
       { _id: "ok", createdByEmail: "a@example.com" },
-      { _id: "no-email" },
-      { _id: "taken", email: "b@example.com" },
-      { _id: "fails", email: "c@example.com" },
+      { _id: "no-email", email: "solo-modulo@example.com" },
+      { _id: "taken", createdByEmail: "b@example.com" },
+      { _id: "fails", createdByEmail: "c@example.com" },
     ]);
     claimIscrizioneReminder.mockImplementation(async (id: string) => id !== "taken");
     sendRegistrationReminder.mockImplementation(

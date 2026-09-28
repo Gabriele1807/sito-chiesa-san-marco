@@ -18,18 +18,14 @@ export async function GET() {
     const adminToken = cookieStore.get("admin_session")?.value;
 
     // Se c'è una sessione admin, validala lato DB e ritorna sempre dati aggiornati
-    if (adminToken) {
-      const adminUser = await validateSession(adminToken);
-      if (!adminUser || !adminUser.attivo) {
-        const response = NextResponse.json({
-          success: true,
-          type: "guest",
-          authenticated: false,
-        });
-        response.cookies.delete("admin_session");
-        return response;
-      }
-
+    const adminUser = adminToken ? await validateSession(adminToken) : null;
+    if (adminToken && (!adminUser || !adminUser.attivo)) {
+      // Sessione admin scaduta o chiusa (logout, cambio password, account
+      // disattivato): si toglie il cookie e si prosegue con l'eventuale
+      // sessione utente, invece di mostrare la persona come disconnessa.
+      cookieStore.delete("admin_session");
+    }
+    if (adminUser && adminUser.attivo) {
       const relatedUser = await findUserByUsername(adminUser.username);
       const superAdminRequest = adminUser.ruolo === "superadmin"
         ? "approved"

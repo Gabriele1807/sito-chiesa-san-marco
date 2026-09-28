@@ -6,6 +6,7 @@ import { passwordPolicyError } from "@/lib/auth/password-rules";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { markAdminPasswordChangedByUsername } from "@/lib/mongo/admin-password-changes";
 import { requireSuperAdminSession } from "@/lib/auth/session";
+import { deleteAllUserSessions } from "@/lib/mongo/sessions";
 import { recordAdminAction } from "@/lib/mongo/audit-log";
 
 /**
@@ -160,11 +161,17 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, error: passwordError }, { status: 400 });
     }
 
+    if (typeof id !== "string") {
+      return NextResponse.json({ success: false, error: "ID utente non valido" }, { status: 400 });
+    }
     const passwordHash = await hashPassword(newPassword);
     const ok = await updateUserPassword(id, passwordHash);
     if (!ok) {
       return NextResponse.json({ success: false, error: "Utente non trovato" }, { status: 404 });
     }
+    // Password reimpostata da un superadmin (di solito perché persa o
+    // compromessa): le sessioni aperte con la vecchia vanno chiuse.
+    await deleteAllUserSessions(id);
 
     // Se l'utente ha anche un account admin su Supabase, aggiorna anche lì
     const fullUser = await findUserByIdFull(id);

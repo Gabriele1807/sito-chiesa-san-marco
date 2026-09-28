@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { requireAdminSession } from "@/lib/auth/session";
 import { logAdminAction } from "@/lib/mongo/audit-log";
 import {
   getAvvisoById,
   localizeAvviso,
-  markAvvisoPushSent,
+  markAvvisoPushRun,
   filterActiveAvvisi,
 } from "@/lib/mongo/announcements";
 import { parseContentId } from "@/lib/admin/content-validation";
@@ -42,6 +43,12 @@ export async function POST(request: Request) {
       );
     }
 
+    // `resume`: continua l'ultimo invio rimasto a metà (stesso runId, niente
+    // doppioni); altrimenti è un nuovo invio a tutti i dispositivi.
+    const resume =
+      body?.resume === true && Boolean(avviso.pushRunId) && (avviso.pushRemaining ?? 0) > 0;
+    const runId = resume ? avviso.pushRunId! : randomUUID();
+
     const result = await sendPushToAll(
       (locale) => {
         const text = localizeAvviso(avviso, locale);
@@ -53,15 +60,15 @@ export async function POST(request: Request) {
           lang: locale,
         };
       },
-      { urgent: avviso.livello === "urgente" }
+      { urgent: avviso.livello === "urgente", runId }
     );
 
-    await markAvvisoPushSent(avviso.id);
+    await markAvvisoPushRun(avviso.id, runId, result.remaining);
     await logAdminAction(admin, {
       action: "send",
       entity: "notifiche",
       entityId: avviso.id,
-      summary: `Notifica "${clip(avviso.titolo, 80)}": ${result.sent} inviate, ${result.failed} non riuscite`,
+      summary: `Notifica "${clip(avviso.titolo, 80)}"${resume ? " (ripresa)" : ""}: ${result.sent} inviate, ${result.failed} non riuscite${result.remaining ? `, ${result.remaining} da completare` : ""}`,
     });
     return NextResponse.json({ success: true, ...result });
   } catch (err) {
