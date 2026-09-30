@@ -35,6 +35,8 @@ interface YouTubeData {
  *   l'iframe partiva a ogni apertura della home (peso su telefono).
  * - Senza dati dall'API (chiave assente o errore) niente contenuti inventati:
  *   al posto del video un invito ad aprire il canale, niente statistiche.
+ * - Impaginazione decisa dalla larghezza della sezione (container query):
+ *   testo e video affiancati solo da @4xl, così a 1024px non si schiacciano.
  */
 export default function YouTubeLiveSection() {
   const t = useTranslations("contatti");
@@ -83,12 +85,12 @@ export default function YouTubeLiveSection() {
   };
 
   const actions = (
-    <div className="flex flex-col gap-3 min-[420px]:flex-row">
+    <div className="flex flex-col gap-3 @sm:flex-row @sm:flex-wrap">
       <a
         href={YOUTUBE_CHANNEL_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Bell className="h-4 w-4" aria-hidden />
         {t("youtubeIscriviti")}
@@ -97,7 +99,7 @@ export default function YouTubeLiveSection() {
         href={`${YOUTUBE_CHANNEL_URL}/videos`}
         target="_blank"
         rel="noopener noreferrer"
-        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Play className="h-4 w-4" aria-hidden />
         {t("youtubeGuardaTutti")}
@@ -106,11 +108,11 @@ export default function YouTubeLiveSection() {
   );
 
   return (
-    <section aria-labelledby="youtube-title">
+    <section aria-labelledby="youtube-title" className="@container">
       <div className="bg-primary max-w-full min-w-0 overflow-hidden rounded-3xl shadow-xl">
-        <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-10 lg:p-8">
+        <div className="grid gap-6 p-5 sm:p-6 @4xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] @4xl:gap-10 @4xl:p-8">
           {/* Video: anteprima, il lettore parte al tocco */}
-          <div className="min-w-0 lg:order-2">
+          <div className="min-w-0 @4xl:order-2">
             <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
               <div className="relative aspect-video">
                 {video && playing ? (
@@ -179,7 +181,7 @@ export default function YouTubeLiveSection() {
           </div>
 
           {/* Testo, canale, azioni */}
-          <div className="flex min-w-0 flex-col gap-5 lg:order-1 lg:justify-center">
+          <div className="flex min-w-0 flex-col gap-5 @4xl:order-1 @4xl:justify-center">
             <div>
               <h2
                 id="youtube-title"
