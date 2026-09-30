@@ -1,3 +1,4 @@
+import { createECDH } from "node:crypto";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const sendNotification = vi.fn();
@@ -30,6 +31,15 @@ vi.mock("@/lib/mongo/push-subscriptions", () => ({
 
 import { sendPushToAll, PushNotConfiguredError } from "./send";
 
+const TEST_VAPID = (() => {
+  const ecdh = createECDH("prime256v1");
+  ecdh.generateKeys();
+  return {
+    publicKey: ecdh.getPublicKey().toString("base64url"),
+    privateKey: ecdh.getPrivateKey().toString("base64url"),
+  };
+})();
+
 const sub = (name: string, locale: "it" | "ar" = "it"): Sub => ({
   endpoint: `https://fcm.googleapis.com/${name}`,
   keys: { p256dh: "a", auth: "b" },
@@ -46,8 +56,9 @@ describe("sendPushToAll", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     subscriptions = [sub("ok-it"), sub("ok-ar", "ar"), sub("gone"), sub("flaky")];
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = "public";
-    process.env.VAPID_PRIVATE_KEY = "private";
+    // Coppia valida: la configurazione ora verifica formato e corrispondenza delle chiavi.
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = TEST_VAPID.publicKey;
+    process.env.VAPID_PRIVATE_KEY = TEST_VAPID.privateKey;
     process.env.VAPID_SUBJECT = "mailto:test@example.com";
     sendNotification.mockImplementation(async (s: { endpoint: string }) => {
       if (s.endpoint.endsWith("/gone")) throw Object.assign(new Error("gone"), { statusCode: 410 });

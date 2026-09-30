@@ -5,7 +5,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { Bell, BellOff, BellRing, Loader2 } from "lucide-react";
 import { useInstallState } from "./install-store";
 import IosInstallSteps from "./IosInstallSteps";
-import { VAPID_PUBLIC_KEY, subscribeToPush, unsubscribeFromPush } from "./push-client";
+import {
+  PushSaveError,
+  VAPID_PUBLIC_KEY,
+  subscribeToPush,
+  unsubscribeFromPush,
+} from "./push-client";
 
 type Status = "checking" | "unsupported" | "ios-install" | "denied" | "off" | "on";
 
@@ -61,8 +66,12 @@ export default function PushToggle() {
     try {
       const permission = await subscribeToPush(locale);
       setStatus(permission === "granted" ? "on" : permission === "denied" ? "denied" : "off");
-    } catch {
-      setError(t("pushError"));
+    } catch (err) {
+      setError(
+        err instanceof PushSaveError && err.code === "not_configured"
+          ? t("pushNotConfigured")
+          : t("pushError")
+      );
       await refresh().catch(() => undefined);
     } finally {
       setBusy(false);
