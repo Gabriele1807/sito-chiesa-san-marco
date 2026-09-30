@@ -26,56 +26,80 @@ interface YouTubeChannelData {
   upcoming: YouTubeVideo[];
 }
 
+type FetchedData = YouTubeChannelData & { videosOk: boolean };
+
 let cache: { data: YouTubeChannelData; timestamp: number } | null = null;
 
-async function fetchYouTubeData(): Promise<YouTubeChannelData | null> {
+async function fetchYouTubeData(): Promise<FetchedData | null> {
   if (!YOUTUBE_API_KEY) return null;
 
   try {
     const channelRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/channels?forHandle=${encodeURIComponent(CHANNEL_HANDLE)}&part=snippet,statistics&key=${YOUTUBE_API_KEY}`
+      `https://www.googleapis.com/youtube/v3/channels?forHandle=${encodeURIComponent(CHANNEL_HANDLE)}&part=snippet,statistics,contentDetails&key=${YOUTUBE_API_KEY}`
     );
     const channelData = await channelRes.json();
+    if (channelData.error) {
+      console.error("YouTube channels:", channelData.error.message);
+      return null;
+    }
     const channel = channelData.items?.[0];
     if (!channel) return null;
 
     const channelId = channel.id;
 
-    const [searchRes, liveRes, upcomingRes] = await Promise.all([
-      // videoEmbeddable=true excludes videos that would render as a broken
-      // "video unavailable" preview in the embed player. maxResults=5 (not 1)
-      // lets us skip past any live/upcoming broadcast that "order=date" can
-      // surface at the top of a normal search, so "latest" always resolves
-      // to a real, finished video rather than a scheduled-stream placeholder.
-      fetch(
-        `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&order=date&maxResults=5&type=video&videoEmbeddable=true&part=snippet&key=${YOUTUBE_API_KEY}`
-      ),
-      fetch(
-        `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&eventType=live&type=video&part=snippet&key=${YOUTUBE_API_KEY}`
-      ),
-      fetch(
-        `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&eventType=upcoming&type=video&part=snippet&maxResults=5&key=${YOUTUBE_API_KEY}`
-      ),
-    ]);
+    // La playlist "uploads" e videos.list costano 1 unità di quota l'una;
+    // search.list ne costa 100 e, esaurita la quota, lasciava la home senza
+    // video pur con le statistiche del canale caricate.
+    const uploadsId: string | undefined = channel.contentDetails?.relatedPlaylists?.uploads;
+    const videos: YouTubeVideo[] = [];
+    let live: YouTubeVideo | null = null;
+    const upcomingVideos: YouTubeVideo[] = [];
+    let videosOk = false;
 
-    const [searchData, liveData, upcomingData] = await Promise.all([
-      searchRes.json(),
-      liveRes.json(),
-      upcomingRes.json(),
-    ]);
-
-    const activeLive = liveData.items?.[0];
-    const upcomingItems = upcomingData.items || [];
-    const excludedIds = new Set(
-      [activeLive, ...upcomingItems]
-        .filter(Boolean)
+    if (uploadsId) {
+      const listRes = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=${uploadsId}&maxResults=15&part=contentDetails&key=${YOUTUBE_API_KEY}`
+      );
+      const listData = await listRes.json();
+      if (listData.error) console.error("YouTube playlistItems:", listData.error.message);
+      const ids: string[] = (listData.items ?? [])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((item: any) => item.id.videoId)
-    );
-    const searchItems = searchData.items || [];
-    const latestVideo =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      searchItems.find((item: any) => !excludedIds.has(item.id.videoId)) ?? searchItems[0];
+        .map((item: any) => item.contentDetails?.videoId)
+        .filter(Boolean);
+
+      if (ids.length > 0) {
+        const detailRes = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?id=${ids.join(",")}&part=snippet,status&key=${YOUTUBE_API_KEY}`
+        );
+        const detailData = await detailRes.json();
+        if (detailData.error) console.error("YouTube videos:", detailData.error.message);
+        videosOk = Array.isArray(detailData.items);
+        const byId = new Map<string, Record<string, any>>( // eslint-disable-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (detailData.items ?? []).map((item: any) => [item.id, item])
+        );
+        for (const id of ids) {
+          const item = byId.get(id);
+          if (!item || item.status?.embeddable === false || item.status?.privacyStatus !== "public") {
+            continue;
+          }
+          const video: YouTubeVideo = {
+            id,
+            title: item.snippet.title,
+            thumbnail:
+              item.snippet.thumbnails?.high?.url ||
+              item.snippet.thumbnails?.medium?.url ||
+              item.snippet.thumbnails?.default?.url ||
+              "",
+            publishedAt: item.snippet.publishedAt,
+          };
+          const state = item.snippet.liveBroadcastContent;
+          if (state === "live") live ??= video;
+          else if (state === "upcoming") upcomingVideos.push(video);
+          else videos.push(video);
+        }
+      }
+    }
 
     return {
       channel: {
@@ -88,40 +112,11 @@ async function fetchYouTubeData(): Promise<YouTubeChannelData | null> {
         subscriberCount: channel.statistics.subscriberCount || "0",
         videoCount: channel.statistics.videoCount || "0",
       },
-      latestVideo: latestVideo
-        ? {
-            id: latestVideo.id.videoId,
-            title: latestVideo.snippet.title,
-            thumbnail:
-              latestVideo.snippet.thumbnails.high?.url ||
-              latestVideo.snippet.thumbnails.default?.url ||
-              "",
-            publishedAt: latestVideo.snippet.publishedAt,
-          }
-        : null,
-      isLive: !!activeLive,
-      liveVideo: activeLive
-        ? {
-            id: activeLive.id.videoId,
-            title: activeLive.snippet.title,
-            thumbnail:
-              activeLive.snippet.thumbnails.high?.url ||
-              activeLive.snippet.thumbnails.default?.url ||
-              "",
-            publishedAt: activeLive.snippet.publishedAt,
-          }
-        : null,
-      upcoming: upcomingItems.map((item: Record<string, unknown>) => {
-        const snippet = item.snippet as Record<string, unknown>;
-        const id = item.id as Record<string, string>;
-        const thumbnails = snippet.thumbnails as Record<string, Record<string, string>>;
-        return {
-          id: id.videoId,
-          title: snippet.title as string,
-          thumbnail: thumbnails?.high?.url || thumbnails?.default?.url || "",
-          publishedAt: snippet.publishedAt as string,
-        };
-      }),
+      latestVideo: videos[0] ?? null,
+      isLive: live !== null,
+      liveVideo: live,
+      upcoming: upcomingVideos,
+      videosOk,
     };
   } catch (error) {
     console.error("Errore fetch YouTube data:", error);
@@ -150,14 +145,22 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, data: cache.data });
   }
 
-  const data = await fetchYouTubeData();
-  if (!data) {
+  const fetched = await fetchYouTubeData();
+  if (!fetched) {
+    // Errore o quota esaurita: meglio l'ultimo dato noto che nessun video.
+    if (cache) return NextResponse.json({ success: true, data: cache.data });
     return NextResponse.json({
       success: false,
       error: "Impossibile recuperare dati da YouTube",
     });
   }
 
-  cache = { data, timestamp: Date.now() };
+  const { videosOk, ...data } = fetched;
+  // Senza video (chiamata fallita) si riprova al prossimo giro senza
+  // sostituire un'eventuale cache che il video ce l'ha.
+  if (!videosOk && cache?.data.latestVideo) {
+    return NextResponse.json({ success: true, data: cache.data });
+  }
+  if (videosOk) cache = { data, timestamp: Date.now() };
   return NextResponse.json({ success: true, data });
 }

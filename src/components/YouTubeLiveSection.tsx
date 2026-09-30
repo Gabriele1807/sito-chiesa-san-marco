@@ -85,12 +85,12 @@ export default function YouTubeLiveSection() {
   };
 
   const actions = (
-    <div className="flex flex-col gap-3 @sm:flex-row @sm:flex-wrap">
+    <div className="flex flex-wrap gap-3">
       <a
         href={YOUTUBE_CHANNEL_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 flex-1 basis-40 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-lg transition-colors hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Bell className="h-4 w-4" aria-hidden />
         {t("youtubeIscriviti")}
@@ -99,7 +99,7 @@ export default function YouTubeLiveSection() {
         href={`${YOUTUBE_CHANNEL_URL}/videos`}
         target="_blank"
         rel="noopener noreferrer"
-        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="focus-visible:ring-gold focus-visible:ring-offset-primary inline-flex min-h-11 flex-1 basis-40 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Play className="h-4 w-4" aria-hidden />
         {t("youtubeGuardaTutti")}
