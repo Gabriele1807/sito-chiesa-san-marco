@@ -24,11 +24,32 @@ vi.mock("@/lib/mongo/users", () => ({
   updateUserLastAccess: vi.fn(),
 }));
 vi.mock("@/lib/mongo/sessions", () => ({
-  createUserSession: vi.fn(async () => ({ token: "session-token", expiresAt: new Date(Date.now() + 1000) })),
+  createUserSession: vi.fn(async () => ({
+    token: "session-token",
+    expiresAt: new Date(Date.now() + 1000),
+  })),
   validateUserSession: vi.fn(async () => ({ userId: "user-1" })),
 }));
+// Registro degli esiti in memoria (il vero usa MongoDB).
+const callbackResults = new Map<string, string | null>();
+vi.mock("@/lib/mongo/oauth-callback-results", () => ({
+  oauthStateKey: (state: string) => `key:${state}`,
+  hasOAuthCallback: vi.fn(async (key: string) => callbackResults.has(key)),
+  claimOAuthCallback: vi.fn(async (key: string) => {
+    if (callbackResults.has(key)) return false;
+    callbackResults.set(key, null);
+    return true;
+  }),
+  completeOAuthCallback: vi.fn(async (key: string, redirect: string) => {
+    callbackResults.set(key, redirect);
+  }),
+  waitForOAuthCallback: vi.fn(async (key: string) => callbackResults.get(key) ?? null),
+}));
 vi.mock("@/lib/auth/session", () => ({
-  createSession: vi.fn(async () => ({ token: "admin-session-token", expiresAt: new Date(Date.now() + 1000) })),
+  createSession: vi.fn(async () => ({
+    token: "admin-session-token",
+    expiresAt: new Date(Date.now() + 1000),
+  })),
   getAdminUserById: vi.fn(),
   adminUserExists: vi.fn(),
   validateSession: vi.fn(async () => ({ id: "admin-1", attivo: true })),
@@ -37,12 +58,19 @@ vi.mock("@/lib/auth/session", () => ({
 import { GET } from "./route";
 import { verifyOAuthFlowCookie } from "@/lib/oauth/flow-cookie";
 import { getProviderAdapter } from "@/lib/oauth/providers";
-import { findOAuthIdentity, createOAuthIdentity, deleteOAuthIdentityById } from "@/lib/mongo/oauth-identities";
+import {
+  findOAuthIdentity,
+  createOAuthIdentity,
+  deleteOAuthIdentityById,
+} from "@/lib/mongo/oauth-identities";
 import { createPendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
 import { findUserById } from "@/lib/mongo/users";
 import { getAdminUserById, adminUserExists } from "@/lib/auth/session";
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  callbackResults.clear();
+});
 
 function req(url: string, cookie = "oauth_flow=flow-token") {
   return new Request(url, { headers: { cookie } });
@@ -51,18 +79,24 @@ function req(url: string, cookie = "oauth_flow=flow-token") {
 describe("GET /api/auth/oauth/[provider]/callback", () => {
   it("redirects with oauthError when the state cookie is missing or invalid", async () => {
     (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=x&code=y"), {
-      params: Promise.resolve({ provider: "google" }),
-    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=x&code=y"),
+      {
+        params: Promise.resolve({ provider: "google" }),
+      }
+    );
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("oauthError=");
   });
 
   it("always sets Cache-Control: no-store, so browser back/forward never replays a used code/state (bfcache hardening)", async () => {
     (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=x&code=y"), {
-      params: Promise.resolve({ provider: "google" }),
-    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=x&code=y"),
+      {
+        params: Promise.resolve({ provider: "google" }),
+      }
+    );
     expect(res.headers.get("Cache-Control")).toBe("no-store");
   });
 
@@ -118,9 +152,12 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     });
     (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "user-1", attivo: true });
 
-    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
-      params: Promise.resolve({ provider: "google" }),
-    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"),
+      {
+        params: Promise.resolve({ provider: "google" }),
+      }
+    );
 
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).not.toContain("oauthError");
@@ -153,9 +190,12 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     });
     (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue(null); // utente eliminato
 
-    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
-      params: Promise.resolve({ provider: "google" }),
-    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"),
+      {
+        params: Promise.resolve({ provider: "google" }),
+      }
+    );
 
     expect(deleteOAuthIdentityById).toHaveBeenCalledWith("id-orphan");
     expect(createPendingOAuthRegistration).toHaveBeenCalledWith(
@@ -174,7 +214,10 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     });
     (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
       usesPkce: true,
-      validateCallback: vi.fn(async () => ({ providerAccountId: "g-disabled-admin", email: "a@b.com" })),
+      validateCallback: vi.fn(async () => ({
+        providerAccountId: "g-disabled-admin",
+        email: "a@b.com",
+      })),
     });
     (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue({
       _id: "id-disabled",
@@ -187,9 +230,12 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     (adminUserExists as ReturnType<typeof vi.fn>).mockResolvedValue(true); // esiste ancora
     (getAdminUserById as ReturnType<typeof vi.fn>).mockResolvedValue(null); // ma non è attivo -> getAdminUserById non lo trova
 
-    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
-      params: Promise.resolve({ provider: "google" }),
-    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"),
+      {
+        params: Promise.resolve({ provider: "google" }),
+      }
+    );
 
     expect(deleteOAuthIdentityById).not.toHaveBeenCalled();
     expect(res.status).toBe(307);
@@ -215,9 +261,12 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     });
     (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
-      params: Promise.resolve({ provider: "google" }),
-    });
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"),
+      {
+        params: Promise.resolve({ provider: "google" }),
+      }
+    );
 
     expect(createPendingOAuthRegistration).toHaveBeenCalledWith(
       expect.objectContaining({ provider: "google", providerAccountId: "g-new", nome: "Mario" })
@@ -277,7 +326,10 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
       accountType: "user",
       linkedAt: "now",
     });
-    (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "user-other", attivo: true });
+    (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({
+      _id: "user-other",
+      attivo: true,
+    });
 
     const res = await GET(
       req(
@@ -313,11 +365,17 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
       linkedAt: "now",
     });
     (adminUserExists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
-    (getAdminUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "admin-1", attivo: true });
-
-    const res = await GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"), {
-      params: Promise.resolve({ provider: "google" }),
+    (getAdminUserById as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "admin-1",
+      attivo: true,
     });
+
+    const res = await GET(
+      req("https://example.org/api/auth/oauth/google/callback?state=s&code=c"),
+      {
+        params: Promise.resolve({ provider: "google" }),
+      }
+    );
 
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).not.toContain("oauthError");
@@ -335,7 +393,10 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     });
     (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
       usesPkce: true,
-      validateCallback: vi.fn(async () => ({ providerAccountId: "g-admin-link", email: "a@b.com" })),
+      validateCallback: vi.fn(async () => ({
+        providerAccountId: "g-admin-link",
+        email: "a@b.com",
+      })),
     });
     (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
@@ -348,9 +409,91 @@ describe("GET /api/auth/oauth/[provider]/callback", () => {
     );
 
     expect(createOAuthIdentity).toHaveBeenCalledWith(
-      expect.objectContaining({ provider: "google", providerAccountId: "g-admin-link", accountType: "admin", userId: "admin-1" })
+      expect.objectContaining({
+        provider: "google",
+        providerAccountId: "g-admin-link",
+        accountType: "admin",
+        userId: "admin-1",
+      })
     );
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("/profilo");
+  });
+
+  describe("installed app: the same callback URL loaded twice", () => {
+    function setupLinkedUser(intent: "login" | "register") {
+      (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+        state: "s",
+        provider: "google",
+        intent,
+        returnTo: "/eventi",
+      });
+      const validateCallback = vi.fn(async () => ({ providerAccountId: "g-1", email: "a@b.com" }));
+      (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+        usesPkce: true,
+        validateCallback,
+      });
+      (findOAuthIdentity as ReturnType<typeof vi.fn>).mockResolvedValue({
+        _id: "id-1",
+        provider: "google",
+        providerAccountId: "g-1",
+        userId: "user-1",
+        accountType: "user",
+        linkedAt: "now",
+      });
+      (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "user-1", attivo: true });
+      return validateCallback;
+    }
+
+    const call = (cookie?: string) =>
+      GET(req("https://example.org/api/auth/oauth/google/callback?state=s&code=c", cookie), {
+        params: Promise.resolve({ provider: "google" }),
+      });
+
+    it("sends the second request where the first went, without reusing the code", async () => {
+      const validateCallback = setupLinkedUser("login");
+      const first = await call();
+      // La seconda arriva quando il cookie oauth_flow è già stato cancellato.
+      const second = await call("");
+      expect(validateCallback).toHaveBeenCalledTimes(1);
+      expect(first.headers.get("location")).toContain("/eventi");
+      expect(second.status).toBe(307);
+      expect(second.headers.get("location")).toBe(first.headers.get("location"));
+      expect(second.headers.get("location")).not.toContain("oauthError");
+    });
+
+    it("tells a user who chose 'register' that the account already existed", async () => {
+      setupLinkedUser("register");
+      const res = await call();
+      expect(res.headers.get("location")).toContain("oauthNotice=already_registered");
+      expect(res.headers.get("set-cookie")).toContain("user_session=");
+    });
+
+    it("does not add the notice on a normal login", async () => {
+      setupLinkedUser("login");
+      const res = await call();
+      expect(res.headers.get("location")).not.toContain("oauthNotice");
+    });
+
+    it("reports a failed code exchange as provider_error", async () => {
+      (verifyOAuthFlowCookie as ReturnType<typeof vi.fn>).mockResolvedValue({
+        state: "s",
+        provider: "google",
+        intent: "login",
+        returnTo: "/",
+      });
+      (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue({
+        usesPkce: true,
+        validateCallback: vi.fn(async () => {
+          throw Object.assign(new Error("bad"), { code: "invalid_grant" });
+        }),
+      });
+      const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const res = await call();
+      expect(res.headers.get("location")).toContain("oauthError=provider_error");
+      expect(spy.mock.calls[0][0]).toContain("invalid_grant");
+      expect(spy.mock.calls[0][0]).not.toContain("code=c");
+      spy.mockRestore();
+    });
   });
 });

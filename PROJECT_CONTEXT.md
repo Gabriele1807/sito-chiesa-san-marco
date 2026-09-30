@@ -2142,6 +2142,46 @@ Verifica: build di produzione, `/api/admin/push` e `/api/push/subscribe`
 con subject valido (configurato, 200) e senza `mailto:` (problema descritto,
 503). Consegna reale delle notifiche non verificata (servizi push esterni).
 
+### 10.10.4 Accesso con Google/Facebook nell'app installata (2026-09-30)
+
+Segnalazione: nell'app installata (PWA, Android) l'accesso con Google
+finiva spesso con "Non è stato possibile completare l'accesso con il
+provider" (messaggio generico: `provider_error`/`provider_unavailable`/
+`rate_limited`/`account_disabled`, non `invalid_state`); inoltre "Registrati
+con Google" sembrava fare un login.
+
+Analisi (dal codice; non riprodotto con Google reale, che qui non è
+raggiungibile):
+- Causa più probabile: nell'app installata, dopo il consenso, il browser può
+  caricare **due volte** l'URL di ritorno (scheda del provider e finestra
+  dell'app). Il `code` OAuth vale una volta: la seconda richiesta falliva lo
+  scambio (`provider_error`, o `invalid_state` se il cookie era già stato
+  cancellato) e mostrava l'errore anche quando la prima aveva già fatto
+  accedere.
+- "Registrati" con un account Google già collegato entra nell'account
+  esistente per scelta di progetto, ma senza alcun messaggio.
+
+Modifiche:
+- `src/lib/mongo/oauth-callback-results.ts` (collezione
+  `oauth_callback_results`, TTL 10 min, state salvato solo come SHA-256): la
+  prima richiesta "prenota" lo state e salva il redirect (percorso relativo
+  del sito); richieste successive con lo stesso state aspettano l'esito (max
+  8 s) e vanno nello stesso posto, **senza riusare il code** (i cookie di
+  sessione della prima valgono anche per la seconda, stesso browser). Se il
+  registro non è raggiungibile il callback procede come prima (state sempre
+  verificato col cookie).
+- Callback: per `intent=register` con identità già collegata aggiunge
+  `?oauthNotice=already_registered` → `OAuthNoticeBanner` (layout pubblico):
+  "Eri già registrato con questo account: hai effettuato l'accesso".
+- Errori OAuth distinti (`error-messages.ts` + i18n it/ar): provider che non
+  conferma, servizio non disponibile, troppe richieste, account disattivato.
+- Log server `[oauth] google: scambio del code non riuscito (...)` con nome
+  e codice dell'errore (es. `invalid_grant`), mai code o token: in caso di
+  nuovi problemi cercare `[oauth]` nei log di Vercel.
+- Test: 4 nuovi casi nel test del callback (doppio caricamento, avviso
+  registrazione, niente avviso al login, log senza code) + prova del registro
+  contro MongoDB in memoria (test temporaneo, non committato).
+
 ---
 
 ## 11. Note operative

@@ -520,7 +520,13 @@
     "resetPasswordLoading": "Caricamento...",
     "registerVerifyTitle": "Conferma la tua email",
     "registerVerifyBody": "Ti abbiamo inviato un'email a {email} con un link per confermare l'indirizzo. Aprila e tocca «Conferma email» (se non la trovi, guarda nello spam).",
-    "registerVerifyContinue": "Ho capito"
+    "registerVerifyContinue": "Ho capito",
+    "oauthErrorProvider": "Google o Facebook non ha confermato l'accesso. Riprova.",
+    "oauthErrorUnavailable": "L'accesso con questo servizio non è disponibile al momento.",
+    "oauthErrorRateLimited": "Troppe richieste in poco tempo. Riprova tra un minuto.",
+    "oauthErrorAccountDisabled": "Questo account è disattivato. Contatta la chiesa.",
+    "oauthNoticeAlreadyRegistered": "Eri già registrato con questo account: hai effettuato l'accesso.",
+    "oauthNoticeClose": "Chiudi"
   },
   "common": {
     "close": "Chiudi",
