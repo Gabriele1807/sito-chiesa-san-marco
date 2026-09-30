@@ -520,7 +520,13 @@
     "resetPasswordLoading": "جارٍ التحميل...",
     "registerVerifyTitle": "أكّد بريدك الإلكتروني",
     "registerVerifyBody": "أرسلنا رسالة إلى {email} تحتوي على رابط لتأكيد العنوان. افتحها واضغط «تأكيد البريد الإلكتروني» (إذا لم تجدها، تحقق من مجلد الرسائل غير المرغوب فيها).",
-    "registerVerifyContinue": "فهمت"
+    "registerVerifyContinue": "فهمت",
+    "oauthErrorProvider": "لم يؤكّد Google أو Facebook تسجيل الدخول. حاول مرة أخرى.",
+    "oauthErrorUnavailable": "تسجيل الدخول عبر هذه الخدمة غير متاح حاليًا.",
+    "oauthErrorRateLimited": "طلبات كثيرة في وقت قصير. حاول مرة أخرى بعد دقيقة.",
+    "oauthErrorAccountDisabled": "هذا الحساب معطّل. تواصل مع الكنيسة.",
+    "oauthNoticeAlreadyRegistered": "أنت مسجّل مسبقًا بهذا الحساب: تم تسجيل دخولك.",
+    "oauthNoticeClose": "إغلاق"
   },
   "common": {
     "close": "إغلاق",

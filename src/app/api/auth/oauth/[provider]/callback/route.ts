@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
-import { getProviderAdapter, SUPPORTED_PROVIDERS, type SupportedProvider } from "@/lib/oauth/providers";
-import { verifyOAuthFlowCookie, hashSessionToken, signOAuthPendingCookie } from "@/lib/oauth/flow-cookie";
+import {
+  getProviderAdapter,
+  SUPPORTED_PROVIDERS,
+  type SupportedProvider,
+} from "@/lib/oauth/providers";
+import {
+  verifyOAuthFlowCookie,
+  hashSessionToken,
+  signOAuthPendingCookie,
+} from "@/lib/oauth/flow-cookie";
 import { sanitizeReturnTo } from "@/lib/oauth/safe-redirect";
 import { applyNoStore } from "@/lib/oauth/http";
 import { getSiteUrl } from "@/lib/site-url";
@@ -19,8 +27,19 @@ import {
 import { createPendingOAuthRegistration } from "@/lib/mongo/pending-oauth-registrations";
 import { findUserById, updateUserLastAccess } from "@/lib/mongo/users";
 import { createUserSession } from "@/lib/mongo/sessions";
-import { createSession as createAdminSession, getAdminUserById, adminUserExists } from "@/lib/auth/session";
+import {
+  createSession as createAdminSession,
+  getAdminUserById,
+  adminUserExists,
+} from "@/lib/auth/session";
 import { logAdminAction } from "@/lib/mongo/audit-log";
+import {
+  oauthStateKey,
+  claimOAuthCallback,
+  completeOAuthCallback,
+  hasOAuthCallback,
+  waitForOAuthCallback,
+} from "@/lib/mongo/oauth-callback-results";
 
 function isSupportedProvider(value: string): value is SupportedProvider {
   return (SUPPORTED_PROVIDERS as readonly string[]).includes(value);
@@ -44,6 +63,26 @@ function successRedirect(base: string, returnTo: string, params: Record<string, 
   return res;
 }
 
+/** Percorso relativo (con query) del redirect di una risposta, per ripeterlo. */
+function relativeLocation(res: NextResponse, base: string): string | null {
+  const location = res.headers.get("location");
+  if (!location) return null;
+  const target = new URL(location, base);
+  return target.origin === new URL(base).origin ? target.pathname + target.search : null;
+}
+
+/**
+ * Seconda richiesta con lo stesso state (doppio caricamento nell'app
+ * installata): stesso esito della prima, senza riusare il code OAuth.
+ */
+async function replayCallback(base: string, key: string): Promise<NextResponse> {
+  const target = await waitForOAuthCallback(key).catch(() => null);
+  if (!target) return errorRedirect(base, "/", "provider_error");
+  const res = NextResponse.redirect(new URL(target, base), { status: 307 });
+  res.cookies.delete("oauth_flow");
+  return res;
+}
+
 /**
  * Un'identità collegata il cui proprietario non esiste più (utente/admin
  * eliminato) è un'identità orfana: va cancellata prima di essere trattata
@@ -53,9 +92,9 @@ function successRedirect(base: string, returnTo: string, params: Record<string, 
  * disattivato non è "eliminato": la sua identità va preservata, solo il
  * login resta bloccato altrove da quel controllo).
  */
-async function purgeIfOrphaned<T extends { _id: string; userId: string; accountType: OAuthAccountType }>(
-  identity: T | null
-): Promise<T | null> {
+async function purgeIfOrphaned<
+  T extends { _id: string; userId: string; accountType: OAuthAccountType },
+>(identity: T | null): Promise<T | null> {
   if (!identity) return null;
   const ownerExists =
     identity.accountType === "admin"
@@ -88,6 +127,14 @@ async function handleGet(
   const queryState = url.searchParams.get("state");
   const code = url.searchParams.get("code");
 
+  // Richiesta già vista con questo state: la prima ha consumato code e
+  // cookie, questa porta allo stesso risultato. Se il registro non è
+  // raggiungibile si procede come prima (lo state resta verificato sotto).
+  const resultKey = queryState ? oauthStateKey(queryState) : null;
+  if (resultKey && (await hasOAuthCallback(resultKey).catch(() => false))) {
+    return replayCallback(siteBase, resultKey);
+  }
+
   const cookieHeader = request.headers.get("cookie") ?? "";
   const flowMatch = cookieHeader.match(/(?:^|;\s*)oauth_flow=([^;]+)/);
   const flowToken = flowMatch?.[1] ? decodeURIComponent(flowMatch[1]) : "";
@@ -109,14 +156,58 @@ async function handleGet(
     return errorRedirect(siteBase, flow.returnTo, "provider_unavailable");
   }
 
+  let claimed = false;
+  if (resultKey) {
+    try {
+      claimed = await claimOAuthCallback(resultKey);
+      if (!claimed) return replayCallback(siteBase, resultKey);
+    } catch (err) {
+      console.error(
+        "[oauth] registro callback non disponibile:",
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
+
+  const response = await resolveCallback(request, provider, flow, code, siteBase, adapter);
+  if (claimed && resultKey) {
+    const target = relativeLocation(response, siteBase);
+    if (target) {
+      await completeOAuthCallback(resultKey, target).catch((err) =>
+        console.error(
+          "[oauth] esito callback non salvato:",
+          err instanceof Error ? err.message : err
+        )
+      );
+    }
+  }
+  return response;
+}
+
+async function resolveCallback(
+  request: Request,
+  provider: SupportedProvider,
+  flow: NonNullable<Awaited<ReturnType<typeof verifyOAuthFlowCookie>>>,
+  code: string,
+  siteBase: string,
+  adapter: NonNullable<ReturnType<typeof getProviderAdapter>>
+): Promise<NextResponse> {
   let profile;
   try {
     profile = await adapter.validateCallback(code, flow.codeVerifier);
-  } catch {
+  } catch (err) {
+    // Solo nome e messaggio (es. "invalid_grant"), mai code o token.
+    const detail =
+      err instanceof Error
+        ? `${err.name}: ${(err as { code?: string }).code ?? err.message}`
+        : String(err);
+    console.error(`[oauth] ${provider}: scambio del code non riuscito (${detail})`);
     return errorRedirect(siteBase, flow.returnTo, "provider_error");
   }
 
-  const existing = await purgeIfOrphaned(await findOAuthIdentity(provider, profile.providerAccountId));
+  const existing = await purgeIfOrphaned(
+    await findOAuthIdentity(provider, profile.providerAccountId)
+  );
 
   // --- intent = link ---
   if (flow.intent === "link") {
@@ -150,6 +241,10 @@ async function handleGet(
 
   // --- intent = login | register, identity already linked ---
   if (existing) {
+    // "Registrati con Google" con un account Google già registrato: si entra
+    // nell'account esistente, ma lo si dice (prima sembrava un login a caso).
+    const alreadyRegisteredNotice: Record<string, string> =
+      flow.intent === "register" ? { oauthNotice: "already_registered" } : {};
     if (existing.accountType === "admin") {
       const adminUser = await getAdminUserById(existing.userId);
       if (!adminUser || !adminUser.attivo) {
@@ -163,7 +258,7 @@ async function handleGet(
         summary: `Accesso al pannello admin con ${provider}`,
       });
       const { token, expiresAt } = await createAdminSession(existing.userId, request, false);
-      const res = successRedirect(siteBase, flow.returnTo, {});
+      const res = successRedirect(siteBase, flow.returnTo, alreadyRegisteredNotice);
       res.cookies.set("admin_session", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -181,7 +276,7 @@ async function handleGet(
     await touchOAuthIdentityLogin(provider, profile.providerAccountId);
     await updateUserLastAccess(existing.userId);
     const { token, expiresAt } = await createUserSession(existing.userId, request, false);
-    const res = successRedirect(siteBase, flow.returnTo, {});
+    const res = successRedirect(siteBase, flow.returnTo, alreadyRegisteredNotice);
     res.cookies.set("user_session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
