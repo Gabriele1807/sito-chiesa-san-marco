@@ -1,0 +1,20 @@
+/* Stylesheet entry for the Chiesa San Marco design system.
+ *
+ * The app's own globals.css is Tailwind v4 source, so it is compiled through
+ * the Tailwind CLI into the single stylesheet the design runtime ships
+ * (see .design-sync/NOTES.md for the command).
+ *
+ * The three brand families are loaded by `next/font/google` in
+ * src/app/layout.tsx, which only runs at Next build time. The design runtime
+ * has no Next, so the same Google-hosted families are requested here and bound
+ * to the variables globals.css consumes. */
+
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap");
+
+@import "../src/app/globals.css";
+
+:root {
+  --font-body: "Source Sans 3";
+  --font-display: "Cormorant Garamond";
+  --font-arabic: "Noto Naskh Arabic";
+}
