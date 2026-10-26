@@ -2,12 +2,23 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import LegalDocument, { type LegalDocumentCopy } from "@/components/legal/LegalDocument";
+import { LEGAL_ENTITY, legalIdentifiers } from "@/lib/legal-entity";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("legal", "privacyTitle", "privacyDescription", "/privacy");
 }
 
-const UPDATED_AT = "2026-09-28";
+const UPDATED_AT = "2026-10-26";
+
+// Dati fiscali dell'ente: mostrati solo se compilati in src/lib/legal-entity.ts.
+const IDS = legalIdentifiers();
+const IDS_SUFFIX = IDS.length > 0 ? ` (${IDS.join(", ")})` : "";
+const REP_IT = LEGAL_ENTITY.legalRepresentative
+  ? ` Legale rappresentante: ${LEGAL_ENTITY.legalRepresentative}.`
+  : "";
+const REP_AR = LEGAL_ENTITY.legalRepresentative
+  ? ` الممثل القانوني: ${LEGAL_ENTITY.legalRepresentative}.`
+  : "";
 
 const IT_COPY: LegalDocumentCopy = {
   eyebrow: "Informativa",
@@ -21,7 +32,8 @@ const IT_COPY: LegalDocumentCopy = {
       id: "titolare",
       title: "Titolare del trattamento",
       paragraphs: [
-        "Il titolare del trattamento è la Chiesa Copta Ortodossa di San Marco – Milano, Via Senato 4, 20121 Milano (MI). Per qualsiasi domanda sui tuoi dati o per esercitare i tuoi diritti puoi scrivere a info@sanmarcocopti.it.",
+        `Il titolare del trattamento è la ${LEGAL_ENTITY.name}${IDS_SUFFIX}, ${LEGAL_ENTITY.address}.${REP_IT} Per qualsiasi domanda sui tuoi dati o per esercitare i tuoi diritti puoi scrivere a ${LEGAL_ENTITY.email}.`,
+        "Non è stato designato un Responsabile della protezione dei dati (DPO), perché non ricorrono i casi di nomina obbligatoria previsti dall'art. 37 GDPR.",
       ],
     },
     {
@@ -105,9 +117,9 @@ const IT_COPY: LegalDocumentCopy = {
       id: "cookie",
       title: "Cookie e memoria del browser",
       paragraphs: [
-        "Il sito usa solo cookie tecnici, necessari al suo funzionamento, per i quali non è richiesto il consenso: la sessione di accesso (utente o amministratore), la lingua scelta e, durante l'accesso con Google o Facebook, due cookie temporanei che proteggono la procedura. Nella memoria del browser vengono salvate alcune preferenze di navigazione (ad esempio gli avvisi che hai nascosto o la scelta di non installare l'app). Non usiamo cookie di profilazione o pubblicitari.",
+        "Il sito usa cookie tecnici, necessari al suo funzionamento, per i quali non è richiesto il consenso: la sessione di accesso (utente o amministratore), la lingua scelta, la scelta che fai nel banner dei cookie e, durante l'accesso con Google o Facebook, due cookie temporanei che proteggono la procedura. Nella memoria del browser (localStorage e sessionStorage) vengono salvate alcune preferenze di navigazione (ad esempio gli avvisi che hai nascosto o la scelta di non installare l'app) e, dopo l'accesso, alcuni dati del tuo profilo (nome, nome utente, ruolo) per mostrarli senza ricaricare la pagina; vengono rimossi all'uscita dall'account. Non usiamo cookie di profilazione o pubblicitari. L'elenco completo è nella Cookie policy.",
         "Per funzionare anche senza connessione e come app installabile, il sito salva nella cache del tuo browser le risorse tecniche (script, immagini) e una copia delle pagine pubbliche che hai visitato. Le pagine personali, come il profilo o le iscrizioni, non vengono mai salvate, e le copie vengono cancellate quando esci dall'account. Puoi eliminarle in qualsiasi momento cancellando i dati del sito dalle impostazioni del browser.",
-        "I video di YouTube sono incorporati in modalità di privacy avanzata. La mappa di Google Maps nella pagina Contatti e i documenti della libreria visualizzati tramite Google Drive sono forniti da Google, che può impostare propri cookie quando li visualizzi.",
+        "I contenuti di terze parti — la mappa di Google Maps nella pagina Contatti, i video e le anteprime di YouTube e i documenti della libreria visualizzati tramite Google Drive — sono forniti da Google, che può impostare propri cookie e raccogliere dati. Vengono caricati solo dopo il tuo consenso, che puoi dare, rifiutare o modificare in qualsiasi momento dal banner o dal link «Gestisci cookie» in fondo a ogni pagina. Il consenso è conservato per 6 mesi. Se lo revochi, smettiamo di caricare quei contenuti; i cookie già impostati da Google si eliminano dalle impostazioni del browser.",
       ],
     },
     {
@@ -133,7 +145,7 @@ const IT_COPY: LegalDocumentCopy = {
       ],
     },
   ],
-  related: { href: "/termini", label: "Leggi i Termini di servizio" },
+  related: { href: "/cookie-policy", label: "Leggi la Cookie policy" },
 };
 
 const AR_COPY: LegalDocumentCopy = {
@@ -148,7 +160,8 @@ const AR_COPY: LegalDocumentCopy = {
       id: "titolare",
       title: "الجهة المسؤولة عن المعالجة",
       paragraphs: [
-        "الجهة المسؤولة عن معالجة البيانات هي كنيسة القديس مرقس القبطية الأرثوذكسية – ميلانو، Via Senato 4، 20121 ميلانو (MI). لأي استفسار بخصوص بياناتك أو لممارسة حقوقك يمكنك الكتابة إلى info@sanmarcocopti.it.",
+        `الجهة المسؤولة عن معالجة البيانات هي كنيسة القديس مرقس القبطية الأرثوذكسية – ميلانو${IDS_SUFFIX}، ${LEGAL_ENTITY.address}.${REP_AR} لأي استفسار بخصوص بياناتك أو لممارسة حقوقك يمكنك الكتابة إلى ${LEGAL_ENTITY.email}.`,
+        "لم يُعيَّن مسؤول عن حماية البيانات (DPO) لأن حالات التعيين الإلزامي المنصوص عليها في المادة 37 من اللائحة الأوروبية غير متوفرة.",
       ],
     },
     {
@@ -232,9 +245,9 @@ const AR_COPY: LegalDocumentCopy = {
       id: "cookie",
       title: "ملفات تعريف الارتباط وذاكرة المتصفح",
       paragraphs: [
-        "يستخدم الموقع ملفات تعريف ارتباط تقنية فقط، ضرورية لعمله ولا تتطلب موافقة: جلسة الدخول (للمستخدم أو المشرف) واللغة المختارة، وأثناء تسجيل الدخول عبر Google أو Facebook ملفان مؤقتان لحماية العملية. تُحفظ في ذاكرة المتصفح بعض تفضيلات التصفح (مثل الإعلانات التي أخفيتها أو اختيارك عدم تثبيت التطبيق). لا نستخدم ملفات تعريف ارتباط للتنميط أو للإعلانات.",
+        "يستخدم الموقع ملفات تعريف ارتباط تقنية، ضرورية لعمله ولا تتطلب موافقة: جلسة الدخول (للمستخدم أو المشرف) واللغة المختارة واختيارك في شريط ملفات تعريف الارتباط، وأثناء تسجيل الدخول عبر Google أو Facebook ملفان مؤقتان لحماية العملية. تُحفظ في ذاكرة المتصفح (localStorage وsessionStorage) بعض تفضيلات التصفح (مثل الإعلانات التي أخفيتها أو اختيارك عدم تثبيت التطبيق) وبعد تسجيل الدخول بعض بيانات ملفك الشخصي (الاسم واسم المستخدم والدور) لعرضها دون إعادة تحميل الصفحة، وتُزال عند الخروج من الحساب. لا نستخدم ملفات تعريف ارتباط للتنميط أو للإعلانات. القائمة الكاملة في سياسة ملفات تعريف الارتباط.",
         "ليعمل الموقع دون اتصال وكتطبيق قابل للتثبيت، يحفظ في ذاكرة التخزين المؤقت لمتصفحك الموارد التقنية (البرامج النصية والصور) ونسخة من الصفحات العامة التي زرتها. لا تُحفظ الصفحات الشخصية مثل الملف الشخصي أو التسجيلات أبدًا، وتُحذف النسخ عند تسجيل الخروج. يمكنك حذفها في أي وقت بمسح بيانات الموقع من إعدادات المتصفح.",
-        "تُضمَّن فيديوهات YouTube في وضع الخصوصية المحسّن. أما خريطة Google Maps في صفحة «اتصل بنا» ووثائق المكتبة المعروضة عبر Google Drive فتقدمها Google، وقد تضع ملفات تعريف ارتباط خاصة بها عند عرضها.",
+        "محتوى الأطراف الثالثة — خريطة Google Maps في صفحة «اتصل بنا» وفيديوهات YouTube وصورها المصغّرة ووثائق المكتبة المعروضة عبر Google Drive — تقدمه Google، وقد تضع ملفات تعريف ارتباط خاصة بها وتجمع بيانات. لا يُحمَّل إلا بعد موافقتك، ويمكنك منحها أو رفضها أو تعديلها في أي وقت من الشريط أو من رابط «إدارة ملفات تعريف الارتباط» أسفل كل صفحة. تُحفظ الموافقة 6 أشهر. إذا سحبتها نتوقف عن تحميل هذا المحتوى؛ أما ملفات تعريف الارتباط التي وضعتها Google سابقًا فتُحذف من إعدادات المتصفح.",
       ],
     },
     {
@@ -262,7 +275,7 @@ const AR_COPY: LegalDocumentCopy = {
   ],
   languageNotice:
     "هذه ترجمة لتسهيل الاطلاع. في حال وجود أي اختلاف، تكون النسخة الإيطالية هي المرجع.",
-  related: { href: "/termini", label: "اقرأ شروط الخدمة" },
+  related: { href: "/cookie-policy", label: "اقرأ سياسة ملفات تعريف الارتباط" },
 };
 
 export default async function PrivacyPage() {

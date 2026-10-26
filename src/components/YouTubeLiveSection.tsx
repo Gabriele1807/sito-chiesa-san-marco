@@ -4,6 +4,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Youtube, Play, Bell } from "lucide-react";
+import ConsentGate from "@/components/consent/ConsentGate";
+import { useConsent } from "@/lib/consent";
 
 const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@SanMarco-Milano";
 
@@ -44,6 +46,9 @@ export default function YouTubeLiveSection() {
   const numberLocale = locale === "ar" ? "ar-EG" : "it-IT";
   const [data, setData] = useState<YouTubeData | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const consent = useConsent();
+  // Miniature, avatar del canale e lettore arrivano dai server di Google/YouTube.
+  const allowed = consent.status !== "unknown" && consent.thirdParty;
 
   const fetchData = useCallback(async () => {
     try {
@@ -115,7 +120,18 @@ export default function YouTubeLiveSection() {
           <div className="min-w-0 @4xl:order-2">
             <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
               <div className="relative aspect-video">
-                {video && playing ? (
+                {video && !allowed ? (
+                  // Anteprime e lettore sono di YouTube/Google: nessuna richiesta prima del consenso.
+                  <div className="absolute inset-0">
+                    <ConsentGate
+                      service="YouTube"
+                      href={`https://www.youtube.com/watch?v=${video.id}`}
+                      className="overflow-y-auto"
+                    >
+                      {null}
+                    </ConsentGate>
+                  </div>
+                ) : video && playing ? (
                   <iframe
                     src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0&autoplay=1`}
                     title={video.title}
@@ -200,7 +216,7 @@ export default function YouTubeLiveSection() {
 
             {data && (
               <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-                {data.channel.thumbnail ? (
+                {data.channel.thumbnail && allowed ? (
                   <img
                     src={data.channel.thumbnail}
                     alt=""

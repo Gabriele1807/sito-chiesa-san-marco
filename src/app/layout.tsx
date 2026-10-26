@@ -8,6 +8,7 @@ import { AuthProvider } from "@/components/auth/AuthContext";
 import LoginModal from "@/components/auth/LoginModal";
 import RegisterModal from "@/components/auth/RegisterModal";
 import PwaManager from "@/components/pwa/PwaManager";
+import CookieBanner from "@/components/consent/CookieBanner";
 import { EARLY_INSTALL_PROMPT_SCRIPT } from "@/components/pwa/early-install-script";
 import "./globals.css";
 
@@ -52,11 +53,13 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: SITE_NAME,
     type: "website",
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    images: ["/icons/icon-512.png"],
   },
   robots: {
     index: true,
@@ -130,6 +133,7 @@ export default async function RootLayout({
             <LoginModal />
             <RegisterModal />
             <PwaManager />
+            <CookieBanner />
           </AuthProvider>
         </NextIntlClientProvider>
         <Analytics />

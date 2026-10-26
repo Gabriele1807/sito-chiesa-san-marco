@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { FooterAccordion } from "./FooterAccordion";
 import HashLink from "./HashLink";
 import InstallAppButton from "./pwa/InstallAppButton";
+import ManageCookiesButton from "./consent/ManageCookiesButton";
+import { LEGAL_ENTITY, legalIdentifiers } from "@/lib/legal-entity";
 
 const ADDRESS_MAPS_URL = "https://maps.app.goo.gl/fUqwmy5ZGXMidqWf8";
 const FACEBOOK_URL = "https://www.facebook.com/people/Chiesa-di-San-Marco/61556571205312/";
@@ -16,6 +18,8 @@ export default async function Footer() {
     getTranslations("contatti"),
     getTranslations("legal"),
   ]);
+
+  const identifiers = legalIdentifiers();
 
   return (
     <footer className="mt-16 border-t border-accent/25 bg-surface-2/70 text-foreground/70">
@@ -242,17 +246,29 @@ export default async function Footer() {
         {/* Footer Bottom - sempre presente */}
         <div className="mt-8 lg:mt-10 border-t border-border/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-foreground/60">
           <p>{tCommon("copyright")}</p>
-          <nav aria-label={`${tLegal("footerPrivacy")} · ${tLegal("footerTerms")}`} className="flex items-center gap-4">
+          <nav
+            aria-label={`${tLegal("footerPrivacy")} · ${tLegal("footerTerms")} · ${tLegal("footerCookies")}`}
+            className="flex flex-wrap items-center justify-center gap-x-4"
+          >
             <Link href="/privacy" className="footer-link text-foreground/60">
               {tLegal("footerPrivacy")}
             </Link>
             <Link href="/termini" className="footer-link text-foreground/60">
               {tLegal("footerTerms")}
             </Link>
+            <Link href="/cookie-policy" className="footer-link text-foreground/60">
+              {tLegal("footerCookies")}
+            </Link>
+            <ManageCookiesButton label={tLegal("manageCookies")} />
             <InstallAppButton />
           </nav>
           <p>{tFooter("note")}</p>
         </div>
+        {identifiers.length > 0 && (
+          <p className="mt-4 text-center text-[11px] text-foreground/50">
+            {LEGAL_ENTITY.name} · {LEGAL_ENTITY.address} · {identifiers.join(" · ")}
+          </p>
+        )}
       </div>
     </footer>
   );

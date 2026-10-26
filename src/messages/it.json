@@ -705,7 +705,31 @@
     "termsDescription": "Condizioni d'uso del sito e dei servizi per gli utenti registrati della Chiesa Copta Ortodossa di San Marco – Milano.",
     "footerPrivacy": "Privacy",
     "footerTerms": "Termini di servizio",
-    "registerNotice": "Registrandoti accetti i <terms>Termini di servizio</terms> e dichiari di aver letto l’<privacy>Informativa sulla privacy</privacy>."
+    "footerCookies": "Cookie policy",
+    "manageCookies": "Gestisci cookie",
+    "cookiePolicyTitle": "Cookie policy",
+    "cookiePolicyDescription": "Quali cookie e dati nel browser usa il sito della Chiesa Copta Ortodossa di San Marco – Milano e come gestire il consenso ai contenuti di terze parti.",
+    "registerNotice": "Registrandoti accetti i <terms>Termini di servizio</terms> e dichiari di aver letto l’<privacy>Informativa sulla privacy</privacy>.",
+    "eventNotice": "Iscrivendoti dichiari di aver letto l’<privacy>Informativa sulla privacy</privacy>. I dati (anche quelli del padre) servono solo a organizzare l’evento e a verificare l’ingresso."
+  },
+  "cookieBanner": {
+    "title": "La tua privacy",
+    "text": "Usiamo solo cookie tecnici, necessari al funzionamento del sito. Con il tuo consenso possiamo caricare anche contenuti di terze parti (Google Maps, video YouTube, documenti Google Drive), che possono impostare propri cookie. Puoi cambiare idea in qualsiasi momento.",
+    "policyLink": "Cookie policy",
+    "privacyLink": "Privacy",
+    "accept": "Accetta tutti",
+    "reject": "Rifiuta tutti",
+    "customize": "Personalizza",
+    "save": "Salva scelte",
+    "close": "Chiudi e rifiuta",
+    "necessaryTitle": "Necessari",
+    "necessaryDesc": "Sessione di accesso, lingua, sicurezza. Sempre attivi, non richiedono consenso.",
+    "thirdPartyTitle": "Contenuti di terze parti",
+    "thirdPartyDesc": "Google Maps (mappa in Contatti), YouTube (video e anteprime), Google Drive (lettura dei PDF). Google può impostare propri cookie.",
+    "gateText": "Questo contenuto è fornito da {service}, che può impostare propri cookie. Si carica solo con il tuo consenso.",
+    "gateAccept": "Consenti e carica",
+    "gateOpen": "Apri su {service}",
+    "gateManage": "Gestisci preferenze"
   },
   "avvisi": {
     "titolo": "Avvisi",

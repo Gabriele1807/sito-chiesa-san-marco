@@ -51,6 +51,7 @@ function extractSurname(fullName: string): string {
 export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
   const t = useTranslations("eventi");
   const tAuth = useTranslations("auth");
+  const tLegal = useTranslations("legal");
   const locale = useLocale();
   const { type, loading, user, admin, setShowLoginModal, setShowRegisterModal } = useAuth();
   const isAuthenticated = type === "user" || type === "admin";
@@ -870,6 +871,21 @@ export default function EventiList({ eventi, iscrittiCount = {} }: Props) {
                     </div>
                   </div>
                 </div>
+
+                <p className="text-xs leading-relaxed text-foreground/60">
+                  {tLegal.rich("eventNotice", {
+                    privacy: (chunks) => (
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-accent underline-offset-2 hover:underline"
+                      >
+                        {chunks}
+                      </a>
+                    ),
+                  })}
+                </p>
 
                 <button
                   type="submit"

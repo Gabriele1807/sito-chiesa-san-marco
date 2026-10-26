@@ -8,6 +8,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import ConsentGate from "@/components/consent/ConsentGate";
 
 export const revalidate = 60;
 
@@ -173,37 +174,40 @@ export default async function ContattiPage() {
         <div className="rounded-2xl overflow-hidden border border-border/80 shadow-sm relative bg-surface">
           {/* Google Maps iframe */}
           <div className="h-52 sm:h-72 relative">
-            <iframe
-              src="https://maps.google.com/maps?q=Via+Senato+4+20121+Milano+MI&t=&z=16&ie=UTF8&iwloc=&output=embed"
-              className="absolute inset-0 w-full h-full"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Chiesa Copta Ortodossa di San Marco – Milano"
-            />
-            {/*
-              Transparent overlay che blocca il drag/pan della mappa.
-              La mappa rimane centrata sulla chiesa (dove si trova la croce).
-              Cliccando si apre Google Maps in una nuova scheda.
-            */}
-            <a
-              href={ADDRESS_MAPS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute inset-0"
-              aria-label={t("indicazioniButton")}
-              tabIndex={-1}
-            />
-            {/* Cross pin — centrato sull'iframe = posizione chiesa */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-primary/20 animate-ping absolute inset-0" />
-                <div className="relative w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-xl">
-                  <Cross className="w-6 h-6 text-white" />
+            {/* La mappa è di Google (cookie di terze parti): si carica solo con il consenso. */}
+            <ConsentGate service="Google Maps" href={ADDRESS_MAPS_URL}>
+              <iframe
+                src="https://maps.google.com/maps?q=Via+Senato+4+20121+Milano+MI&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                className="absolute inset-0 w-full h-full"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Chiesa Copta Ortodossa di San Marco – Milano"
+              />
+              {/*
+                Transparent overlay che blocca il drag/pan della mappa.
+                La mappa rimane centrata sulla chiesa (dove si trova la croce).
+                Cliccando si apre Google Maps in una nuova scheda.
+              */}
+              <a
+                href={ADDRESS_MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute inset-0"
+                aria-label={t("indicazioniButton")}
+                tabIndex={-1}
+              />
+              {/* Cross pin — centrato sull'iframe = posizione chiesa */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 animate-ping absolute inset-0" />
+                  <div className="relative w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-xl">
+                    <Cross className="w-6 h-6 text-white" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </ConsentGate>
           </div>
           {/* Bottom bar */}
           <a

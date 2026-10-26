@@ -1,16 +1,26 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { buildDetailMetadata } from "@/lib/seo/metadata";
 import { getTranslations } from "next-intl/server";
 import { getTestoSacroBySlug, getIcone } from "@/lib/db";
 import { BookOpen, Download, User, FileText } from "lucide-react";
 import { toGDriveImageUrl, toGDrivePreviewUrl, toGDriveDownloadUrl, isGDriveUrl } from "@/lib/gdrive";
 import BackLink from "@/components/BackLink";
 import RelatedResourceCard from "@/components/RelatedResourceCard";
+import ConsentGate from "@/components/consent/ConsentGate";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const testo = await getTestoSacroBySlug(slug);
+  if (!testo) return { title: "Testo non trovato", robots: { index: false } };
+  return buildDetailMetadata(testo.titolo, testo.descrizione, `/libreria/${slug}`);
+}
 
 export default async function TestoSacroDetailPage({ params }: Props) {
   const { slug } = await params;
@@ -99,12 +109,18 @@ export default async function TestoSacroDetailPage({ params }: Props) {
             <span className="text-sm text-foreground/30">PDF Viewer</span>
           </div>
           <div className="aspect-[3/4] max-h-[700px]">
-            <iframe
-              src={isGDriveUrl(testo.urlPDF) ? toGDrivePreviewUrl(testo.urlPDF) : testo.urlPDF}
-              className="w-full h-full border-0"
-              allow="autoplay"
-              title={testo.titolo}
-            />
+            {/* Il visualizzatore è di Google Drive: si carica solo con il consenso. */}
+            <ConsentGate
+              service="Google Drive"
+              href={isGDriveUrl(testo.urlPDF) ? toGDrivePreviewUrl(testo.urlPDF) : testo.urlPDF}
+            >
+              <iframe
+                src={isGDriveUrl(testo.urlPDF) ? toGDrivePreviewUrl(testo.urlPDF) : testo.urlPDF}
+                className="w-full h-full border-0"
+                allow="autoplay"
+                title={testo.titolo}
+              />
+            </ConsentGate>
           </div>
         </section>
       )}
