@@ -51,4 +51,34 @@ export async function buildPageMetadata(
   };
 }
 
+/**
+ * Same as buildPageMetadata, but for DB-driven detail pages whose title and
+ * description come from the content itself (not from translations).
+ */
+export async function buildDetailMetadata(
+  title: string,
+  description: string,
+  path: string
+): Promise<Metadata> {
+  const locale = await getLocale();
+  // Search snippets are ~160 chars; keep descriptions tidy.
+  const desc = description.length > 200 ? `${description.slice(0, 197)}…` : description;
+  const url = `${siteUrl()}${path}`;
+
+  return {
+    title,
+    description: desc,
+    alternates: { canonical: path },
+    openGraph: {
+      title: `${title} – ${SITE_NAME}`,
+      description: desc,
+      url,
+      siteName: SITE_NAME,
+      locale: locale === "ar" ? "ar_EG" : "it_IT",
+      type: "article",
+    },
+    twitter: { card: "summary", title, description: desc },
+  };
+}
+
 export { SITE_NAME, siteUrl };

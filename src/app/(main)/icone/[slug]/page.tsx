@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { buildDetailMetadata } from "@/lib/seo/metadata";
 import { getTranslations } from "next-intl/server";
 import { getIconaBySlug, getIcone, getTestiSacri } from "@/lib/db";
 import { MapPin, Palette, User, CalendarDays } from "lucide-react";
@@ -12,6 +14,17 @@ interface Props {
 }
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const icona = await getIconaBySlug(slug);
+  if (!icona) return { title: "Icona non trovata", robots: { index: false } };
+  return buildDetailMetadata(
+    icona.nomeSanto || icona.nome,
+    icona.descrizione,
+    `/icone/${slug}`
+  );
+}
 
 export default async function IconaDetailPage({ params }: Props) {
   const { slug } = await params;
