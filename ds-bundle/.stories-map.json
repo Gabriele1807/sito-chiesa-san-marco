@@ -1,0 +1,220 @@
+{
+  "global": "ChiesaSanMarco",
+  "pkg": "chiesa-san-marco",
+  "pkgDir": "C:\\Users\\Gabriele\\Downloads\\sito-v5\\sito-chiesa-san-marco",
+  "extraEntries": [],
+  "exported": [],
+  "storybookStatic": null,
+  "keyRecipe": 7,
+  "cfgSliceGlobal": "742f2a784e2acebd34a0382352d05efb15e504dccb34a6b71b9d299592fd7942",
+  "components": [
+    {
+      "name": "AdminGate",
+      "group": "auth",
+      "srcSha": null,
+      "sourceKey": "a4c7578dfa97e5e4",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "AdminToast",
+      "group": "admin",
+      "srcSha": null,
+      "sourceKey": "881a507f39c8f5ed",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "BackLink",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "330eaf8ddba290a5",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "BarList",
+      "group": "charts",
+      "srcSha": null,
+      "sourceKey": "a60ec801d1b2ad16",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "ColumnChart",
+      "group": "charts",
+      "srcSha": null,
+      "sourceKey": "9326fe5500ad315c",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "ConfirmModal",
+      "group": "admin",
+      "srcSha": null,
+      "sourceKey": "0850c93e8aaf0984",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "EmailVerificationStatus",
+      "group": "profile",
+      "srcSha": null,
+      "sourceKey": "4d5826e5a72f0e3a",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "EventRegistrations",
+      "group": "charts",
+      "srcSha": null,
+      "sourceKey": "aa41204e391c84c9",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "FacebookIcon",
+      "group": "auth",
+      "srcSha": null,
+      "sourceKey": "73acd37d0038d3e6",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "FooterAccordion",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "c582c7b0099a9839",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "GoogleIcon",
+      "group": "auth",
+      "srcSha": null,
+      "sourceKey": "8008662b29ba704c",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "GuestGate",
+      "group": "auth",
+      "srcSha": null,
+      "sourceKey": "9189155472ffe62d",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "IconaQRSection",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "0027e29c2eeb7af5",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "InstallAppButton",
+      "group": "pwa",
+      "srcSha": null,
+      "sourceKey": "dbd8edaaf487ea0a",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "IosInstallSteps",
+      "group": "pwa",
+      "srcSha": null,
+      "sourceKey": "10fe83feb1fecb3c",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "LegalDocument",
+      "group": "legal",
+      "srcSha": null,
+      "sourceKey": "0cb169171280f0ab",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "MobileMenuButton",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "45b0c8365345a42a",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "NotificationPrompt",
+      "group": "pwa",
+      "srcSha": null,
+      "sourceKey": "cdd7d7bcbef84a90",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "PreghieraExpand",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "1643473001c7de92",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "PushToggle",
+      "group": "pwa",
+      "srcSha": null,
+      "sourceKey": "3d3e8c88cd83805d",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "QuickAccessCard",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "89dfbcbe4e1abed9",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "RelatedResourceCard",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "f29f7d3295949962",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "ScrollDownHint",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "08e81ef0f2bd9467",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "StatTile",
+      "group": "charts",
+      "srcSha": null,
+      "sourceKey": "9a505d3fc904e68e",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "UrgentAvvisiBanner",
+      "group": "avvisi",
+      "srcSha": null,
+      "sourceKey": "8ff9d98985cfdf8a",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "YouTubeLiveSection",
+      "group": "general",
+      "srcSha": null,
+      "sourceKey": "cd13f38031f0050a",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    }
+  ]
+}

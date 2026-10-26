@@ -1,0 +1,38 @@
+[
+  {
+    "sheet": 1,
+    "components": [
+      "AdminGate",
+      "AdminToast",
+      "BackLink",
+      "BarList",
+      "ColumnChart",
+      "ConfirmModal",
+      "EmailVerificationStatus",
+      "EventRegistrations",
+      "FacebookIcon",
+      "FooterAccordion",
+      "GoogleIcon",
+      "GuestGate",
+      "IconaQRSection",
+      "InstallAppButton",
+      "IosInstallSteps",
+      "LegalDocument"
+    ]
+  },
+  {
+    "sheet": 2,
+    "components": [
+      "MobileMenuButton",
+      "NotificationPrompt",
+      "PreghieraExpand",
+      "PushToggle",
+      "QuickAccessCard",
+      "RelatedResourceCard",
+      "ScrollDownHint",
+      "StatTile",
+      "UrgentAvvisiBanner",
+      "YouTubeLiveSection"
+    ]
+  }
+]
