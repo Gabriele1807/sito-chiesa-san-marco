@@ -47,3 +47,6 @@ next-env.d.ts
 /.remember/
 /.mcp.json
 env.setup-istruzioni.md
+
+# design-sync tooling (vendored node_modules, binaries)
+/.ds-sync/

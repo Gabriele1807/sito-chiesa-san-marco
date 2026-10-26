@@ -19,7 +19,6 @@ const scriptSrc = [
   "'unsafe-inline'",
   ...(isProduction ? [] : ["'unsafe-eval'"]),
   "https://www.youtube.com",
-  "https://www.googletagmanager.com",
   "https://va.vercel-scripts.com",
   "https://vitals.vercel-insights.com",
 ];
@@ -40,7 +39,6 @@ const imgSrc = [
 // Aggiungi qui nuovi endpoint API o backend esterni.
 const connectSrc = [
   "'self'",
-  "https://sito-chiesa-san-marco.vercel.app",
   "https://www.googleapis.com",
   "https://vitals.vercel-insights.com",
   "https://*.vercel-insights.com",
