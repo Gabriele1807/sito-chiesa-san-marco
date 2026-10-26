@@ -1,0 +1,80 @@
+{
+  "pkg": "chiesa-san-marco",
+  "globalName": "ChiesaSanMarco",
+  "projectId": "4cc61e48-119c-42df-accf-59417b852087",
+  "shape": "package",
+  "srcDir": "src/components",
+  "tsconfig": ".design-sync/tsconfig.ds.json",
+  "cssEntry": ".design-sync/.cache/ds-compiled.css",
+  "guidelinesGlob": [],
+  "provider": {
+    "component": "DsPreviewProvider"
+  },
+  "componentSrcMap": {
+    "BackLink": "src/components/BackLink.tsx",
+    "QuickAccessCard": "src/components/QuickAccessCard.tsx",
+    "RelatedResourceCard": "src/components/RelatedResourceCard.tsx",
+    "ScrollDownHint": "src/components/ScrollDownHint.tsx",
+    "FooterAccordion": "src/components/FooterAccordion.tsx",
+    "PreghieraExpand": "src/components/PreghieraExpand.tsx",
+    "MobileMenuButton": "src/components/MobileMenuButton.tsx",
+    "IconaQRSection": "src/components/IconaQRSection.tsx",
+    "YouTubeLiveSection": "src/components/YouTubeLiveSection.tsx",
+    "ConfirmModal": "src/components/admin/ConfirmModal.tsx",
+    "AdminToast": "src/components/admin/AdminToast.tsx",
+    "StatTile": "src/components/admin/charts/StatTile.tsx",
+    "BarList": "src/components/admin/charts/BarList.tsx",
+    "ColumnChart": "src/components/admin/charts/ColumnChart.tsx",
+    "EventRegistrations": "src/components/admin/charts/EventRegistrations.tsx",
+    "GoogleIcon": "src/components/auth/ProviderIcons.tsx",
+    "FacebookIcon": "src/components/auth/ProviderIcons.tsx",
+    "GuestGate": "src/components/auth/GuestGate.tsx",
+    "AdminGate": "src/components/auth/AdminGate.tsx",
+    "UrgentAvvisiBanner": "src/components/avvisi/UrgentAvvisiBanner.tsx",
+    "LegalDocument": "src/components/legal/LegalDocument.tsx",
+    "EmailVerificationStatus": "src/components/profile/EmailVerificationStatus.tsx",
+    "IosInstallSteps": "src/components/pwa/IosInstallSteps.tsx",
+    "InstallAppButton": "src/components/pwa/InstallAppButton.tsx",
+    "NotificationPrompt": "src/components/pwa/NotificationPrompt.tsx",
+    "PushToggle": "src/components/pwa/PushToggle.tsx",
+    "DsPreviewProvider": null
+  },
+  "dtsPropsFor": {
+    "QuickAccessCard": "href: string;\n  /** A lucide-react icon component, passed uninstantiated (e.g. `icon={BookOpen}`). */\n  icon: React.ComponentType<{ className?: string; size?: string | number; strokeWidth?: string | number; color?: string }>;\n  title: string;\n  description: string;\n  /** Accent border + accent body text, for the one card that should draw the eye. */\n  highlight?: boolean;\n  /** Short uppercase pill in the top-right corner (ignored when `comingSoon`). */\n  badge?: string;\n  /** Stagger for the fade-in-up entrance, in ms. */\n  delay?: number;\n  /** Locks the card: dimmed, not a link, with a padlock + \"Coming Soon\" overlay. */\n  comingSoon?: boolean;",
+    "ScrollDownHint": "/** id of the element to smooth-scroll to. Defaults to \"quick-access\". */\n  targetId?: string;",
+    "FooterAccordion": "title: string;\n  children?: React.ReactNode;\n  defaultOpen?: boolean;\n  /** Drops the bottom divider, for the last row in a stack. */\n  isLast?: boolean;",
+    "PreghieraExpand": "/** Full prayer text; collapsed behind a \"read more\" control until expanded. */\n  testo: string;\n  /** Label for the expand control, e.g. \"Leggi la preghiera\". */\n  labelRead: string;",
+    "IconaQRSection": "/** Icon slug; the QR code encodes the public URL for this icon's page. */\n  slug: string;",
+    "MobileMenuButton": "/** Takes no props — it reads everything it needs from the locale catalogue and the browser. */",
+    "YouTubeLiveSection": "/** Takes no props — it reads everything it needs from the locale catalogue and the browser. */",
+    "AdminToast": "/** Takes no props — it reads everything it needs from the locale catalogue and the browser. */",
+    "NotificationPrompt": "/** Takes no props — it reads everything it needs from the locale catalogue and the browser. */",
+    "PushToggle": "/** Takes no props — it reads everything it needs from the locale catalogue and the browser. */",
+    "ConfirmModal": "open: boolean;\n  title: string;\n  message: string;\n  onConfirm: () => void;\n  onCancel: () => void;\n  /** Disables both buttons and shows `loadingLabel` on the confirm button. */\n  loading?: boolean;\n  /** Confirm button text (defaults to \"Elimina\"). */\n  confirmLabel?: string;\n  loadingLabel?: string;\n  /** \"danger\" (red, default) for deletions, \"primary\" for everything else. */\n  tone?: \"danger\" | \"primary\";",
+    "StatTile": "label: string;\n  value: number | string;\n  /** Secondary line under the value, e.g. \"+12 questo mese\". */\n  detail?: string;\n  /** A lucide-react icon component, passed uninstantiated. */\n  icon: React.ComponentType<{ className?: string; size?: string | number; strokeWidth?: string | number; color?: string }>;",
+    "BarList": "/** Ordered categories; every value is also printed, never colour-only. */\n  data: { label: string; value: number }[];\n  /** Unit suffix shown next to each value, e.g. \"persone\". */\n  unit: string;",
+    "ColumnChart": "data: { label: string; fullLabel: string; value: number }[];\n  unit: string;\n  title: string;",
+    "EventRegistrations": "events: {\n    id: string;\n    titolo: string;\n    data: string;\n    persone: number;\n    iscrizioni: number;\n    pagate: number;\n    postiDisponibili?: number;\n    passato: boolean;\n  }[];",
+    "GoogleIcon": "className?: string;",
+    "FacebookIcon": "className?: string;",
+    "UrgentAvvisiBanner": "avvisi: {\n    key: string;\n    titolo: string;\n    messaggio: string;\n    link?: string;\n  }[];",
+    "LegalDocument": "copy: {\n    eyebrow: string;\n    title: string;\n    updatedLabel: string;\n    intro: string;\n    tocTitle: string;\n    sections: { id: string; title: string; paragraphs?: string[]; items?: string[] }[];\n    languageNotice?: string;\n    related: { href: string; label: string };\n  };\n  updatedAt: string;\n  /** Locale tag, e.g. \"it\" or \"ar\"; drives date formatting and direction. */\n  locale: string;",
+    "EmailVerificationStatus": "verified: boolean;",
+    "IosInstallSteps": "/** Shows the \"open in Safari first\" note, for non-Safari iOS browsers. */\n  notSafari?: boolean;",
+    "InstallAppButton": "className?: string;"
+  },
+  "overrides": {
+    "ConfirmModal": {
+      "cardMode": "single",
+      "primaryStory": "Danger"
+    },
+    "AdminToast": {
+      "cardMode": "single",
+      "primaryStory": "Success"
+    },
+    "LegalDocument": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
