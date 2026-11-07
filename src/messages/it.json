@@ -59,7 +59,8 @@
     "profilo": "Profilo",
     "pannelloAdmin": "Pannello Admin",
     "avvisi": "Avvisi",
-    "richiestePreghiera": "Richieste di preghiera"
+    "richiestePreghiera": "Richieste di preghiera",
+    "calendario": "Calendario copto"
   },
   "home": {
     "dashboardTitolo": "Le risorse della chiesa san marco",
@@ -349,7 +350,8 @@
     "menu": "Menu",
     "dockCompatto": "Dock compatto",
     "subAvvisi": "Comunicazioni della chiesa",
-    "subRichiestePreghiera": "Affida un'intenzione"
+    "subRichiestePreghiera": "Affida un'intenzione",
+    "subCalendario": "Giorno copto e letture"
   },
   "topbar": {
     "dashboard": "Home",
@@ -366,7 +368,8 @@
     "avvisi": "Avvisi",
     "richiestePreghiera": "Richieste di preghiera",
     "privacy": "Privacy",
-    "termini": "Termini"
+    "termini": "Termini",
+    "calendario": "Calendario copto"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -835,5 +838,218 @@
     "videoCorsi": "Video",
     "contatti": "Contatti",
     "menu": "Menu"
+  },
+  "calendario": {
+    "titolo": "Calendario copto",
+    "sottotitolo": "Il giorno del calendario copto (Anno dei Martiri) con la data gregoriana corrispondente. Il giorno liturgico inizia al tramonto del giorno precedente.",
+    "eyebrow": "Calendario liturgico",
+    "caricamento": "Calcolo del giorno in corso…",
+    "modalita": "Modalità",
+    "live": "Live",
+    "manuale": "Manuale",
+    "liveDescrizione": "Sincronizzato con data, ora e fuso orario del dispositivo.",
+    "manualeDescrizione": "Scegli data e ora per vedere il giorno copto corrispondente.",
+    "giornoLiturgico": "Giorno liturgico",
+    "giornoLiturgicoSpiega": "Dal tramonto di {inizio} al tramonto di {fine}",
+    "giornoCivile": "Giorno civile",
+    "giornoCivileSpiega": "Calendario gregoriano, da mezzanotte a mezzanotte",
+    "annoMartiri": "A.M.",
+    "annoMartiriEsteso": "Anno dei Martiri",
+    "dopoTramonto": "Dopo il tramonto: il giorno liturgico è già quello successivo.",
+    "prossimoCambioTramonto": "Prossimo cambio al tramonto, alle {ora}",
+    "prossimoCambioMezzanotte": "Prossimo cambio a mezzanotte (giorno civile)",
+    "fusoOrario": "Fuso orario: {fuso}",
+    "annoBisestile": "Anno copto bisestile",
+    "domenicaDelMese": "{n}ª domenica di {mese}",
+    "pasquaTra": "{n, plural, one {Manca # giorno alla Pasqua} other {Mancano # giorni alla Pasqua}} ({data})",
+    "pasquaDa": "{n, plural, one {# giorno dopo la Pasqua} other {# giorni dopo la Pasqua}} ({data})",
+    "pasquaOggi": "Oggi è Pasqua",
+    "stagione": "Tempo liturgico",
+    "digiuni": "Digiuni",
+    "feste": "Feste",
+    "regoleInVerifica": "Per questo giorno alcune regole liturgiche sono ancora in verifica.",
+    "stagioni": {
+      "settimana-santa": "Settimana Santa",
+      "grande-quaresima": "Grande Quaresima",
+      "cinquantina": "Santa Cinquantina",
+      "digiuno-apostoli": "Digiuno degli Apostoli",
+      "digiuno-natale": "Digiuno della Natività",
+      "digiuno-giona": "Digiuno di Giona"
+    },
+    "digiuniNomi": {
+      "giona": "Digiuno di Giona",
+      "grande-quaresima": "Grande Quaresima",
+      "settimana-santa": "Settimana Santa",
+      "apostoli": "Digiuno degli Apostoli",
+      "natale": "Digiuno della Natività"
+    },
+    "data": "Data",
+    "ora": "Ora",
+    "giornoPrecedente": "Giorno precedente",
+    "giornoSuccessivo": "Giorno successivo",
+    "vaiAOggi": "Vai a oggi",
+    "tornaLive": "Torna a Live",
+    "localita": "Località per il tramonto",
+    "localitaInUso": "{nome}: tramonto alle {ora}",
+    "tramontoManuale": "Orario di tramonto impostato a mano: {ora}",
+    "tramontoRipiego": "In questa località oggi il Sole non tramonta o non sorge: si usa l'orario convenzionale delle {ora}.",
+    "cambiaLocalita": "Cambia località o tramonto",
+    "usaPosizione": "Usa la mia posizione",
+    "posizioneInCorso": "Rilevamento della posizione…",
+    "posizioneNegata": "Posizione non disponibile: si usa {nome}.",
+    "posizioneRilevata": "La mia posizione",
+    "posizioneNota": "La posizione resta solo su questo dispositivo.",
+    "preimpostate": "Località",
+    "coordinate": "Coordinate",
+    "latitudine": "Latitudine",
+    "longitudine": "Longitudine",
+    "nomeLocalita": "Nome",
+    "applica": "Applica",
+    "coordinateNonValide": "Coordinate non valide.",
+    "tramontoManualeAttiva": "Imposta l'orario del tramonto a mano",
+    "orarioTramonto": "Orario del tramonto",
+    "ripristina": "Ripristina {nome}",
+    "letture": {
+      "titolo": "Letture del giorno",
+      "inArrivo": "Letture del giorno in arrivo",
+      "inArrivoSpiega": "I testi sono in traduzione e verranno pubblicati qui.",
+      "caricamento": "Caricamento delle letture…",
+      "sinassario": "Sinassario",
+      "note": "Note",
+      "vespri": "Vespri",
+      "mattutino": "Mattutino",
+      "epistole": "Epistole",
+      "atti": "Atti degli Apostoli",
+      "salmi": "Salmi",
+      "vangelo": "Vangelo della Liturgia"
+    },
+    "inversa": {
+      "titolo": "Da data copta a gregoriana",
+      "anno": "Anno (A.M.)",
+      "mese": "Mese",
+      "giorno": "Giorno",
+      "calcola": "Converti",
+      "risultato": "{copto} corrisponde a {gregoriano}.",
+      "vigilia": "Come giorno liturgico inizia al tramonto di {vigilia}.",
+      "nonValida": "Data copta non valida (Nasi ha 5 giorni, 6 negli anni bisestili).",
+      "mostra": "Mostra questo giorno"
+    },
+    "citta": {
+      "milano": "Milano",
+      "roma": "Roma",
+      "torino": "Torino",
+      "cairo": "Il Cairo",
+      "alessandria": "Alessandria d'Egitto"
+    }
+  },
+  "adminCalendario": {
+    "titolo": "Calendario liturgico",
+    "sottotitolo": "Contenuti per giorno, feste fisse, regole e impostazioni.",
+    "schede": {
+      "contenuti": "Contenuti",
+      "feste": "Feste fisse",
+      "regole": "Regole",
+      "impostazioni": "Impostazioni"
+    },
+    "errore": "Si è verificato un errore.",
+    "erroreConnessione": "Errore di connessione",
+    "dbNonRaggiungibile": "Database non raggiungibile: riprova tra poco.",
+    "salvato": "Salvato",
+    "eliminato": "Eliminato",
+    "salva": "Salva",
+    "annulla": "Annulla",
+    "elimina": "Elimina",
+    "modifica": "Modifica",
+    "aggiungi": "Aggiungi",
+    "chiudi": "Chiudi",
+    "ultimaModifica": "Modificato da {autore} il {data}",
+    "cerca": {
+      "titolo": "Cerca un giorno",
+      "perGregoriana": "Data gregoriana",
+      "perCopta": "Data copta",
+      "anno": "Anno",
+      "mese": "Mese",
+      "giorno": "Giorno",
+      "vai": "Cerca",
+      "nonValida": "Data non valida."
+    },
+    "giorno": "{copto} · {gregoriano}",
+    "livelli": {
+      "fixed": "Fisso (Sinassario)",
+      "movable": "Mobile (dalla Pasqua)",
+      "seasonal": "Stagionale (domeniche)"
+    },
+    "livelliSpiega": {
+      "fixed": "Vale ogni anno per lo stesso giorno copto ({chiave}).",
+      "movable": "Vale ogni anno alla stessa distanza dalla Pasqua ({chiave}).",
+      "seasonal": "Vale per lo stesso giorno della settimana dopo la stessa domenica del mese ({chiave})."
+    },
+    "stato": "Stato",
+    "bozza": "Bozza",
+    "pubblicato": "Pubblicato",
+    "nessunContenuto": "Nessun contenuto",
+    "italiano": "Italiano",
+    "arabo": "Arabo",
+    "anteprima": "Anteprima",
+    "anteprimaSpiega": "Così apparirà il giorno sul sito (bozze comprese).",
+    "tuttiContenuti": "Tutti i contenuti salvati",
+    "nessunSalvato": "Non ci sono ancora contenuti salvati.",
+    "confermaElimina": "Eliminare il contenuto {chiave}?",
+    "feste": {
+      "spiega": "Feste a data fissa nel calendario copto. Il Natale si imposta dalla regola dedicata.",
+      "id": "Identificativo",
+      "idSpiega": "Minuscole, cifre e trattini (es. san-marco).",
+      "mese": "Mese",
+      "giorno": "Giorno",
+      "nomeIt": "Nome (italiano)",
+      "nomeAr": "Nome (arabo)",
+      "attiva": "Attiva",
+      "disattiva": "Disattivata",
+      "predefinita": "Predefinita",
+      "nuova": "Nuova festa",
+      "confermaElimina": "Eliminare la festa {nome}?"
+    },
+    "regole": {
+      "spiega": "Regole con eccezioni o non ancora verificate. Restano disattivate finché non scegli un valore: fino ad allora il calendario non le applica e segnala i giorni interessati.",
+      "attiva": "Applica questa regola",
+      "valore": "Valore",
+      "scegli": "Scegli un valore",
+      "nonImplementata": "Predisposta, non ancora implementata",
+      "stato_attiva": "Attiva",
+      "stato_disattiva": "Disattivata (valore sicuro)",
+      "nomi": {
+        "natale": "Data del Natale",
+        "nasi6": "Sesto giorno di Nasi (anni bisestili)",
+        "concomitanze": "Feste fisse nella Settimana Santa o a Pasqua",
+        "mercolediVenerdi": "Digiuno del mercoledì e del venerdì"
+      },
+      "descrizioni": {
+        "natale": "Il 29 Koiak cade il 7 gennaio, ma l'8 gennaio nell'anno che precede un bisestile gregoriano. Disattivata: il Natale non viene mostrato e il digiuno termina il 28 Koiak.",
+        "nasi6": "Quali contenuti mostrare il 6 di Nasi. Disattivata: si usa la chiave propria 13-06.",
+        "concomitanze": "Cosa fare quando una festa fissa cade nella Settimana Santa o a Pasqua. Disattivata: si mostrano entrambe e il giorno è segnalato.",
+        "mercolediVenerdi": "Esenzioni non ancora definite: il digiuno non viene calcolato."
+      },
+      "valori": {
+        "29-koiak": "Sempre il 29 Koiak",
+        "7-gennaio": "Sempre il 7 gennaio (28 Koiak negli anni con il 29 Koiak all'8 gennaio)",
+        "contenuti-propri": "Contenuti propri (chiave 13-06)",
+        "come-5-nasi": "Come il 5 di Nasi (chiave 13-05)",
+        "mostra-entrambe": "Mostra festa fissa e stagione",
+        "prevale-stagione-mobile": "Prevale la stagione mobile (festa fissa nascosta)",
+        "esclusa-cinquantina": "Tutto l'anno, esclusa la Cinquantina",
+        "esclusa-cinquantina-e-natale-epifania": "Esclusi la Cinquantina e il periodo tra Natale ed Epifania"
+      }
+    },
+    "impostazioni": {
+      "localita": "Località predefinita per il tramonto",
+      "localitaSpiega": "Usata dai visitatori che non scelgono una località o non concedono la posizione.",
+      "nome": "Nome",
+      "latitudine": "Latitudine",
+      "longitudine": "Longitudine",
+      "visibilita": "Visibilità della pagina pubblica",
+      "visibilitaSpiega": "Mostra o nascondi la pagina /calendario e la voce nel menu. I permessi per ruolo si gestiscono in Gestione Sezioni.",
+      "visibile": "Visibile",
+      "nascosta": "Nascosta"
+    }
   }
 }

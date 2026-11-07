@@ -59,7 +59,8 @@
     "profilo": "الملف الشخصي",
     "pannelloAdmin": "لوحة الإدارة",
     "avvisi": "الإعلانات",
-    "richiestePreghiera": "طلبات الصلاة"
+    "richiestePreghiera": "طلبات الصلاة",
+    "calendario": "التقويم القبطي"
   },
   "home": {
     "dashboardTitolo": "موارد الجالية القبطية",
@@ -349,7 +350,8 @@
     "menu": "القائمة",
     "dockCompatto": "وضع مضغوط",
     "subAvvisi": "بلاغات الكنيسة",
-    "subRichiestePreghiera": "قدّم نيّة"
+    "subRichiestePreghiera": "قدّم نيّة",
+    "subCalendario": "اليوم القبطي والقراءات"
   },
   "topbar": {
     "dashboard": "الرئيسية",
@@ -366,7 +368,8 @@
     "avvisi": "الإعلانات",
     "richiestePreghiera": "طلبات الصلاة",
     "privacy": "الخصوصية",
-    "termini": "الشروط"
+    "termini": "الشروط",
+    "calendario": "التقويم القبطي"
   },
   "auth": {
     "loginTitle": "تسجيل الدخول",
@@ -835,5 +838,218 @@
     "videoCorsi": "فيديو",
     "contatti": "اتصل بنا",
     "menu": "القائمة"
+  },
+  "calendario": {
+    "titolo": "التقويم القبطي",
+    "sottotitolo": "يوم التقويم القبطي (سنة الشهداء) مع التاريخ الميلادي المقابل. يبدأ اليوم الليتورجي عند غروب شمس اليوم السابق.",
+    "eyebrow": "التقويم الليتورجي",
+    "caricamento": "جارٍ حساب اليوم…",
+    "modalita": "الوضع",
+    "live": "مباشر",
+    "manuale": "يدوي",
+    "liveDescrizione": "متزامن مع تاريخ الجهاز ووقته ومنطقته الزمنية.",
+    "manualeDescrizione": "اختر التاريخ والوقت لمعرفة اليوم القبطي المقابل.",
+    "giornoLiturgico": "اليوم الليتورجي",
+    "giornoLiturgicoSpiega": "من غروب {inizio} إلى غروب {fine}",
+    "giornoCivile": "اليوم المدني",
+    "giornoCivileSpiega": "التقويم الميلادي، من منتصف الليل إلى منتصف الليل",
+    "annoMartiri": "ش",
+    "annoMartiriEsteso": "سنة الشهداء",
+    "dopoTramonto": "بعد الغروب: اليوم الليتورجي هو اليوم التالي.",
+    "prossimoCambioTramonto": "التغيير التالي عند الغروب، الساعة {ora}",
+    "prossimoCambioMezzanotte": "التغيير التالي عند منتصف الليل (اليوم المدني)",
+    "fusoOrario": "المنطقة الزمنية: {fuso}",
+    "annoBisestile": "سنة قبطية كبيسة",
+    "domenicaDelMese": "الأحد {n} من شهر {mese}",
+    "pasquaTra": "{n, plural, one {يتبقى يوم واحد على عيد القيامة} other {يتبقى # يومًا على عيد القيامة}} ({data})",
+    "pasquaDa": "{n, plural, one {يوم واحد بعد عيد القيامة} other {# يومًا بعد عيد القيامة}} ({data})",
+    "pasquaOggi": "اليوم عيد القيامة",
+    "stagione": "الزمن الليتورجي",
+    "digiuni": "الأصوام",
+    "feste": "الأعياد",
+    "regoleInVerifica": "بعض القواعد الليتورجية لهذا اليوم لا تزال قيد المراجعة.",
+    "stagioni": {
+      "settimana-santa": "أسبوع الآلام",
+      "grande-quaresima": "الصوم الكبير",
+      "cinquantina": "الخماسين المقدسة",
+      "digiuno-apostoli": "صوم الرسل",
+      "digiuno-natale": "صوم الميلاد",
+      "digiuno-giona": "صوم يونان"
+    },
+    "digiuniNomi": {
+      "giona": "صوم يونان",
+      "grande-quaresima": "الصوم الكبير",
+      "settimana-santa": "أسبوع الآلام",
+      "apostoli": "صوم الرسل",
+      "natale": "صوم الميلاد"
+    },
+    "data": "التاريخ",
+    "ora": "الوقت",
+    "giornoPrecedente": "اليوم السابق",
+    "giornoSuccessivo": "اليوم التالي",
+    "vaiAOggi": "اذهب إلى اليوم",
+    "tornaLive": "العودة إلى الوضع المباشر",
+    "localita": "الموقع لحساب الغروب",
+    "localitaInUso": "{nome}: الغروب الساعة {ora}",
+    "tramontoManuale": "وقت الغروب محدد يدويًا: {ora}",
+    "tramontoRipiego": "في هذا الموقع لا تغرب الشمس أو لا تشرق اليوم: يُستخدم الوقت الاصطلاحي {ora}.",
+    "cambiaLocalita": "تغيير الموقع أو الغروب",
+    "usaPosizione": "استخدم موقعي",
+    "posizioneInCorso": "جارٍ تحديد الموقع…",
+    "posizioneNegata": "الموقع غير متاح: يُستخدم {nome}.",
+    "posizioneRilevata": "موقعي",
+    "posizioneNota": "يبقى الموقع على هذا الجهاز فقط.",
+    "preimpostate": "المواقع",
+    "coordinate": "الإحداثيات",
+    "latitudine": "خط العرض",
+    "longitudine": "خط الطول",
+    "nomeLocalita": "الاسم",
+    "applica": "تطبيق",
+    "coordinateNonValide": "إحداثيات غير صالحة.",
+    "tramontoManualeAttiva": "تحديد وقت الغروب يدويًا",
+    "orarioTramonto": "وقت الغروب",
+    "ripristina": "استعادة {nome}",
+    "letture": {
+      "titolo": "قراءات اليوم",
+      "inArrivo": "قراءات اليوم قريبًا",
+      "inArrivoSpiega": "النصوص قيد الترجمة وستُنشر هنا.",
+      "caricamento": "جارٍ تحميل القراءات…",
+      "sinassario": "السنكسار",
+      "note": "ملاحظات",
+      "vespri": "عشية",
+      "mattutino": "باكر",
+      "epistole": "الرسائل",
+      "atti": "الإبركسيس",
+      "salmi": "المزامير",
+      "vangelo": "إنجيل القداس"
+    },
+    "inversa": {
+      "titolo": "من التاريخ القبطي إلى الميلادي",
+      "anno": "السنة (ش)",
+      "mese": "الشهر",
+      "giorno": "اليوم",
+      "calcola": "تحويل",
+      "risultato": "{copto} يوافق {gregoriano}.",
+      "vigilia": "كيوم ليتورجي يبدأ عند غروب {vigilia}.",
+      "nonValida": "تاريخ قبطي غير صالح (النسيء 5 أيام، و6 في السنوات الكبيسة).",
+      "mostra": "اعرض هذا اليوم"
+    },
+    "citta": {
+      "milano": "ميلانو",
+      "roma": "روما",
+      "torino": "تورينو",
+      "cairo": "القاهرة",
+      "alessandria": "الإسكندرية"
+    }
+  },
+  "adminCalendario": {
+    "titolo": "التقويم الليتورجي",
+    "sottotitolo": "محتوى كل يوم، الأعياد الثابتة، القواعد والإعدادات.",
+    "schede": {
+      "contenuti": "المحتوى",
+      "feste": "الأعياد الثابتة",
+      "regole": "القواعد",
+      "impostazioni": "الإعدادات"
+    },
+    "errore": "حدث خطأ.",
+    "erroreConnessione": "خطأ في الاتصال",
+    "dbNonRaggiungibile": "تعذر الوصول إلى قاعدة البيانات: حاول لاحقًا.",
+    "salvato": "تم الحفظ",
+    "eliminato": "تم الحذف",
+    "salva": "حفظ",
+    "annulla": "إلغاء",
+    "elimina": "حذف",
+    "modifica": "تعديل",
+    "aggiungi": "إضافة",
+    "chiudi": "إغلاق",
+    "ultimaModifica": "عدّله {autore} في {data}",
+    "cerca": {
+      "titolo": "البحث عن يوم",
+      "perGregoriana": "التاريخ الميلادي",
+      "perCopta": "التاريخ القبطي",
+      "anno": "السنة",
+      "mese": "الشهر",
+      "giorno": "اليوم",
+      "vai": "بحث",
+      "nonValida": "تاريخ غير صالح."
+    },
+    "giorno": "{copto} · {gregoriano}",
+    "livelli": {
+      "fixed": "ثابت (السنكسار)",
+      "movable": "متغير (حسب عيد القيامة)",
+      "seasonal": "موسمي (الآحاد)"
+    },
+    "livelliSpiega": {
+      "fixed": "يسري كل عام في اليوم القبطي نفسه ({chiave}).",
+      "movable": "يسري كل عام على المسافة نفسها من عيد القيامة ({chiave}).",
+      "seasonal": "يسري على يوم الأسبوع نفسه بعد الأحد نفسه من الشهر ({chiave})."
+    },
+    "stato": "الحالة",
+    "bozza": "مسودة",
+    "pubblicato": "منشور",
+    "nessunContenuto": "لا يوجد محتوى",
+    "italiano": "الإيطالية",
+    "arabo": "العربية",
+    "anteprima": "معاينة",
+    "anteprimaSpiega": "هكذا سيظهر اليوم على الموقع (بما في ذلك المسودات).",
+    "tuttiContenuti": "كل المحتوى المحفوظ",
+    "nessunSalvato": "لا يوجد محتوى محفوظ بعد.",
+    "confermaElimina": "حذف المحتوى {chiave}؟",
+    "feste": {
+      "spiega": "أعياد ذات تاريخ ثابت في التقويم القبطي. يُضبط عيد الميلاد من القاعدة الخاصة به.",
+      "id": "المعرّف",
+      "idSpiega": "حروف لاتينية صغيرة وأرقام وشرطات (مثل san-marco).",
+      "mese": "الشهر",
+      "giorno": "اليوم",
+      "nomeIt": "الاسم (بالإيطالية)",
+      "nomeAr": "الاسم (بالعربية)",
+      "attiva": "مفعّل",
+      "disattiva": "معطّل",
+      "predefinita": "افتراضي",
+      "nuova": "عيد جديد",
+      "confermaElimina": "حذف العيد {nome}؟"
+    },
+    "regole": {
+      "spiega": "قواعد لها استثناءات أو لم تُراجع بعد. تبقى معطّلة حتى تختار قيمة: وحتى ذلك الحين لا يطبقها التقويم ويشير إلى الأيام المعنية.",
+      "attiva": "طبّق هذه القاعدة",
+      "valore": "القيمة",
+      "scegli": "اختر قيمة",
+      "nonImplementata": "مُعدّة، لم تُنفّذ بعد",
+      "stato_attiva": "مفعّلة",
+      "stato_disattiva": "معطّلة (قيمة آمنة)",
+      "nomi": {
+        "natale": "تاريخ عيد الميلاد",
+        "nasi6": "اليوم السادس من النسيء (السنوات الكبيسة)",
+        "concomitanze": "الأعياد الثابتة في أسبوع الآلام أو عيد القيامة",
+        "mercolediVenerdi": "صوم الأربعاء والجمعة"
+      },
+      "descrizioni": {
+        "natale": "يوافق 29 كيهك يوم 7 يناير، لكنه يوافق 8 يناير في السنة التي تسبق سنة ميلادية كبيسة. معطّلة: لا يظهر عيد الميلاد وينتهي الصوم في 28 كيهك.",
+        "nasi6": "المحتوى المعروض في اليوم السادس من النسيء. معطّلة: يُستخدم المفتاح 13-06.",
+        "concomitanze": "ماذا يحدث عندما يقع عيد ثابت في أسبوع الآلام أو عيد القيامة. معطّلة: يظهر الاثنان ويُشار إلى اليوم.",
+        "mercolediVenerdi": "الاستثناءات لم تُحدد بعد: لا يُحسب الصوم."
+      },
+      "valori": {
+        "29-koiak": "دائمًا 29 كيهك",
+        "7-gennaio": "دائمًا 7 يناير (28 كيهك في السنوات التي يوافق فيها 29 كيهك يوم 8 يناير)",
+        "contenuti-propri": "محتوى خاص (المفتاح 13-06)",
+        "come-5-nasi": "مثل اليوم الخامس من النسيء (المفتاح 13-05)",
+        "mostra-entrambe": "إظهار العيد الثابت والموسم معًا",
+        "prevale-stagione-mobile": "الأولوية للموسم المتغير (إخفاء العيد الثابت)",
+        "esclusa-cinquantina": "طوال السنة ما عدا الخماسين",
+        "esclusa-cinquantina-e-natale-epifania": "ما عدا الخماسين والفترة بين الميلاد والغطاس"
+      }
+    },
+    "impostazioni": {
+      "localita": "الموقع الافتراضي لحساب الغروب",
+      "localitaSpiega": "يُستخدم للزوار الذين لا يختارون موقعًا أو لا يسمحون بتحديد موقعهم.",
+      "nome": "الاسم",
+      "latitudine": "خط العرض",
+      "longitudine": "خط الطول",
+      "visibilita": "ظهور الصفحة العامة",
+      "visibilitaSpiega": "إظهار أو إخفاء صفحة /calendario وعنصر القائمة. تُدار صلاحيات الأدوار في إدارة الأقسام.",
+      "visibile": "ظاهرة",
+      "nascosta": "مخفية"
+    }
   }
 }

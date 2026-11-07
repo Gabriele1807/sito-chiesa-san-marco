@@ -6,6 +6,7 @@ import {
   Image as ImageIcon,
   Library,
   CalendarDays,
+  CalendarRange,
   Youtube,
   Info,
   Phone,
@@ -64,6 +65,15 @@ export const primarySection: SidebarSection = {
       icon: Clock,
       href: "/#orari",
       sectionId: "orari",
+    },
+    {
+      id: "calendario",
+      type: "primary-nav",
+      labelKey: "calendario",
+      subKey: "subCalendario",
+      icon: CalendarRange,
+      href: "/calendario",
+      sectionId: "calendario",
     },
     {
       id: "preghiere",

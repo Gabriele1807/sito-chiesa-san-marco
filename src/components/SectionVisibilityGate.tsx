@@ -15,17 +15,32 @@ interface SectionVisibilityGateProps {
   sectionId: string;
   title: string;
   children: ReactNode;
+  /**
+   * Facoltativo: oltre questo tempo (database lento o irraggiungibile) si
+   * applica lo stesso ripiego di getSectionAccess in caso di errore
+   * ("full"), così la pagina non resta bloccata.
+   */
+  timeoutMs?: number;
 }
 
 export default async function SectionVisibilityGate({
   sectionId,
   title,
   children,
+  timeoutMs,
 }: SectionVisibilityGateProps) {
   const tCommon = await getTranslations("common");
 
   // Verifica l'accesso dell'utente a questa sezione
-  const access = await getSectionAccess(sectionId);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const access = timeoutMs
+    ? await Promise.race([
+        getSectionAccess(sectionId),
+        new Promise<"full">((resolve) => {
+          timer = setTimeout(() => resolve("full"), timeoutMs);
+        }),
+      ]).finally(() => clearTimeout(timer))
+    : await getSectionAccess(sectionId);
 
   // Se accesso negato completamente
   if (access === "hidden") {
