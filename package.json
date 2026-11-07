@@ -14,6 +14,7 @@
     "test:coverage": "vitest run --coverage",
     "generate-hash": "npx tsx src/scripts/generate-hash.ts",
     "backfill-has-password": "npx tsx src/scripts/backfill-has-password.ts",
+    "seed-calendario": "npx tsx src/scripts/seed-calendario.ts",
     "generate-pwa-icons": "node src/scripts/generate-pwa-icons.mjs",
     "generate-vapid-keys": "web-push generate-vapid-keys"
   },

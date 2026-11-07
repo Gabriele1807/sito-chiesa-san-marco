@@ -105,6 +105,21 @@ export const DEFAULT_SECTIONS: Omit<SectionVisibility, "id" | "createdAt" | "upd
     },
   },
   {
+    sectionId: "calendario",
+    sectionLabel: "Calendario copto",
+    isActive: true,
+    roleConfig: {
+      guest: "full",
+      credente: "full",
+      madre: "full",
+      padre: "full",
+      ospite_chiesa: "full",
+      prete: "full",
+      admin: "full",
+      superadmin: "full",
+    },
+  },
+  {
     sectionId: "video-corsi",
     sectionLabel: "Video e Corsi",
     isActive: true,

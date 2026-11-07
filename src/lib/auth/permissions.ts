@@ -27,6 +27,8 @@ export const PERMISSIONS = {
   "preghiere.write": "Creare/modificare/eliminare preghiere",
   "libreria-privata.read": "Visualizzare la libreria privata",
   "libreria-privata.write": "Caricare/eliminare file privati",
+  "calendario.read": "Visualizzare contenuti e regole del calendario liturgico",
+  "calendario.write": "Modificare contenuti, feste, regole e impostazioni del calendario",
 
   // Gestione admin (solo superadmin)
   "admin.read": "Visualizzare la lista admin",
@@ -57,6 +59,8 @@ const ROLE_PERMISSIONS: Record<AdminRuolo, Permission[]> = {
     "preghiere.write",
     "libreria-privata.read",
     "libreria-privata.write",
+    "calendario.read",
+    "calendario.write",
   ],
 };
 
