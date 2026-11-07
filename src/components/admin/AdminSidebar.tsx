@@ -9,6 +9,7 @@ import {
   Image as ImageIcon,
   Clock,
   CalendarDays,
+  CalendarRange,
   ClipboardList,
   BookOpen,
   Youtube,
@@ -38,6 +39,7 @@ const links = [
   { href: "/admin/video-corsi", label: "Video & Corsi", icon: Youtube },
   { href: "/admin/libreria-privata", label: "Libreria Privata", icon: FolderLock },
   { href: "/admin/avvisi", label: "Avvisi e notifiche", icon: Megaphone },
+  { href: "/admin/calendario", label: "Calendario liturgico", icon: CalendarRange },
   { href: "/admin/statistiche", label: "Statistiche", icon: BarChart3 },
 ];
 

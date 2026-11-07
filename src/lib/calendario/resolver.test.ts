@@ -207,3 +207,14 @@ describe("Chiavi dei contenuti e provider", () => {
     expect(empty.available).toBe(false);
   });
 });
+
+describe("Ricerca di un giorno per chiave (anteprima admin)", () => {
+  it("trova un giorno per chiavi fisse, mobili, stagionali e il 6 di Nasi", async () => {
+    const { findDayForKey } = await import("./lookup");
+    expect(findDayForKey("fixed", "04-27", DEFAULT_CONFIG, 1741)?.keys.iso).toBe("2025-01-05");
+    expect(findDayForKey("movable", "E+0", DEFAULT_CONFIG, 1741)?.keys.iso).toBe("2025-04-20");
+    expect(findDayForKey("seasonal", "04-S4-0", DEFAULT_CONFIG, 1741)?.keys.iso).toBe("2025-01-05");
+    expect(findDayForKey("fixed", "13-06", DEFAULT_CONFIG, 1741)?.coptic.year).toBe(1743);
+    expect(findDayForKey("movable", "E+999", DEFAULT_CONFIG, 1741)).toBeNull();
+  });
+});

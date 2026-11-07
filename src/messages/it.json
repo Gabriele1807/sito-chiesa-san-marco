@@ -1050,6 +1050,11 @@
       "visibilitaSpiega": "Mostra o nascondi la pagina /calendario e la voce nel menu. I permessi per ruolo si gestiscono in Gestione Sezioni.",
       "visibile": "Visibile",
       "nascosta": "Nascosta"
+    },
+    "colonne": {
+      "livello": "Livello",
+      "chiave": "Chiave",
+      "modifica": "Ultima modifica"
     }
   }
 }
