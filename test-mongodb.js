@@ -1,8 +1,18 @@
-// Script manuale di verifica connessione: legge SOLO da variabili d'ambiente.
-// Uso: MONGODB_URI="..." MONGODB_DB="..." node test-mongodb.js
+// Script manuale di verifica connessione.
+// Carica .env.local se presente; le variabili d'ambiente già esportate hanno
+// comunque precedenza.
+const path = require('node:path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
 const mongoUri = process.env.MONGODB_URI;
 if (!mongoUri) {
-  console.error("MONGODB_URI non impostata: esporta la variabile prima di eseguire lo script.");
+  console.error("MONGODB_URI non impostata: configurala in .env.local o nelle variabili d'ambiente.");
+  process.exit(1);
+}
+if (!/^mongodb(?:\+srv)?:\/\//.test(mongoUri)) {
+  console.error("MONGODB_URI non valida: deve iniziare con mongodb:// o mongodb+srv://.");
   process.exit(1);
 }
 const dbName = process.env.MONGODB_DB || 'chiesa_san_marco';

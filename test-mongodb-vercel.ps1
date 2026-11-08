@@ -28,9 +28,11 @@ if (-not (Test-Path ".env.local")) {
     exit 1
 }
 
-$envContent = Get-Content ".env.local" | Where-Object { $_ -match "MONGODB_URI" }
+$envContent = Get-Content ".env.local" | Where-Object {
+    $_ -match "^\s*MONGODB_URI\s*=\s*.+"
+}
 if (-not $envContent) {
-    Write-Host "ERROR: MONGODB_URI not found in .env.local" -ForegroundColor Red
+    Write-Host "ERROR: MONGODB_URI is missing or empty in .env.local" -ForegroundColor Red
     exit 1
 }
 
@@ -90,13 +92,16 @@ if (Test-Path "test-mongodb.js") {
         } else {
             Write-Host ""
             Write-Host "  Connection failed" -ForegroundColor Red
-            Write-Host "    Check MONGODB_URI in .env.local" -ForegroundColor Yellow
+            Write-Host "    Check the MongoDB URI format and credentials in .env.local" -ForegroundColor Yellow
+            exit 1
         }
     } catch {
         Write-Host "  Test execution error: $_" -ForegroundColor Red
+        exit 1
     }
 } else {
     Write-Host "  test-mongodb.js not found, skipping" -ForegroundColor Yellow
+    exit 1
 }
 
 Write-Host ""
@@ -128,7 +133,7 @@ Write-Host ""
 Write-Host "=================================" -ForegroundColor Cyan
 Write-Host "Test Summary" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Environment ready for Vercel deployment" -ForegroundColor Green
+Write-Host "MongoDB connection test passed; environment ready for Vercel deployment" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "  1. Run: npm run build" -ForegroundColor Gray

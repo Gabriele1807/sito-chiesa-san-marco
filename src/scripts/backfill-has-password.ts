@@ -7,10 +7,13 @@
  *
  * Uso: npx tsx src/scripts/backfill-has-password.ts
  */
-import "dotenv/config";
-import { getDb } from "@/lib/mongo/client";
+import * as dotenv from "dotenv";
+import { resolve } from "path";
+
+dotenv.config({ path: resolve(process.cwd(), ".env.local") });
 
 async function main() {
+  const { getDb } = await import("@/lib/mongo/client");
   const db = await getDb();
   const result = await db
     .collection("users")

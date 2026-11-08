@@ -11,11 +11,16 @@
  *
  * Uso: npm run seed-calendario
  */
-import "dotenv/config";
-import { getDb } from "@/lib/mongo/client";
-import { applySchemaValidators, seedCalendario } from "@/lib/mongo/calendario";
+import * as dotenv from "dotenv";
+import { resolve } from "path";
+
+dotenv.config({ path: resolve(process.cwd(), ".env.local") });
 
 async function main() {
+  const [{ getDb }, { applySchemaValidators, seedCalendario }] = await Promise.all([
+    import("@/lib/mongo/client"),
+    import("@/lib/mongo/calendario"),
+  ]);
   const db = await getDb();
   await applySchemaValidators(db);
   const report = await seedCalendario(db);
