@@ -86,7 +86,7 @@ function nativityJdn(copticYear: number, rules: RuleSettings): number | null {
   if (!mode) return null;
   const k29 = copticToJdn(copticYear, 4, 29);
   if (mode === "29-koiak") return k29;
-  // "7-gennaio": il 29 Koiak se cade il 7 gennaio, altrimenti il giorno prima
+  // "7-gennaio": il 29 Kiahk se cade il 7 gennaio, altrimenti il giorno prima
   const g = jdnToGregorian(k29);
   return g.month === 1 && g.day === 8 ? k29 - 1 : k29;
 }
@@ -164,7 +164,7 @@ function compute(jdn: number, config: CalendarConfig): LiturgicalDayInfo {
     for (const f of fixedToday) feasts.push({ id: f.id, kind: "fixed", name: f.name });
   }
 
-  // --- Nasi ---
+  // --- Nassi ---
   if (coptic.month === 13 && coptic.day === 6 && !ruleIsActive(config.rules, "nasi6")) {
     uncertain.add("nasi6");
   }

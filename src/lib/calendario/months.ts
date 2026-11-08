@@ -1,7 +1,9 @@
 /**
  * Nomi dei mesi copti.
  *
- * `translit` è la traslitterazione bohairica usata nel sito. I campi
+ * `translit` è il nome visualizzato nell'interfaccia (traslitterazione in uso
+ * nella comunità, non bohairica). Gli id dei mesi sono i numeri 1-13, su cui
+ * si basano le chiavi dei giorni: cambiare i nomi non tocca i dati. I campi
  * `coptic` (scrittura copta) e `ar` (arabo) sono predisposti per mostrare
  * in seguito anche gli altri nomi senza riscrivere l'interfaccia:
  * `coptic` è lasciato vuoto finché non verrà fornita la grafia corretta.
@@ -18,19 +20,19 @@ export interface CopticMonthInfo {
 }
 
 export const COPTIC_MONTHS: readonly CopticMonthInfo[] = [
-  { number: 1, translit: "Thout", ar: "توت" },
-  { number: 2, translit: "Paope", ar: "بابه" },
-  { number: 3, translit: "Hathor", ar: "هاتور" },
-  { number: 4, translit: "Koiak", ar: "كيهك" },
-  { number: 5, translit: "Tobi", ar: "طوبة" },
-  { number: 6, translit: "Meshir", ar: "أمشير" },
-  { number: 7, translit: "Paremhat", ar: "برمهات" },
-  { number: 8, translit: "Paremoude", ar: "برمودة" },
-  { number: 9, translit: "Pashons", ar: "بشنس" },
-  { number: 10, translit: "Paoni", ar: "بؤونة" },
-  { number: 11, translit: "Epip", ar: "أبيب" },
-  { number: 12, translit: "Mesori", ar: "مسرى" },
-  { number: 13, translit: "Nasi", ar: "النسيء" },
+  { number: 1, translit: "Tut", ar: "توت" },
+  { number: 2, translit: "Baba", ar: "بابه" },
+  { number: 3, translit: "Hatur", ar: "هاتور" },
+  { number: 4, translit: "Kiahk", ar: "كيهك" },
+  { number: 5, translit: "Tuba", ar: "طوبة" },
+  { number: 6, translit: "Hamshir", ar: "أمشير" },
+  { number: 7, translit: "Baramhat", ar: "برمهات" },
+  { number: 8, translit: "Baramoda", ar: "برمودة" },
+  { number: 9, translit: "Bashans", ar: "بشنس" },
+  { number: 10, translit: "Baona", ar: "بؤونة" },
+  { number: 11, translit: "Abib", ar: "أبيب" },
+  { number: 12, translit: "Mesra", ar: "مسرى" },
+  { number: 13, translit: "Nassi", ar: "النسيء" },
 ];
 
 export type MonthNameStyle = "translit" | "coptic" | "ar";

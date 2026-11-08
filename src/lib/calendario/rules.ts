@@ -5,7 +5,7 @@
  * - mobili: distanza in giorni dalla Pasqua (E±N);
  * - fisse: mese e giorno copti.
  *
- * Le regole con eccezioni o incerte (Natale 28/29 Koiak, Nasi, concomitanze,
+ * Le regole con eccezioni o incerte (Natale 28/29 Kiahk, Nassi, concomitanze,
  * digiuno del mercoledì e del venerdì) sono in `CONFIGURABLE_RULES`: sono
  * DISATTIVATE per impostazione predefinita e vengono applicate solo dopo che
  * un amministratore ha scelto un valore dal pannello. Finché restano
@@ -49,18 +49,18 @@ export const MOVABLE_RANGES = {
   settimanaSanta: { from: -7, to: -1 },
   /** Santa Cinquantina: dalla Pasqua alla Pentecoste. */
   cinquantina: { from: 0, to: 49 },
-  /** Il digiuno degli Apostoli inizia il lunedì dopo Pentecoste e termina il 4 Epip (vedi sotto). */
+  /** Il digiuno degli Apostoli inizia il lunedì dopo Pentecoste e termina il 4 Abib (vedi sotto). */
   apostoliStart: 50,
 } as const;
 
-/** Fine del digiuno degli Apostoli: 4 Epip (la festa è il 5 Epip). */
+/** Fine del digiuno degli Apostoli: 4 Abib (la festa è il 5 Abib). */
 export const APOSTLES_FAST_END = { month: 11, day: 4 } as const;
 
-/** Digiuno della Natività: 43 giorni, dal 16 Hathor alla vigilia del Natale. */
+/** Digiuno della Natività: 43 giorni, dal 16 Hatur alla vigilia del Natale. */
 export const NATIVITY_FAST_START = { month: 3, day: 16 } as const;
 /**
- * Fine del digiuno se la regola del Natale è disattivata: 28 Koiak.
- * TODO: negli anni in cui il 29 Koiak cade l'8 gennaio, verificare inizio
+ * Fine del digiuno se la regola del Natale è disattivata: 28 Kiahk.
+ * TODO: negli anni in cui il 29 Kiahk cade l'8 gennaio, verificare inizio
  * e fine del digiuno insieme alla regola "natale".
  */
 export const NATIVITY_FAST_DEFAULT_END = { month: 4, day: 28 } as const;
@@ -147,10 +147,10 @@ export const CONFIGURABLE_RULES: readonly ConfigurableRule[] = [
     defaultEnabled: false,
     implemented: true,
     note:
-      "TODO da verificare: il Natale si celebra il 29 Koiak, che cade il 7 gennaio " +
+      "TODO da verificare: il Natale si celebra il 29 Kiahk, che cade il 7 gennaio " +
       "ma l'8 gennaio nell'anno che precede un bisestile gregoriano. '29-koiak' " +
-      "lo pone sempre il 29 Koiak; '7-gennaio' lo pone il 7 gennaio (28 Koiak in quegli anni). " +
-      "Disattivata: il Natale non viene mostrato e il digiuno termina il 28 Koiak.",
+      "lo pone sempre il 29 Kiahk; '7-gennaio' lo pone il 7 gennaio (28 Kiahk in quegli anni). " +
+      "Disattivata: il Natale non viene mostrato e il digiuno termina il 28 Kiahk.",
   },
   {
     id: "nasi6",
@@ -158,7 +158,7 @@ export const CONFIGURABLE_RULES: readonly ConfigurableRule[] = [
     defaultEnabled: false,
     implemented: true,
     note:
-      "TODO: contenuti del 6° giorno di Nasi negli anni bisestili. 'contenuti-propri' " +
+      "TODO: contenuti del 6° giorno di Nassi negli anni bisestili. 'contenuti-propri' " +
       "usa la chiave 13-06; 'come-5-nasi' riusa la chiave 13-05. Disattivata: chiave 13-06, " +
       "giorno segnalato come incerto.",
   },

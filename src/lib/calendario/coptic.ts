@@ -1,9 +1,9 @@
 /**
  * Calendario copto (Anno dei Martiri, A.M.) ↔ JDN.
  *
- * - 13 mesi: 12 da 30 giorni più Nasi (5 giorni, 6 negli anni bisestili).
+ * - 13 mesi: 12 da 30 giorni più Nassi (5 giorni, 6 negli anni bisestili).
  * - Anno bisestile quando (anno + 1) è divisibile per 4.
- * - Epoca: 1 Thout 1 A.M. = 29 agosto 284 giuliano = JDN 1825030.
+ * - Epoca: 1 Tut 1 A.M. = 29 agosto 284 giuliano = JDN 1825030.
  *
  * Il ciclo copto è giuliano (un bisestile ogni 4 anni, senza eccezioni
  * secolari): per questo il Capodanno cade l'11 settembre gregoriano, o il
@@ -18,8 +18,8 @@ export const COPTIC_EPOCH_JDN = 1825030;
 
 export interface CopticDate {
   year: number;
-  month: number; // 1-13 (13 = Nasi)
-  day: number; // 1-30 (Nasi: 1-5 o 1-6)
+  month: number; // 1-13 (13 = Nassi)
+  day: number; // 1-30 (Nassi: 1-5 o 1-6)
 }
 
 export function isCopticLeapYear(year: number): boolean {
@@ -59,7 +59,7 @@ export function jdnToCoptic(jdn: number): CopticDate {
   return { year, month, day };
 }
 
-/** JDN del 1 Thout dell'anno copto indicato. */
+/** JDN del 1 Tut dell'anno copto indicato. */
 export function copticNewYearJdn(year: number): number {
   return copticToJdn(year, 1, 1);
 }

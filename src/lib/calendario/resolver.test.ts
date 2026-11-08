@@ -26,9 +26,9 @@ describe("Risolutore del giorno liturgico", () => {
   });
 
   it("numera la settimana del mese dalla domenica precedente", () => {
-    // 1 Thout 1741 = mercoledì 11 settembre 2024: prima della prima domenica
+    // 1 Tut 1741 = mercoledì 11 settembre 2024: prima della prima domenica
     expect(day(2024, 9, 11).keys.seasonal).toBe("01-S0-3");
-    // 15 settembre 2024 = prima domenica di Thout
+    // 15 settembre 2024 = prima domenica di Tut
     const firstSunday = day(2024, 9, 15);
     expect(firstSunday.sundayOfMonth).toBe(1);
     expect(firstSunday.keys.seasonal).toBe("01-S1-0");
@@ -54,7 +54,7 @@ describe("Risolutore del giorno liturgico", () => {
     expect(day(2025, 5, 29).feasts.map((f) => f.id)).toContain("ascensione"); // E+39
   });
 
-  it("digiuno degli Apostoli: dal giorno dopo Pentecoste fino al 4 Epip", () => {
+  it("digiuno degli Apostoli: dal giorno dopo Pentecoste fino al 4 Abib", () => {
     expect(day(2025, 6, 8).fasts).not.toContain("apostoli");
     expect(day(2025, 6, 9).fasts).toContain("apostoli");
     expect(day(2025, 7, 11).coptic).toMatchObject({ month: 11, day: 4 });
@@ -63,7 +63,7 @@ describe("Risolutore del giorno liturgico", () => {
     expect(day(2025, 7, 12).feasts.map((f) => f.id)).toContain("apostoli");
   });
 
-  it("digiuno di Natale dal 16 Hathor al 28 Koiak (finché la regola del Natale è disattivata)", () => {
+  it("digiuno di Natale dal 16 Hatur al 28 Kiahk (finché la regola del Natale è disattivata)", () => {
     const start = resolveLiturgicalDay(copticToJdn(1741, 3, 16));
     expect(start.fasts).toContain("natale");
     expect(resolveLiturgicalDay(copticToJdn(1741, 3, 15)).fasts).not.toContain("natale");
@@ -98,10 +98,10 @@ describe("Risolutore del giorno liturgico", () => {
       ...DEFAULT_CONFIG,
       rules: { natale: { enabled: true, value: "7-gennaio" } },
     };
-    // 2025: 29 Koiak = 7 gennaio, le due impostazioni coincidono
+    // 2025: 29 Kiahk = 7 gennaio, le due impostazioni coincidono
     expect(day(2025, 1, 7, on29).feasts.map((f) => f.id)).toContain("natale");
     expect(day(2025, 1, 7, onJan7).feasts.map((f) => f.id)).toContain("natale");
-    // 2024: 29 Koiak = 8 gennaio
+    // 2024: 29 Kiahk = 8 gennaio
     expect(day(2024, 1, 8, on29).feasts.map((f) => f.id)).toContain("natale");
     expect(day(2024, 1, 7, onJan7).feasts.map((f) => f.id)).toContain("natale");
     expect(day(2024, 1, 7, onJan7).coptic).toMatchObject({ month: 4, day: 28 });
@@ -120,7 +120,7 @@ describe("Risolutore del giorno liturgico", () => {
   });
 
   it("segnala le concomitanze tra feste fisse e Settimana Santa/Pasqua", () => {
-    // 29 Paremhat 1747 cade il 7 aprile 2031... cerchiamo un anno con
+    // 29 Baramhat 1747 cade il 7 aprile 2031... cerchiamo un anno con
     // l'Annunciazione nella Settimana Santa o a Pasqua
     let found = false;
     for (let y = 1700; y < 1800 && !found; y++) {
@@ -174,7 +174,7 @@ describe("Copertura completa dell'anno", () => {
 });
 
 describe("Chiavi dei contenuti e provider", () => {
-  it("il 6 di Nasi usa la propria chiave finché la regola è disattivata", () => {
+  it("il 6 di Nassi usa la propria chiave finché la regola è disattivata", () => {
     const info = resolveLiturgicalDay(copticToJdn(1743, 13, 6));
     expect(contentKeysFor(info, DEFAULT_CONFIG).fixed).toBe("13-06");
     expect(info.uncertain).toContain("nasi6");
@@ -209,7 +209,7 @@ describe("Chiavi dei contenuti e provider", () => {
 });
 
 describe("Ricerca di un giorno per chiave (anteprima admin)", () => {
-  it("trova un giorno per chiavi fisse, mobili, stagionali e il 6 di Nasi", async () => {
+  it("trova un giorno per chiavi fisse, mobili, stagionali e il 6 di Nassi", async () => {
     const { findDayForKey } = await import("./lookup");
     expect(findDayForKey("fixed", "04-27", DEFAULT_CONFIG, 1741)?.keys.iso).toBe("2025-01-05");
     expect(findDayForKey("movable", "E+0", DEFAULT_CONFIG, 1741)?.keys.iso).toBe("2025-04-20");

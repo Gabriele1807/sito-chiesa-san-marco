@@ -39,21 +39,21 @@ describe("Julian Day Number", () => {
 });
 
 describe("Calendario copto: casi di riferimento", () => {
-  it("11 settembre 2024 = 1 Thout 1741 (Capodanno)", () => {
+  it("11 settembre 2024 = 1 Tut 1741 (Capodanno)", () => {
     expect(g(2024, 9, 11)).toEqual({ year: 1741, month: 1, day: 1 });
   });
 
-  it("5 gennaio 2025 = 27 Koiak 1741", () => {
+  it("5 gennaio 2025 = 27 Kiahk 1741", () => {
     expect(g(2025, 1, 5)).toEqual({ year: 1741, month: 4, day: 27 });
   });
 
-  it("7 gennaio 2025 = 29 Koiak 1741", () => {
+  it("7 gennaio 2025 = 29 Kiahk 1741", () => {
     expect(g(2025, 1, 7)).toEqual({ year: 1741, month: 4, day: 29 });
   });
 
-  it("28 giugno 2025 = 21 Paoni (Paone) 1741", () => {
+  it("28 giugno 2025 = 21 Baona 1741", () => {
     expect(g(2025, 6, 28)).toEqual({ year: 1741, month: 10, day: 21 });
-    expect(COPTIC_MONTHS[9].translit).toBe("Paoni");
+    expect(COPTIC_MONTHS[9].translit).toBe("Baona");
   });
 
   it("10, 11, 12 settembre in un anno normale (2025 precede il 2026, non bisestile)", () => {
@@ -75,7 +75,7 @@ describe("Calendario copto: casi di riferimento", () => {
       const nextIsLeap = (next % 4 === 0 && next % 100 !== 0) || next % 400 === 0;
       const ny = jdnToGregorian(copticNewYearJdn(gy - 283));
       // Fuori dall'intervallo 1900-2099 lo scarto giuliano-gregoriano cambia:
-      // il Capodanno resta il 1 Thout, ma la data gregoriana slitta.
+      // il Capodanno resta il 1 Tut, ma la data gregoriana slitta.
       if (gy >= 1900 && gy <= 2098) {
         expect(ny).toEqual({ year: gy, month: 9, day: nextIsLeap ? 12 : 11 });
       }
@@ -101,7 +101,7 @@ describe("Calendario copto: casi di riferimento", () => {
     expect(g(2025, 1, 1)).toEqual({ year: 1741, month: 4, day: 23 });
   });
 
-  it("giorni 5 e 6 di Nasi", () => {
+  it("giorni 5 e 6 di Nassi", () => {
     expect(copticMonthLength(1739, 13)).toBe(6);
     expect(copticMonthLength(1740, 13)).toBe(5);
     expect(isValidCopticDate(1740, 13, 6)).toBe(false);
@@ -195,21 +195,21 @@ describe("Pasqua copta", () => {
 });
 
 describe("Mesi", () => {
-  it("13 mesi, 12 da 30 giorni più Nasi", () => {
+  it("13 mesi, 12 da 30 giorni più Nassi", () => {
     expect(COPTIC_MONTHS.map((m) => m.translit)).toEqual([
-      "Thout",
-      "Paope",
-      "Hathor",
-      "Koiak",
-      "Tobi",
-      "Meshir",
-      "Paremhat",
-      "Paremoude",
-      "Pashons",
-      "Paoni",
-      "Epip",
-      "Mesori",
-      "Nasi",
+      "Tut",
+      "Baba",
+      "Hatur",
+      "Kiahk",
+      "Tuba",
+      "Hamshir",
+      "Baramhat",
+      "Baramoda",
+      "Bashans",
+      "Baona",
+      "Abib",
+      "Mesra",
+      "Nassi",
     ]);
     for (let m = 1; m <= 12; m++) expect(copticMonthLength(1741, m)).toBe(30);
   });

@@ -111,12 +111,12 @@ describe("Giorno liturgico dal tramonto precedente", () => {
     expect(justBefore.liturgical.jdn + 1).toBe(atSunset.liturgical.jdn);
   });
 
-  it("vigilia del Natale copto: dopo il tramonto del 6 gennaio 2025 è già 29 Koiak", () => {
+  it("vigilia del Natale copto: dopo il tramonto del 6 gennaio 2025 è già 29 Kiahk", () => {
     const s = computeDayState(at("2025-01-06T18:00:00Z"), rome, MILANO);
     expect(s.liturgical.coptic).toEqual({ year: 1741, month: 4, day: 29 });
   });
 
-  it("vigilia del Capodanno copto: la sera del 10 settembre 2024 è già 1 Thout 1741", () => {
+  it("vigilia del Capodanno copto: la sera del 10 settembre 2024 è già 1 Tut 1741", () => {
     const s = computeDayState(at("2024-09-10T19:00:00Z"), rome, MILANO);
     expect(s.liturgical.coptic).toEqual({ year: 1741, month: 1, day: 1 });
   });

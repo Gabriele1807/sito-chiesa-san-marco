@@ -931,7 +931,7 @@
       "calcola": "Converti",
       "risultato": "{copto} corrisponde a {gregoriano}.",
       "vigilia": "Come giorno liturgico inizia al tramonto di {vigilia}.",
-      "nonValida": "Data copta non valida (Nasi ha 5 giorni, 6 negli anni bisestili).",
+      "nonValida": "Data copta non valida (Nassi ha 5 giorni, 6 negli anni bisestili).",
       "mostra": "Mostra questo giorno"
     },
     "citta": {
@@ -1019,21 +1019,21 @@
       "stato_disattiva": "Disattivata (valore sicuro)",
       "nomi": {
         "natale": "Data del Natale",
-        "nasi6": "Sesto giorno di Nasi (anni bisestili)",
+        "nasi6": "Sesto giorno di Nassi (anni bisestili)",
         "concomitanze": "Feste fisse nella Settimana Santa o a Pasqua",
         "mercolediVenerdi": "Digiuno del mercoledì e del venerdì"
       },
       "descrizioni": {
-        "natale": "Il 29 Koiak cade il 7 gennaio, ma l'8 gennaio nell'anno che precede un bisestile gregoriano. Disattivata: il Natale non viene mostrato e il digiuno termina il 28 Koiak.",
-        "nasi6": "Quali contenuti mostrare il 6 di Nasi. Disattivata: si usa la chiave propria 13-06.",
+        "natale": "Il 29 Kiahk cade il 7 gennaio, ma l'8 gennaio nell'anno che precede un bisestile gregoriano. Disattivata: il Natale non viene mostrato e il digiuno termina il 28 Kiahk.",
+        "nasi6": "Quali contenuti mostrare il 6 di Nassi. Disattivata: si usa la chiave propria 13-06.",
         "concomitanze": "Cosa fare quando una festa fissa cade nella Settimana Santa o a Pasqua. Disattivata: si mostrano entrambe e il giorno è segnalato.",
         "mercolediVenerdi": "Esenzioni non ancora definite: il digiuno non viene calcolato."
       },
       "valori": {
-        "29-koiak": "Sempre il 29 Koiak",
-        "7-gennaio": "Sempre il 7 gennaio (28 Koiak negli anni con il 29 Koiak all'8 gennaio)",
+        "29-koiak": "Sempre il 29 Kiahk",
+        "7-gennaio": "Sempre il 7 gennaio (28 Kiahk negli anni con il 29 Kiahk all'8 gennaio)",
         "contenuti-propri": "Contenuti propri (chiave 13-06)",
-        "come-5-nasi": "Come il 5 di Nasi (chiave 13-05)",
+        "come-5-nasi": "Come il 5 di Nassi (chiave 13-05)",
         "mostra-entrambe": "Mostra festa fissa e stagione",
         "prevale-stagione-mobile": "Prevale la stagione mobile (festa fissa nascosta)",
         "esclusa-cinquantina": "Tutto l'anno, esclusa la Cinquantina",

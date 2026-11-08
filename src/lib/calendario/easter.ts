@@ -26,7 +26,7 @@ export function copticEaster(year: number): YMD {
 const cache = new Map<number, number>();
 
 /**
- * Pasqua dell'anno liturgico copto `copticYear` (che inizia il 1 Thout):
+ * Pasqua dell'anno liturgico copto `copticYear` (che inizia il 1 Tut):
  * cade nella primavera dell'anno gregoriano `copticYear + 284`.
  */
 export function easterJdnForCopticYear(copticYear: number): number {

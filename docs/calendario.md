@@ -14,7 +14,7 @@ c'è nessuna tabella annuale da aggiornare. Nel database ci sono solo i
 |---|---|---|
 | Logica pura | `src/lib/calendario/jdn.ts` | Gregoriano/giuliano ↔ Julian Day Number (JDN), giorno della settimana |
 | | `coptic.ts` | Copto ↔ JDN, bisestili, chiavi `AAAA-MM-GG` e `MM-GG` |
-| | `months.ts` | Nomi dei 13 mesi (bohairico, arabo; copto predisposto) |
+| | `months.ts` | Nomi dei 13 mesi (traslitterazione mostrata nel sito, arabo; copto predisposto) |
 | | `easter.ts` | Pasqua copta (Meeus, computo giuliano → JDN) |
 | | `sun.ts` | Tramonto NOAA/Meeus, locale, ±1-2 minuti |
 | | `tz.ts` | Fusi orari con `Intl`: giorno locale, mezzanotte, orario → istante |
@@ -41,8 +41,8 @@ assoluti (millisecondi).
 
 ### Calendario copto
 
-- Epoca: 1 Thout 1 A.M. = JDN 1825030 (29 agosto 284 giuliano).
-- 12 mesi da 30 giorni più Nasi, di 5 giorni o di 6 se (anno + 1) è divisibile per 4.
+- Epoca: 1 Tut 1 A.M. = JDN 1825030 (29 agosto 284 giuliano).
+- 12 mesi da 30 giorni più Nassi, di 5 giorni o di 6 se (anno + 1) è divisibile per 4.
 - `copticToJdn(a, m, g) = 1825029 + 365(a−1) + ⌊a/4⌋ + 30(m−1) + g`.
 - Il ciclo copto è giuliano. Per questo tra il 1900 e il 2099 il Capodanno cade
   l'11 settembre, o il 12 nell'anno che precede un bisestile gregoriano; dal 2100
@@ -87,10 +87,10 @@ Implementate perché certe (`rules.ts`), come distanza dalla Pasqua E±N o data 
 | Grande Quaresima | E−55 … E−8 |
 | Settimana Santa | E−7 … E−1 |
 | Santa Cinquantina | E+0 … E+49 (Pentecoste) |
-| Digiuno degli Apostoli | E+50 … 4 Epip (festa il 5 Epip) |
-| Digiuno della Natività | 16 Hathor … vigilia del Natale (28 Koiak se la regola del Natale è disattivata) |
+| Digiuno degli Apostoli | E+50 … 4 Abib (festa il 5 Abib) |
+| Digiuno della Natività | 16 Hatur … vigilia del Natale (28 Kiahk se la regola del Natale è disattivata) |
 | Feste mobili | Palme E−7, Pasqua E+0, Ascensione E+39, Pentecoste E+49 |
-| Feste fisse (predefinite) | Nayrouz 1 Thout, Croce 17 Thout, Epifania 11 Tobi, Annunciazione 29 Paremhat, Apostoli 5 Epip, Assunzione 16 Mesori |
+| Feste fisse (predefinite) | Nayrouz 1 Tut, Croce 17 Tut, Epifania 11 Tuba, Annunciazione 29 Baramhat, Apostoli 5 Abib, Assunzione 16 Mesra |
 
 **Regole incerte**, nel catalogo `CONFIGURABLE_RULES`: sono tutte **disattivate**
 finché un admin non sceglie un valore. Finché restano disattivate il risolutore
@@ -99,13 +99,13 @@ sono ancora in verifica".
 
 | Id | Valori | Se disattivata |
 |---|---|---|
-| `natale` | `29-koiak`, `7-gennaio` | Natale non mostrato; digiuno fino al 28 Koiak |
+| `natale` | `29-koiak`, `7-gennaio` | Natale non mostrato; digiuno fino al 28 Kiahk |
 | `nasi6` | `contenuti-propri`, `come-5-nasi` | Chiave fissa `13-06` |
 | `concomitanze` | `mostra-entrambe`, `prevale-stagione-mobile` | Festa fissa e Settimana Santa/Pasqua mostrate insieme |
 | `mercolediVenerdi` | (predisposta, **non implementata**) | Non calcolato; non attivabile |
 
 TODO aperti, da verificare con il clero:
-- data del Natale negli anni in cui il 29 Koiak cade l'8 gennaio, e inizio/fine
+- data del Natale negli anni in cui il 29 Kiahk cade l'8 gennaio, e inizio/fine
   del digiuno in quegli anni;
 - concomitanze;
 - esenzioni del mercoledì e del venerdì;
@@ -124,11 +124,11 @@ Per ogni giorno liturgico il risolutore espone:
 | `movable` | `E±N` | `E-105` | **Livello mobile**: giorni dalla Pasqua dello stesso anno liturgico (circa da E−230 a E+135) |
 | `seasonal` | `MM-Sn-w` | `04-S4-0` | **Livello stagionale**: mese copto, domeniche già trascorse nel mese (0-5), giorno della settimana (0 = domenica) |
 
-Il livello stagionale identifica le domeniche del mese ("4ª domenica di Koiak" =
+Il livello stagionale identifica le domeniche del mese ("4ª domenica di Kiahk" =
 `04-S4-0`) e i giorni della settimana che le seguono (`04-S4-3` = il mercoledì
 dopo la 4ª domenica). I giorni prima della prima domenica hanno `S0`.
 
-Nel 6 di Nasi la chiave fissa può diventare `13-05` se la regola `nasi6` vale
+Nel 6 di Nassi la chiave fissa può diventare `13-05` se la regola `nasi6` vale
 `come-5-nasi` (`contentKeysFor`).
 
 ## 4. Persistenza (MongoDB)
