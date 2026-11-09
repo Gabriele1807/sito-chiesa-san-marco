@@ -1913,7 +1913,7 @@ var ChiesaSanMarco = (() => {
   var _a3;
   (_a3 = g.process.env).NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? (_a3.NEXT_PUBLIC_VAPID_PUBLIC_KEY = "BA2Rj7LAJgW325GGXwstUyWenkSIZCLbXiGeum7IMIiL8TDO9GF61d89vt9WkVjD5WfG6MV_VmGveuiNIIrc37s");
   var _a4;
-  (_a4 = g.process.env).NEXT_PUBLIC_SITE_URL ?? (_a4.NEXT_PUBLIC_SITE_URL = "https://www.sanmarcocopti.it");
+  (_a4 = g.process.env).NEXT_PUBLIC_SITE_URL ?? (_a4.NEXT_PUBLIC_SITE_URL = "https://sito-chiesa-san-marco.vercel.app");
 
   // .design-sync/ds-entry/provider.tsx
   init_define_import_meta_env();

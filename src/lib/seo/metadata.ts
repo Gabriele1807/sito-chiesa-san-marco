@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 const SITE_NAME = "Chiesa Copta Ortodossa di San Marco – Milano";
 
 function siteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL || "https://www.sanmarcocopti.it";
+  return process.env.NEXT_PUBLIC_SITE_URL || "https://sito-chiesa-san-marco.vercel.app";
 }
 
 /**

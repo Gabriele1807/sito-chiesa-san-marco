@@ -35,7 +35,7 @@ const arabicFont = Noto_Naskh_Arabic({
 const SITE_NAME = "Chiesa Copta Ortodossa di San Marco – Milano";
 const SITE_DESCRIPTION =
   "Sito ufficiale della Chiesa Copta Ortodossa di San Marco di Milano. Scopri le nostre icone sacre, testi liturgici, preghiere e gli eventi della comunità.";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.sanmarcocopti.it";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://sito-chiesa-san-marco.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
