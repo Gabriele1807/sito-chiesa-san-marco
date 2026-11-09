@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
 
 // Riga admin_users restituita dal "database" (null = non trovata / non attiva).
 let adminRow: Record<string, unknown> | null = null;
@@ -58,9 +58,21 @@ describe("validateSession (admin)", () => {
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.KV_REST_API_URL;
   });
+  // I JWT sono deterministici (stesso secondo = stesso token) e le revoche
+  // restano in memoria nel modulo: con un istante diverso per ogni test un
+  // token revocato in un test non può ricomparire in un altro.
+  let testIndex = 0;
   beforeEach(() => {
     eqCalls.length = 0;
     passwordChangedAt = null;
+    testIndex += 1;
+    vi.useFakeTimers({
+      toFake: ["Date"],
+      now: new Date(Date.UTC(2031, 0, 1) + testIndex * 60_000),
+    });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("returns the current admin for a valid token", async () => {

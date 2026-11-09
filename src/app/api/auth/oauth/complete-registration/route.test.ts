@@ -38,7 +38,9 @@ import { findPendingOAuthRegistrationById, deletePendingOAuthRegistration } from
 import { findUserByEmail, createOAuthUser, deleteUser } from "@/lib/mongo/users";
 import { createOAuthIdentity } from "@/lib/mongo/oauth-identities";
 
-beforeEach(() => vi.clearAllMocks());
+// resetAllMocks (non solo clearAllMocks): riporta ogni mock all'implementazione
+// iniziale, così un mockRejectedValue/mockResolvedValue(true) non passa al test dopo.
+beforeEach(() => vi.resetAllMocks());
 
 function req(body: unknown, cookie = "oauth_pending=token") {
   return new Request("https://example.org/api/auth/oauth/complete-registration", {

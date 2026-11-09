@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from "vitest";
 
 const connectWithRetry = vi.fn();
 vi.mock("./connection-utils", () => ({
@@ -17,6 +17,16 @@ describe("mongo client", () => {
   afterAll(() => {
     process.off("unhandledRejection", onUnhandled);
     vi.unstubAllEnvs();
+  });
+  // Ogni test parte da zero: il client tiene connessione e promise su
+  // globalThis, quindi senza azzerarli il risultato dipendeva dall'ordine.
+  beforeEach(() => {
+    const g = globalThis as Record<string, unknown>;
+    for (const key of ["_mongoClient", "_mongoClientPromise", "_lastHealthCheck", "_isHealthy"]) {
+      g[key] = undefined;
+    }
+    connectWithRetry.mockReset();
+    unhandled.length = 0;
   });
 
   it("does not connect when the module is imported (e.g. during next build)", async () => {
@@ -38,10 +48,15 @@ describe("mongo client", () => {
   });
 
   it("reconnects on the next call after a failure", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const { getDb } = await import("./client");
+    connectWithRetry.mockRejectedValue(new Error("Connection timeout exceeded"));
+    await expect(getDb()).rejects.toThrow("Connection timeout exceeded");
+
     const db = { name: "ok" };
     connectWithRetry.mockResolvedValue({ db: () => db });
-    const { getDb } = await import("./client");
-
     await expect(getDb()).resolves.toBe(db);
   });
 });
