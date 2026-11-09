@@ -7,6 +7,7 @@ import {
   Library,
   CalendarDays,
   CalendarRange,
+  CalendarHeart,
   Youtube,
   Info,
   Phone,
@@ -73,6 +74,17 @@ export const primarySection: SidebarSection = {
       subKey: "subCalendario",
       icon: CalendarRange,
       href: "/calendario",
+      sectionId: "calendario",
+      // "exact": su /calendario/feste è attiva solo la voce qui sotto.
+      activeMatch: "exact",
+    },
+    {
+      id: "calendario-feste",
+      type: "primary-nav",
+      labelKey: "calendarioFeste",
+      subKey: "subCalendarioFeste",
+      icon: CalendarHeart,
+      href: "/calendario/feste",
       sectionId: "calendario",
     },
     {

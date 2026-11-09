@@ -11,6 +11,7 @@ import HashLink from "@/components/HashLink";
 import { getPreghiere, getEventi, getOrari } from "@/lib/db";
 import AvvisiHomeSection from "@/components/avvisi/AvvisiHomeSection";
 import NextCelebrationCard from "@/components/NextCelebrationCard";
+import CalendarioHomeCard from "@/components/calendario/CalendarioHomeCard";
 import OrariTable from "@/components/OrariTable";
 import YouTubeLiveSection from "@/components/YouTubeLiveSection";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -143,6 +144,8 @@ export default async function HomePage() {
                     </div>
                   </Link>
                   */}
+
+                  <CalendarioHomeCard />
 
                   <NextCelebrationCard
                     orari={orari}

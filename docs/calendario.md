@@ -1,6 +1,7 @@
 # Calendario copto-gregoriano
 
-Pagina pubblica: `/calendario`. Pannello: **Admin → Calendario liturgico** (`/admin/calendario`).
+Pagine pubbliche: `/calendario` (giorno) e `/calendario/feste` (feste dell'anno), più una card
+nella home. Pannello: **Admin → Calendario liturgico** (`/admin/calendario`).
 
 Il calendario è il "motore" a cui vanno agganciate le letture giornaliere. La
 conversione delle date, la Pasqua, il tramonto e il risolutore del giorno
@@ -22,12 +23,16 @@ c'è nessuna tabella annuale da aggiornare. Nel database ci sono solo i
 | | `resolver.ts` | `resolveLiturgicalDay(jdn, config)` → descrizione strutturata (memoizzata) |
 | | `content.ts` | Tipo `DayContent`, chiavi dei contenuti, provider a tre livelli |
 | | `lookup.ts` | Ricerca di un giorno a partire da una chiave (anteprima admin) |
+| | `year.ts` | `buildCopticYearCalendar(anno, config)`: feste, digiuni e periodi dell'anno copto (memoizzato) |
+| | `today.ts` | Data copta del giorno civile del dispositivo, prossima mezzanotte locale |
+| | `params.ts` | Validazione di `?data=` e `?anno=` |
 | Servizio | `src/lib/calendario/service.ts` | `computeDayState(istante, fuso, località, tramontoManuale?)` |
 | Dati (server) | `src/lib/mongo/calendario.ts` | Collezioni, validazione, seed |
 | | `src/lib/calendario-data.ts` | Letture pubbliche con cache e timeout (ripiego senza errori) |
 | API | `src/app/api/calendario/giorno` | Contenuti pubblicati per chiave |
 | | `src/app/api/admin/calendario/*` | Contenuti, feste, regole, impostazioni (solo admin) |
-| Interfaccia | `src/components/calendario/*` | Pagina pubblica |
+| Interfaccia | `src/components/calendario/*` | Pagine pubbliche (`CalendarioCopto`, `FesteAnno`) e card della home (`CalendarioHomeCard`) |
+| | `src/components/useSectionAccess.ts`, `src/lib/section-access-client.ts` | Visibilità della sezione calcolata nel browser (pagine senza cookie) |
 | | `src/components/admin/calendario/*` | Pannello admin |
 
 ## 2. Logica del calendario
@@ -111,6 +116,42 @@ TODO aperti, da verificare con il clero:
 - esenzioni del mercoledì e del venerdì;
 - Paramoun (vigilie);
 - feste mobili minori (Giovedì e Venerdì Santo, Pasqua di Giona, domeniche della Cinquantina).
+
+### Verifica degli algoritmi
+
+Il motore è stato confrontato con un algoritmo alternativo e con un riferimento
+indipendente: nessuna differenza su 1-9999. Rapporto e limiti noti in
+[`confronto-algoritmi.md`](confronto-algoritmi.md); script ripetibile in
+`scripts/confronto-algoritmi/` (fuori da build e test).
+
+### Feste dell'anno (`/calendario/feste`)
+
+- Anno **copto** (1 Tut → ultimo giorno di Nassi), predefinito l'anno corrente;
+  `?anno=N` (1-9000) apre un anno preciso. In un anno copto ogni festa fissa compare
+  una volta e nessun digiuno è spezzato.
+- `buildCopticYearCalendar` scorre ogni giorno con `resolveLiturgicalDay`: l'elenco
+  coincide sempre con la vista del giorno (feste dell'admin, regole impostate).
+  Voci: feste fisse, feste mobili, digiuni (intervalli contigui) e la Santa Cinquantina
+  come periodo; ordinate per data, a parità prima le feste.
+- Regole incerte non impostate: il Natale non ha data e compare in "In verifica";
+  il 6 Nassi degli anni bisestili è segnalato lì; una festa fissa in Settimana Santa
+  o a Pasqua mostra "regola in verifica" (concomitanze).
+- "Oggi" è il giorno civile del dispositivo: voci passate attenuate, prossima festa
+  evidenziata solo se oggi cade nell'anno scelto.
+- Ogni voce apre `/calendario?data=AAAA-MM-GG`: la pagina del giorno parte in
+  **Manuale** su quella data alle 12:00. Senza parametro resta in Live.
+- Configurazione dal server con `getCalendarConfigSafe` (valori predefiniti se il DB
+  non risponde); il calcolo è nel browser e non dipende dal database.
+
+### Card della home
+
+`CalendarioHomeCard`, sopra "Prossima celebrazione": data copta del **giorno civile**
+(non del giorno liturgico, quindi non dipende da tramonto e località), link a
+`/calendario` e a `/calendario/feste`. Calcolata solo nel browser con `useLiveClock`
+(un timer, a mezzanotte); sul server c'è lo scheletro. La visibilità viene da
+`/api/public/section-visibility` con il ruolo del visitatore, come nella sidebar;
+oltre 1,5 s senza risposta la card si mostra. Se la sezione è nascosta o "in arrivo"
+la card non si mostra ma il suo spazio resta (altezza fissa in ogni stato).
 
 ## 3. Chiavi dei giorni
 
@@ -222,6 +263,10 @@ npm test
 | `src/lib/calendario/calendar.test.ts` | Conversioni, casi di riferimento, Capodanno 1800-2200, andata e ritorno, Pasqua |
 | `src/lib/calendario/service.test.ts` | Tramonto, mezzanotte, ora legale, fusi diversi, latitudini polari |
 | `src/lib/calendario/resolver.test.ts` | Stagioni, digiuni, feste, regole, copertura di anni normali e bisestili, chiavi |
+| `src/lib/calendario/year.test.ts` | Feste dell'anno: voci attese 1739-1744, ordine, date verificate col riferimento indipendente, Natale/6 Nassi/concomitanze, database giù, memo |
+| `src/lib/calendario/today.test.ts` | Data copta di oggi per fuso, mezzanotte locale, ora legale, Capodanno e 6 Nassi |
+| `src/lib/calendario/params.test.ts` | `?data=` e `?anno=` |
+| `src/lib/section-access-client.test.ts` | Visibilità della sezione per ruolo |
 | `src/lib/mongo/calendario.test.ts` | Validazione, solo contenuti pubblicati, seed idempotente |
 | `src/lib/calendario-data.test.ts` | Database irraggiungibile o lento |
 | `src/app/api/admin/calendario/routes.test.ts` | Permessi (401 senza admin), input non validi |

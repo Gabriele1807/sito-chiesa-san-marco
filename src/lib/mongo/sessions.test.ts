@@ -24,6 +24,8 @@ describe("validateUserSession", () => {
   beforeEach(() => {
     vi.stubEnv("ADMIN_SESSION_SECRET", "test-secret-value-not-real");
     mockFindUser.mockReset();
+    // Token identici nello stesso secondo: un logout di un altro test non deve contare qui.
+    revoked.clear();
   });
 
   it("rejects a token issued before passwordChangedAt", async () => {
