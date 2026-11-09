@@ -840,7 +840,12 @@
     "preghiere": "Preghiere",
     "videoCorsi": "Video",
     "contatti": "Contatti",
-    "menu": "Menu"
+    "menu": "Menu",
+    "calendario": "Calendario",
+    "eventi": "Eventi",
+    "icone": "Icone",
+    "libreria": "Libreria",
+    "avvisi": "Avvisi"
   },
   "calendario": {
     "titolo": "Calendario copto",
@@ -972,7 +977,9 @@
       "concomitanza": "Coincide con la Settimana Santa o la Pasqua: regola in verifica.",
       "inVerificaTitolo": "In verifica",
       "natalePending": "Regola in verifica: la data del Natale non è ancora stata impostata.",
-      "nasi6Pending": "Sesto giorno di Nassi (anno bisestile): regola in verifica per i contenuti del giorno."
+      "nasi6Pending": "Sesto giorno di Nassi (anno bisestile): regola in verifica per i contenuti del giorno.",
+      "cta": "Elenco delle feste dell'anno",
+      "ctaDescrizione": "Feste fisse e mobili e digiuni di tutto l'anno copto, con le date"
     }
   },
   "adminCalendario": {

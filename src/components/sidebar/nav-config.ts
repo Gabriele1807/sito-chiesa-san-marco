@@ -239,49 +239,15 @@ export const modeToggleItems: SidebarItem[] = [
   },
 ];
 
-export const mobileDockItems: SidebarItem[] = [
-  {
-    id: "home",
-    type: "primary-nav",
-    labelKey: "home",
-    icon: Home,
-    href: "/",
-    activeMatch: "exact",
-  },
-  {
-    id: "orari",
-    type: "primary-nav",
-    labelKey: "orari",
-    icon: Clock,
-    href: "/#orari",
-  },
-  {
-    id: "preghiere",
-    type: "primary-nav",
-    labelKey: "preghiere",
-    icon: BookOpen,
-    href: "/preghiere",
-  },
-  {
-    id: "video-corsi",
-    type: "primary-nav",
-    labelKey: "videoCorsi",
-    icon: Youtube,
-    href: "/video-corsi",
-  },
-  {
-    id: "contatti",
-    type: "primary-nav",
-    labelKey: "contatti",
-    icon: Phone,
-    href: "/contatti",
-  },
-  {
-    id: "menu",
-    type: "utility",
-    labelKey: "menu",
-    labelNamespace: "sidebar",
-    icon: Menu,
-    actionId: "openMobileMenu",
-  },
-];
+/**
+ * Ultima voce del dock su telefono: apre la sidebar con tutte le sezioni.
+ * Le altre voci del dock sono scelte in base alla visibilità (dock-items.ts).
+ */
+export const mobileDockMenuItem: SidebarItem = {
+  id: "menu",
+  type: "utility",
+  labelKey: "menu",
+  labelNamespace: "sidebar",
+  icon: Menu,
+  actionId: "openMobileMenu",
+};
