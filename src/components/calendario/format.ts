@@ -39,6 +39,15 @@ export function formatShortGregorian(date: YMD, locale: string): string {
   return dtf(locale, { timeZone: "UTC", day: "numeric", month: "long" }).format(utcNoon(date));
 }
 
+/** Data gregoriana con opzioni Intl a scelta (es. solo giorno, mese abbreviato). */
+export function formatGregorianWith(
+  date: YMD,
+  locale: string,
+  options: Intl.DateTimeFormatOptions
+): string {
+  return dtf(locale, { timeZone: "UTC", ...options }).format(utcNoon(date));
+}
+
 export function weekdayName(weekday: number, locale: string): string {
   // 1 gennaio 2023 era domenica
   return dtf(locale, { timeZone: "UTC", weekday: "long" }).format(

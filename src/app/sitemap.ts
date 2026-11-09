@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   "/contatti",
   "/eventi",
   "/calendario",
+  "/calendario/feste",
   "/icone",
   "/libreria",
   "/preghiere",

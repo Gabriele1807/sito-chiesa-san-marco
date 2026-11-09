@@ -41,8 +41,11 @@ type Mode = "live" | "manual";
 
 export default function CalendarioCopto({
   initialConfig,
+  initialDate = null,
 }: {
   initialConfig: PublicCalendarConfig;
+  /** "AAAA-MM-GG" già validata: se presente la pagina parte in Manuale su quel giorno (alle 12:00). */
+  initialDate?: string | null;
 }) {
   const t = useTranslations("calendario");
   const locale = useLocale();
@@ -61,8 +64,10 @@ export default function CalendarioCopto({
   const manualSunset = prefs?.manualSunset ?? null;
   const { lat, lon, name } = location;
 
-  const [mode, setMode] = useState<Mode>("live");
-  const [manual, setManual] = useState({ date: "", time: "" });
+  const [mode, setMode] = useState<Mode>(initialDate ? "manual" : "live");
+  const [manual, setManual] = useState(
+    initialDate ? { date: initialDate, time: "12:00" } : { date: "", time: "" }
+  );
 
   const nextEventAfter = useCallback(
     (now: number, timeZone: string) =>

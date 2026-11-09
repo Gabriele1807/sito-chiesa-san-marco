@@ -60,7 +60,8 @@
     "pannelloAdmin": "لوحة الإدارة",
     "avvisi": "الإعلانات",
     "richiestePreghiera": "طلبات الصلاة",
-    "calendario": "التقويم القبطي"
+    "calendario": "التقويم القبطي",
+    "calendarioFeste": "أعياد السنة"
   },
   "home": {
     "dashboardTitolo": "موارد الجالية القبطية",
@@ -351,7 +352,8 @@
     "dockCompatto": "وضع مضغوط",
     "subAvvisi": "بلاغات الكنيسة",
     "subRichiestePreghiera": "قدّم نيّة",
-    "subCalendario": "اليوم القبطي والقراءات"
+    "subCalendario": "اليوم القبطي والقراءات",
+    "subCalendarioFeste": "أعياد وأصوام السنة القبطية"
   },
   "topbar": {
     "dashboard": "الرئيسية",
@@ -369,7 +371,8 @@
     "richiestePreghiera": "طلبات الصلاة",
     "privacy": "الخصوصية",
     "termini": "الشروط",
-    "calendario": "التقويم القبطي"
+    "calendario": "التقويم القبطي",
+    "calendarioFeste": "أعياد السنة"
   },
   "auth": {
     "loginTitle": "تسجيل الدخول",
@@ -945,6 +948,31 @@
       "titolo": "التقويم القبطي",
       "oggi": "اليوم {data}",
       "descrizione": "اليوم الليتورجي والأعياد والأصوام"
+    },
+    "festeAnno": {
+      "titolo": "أعياد السنة",
+      "sottotitolo": "الأعياد الثابتة والمتنقلة والأصوام والفترات في السنة القبطية المختارة، مع التواريخ الميلادية المقابلة. كل بند يفتح اليوم في التقويم.",
+      "vaiCalendario": "تقويم اليوم",
+      "anno": "السنة القبطية (ش)",
+      "annoPrecedente": "السنة السابقة",
+      "annoSuccessivo": "السنة التالية",
+      "annoCorrente": "السنة الحالية",
+      "intervallo": "من {inizio} إلى {fine}",
+      "elenco": "أعياد وأصوام سنة {anno}",
+      "tipi": {
+        "fissa": "عيد ثابت",
+        "mobile": "عيد متنقل",
+        "digiuno": "صوم",
+        "periodo": "فترة"
+      },
+      "oggi": "اليوم",
+      "inCorso": "جارٍ الآن",
+      "prossima": "التالي",
+      "passata": "(انقضى)",
+      "concomitanza": "يتزامن مع أسبوع الآلام أو عيد القيامة: القاعدة قيد المراجعة.",
+      "inVerificaTitolo": "قيد المراجعة",
+      "natalePending": "القاعدة قيد المراجعة: لم يُحدَّد تاريخ عيد الميلاد بعد.",
+      "nasi6Pending": "اليوم السادس من النسيء (سنة كبيسة): قاعدة محتوى هذا اليوم قيد المراجعة."
     }
   },
   "adminCalendario": {

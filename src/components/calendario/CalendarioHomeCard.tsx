@@ -16,7 +16,7 @@ const SECTION_ID = "calendario";
  * Altezza fissa in ogni stato (caricamento, visibile, nascosta): la card è
  * nell'hero e non deve spostare ciò che sta sotto.
  */
-const SLOT = "h-[6.75rem]";
+const SLOT = "h-[8rem]";
 const FRAME =
   "rounded-[1.75rem] border border-accent/40 bg-gradient-to-br from-surface to-surface-2 shadow-sm sm:rounded-3xl";
 
@@ -88,6 +88,16 @@ export default function CalendarioHomeCard() {
           )}
           <p className="text-foreground/60 mt-0.5 truncate text-xs">{t("home.descrizione")}</p>
         </div>
+        {/* Secondo collegamento sopra il link "esteso" della card. */}
+        <Link
+          href="/calendario/feste"
+          className="text-accent hover:text-accent/80 focus-visible:ring-gold relative z-10 mt-1 inline-flex min-h-6 items-center gap-1 rounded text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none"
+        >
+          {t("festeAnno.titolo")}
+          <span aria-hidden className="inline-block rtl:-scale-x-100">
+            →
+          </span>
+        </Link>
       </div>
       <span aria-hidden className="text-accent inline-block shrink-0 text-lg rtl:-scale-x-100">
         →

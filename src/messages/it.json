@@ -60,7 +60,8 @@
     "pannelloAdmin": "Pannello Admin",
     "avvisi": "Avvisi",
     "richiestePreghiera": "Richieste di preghiera",
-    "calendario": "Calendario copto"
+    "calendario": "Calendario copto",
+    "calendarioFeste": "Feste dell'anno"
   },
   "home": {
     "dashboardTitolo": "Le risorse della chiesa san marco",
@@ -351,7 +352,8 @@
     "dockCompatto": "Dock compatto",
     "subAvvisi": "Comunicazioni della chiesa",
     "subRichiestePreghiera": "Affida un'intenzione",
-    "subCalendario": "Giorno copto e letture"
+    "subCalendario": "Giorno copto e letture",
+    "subCalendarioFeste": "Feste e digiuni dell'anno copto"
   },
   "topbar": {
     "dashboard": "Home",
@@ -369,7 +371,8 @@
     "richiestePreghiera": "Richieste di preghiera",
     "privacy": "Privacy",
     "termini": "Termini",
-    "calendario": "Calendario copto"
+    "calendario": "Calendario copto",
+    "calendarioFeste": "Feste dell'anno"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -945,6 +948,31 @@
       "titolo": "Calendario copto",
       "oggi": "Oggi è il {data}",
       "descrizione": "Giorno liturgico, feste e digiuni"
+    },
+    "festeAnno": {
+      "titolo": "Feste dell'anno",
+      "sottotitolo": "Feste fisse e mobili, digiuni e periodi dell'anno copto scelto, con le date gregoriane corrispondenti. Ogni voce apre il giorno nel calendario.",
+      "vaiCalendario": "Calendario del giorno",
+      "anno": "Anno copto (A.M.)",
+      "annoPrecedente": "Anno precedente",
+      "annoSuccessivo": "Anno successivo",
+      "annoCorrente": "Anno corrente",
+      "intervallo": "dal {inizio} al {fine}",
+      "elenco": "Feste e digiuni del {anno}",
+      "tipi": {
+        "fissa": "Festa fissa",
+        "mobile": "Festa mobile",
+        "digiuno": "Digiuno",
+        "periodo": "Periodo"
+      },
+      "oggi": "Oggi",
+      "inCorso": "In corso",
+      "prossima": "Prossima",
+      "passata": "(passata)",
+      "concomitanza": "Coincide con la Settimana Santa o la Pasqua: regola in verifica.",
+      "inVerificaTitolo": "In verifica",
+      "natalePending": "Regola in verifica: la data del Natale non è ancora stata impostata.",
+      "nasi6Pending": "Sesto giorno di Nassi (anno bisestile): regola in verifica per i contenuti del giorno."
     }
   },
   "adminCalendario": {

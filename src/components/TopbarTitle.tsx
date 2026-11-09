@@ -10,6 +10,7 @@ import {
   Library,
   CalendarDays,
   CalendarRange,
+  CalendarHeart,
   Youtube,
   Info,
   Phone,
@@ -31,6 +32,7 @@ const titlesConfig: Record<string, { icon: React.ElementType; key: string }> = {
   "/libreria": { icon: Library, key: "libreria" },
   "/eventi": { icon: CalendarDays, key: "eventi" },
   "/calendario": { icon: CalendarRange, key: "calendario" },
+  "/calendario/feste": { icon: CalendarHeart, key: "calendarioFeste" },
   "/chi-siamo": { icon: Info, key: "chiSiamo" },
   "/contatti": { icon: Phone, key: "contatti" },
   "/profilo": { icon: User, key: "profilo" },
@@ -52,18 +54,16 @@ export default function TopbarTitle({ className }: TopbarTitleProps) {
   // Match the most specific path first
   const match =
     titlesConfig[pathname] ||
-    Object.entries(titlesConfig).find(
-      ([key]) => key !== "/" && pathname.startsWith(key)
-    )?.[1] ||
+    Object.entries(titlesConfig).find(([key]) => key !== "/" && pathname.startsWith(key))?.[1] ||
     titlesConfig["/"];
 
   const Icon = match.icon;
 
   return (
-    <div className={`flex items-center gap-2 min-w-0 ${className ?? ""}`}>
-      <Icon className="w-5 h-5 text-accent shrink-0" />
+    <div className={`flex min-w-0 items-center gap-2 ${className ?? ""}`}>
+      <Icon className="text-accent h-5 w-5 shrink-0" />
       {/* Su telefono niente maiuscolo spaziato: in ~120px restava solo "H…". */}
-      <span className="min-w-0 truncate text-center font-display text-sm font-semibold text-foreground sm:text-xs sm:uppercase sm:tracking-[0.3em]">
+      <span className="font-display text-foreground min-w-0 truncate text-center text-sm font-semibold sm:text-xs sm:tracking-[0.3em] sm:uppercase">
         {t(match.key as Parameters<typeof t>[0])}
       </span>
     </div>
