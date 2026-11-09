@@ -940,6 +940,11 @@
       "torino": "Torino",
       "cairo": "Il Cairo",
       "alessandria": "Alessandria d'Egitto"
+    },
+    "home": {
+      "titolo": "Calendario copto",
+      "oggi": "Oggi è il {data}",
+      "descrizione": "Giorno liturgico, feste e digiuni"
     }
   },
   "adminCalendario": {

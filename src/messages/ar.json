@@ -940,6 +940,11 @@
       "torino": "تورينو",
       "cairo": "القاهرة",
       "alessandria": "الإسكندرية"
+    },
+    "home": {
+      "titolo": "التقويم القبطي",
+      "oggi": "اليوم {data}",
+      "descrizione": "اليوم الليتورجي والأعياد والأصوام"
     }
   },
   "adminCalendario": {
