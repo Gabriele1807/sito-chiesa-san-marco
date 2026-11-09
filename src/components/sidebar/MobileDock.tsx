@@ -1,13 +1,19 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
 import HashLink from "@/components/HashLink";
 import { useTranslations } from "next-intl";
+import { useSectionAccessResolver } from "@/components/useSectionAccess";
 import type { SidebarItem } from "./nav-config";
-import { mobileDockItems } from "./nav-config";
+import { mobileDockMenuItem } from "./nav-config";
+import { dockCandidates, pickDockItems } from "./dock-items";
 import { useSidebar } from "./SidebarContext";
 import { useActiveHashSection } from "./useActiveHashSection";
+
+const CANDIDATES = dockCandidates();
+const HASH_SECTION_IDS = CANDIDATES.map((item) => item.href)
+  .filter((href): href is string => !!href && href.includes("#"))
+  .map((href) => href.split("#")[1]);
 
 export default function MobileDock() {
   const pathname = usePathname();
@@ -15,16 +21,11 @@ export default function MobileDock() {
   const tSidebar = useTranslations("sidebar");
   const tDock = useTranslations("dock");
   const { toggleMobile } = useSidebar();
+  const activeHashSection = useActiveHashSection(HASH_SECTION_IDS);
 
-  const hashSectionIds = useMemo(
-    () =>
-      mobileDockItems
-        .map((item) => item.href)
-        .filter((href): href is string => !!href && href.includes("#"))
-        .map((href) => href.split("#")[1]),
-    []
-  );
-  const activeHashSection = useActiveHashSection(hashSectionIds);
+  // Sezioni aperte per il visitatore, in ordine di priorità, più "Menu".
+  const accessOf = useSectionAccessResolver();
+  const items = [...pickDockItems(CANDIDATES, accessOf), mobileDockMenuItem];
 
   function isActive(item: SidebarItem) {
     if (!item.href) return false;
@@ -36,9 +37,11 @@ export default function MobileDock() {
       return pathname === targetPath && activeHashSection === targetHash;
     }
 
-    if (item.activeMatch === "exact" || item.href === "/") {
+    if (item.href === "/") {
       return pathname === item.href && !activeHashSection;
     }
+    // Nel dock una voce copre anche le sue sotto-pagine (es. Calendario su
+    // /calendario/feste, che nel dock non ha una voce propria).
     return pathname === item.href || pathname.startsWith(item.href + "/");
   }
 
@@ -59,10 +62,13 @@ export default function MobileDock() {
   return (
     <nav
       aria-label="Mobile dock"
-      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-sidebar text-white border-t border-white/10 pb-[env(safe-area-inset-bottom)]"
+      className="bg-sidebar fixed right-0 bottom-0 left-0 z-40 border-t border-white/10 pb-[env(safe-area-inset-bottom)] text-white lg:hidden"
     >
-      <div className="grid grid-cols-6 gap-0.5 px-1.5 py-1.5">
-        {mobileDockItems.map((item) => {
+      <div
+        className="grid gap-0.5 px-1.5 py-1.5"
+        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+      >
+        {items.map((item) => {
           const Icon = item.icon;
           const label = getLabel(item);
           const active = isActive(item);
@@ -81,7 +87,9 @@ export default function MobileDock() {
                 aria-label={label}
               >
                 <Icon className="h-5 w-5 shrink-0" aria-hidden />
-                <span aria-hidden className="max-w-full truncate">{shortLabel}</span>
+                <span aria-hidden className="max-w-full truncate">
+                  {shortLabel}
+                </span>
               </button>
             );
           }
@@ -89,9 +97,17 @@ export default function MobileDock() {
           if (!item.href) return null;
 
           return (
-            <HashLink key={item.id} href={item.href} aria-label={label} className={baseClass}>
+            <HashLink
+              key={item.id}
+              href={item.href}
+              aria-label={label}
+              aria-current={active ? "page" : undefined}
+              className={baseClass}
+            >
               <Icon className="h-5 w-5 shrink-0" aria-hidden />
-              <span aria-hidden className="max-w-full truncate">{shortLabel}</span>
+              <span aria-hidden className="max-w-full truncate">
+                {shortLabel}
+              </span>
             </HashLink>
           );
         })}

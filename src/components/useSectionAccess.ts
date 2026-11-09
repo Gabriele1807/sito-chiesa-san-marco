@@ -28,13 +28,13 @@ function loadVisibilities(): Promise<SectionVisibility[]> {
 }
 
 /**
- * Accesso del visitatore a una sezione, calcolato nel browser con la
- * stessa logica della sidebar (`/api/public/section-visibility` + ruolo).
- * `null` finché non è noto; se il database non risponde entro
- * `SECTION_ACCESS_TIMEOUT_MS` restituisce "full", come `getSectionAccess`
- * in caso di errore.
+ * Funzione che dà l'accesso del visitatore a una sezione, calcolato nel
+ * browser con la stessa logica della sidebar (`/api/public/section-visibility`
+ * + ruolo). Restituisce `null` finché non è noto; se il database non risponde
+ * entro `SECTION_ACCESS_TIMEOUT_MS` dà "full", come `getSectionAccess` in caso
+ * di errore. Una sola richiesta per pagina, anche con più sezioni.
  */
-export function useSectionAccess(sectionId: string): RoleAccessType | null {
+export function useSectionAccessResolver(): (sectionId: string) => RoleAccessType | null {
   const { type, user, admin, loading } = useAuth();
   const [visibilities, setVisibilities] = useState<SectionVisibility[] | null>(null);
   const [expired, setExpired] = useState(false);
@@ -53,6 +53,12 @@ export function useSectionAccess(sectionId: string): RoleAccessType | null {
     };
   }, []);
 
-  if (!expired && (visibilities === null || loading)) return null;
-  return accessForRole(visibilities ?? [], sectionId, viewerRole(type, user, admin));
+  const ready = expired || (visibilities !== null && !loading);
+  const role = viewerRole(type, user, admin);
+  return (sectionId) => (ready ? accessForRole(visibilities ?? [], sectionId, role) : null);
+}
+
+/** Accesso del visitatore a una sezione (vedi `useSectionAccessResolver`). */
+export function useSectionAccess(sectionId: string): RoleAccessType | null {
+  return useSectionAccessResolver()(sectionId);
 }
