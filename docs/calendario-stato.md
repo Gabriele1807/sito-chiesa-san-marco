@@ -44,6 +44,7 @@ Test: 497 passano (Vitest). Typecheck, lint e build puliti.
   distanza da Pasqua, stagione, digiuni, feste, contenuti del giorno pubblicati.
 - Funziona anche col database giù (calcola le date, non mostra i contenuti).
 - `?data=AAAA-MM-GG` apre la pagina in Manuale su quel giorno (link dall'elenco delle feste).
+- Sotto l'intestazione, un pulsante ben visibile "Elenco delle feste dell'anno" porta a `/calendario/feste`.
 
 **Feste dell'anno `/calendario/feste`** (voce nel menu dopo "Calendario copto", link da home e da `/calendario`)
 - Anno copto scelto con un selettore (predefinito l'anno corrente, `?anno=N`).
@@ -51,6 +52,10 @@ Test: 497 passano (Vitest). Typecheck, lint e build puliti.
   ordinate per data, con date copta e gregoriana; passate attenuate, prossima evidenziata.
 - Natale senza data e 6 Nassi in "In verifica" finché le regole non sono impostate;
   concomitanze segnalate. Ogni voce apre il giorno.
+
+**Dock su telefono** (barra fissa in basso): voci scelte in base alle sezioni visibili per il ruolo,
+in ordine Home, Orari, Calendario, poi Preghiere, Eventi, Video, Icone, Libreria, Avvisi, Contatti
+(prime 5 aperte + Menu; `src/components/sidebar/dock-items.ts`). Calendario resta attivo anche su `/calendario/feste`.
 
 **Card nella home** (sopra "Prossima celebrazione")
 - Data copta del giorno civile, calcolata nel browser; link a `/calendario` e `/calendario/feste`.

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CalendarHeart } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import SectionVisibilityGate from "@/components/SectionVisibilityGate";
@@ -38,16 +39,28 @@ export default async function CalendarioPage({
           <p className="eyebrow">{t("eyebrow")}</p>
           <h1 className="font-display text-foreground mt-2 text-3xl sm:text-4xl">{t("titolo")}</h1>
           <p className="text-foreground/70 mt-2 text-sm leading-relaxed">{t("sottotitolo")}</p>
-          <Link
-            href="/calendario/feste"
-            className="text-accent hover:text-accent/80 focus-visible:ring-gold mt-3 inline-flex min-h-11 items-center gap-1 rounded text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
-          >
-            {t("festeAnno.titolo")}
-            <span aria-hidden className="inline-block rtl:-scale-x-100">
-              →
-            </span>
-          </Link>
         </header>
+        {/* Accesso ben visibile all'elenco delle feste, per chi apre il calendario. */}
+        <Link
+          href="/calendario/feste"
+          className="border-accent/40 from-surface to-surface-2 focus-visible:ring-gold group flex items-center gap-4 rounded-2xl border bg-gradient-to-br px-5 py-4 shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          <span className="border-accent/40 flex h-11 w-11 shrink-0 items-center justify-center border">
+            <CalendarHeart className="text-accent h-5 w-5" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="text-foreground block font-semibold">{t("festeAnno.cta")}</span>
+            <span className="text-foreground/60 mt-0.5 block text-xs leading-relaxed">
+              {t("festeAnno.ctaDescrizione")}
+            </span>
+          </span>
+          <span
+            aria-hidden
+            className="text-accent inline-block shrink-0 text-lg transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5"
+          >
+            →
+          </span>
+        </Link>
         <CalendarioCopto
           key={initialDate ?? "live"}
           initialConfig={config}
